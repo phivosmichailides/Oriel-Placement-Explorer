@@ -1,193 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b1020" />
-  <title>Phivos' Placement Desk</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f2">
+<title>Phivos' Placement Desk</title>
+<style>
+:root{--bg:#f5f5f1;--panel:#fff;--ink:#171717;--mut:#6f706d;--line:#e7e5df;--soft:#f1f0eb;--dark:#171717;--green:#146b49;--red:#a73939;--amber:#9a6913;--blue:#3f5fbf;--purple:#7c4db0;--shadow:0 14px 40px rgba(30,28,22,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.shell{max-width:1540px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:18px}.brand{display:flex;gap:14px;align-items:center}.logo{width:50px;height:50px;border-radius:15px;background:var(--dark);color:white;display:grid;place-items:center;font-size:24px;box-shadow:var(--shadow)}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:800}.top h1{margin:2px 0 2px;font-size:29px;letter-spacing:-.03em}.top p{margin:0;color:var(--mut)}.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.btn{border:1px solid var(--line);background:var(--panel);padding:10px 14px;border-radius:12px;font-weight:700}.btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.btn.subtle{background:var(--soft)}.btn.danger{color:var(--red);border-color:#ead2d2}.tabs{display:flex;gap:7px;overflow:auto;padding:7px;background:#ebeae5;border:1px solid #e2e0da;border-radius:15px;margin-bottom:18px}.tab{border:0;background:transparent;padding:9px 14px;border-radius:10px;white-space:nowrap;font-weight:750;color:#63635f}.tab.active{background:var(--panel);color:var(--ink);box-shadow:0 3px 10px rgba(20,20,20,.05)}.panel{display:none}.panel.active{display:block}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.stat{padding:15px}.stat .k{font-size:23px;font-weight:850;letter-spacing:-.03em}.stat .l{font-size:12px;color:var(--mut);margin-top:2px}.layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:14px}.filters{padding:17px;position:sticky;top:12px;height:max-content}.secthead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:13px}.secthead h2{font-size:18px;margin:2px 0}.textbtn{border:0;background:transparent;color:var(--blue);font-weight:700}.field{display:block;margin-bottom:11px}.field>span{display:block;font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin:0 0 5px 2px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fafaf8;border-radius:11px;padding:10px 11px;outline:none}.field textarea{min-height:82px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#b8b6ae;background:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.chip{border:1px solid var(--line);background:var(--panel);padding:7px 9px;border-radius:999px;font-size:12px}.chip.on{background:#20201f;color:#fff;border-color:#20201f}.notice{padding:11px;border-radius:12px;background:#f7f6f2;color:#66645f;font-size:12px;margin-top:10px}.results{display:flex;flex-direction:column;gap:11px}.placement{padding:17px}.placementTop{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:15px}.placement h3{font-size:18px;margin:3px 0 3px;line-height:1.25;letter-spacing:-.015em}.employer{color:var(--mut);font-weight:650}.salary{text-align:right;font-size:20px;font-weight:850;white-space:nowrap}.hourly{text-align:right;color:var(--mut);font-size:12px}.badges{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.badge{padding:4px 8px;border-radius:999px;background:#f2f1ed;border:1px solid #e8e6df;font-size:11px;font-weight:700}.badge.good{background:#edf7f2;border-color:#d2eadf;color:#0f6745}.badge.warn{background:#fff7e7;border-color:#eedfbf;color:#81550b}.badge.bad{background:#fff0f0;border-color:#ecd0d0;color:#963f3f}.fit{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:stretch;margin:10px 0}.score{border-radius:13px;background:#1d1d1b;color:#fff;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}.score span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#c5c5c0;font-weight:800}.score b{font-size:25px;line-height:1}.score small{margin-top:3px;color:#e5e5df}.why{display:flex;flex-wrap:wrap;gap:5px;align-content:center}.reason{font-size:12px;padding:6px 8px;border-radius:9px;background:#f6f5f1}.desc{color:#4f4f4c;margin:9px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.placement.open .desc{-webkit-line-clamp:unset;display:block}.more{border:0;background:transparent;padding:6px 0;color:var(--blue);font-weight:700}.controls{display:grid;grid-template-columns:170px 145px 90px minmax(170px,1fr) auto auto;gap:7px;align-items:center;margin-top:11px}.controls select,.controls input{border:1px solid var(--line);background:#fafaf8;border-radius:10px;padding:9px 10px;width:100%}.rate{display:flex;gap:2px}.star{border:0;background:transparent;padding:3px;font-size:17px;opacity:.25}.star.on{opacity:1}.compare{white-space:nowrap}.compare.on{background:#e9eefb;border-color:#d6dff5;color:#2f52ae}.empty{padding:30px;text-align:center;color:var(--mut)}.sectionHero{padding:20px;margin-bottom:12px;display:flex;justify-content:space-between;gap:15px;align-items:center}.sectionHero h2{margin:3px 0 5px;font-size:22px}.sectionHero p{margin:0;color:var(--mut);max-width:800px}.recoGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.reco{padding:17px}.reco h3{margin:5px 0 8px;font-size:16px}.reco p{margin:8px 0;color:var(--mut)}.compareWrap{overflow:auto;border-radius:17px}.compareTable{width:100%;min-width:850px;border-collapse:collapse;background:#fff}.compareTable th,.compareTable td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}.compareTable thead th{background:#f3f2ee}.compareTable tbody th{background:#faf9f6;width:145px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:13px}.settingsCard{padding:18px}.settingsCard h2{margin:3px 0 7px}.weight{display:grid;grid-template-columns:220px 1fr 30px;gap:10px;align-items:center;margin:11px 0}.weight input{width:100%}.footerbar{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:12px}.muted{color:var(--mut)}.loading{padding:50px 20px;text-align:center}.spinner{width:30px;height:30px;border-radius:50%;border:3px solid #ddd;border-top-color:#222;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:#171717;color:white;padding:10px 14px;border-radius:12px;transition:.2s;z-index:999}.toast.show{opacity:1;transform:translate(-50%,0)}.manualPriority{width:72px!important}.errorBox{padding:16px;background:#fff2f2;border:1px solid #ebd0d0;border-radius:14px;color:#873737}.smallnote{font-size:11px;color:var(--mut)}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.filters{position:static}.controls{grid-template-columns:1fr 1fr 90px 1fr}.controls .btn{width:100%}.recoGrid{grid-template-columns:1fr}}
+@media(max-width:720px){.shell{padding:12px}.top{flex-direction:column}.actions{justify-content:flex-start}.top h1{font-size:24px}.stats{grid-template-columns:repeat(2,1fr)}.placementTop{grid-template-columns:1fr}.salary,.hourly{text-align:left}.fit{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.settings{grid-template-columns:1fr}.weight{grid-template-columns:1fr 1fr 30px}.sectionHero{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand-wrap">
-        <div class="brand-icon">💊</div>
-        <div>
-          <div class="eyebrow">ORIEL 2027/28</div>
-          <h1>Phivos' Placement Desk</h1>
-          <p>Find the placement that's actually worth a year of your life.</p>
-        </div>
-      </div>
-      <div class="top-actions">
-        <button class="btn ghost" id="backupBtn">💾 Backup</button>
-        <button class="btn primary" id="uploadBtn">⬆️ Upload Oriel CSV</button>
-        <input id="uploadInput" type="file" accept=".csv,text/csv" hidden />
-      </div>
-    </header>
-
-    <nav class="tabs" aria-label="Placement views">
-      <button class="tab active" data-tab="explore">🔎 Explore</button>
-      <button class="tab" data-tab="foryou">✨ For You</button>
-      <button class="tab" data-tab="shortlist">❤️ Shortlist</button>
-      <button class="tab" data-tab="compare">⚖️ Compare</button>
-      <button class="tab" data-tab="settings">⚙️ Preferences</button>
-    </nav>
-
-    <main>
-      <section id="exploreTab" class="tab-panel active">
-        <div class="stats-grid" id="statsGrid"></div>
-        <div class="workspace">
-          <aside class="filters card">
-            <div class="section-head">
-              <div>
-                <span class="eyebrow">REFINE</span>
-                <h2>Find your people 👀</h2>
-              </div>
-              <button class="text-btn" id="resetFilters">Reset</button>
-            </div>
-
-            <label class="field wide">
-              <span>Search</span>
-              <input id="searchInput" type="search" placeholder="UCLH, GP, industry, Islington…" />
-            </label>
-
-            <div class="quick-filters" id="quickFilters">
-              <button data-qf="london">📍 London only</button>
-              <button data-qf="hospital">🏥 Hospital-led</button>
-              <button data-qf="gp">🩺 GP-heavy</button>
-              <button data-qf="split">🔀 Split placements</button>
-              <button data-qf="industry">🏭 Industry exposure</button>
-              <button data-qf="under40">🧘 ≤40 h/week</button>
-              <button data-qf="over30">💷 £30k+</button>
-            </div>
-
-            <div class="field-grid">
-              <label class="field">
-                <span>Sector</span>
-                <select id="sectorFilter"><option value="">Any</option></select>
-              </label>
-              <label class="field">
-                <span>Area / region</span>
-                <select id="regionFilter"><option value="">Any</option></select>
-              </label>
-              <label class="field">
-                <span>Max hours</span>
-                <select id="hoursFilter">
-                  <option value="">Any</option>
-                  <option value="35">35</option>
-                  <option value="37.5">37.5</option>
-                  <option value="40">40</option>
-                  <option value="42.5">42.5</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Min salary</span>
-                <select id="salaryFilter">
-                  <option value="">Any</option>
-                  <option value="26000">£26k</option>
-                  <option value="28000">£28k</option>
-                  <option value="30000">£30k</option>
-                  <option value="32000">£32k</option>
-                  <option value="36000">£36k</option>
-                </select>
-              </label>
-            </div>
-
-            <label class="field wide">
-              <span>Sort</span>
-              <select id="sortSelect">
-                <option value="fit">✨ For you</option>
-                <option value="salary">💷 Salary</option>
-                <option value="hourly">⏱️ Effective hourly pay</option>
-                <option value="hours">🧘 Shortest week</option>
-                <option value="name">A–Z</option>
-              </select>
-            </label>
-
-            <div class="location-box">
-              <div>
-                <span class="eyebrow">OPTIONAL</span>
-                <h3>Where might you live? 🏠</h3>
-                <p>Use a postcode or area only when you want commute context. Bermondsey is not treated as permanent.</p>
-              </div>
-              <div class="location-row">
-                <input id="baseLocation" placeholder="e.g. Angel, SE1, Wembley" />
-                <button class="btn small" id="setBaseBtn">Set</button>
-              </div>
-              <div class="muted" id="baseLocationStatus">No base set.</div>
-            </div>
-
-            <div class="filter-footer">
-              <b id="resultCount">0 placements</b>
-              <span class="muted">Your decisions save automatically on this device.</span>
-            </div>
-          </aside>
-
-          <section class="results" id="resultsList"></section>
-        </div>
-      </section>
-
-      <section id="foryouTab" class="tab-panel">
-        <div class="hero-card card">
-          <div>
-            <span class="eyebrow">PERSONALISED</span>
-            <h2>✨ Placements I think are worth your attention</h2>
-            <p>This is not your final ranking. It surfaces options that match your priorities: money, hospital/GP exposure, sensible hours, strong progression and London life.</p>
-          </div>
-          <div class="hero-score">💸 🏥 🩺 🚀</div>
-        </div>
-        <div class="recommendation-grid" id="recommendationGrid"></div>
-      </section>
-
-      <section id="shortlistTab" class="tab-panel">
-        <div class="section-head standalone">
-          <div><span class="eyebrow">YOUR CALL</span><h2>❤️ Shortlist & manual order</h2></div>
-          <div class="muted">Drag ordering is coming next; for now use your manual rating and status.</div>
-        </div>
-        <div id="shortlistList" class="results single"></div>
-      </section>
-
-      <section id="compareTab" class="tab-panel">
-        <div class="section-head standalone">
-          <div><span class="eyebrow">SIDE BY SIDE</span><h2>⚖️ Compare placements</h2></div>
-          <button class="btn ghost" id="clearCompare">Clear</button>
-        </div>
-        <div id="compareArea" class="compare-area"></div>
-      </section>
-
-      <section id="settingsTab" class="tab-panel">
-        <div class="settings-layout">
-          <div class="card settings-card">
-            <span class="eyebrow">YOUR PROFILE</span>
-            <h2>⚙️ What matters to you</h2>
-            <p>These weights change the “For You” guidance. They do not decide your final choice.</p>
-            <div id="weightControls"></div>
-          </div>
-          <div class="card settings-card">
-            <span class="eyebrow">LONDON</span>
-            <h2>🧭 Area preferences</h2>
-            <p>Inner/central London gets a boost. Areas you specifically said you dislike get a penalty, not an automatic ban.</p>
-            <label class="field wide"><span>Places you like</span><textarea id="likedAreas"></textarea></label>
-            <label class="field wide"><span>Places you’d rather avoid</span><textarea id="avoidAreas"></textarea></label>
-            <button class="btn primary" id="savePrefsBtn">Save preferences</button>
-          </div>
-          <div class="card settings-card danger-zone">
-            <span class="eyebrow">DATA</span>
-            <h2>🧹 Reset this browser</h2>
-            <p>Clears ratings, notes, filters and your uploaded Oriel CSV from this device.</p>
-            <button class="btn danger" id="clearDataBtn">Clear saved data</button>
-          </div>
-        </div>
-      </section>
-    </main>
+<div class="shell">
+<header class="top">
+  <div class="brand"><div class="logo">💊</div><div><div class="eyebrow">ORIEL 2027/28 · PERSONAL</div><h1>Phivos' Placement Desk</h1><p>Money, London life, sector fit and future options — without pretending a score chooses for you.</p></div></div>
+  <div class="actions"><button class="btn" id="exportBtn">📤 Export decisions</button><button class="btn" id="backupBtn">💾 Backup</button><button class="btn primary" id="uploadBtn">⬆️ Upload latest Oriel CSV</button><input hidden type="file" id="fileInput" accept=".csv,text/csv"></div>
+</header>
+<nav class="tabs">
+  <button class="tab active" data-tab="explore">🔎 Explore</button><button class="tab" data-tab="foryou">✨ For You</button><button class="tab" data-tab="shortlist">❤️ Shortlist</button><button class="tab" data-tab="compare">⚖️ Compare</button><button class="tab" data-tab="prefs">⚙️ Preferences</button>
+</nav>
+<section class="panel active" id="explore">
+  <div class="stats" id="stats"></div>
+  <div class="layout">
+    <aside class="filters card">
+      <div class="secthead"><div><div class="eyebrow">REFINE</div><h2>Your filters</h2></div><button class="textbtn" id="resetBtn">Reset</button></div>
+      <label class="field"><span>Search</span><input id="search" type="search" placeholder="UCLH, hospital + GP, industry…"></label>
+      <div class="quick" id="quick"><button class="chip" data-q="london">📍 London</button><button class="chip" data-q="hospital">🏥 Hospital</button><button class="chip" data-q="gp">🩺 GP</button><button class="chip" data-q="split">🔀 Split</button><button class="chip" data-q="industry">🏭 Industry</button><button class="chip" data-q="hours">🧘 ≤40h</button><button class="chip" data-q="pay">💷 £30k+</button></div>
+      <div class="grid2"><label class="field"><span>Sector</span><select id="sector"><option value="">Any</option></select></label><label class="field"><span>Region</span><select id="region"><option value="">Any</option></select></label></div>
+      <div class="grid2"><label class="field"><span>Max hours</span><select id="hours"><option value="">Any</option><option>35</option><option>37.5</option><option>40</option><option>42.5</option></select></label><label class="field"><span>Minimum salary</span><select id="salary"><option value="">Any</option><option value="26000">£26k</option><option value="28000">£28k</option><option value="30000">£30k</option><option value="32000">£32k</option><option value="36000">£36k</option></select></label></div>
+      <label class="field"><span>Sort by</span><select id="sort"><option value="fit">✨ For you</option><option value="salary">💷 Salary</option><option value="hourly">⏱️ Effective hourly pay</option><option value="hours">🧘 Shortest week</option><option value="name">A–Z</option></select></label>
+      <div class="notice"><b>🏠 Move-friendly by design.</b><br>Bermondsey is not treated as permanent. Inner/central London gets a boost, disliked areas get a soft penalty, and money can still outweigh location.</div>
+      <div class="footerbar"><b id="count">Loading…</b><span class="smallnote">saved locally</span></div>
+    </aside>
+    <main class="results" id="results"><div class="card loading"><div class="spinner"></div>Loading placement data…</div></main>
   </div>
-
-  <template id="placementCardTemplate">
-    <article class="placement-card card"></article>
-  </template>
-
-  <div class="toast" id="toast"></div>
-  <script src="core.js"></script>
-  <script src="ui.js"></script>
+</section>
+<section class="panel" id="foryou"><div class="sectionHero card"><div><div class="eyebrow">PERSONALISED</div><h2>✨ Worth your attention</h2><p>Not an automatic final ranking. This surfaces options that fit your current priorities and explains why.</p></div><div style="font-size:30px">💸 🏥 🩺 🚀 🎧</div></div><div class="recoGrid" id="reco"></div></section>
+<section class="panel" id="shortlist"><div class="sectionHero card"><div><div class="eyebrow">YOUR CALL</div><h2>❤️ Shortlist & manual priority</h2><p>Anything marked Love, Strong yes, Maybe or Only if needed lives here. Your manual priority always beats the app score.</p></div></div><div class="results" id="shortlistList"></div></section>
+<section class="panel" id="compare"><div class="sectionHero card"><div><div class="eyebrow">SIDE BY SIDE</div><h2>⚖️ Compare placements</h2><p>Add up to five from Explore.</p></div><button class="btn" id="clearCompare">Clear comparison</button></div><div class="compareWrap" id="compareArea"></div></section>
+<section class="panel" id="prefs"><div class="settings"><div class="settingsCard card"><div class="eyebrow">YOUR PROFILE</div><h2>⚙️ What matters</h2><p class="muted">Change these whenever you change your mind. They only affect recommendations.</p><div id="weights"></div></div><div class="settingsCard card"><div class="eyebrow">LONDON</div><h2>🧭 Area preferences</h2><label class="field"><span>Areas you like</span><textarea id="likes"></textarea></label><label class="field"><span>Areas you’d rather avoid</span><textarea id="avoids"></textarea></label><button class="btn primary" id="savePrefs">Save preferences</button></div><div class="settingsCard card"><div class="eyebrow">BACKUP</div><h2>🛟 Original explorer</h2><p class="muted">The original forked app is preserved separately. Use it only if you need the old interface.</p><a class="btn" style="display:inline-block;text-decoration:none" href="legacy.html">Open legacy explorer ↗</a></div><div class="settingsCard card"><div class="eyebrow">RESET</div><h2>🧹 Start fresh</h2><p class="muted">Clears your ratings, notes and uploaded CSV on this browser only.</p><button class="btn danger" id="clearData">Clear local data</button></div></div></section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='phivos-desk-v2', DATAKEY='phivos-desk-csv-v2';
+const DEFAULT={weights:{money:5,hospital:5,gp:5,lifestyle:4,location:4,progression:5,independence:4,communityPenalty:4},likes:'London Bridge, Southwark, Borough, Waterloo, Holborn, Bloomsbury, Clerkenwell, Angel, Islington, Shoreditch, Camden, Fitzrovia, Westminster, Vauxhall, Battersea, Kensington, Chelsea, Hammersmith, Fulham, Ealing, Wembley',avoids:'Croydon, Barnet, Wood Green, Morden, New Addington, Romford, Dagenham, Enfield'};
+const STATUSES=[['','Unmarked'],['love','😍 Love'],['yes','❤️ Strong yes'],['maybe','🤔 Maybe'],['backup','😐 Only if needed'],['no','❌ No'],['never','☠️ Absolutely not']];
+const SHORT=new Set(['love','yes','maybe','backup']);
+let placements=[],quick=new Set(),state=loadState();
+function clone(x){return JSON.parse(JSON.stringify(x))}function loadState(){try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return{prefs:{...clone(DEFAULT),...(x.prefs||{}),weights:{...DEFAULT.weights,...(x.prefs?.weights||{})}},marks:x.marks||{},compare:x.compare||[]}}catch{return{prefs:clone(DEFAULT),marks:{},compare:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}function toast(m){const x=$('toast');x.textContent=m;x.classList.add('show');clearTimeout(x._t);x._t=setTimeout(()=>x.classList.remove('show'),1800)}function money(v){return Number(String(v??'').replace(/[£,\s]/g,''))||0}
+function parseCSV(t){if(t.charCodeAt(0)===65279)t=t.slice(1);const R=[];let r=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){r.push(f);f=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;r.push(f);f='';if(r.some(v=>v.trim()))R.push(r);r=[]}else f+=c}if(f||r.length){r.push(f);if(r.some(v=>v.trim()))R.push(r)}return R}
+function normSetting(s){return String(s||'').trim().replace(/^general practice$/i,'General Practice').replace(/^industry\s*$/i,'Industry')}
+function rowsToPlacements(csv){const R=parseCSV(csv);if(R.length<2)throw Error('No placement rows found');const h=R[0].map(x=>x.trim());if(!h.includes('Employer Name')||!h.includes('Programme Title'))throw Error('This does not look like an Oriel preference CSV');return R.slice(1).map((r,i)=>{const o={};h.forEach((k,j)=>o[k]=r[j]??'');const st=[];for(let n=1;n<5;n++){const s=normSetting(o['Setting '+n]),w=Number(o['Length '+n])||0;if(s)st.push([s,w])}const title=String(o['Programme Title']||'').trim();const pcs=(title.match(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/gi)||[]).map(x=>x.toUpperCase().replace(/\s+/g,' '));return{id:String(o['Programme Number']||o.Preference||title||i),employer:String(o['Employer Name']||'').trim(),title,desc:String(o['Programme Description']||'').trim(),region:String(o.Region||'').trim(),area:String(o['Area(Sector)']||'').trim(),type:String(o['Employer Type']||'Other').trim(),salary:money(o.Salary),hours:Number(o['Hours Per Week'])||0,places:Number(o['Places Available'])||0,provider:String(o['Training Provider']||'').trim(),website:String(o['Employer Website']||'').trim(),visa:/^yes$/i.test(String(o['Skilled worker visa']||'')),settings:st,postcodes:pcs,orielRank:String(o['Current Assigned Rank']||'').trim(),start:String(o['Start Date']||'').trim()}}).filter(x=>x.title||x.employer)}
+async function loadData(){const saved=localStorage.getItem(DATAKEY);if(saved){try{placements=rowsToPlacements(JSON.parse(saved).csv);return}catch{localStorage.removeItem(DATAKEY)}}const html=await fetch('./legacy.html',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Could not load legacy dataset');return r.text()});const m=html.match(/<script type="text\/plain" id="baseCsv">([\s\S]*?)<\/script>/i);if(!m)throw Error('Built-in placement dataset not found');placements=rowsToPlacements(m[1])}
+function text(p){return `${p.title} ${p.employer} ${p.desc} ${p.region} ${p.area} ${p.type} ${p.provider} ${p.settings.map(x=>x[0]).join(' ')}`.toLowerCase()}function weeks(p,s){return p.settings.filter(x=>x[0].toLowerCase().includes(s)).reduce((a,x)=>a+x[1],0)}function has(p,s){return weeks(p,s)>0||p.type.toLowerCase().includes(s)||text(p).includes(s)}function hourly(p){return p.salary&&p.hours?p.salary/(p.hours*52):0}
+function sector(p){const h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry');if(i>=13)return'Industry';if(h>=26)return'Hospital';if(g>=26)return'General Practice';if(c>=26)return'Community Pharmacy';if(has(p,'hospital')&&h)return'Hospital';if(has(p,'general practice')&&g)return'General Practice';return p.type||'Other'}
+function split(p){return p.settings.length?p.settings.map(x=>`${x[0]} ${x[1]}w`).join(' · '):'Single setting / not specified'}function tokens(s){return String(s||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean)}
+function areaPref(p){const t=text(p),a=tokens(state.prefs.avoids),l=tokens(state.prefs.likes);if(a.some(x=>t.includes(x)))return-2;if(l.some(x=>t.includes(x)))return 2;if(p.region.toLowerCase()==='london'){const out=(p.postcodes[0]||'').replace(/\s.*/,'');if(/^(EC|WC|W1|SW1|SE1|N1|E1)/.test(out))return 2;return 1}return-1}
+function any(t,a){return a.some(x=>t.includes(x))}
+function analyse(p){const w=state.prefs.weights,t=text(p);let raw=0,max=0;const good=[],bad=[];const add=(v,k,msg)=>{raw+=v*k;max+=2*k;if(v>0&&msg)good.push(msg)};const h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry');add(p.salary>=37000?2:p.salary>=32000?1.4:p.salary>=29000?.8:p.salary>=26000?.2:-.5,w.money,p.salary>=32000?'💷 Strong pay':'💷 Decent pay');add(h>=26?2:h>=13?1:0,w.hospital,h>=26?'🏥 Major hospital exposure':h>=13?'🏥 Hospital rotation':null);add(g>=26?2:g>=13?1:0,w.gp,g>=26?'🩺 Major GP exposure':g>=13?'🩺 GP rotation':null);const life=p.hours&&p.hours<=35?2:p.hours&&p.hours<=37.5?1.5:p.hours&&p.hours<=40?.7:p.hours>=44?-1.5:0;add(life,w.lifestyle,p.hours&&p.hours<=37.5?`🧘 ${p.hours}h week`:null);const loc=areaPref(p);add(loc,w.location,loc===2?'📍 Area matches your preferences':loc===1?'📍 London location':null);let prog=0;if(any(t,['clinical trials','research','medicines information','digital','data','industry','gsk','viatris','glaxosmithkline','pharmacovigilance','regulatory','clinical procurement','academia']))prog+=1.3;if(any(t,['teaching hospital','specialist','tertiary','leadership','quality improvement','audit','cardiology','oncology','paediatrics','renal','neurology']))prog+=.8;add(Math.min(2,prog),w.progression,prog>=1.5?'🚀 Excellent CV / transferable exposure':prog>.5?'🚀 Strong progression signals':null);let ind=0;if(any(t,['medication review','medicines optimisation','medicines information','audit','quality improvement','repeat prescribing','clinical trial','data','hybrid','remote']))ind+=1.2;if(g>=26||h>=26)ind+=.3;if(any(t,['high-volume','busy retail','retail pharmacy'])&&c>=39)ind-=.7;add(Math.max(-2,Math.min(2,ind)),w.independence,ind>=1?'🎧 More independent/desk-work signals':null);max+=w.communityPenalty*2;if(c>=39){raw-=w.communityPenalty*1.2;bad.push('🛍️ Mostly community-facing')}else if(c>=26)raw-=w.communityPenalty*.4;if(i>=13){raw+=w.progression*1.7;good.push('🏭 Industry exposure')}if(any(t,['protected study','study time','work from home study']))good.push('📚 Protected study time mentioned');if(any(t,['monday to friday','no weekend','no weekends']))good.push('🗓️ Better schedule wording');if(any(t,['late night','late nights','weekend working','bank holidays']))bad.push('🌙 Late/weekend working mentioned');if(p.hours>=44)bad.push(`😵 ${p.hours}h/week`);if(loc===-2)bad.push('📍 Area you said you would rather avoid');if(p.settings.length>1)good.push(`🔀 ${split(p)}`);const score=Math.max(0,Math.min(100,Math.round(50+raw/Math.max(1,max)*50)));return{score,band:score>=78?'Strong fit':score>=66?'Worth a look':score>=54?'Mixed fit':'Probably not you',good:[...new Set(good)].slice(0,6),bad:[...new Set(bad)].slice(0,4)}}
+function mark(p){return state.marks[p.id]||{status:'',rating:0,note:'',priority:''}}function setMark(p,patch,rerender=true){state.marks[p.id]={...mark(p),...patch};const m=state.marks[p.id];if(!m.status&&!m.rating&&!m.note&&!m.priority)delete state.marks[p.id];save();if(rerender)renderAll()}
+function matches(p){const q=$('search').value.trim().toLowerCase();if(q&&!text(p).includes(q))return false;if($('sector').value&&sector(p)!==$('sector').value)return false;if($('region').value&&p.region!==$('region').value)return false;if($('hours').value&&(!p.hours||p.hours>Number($('hours').value)))return false;if($('salary').value&&p.salary<Number($('salary').value))return false;if(quick.has('london')&&p.region.toLowerCase()!=='london')return false;if(quick.has('hospital')&&!has(p,'hospital'))return false;if(quick.has('gp')&&!has(p,'general practice'))return false;if(quick.has('split')&&p.settings.length<2)return false;if(quick.has('industry')&&!has(p,'industry'))return false;if(quick.has('hours')&&(!p.hours||p.hours>40))return false;if(quick.has('pay')&&p.salary<30000)return false;return true}
+function sorted(a){const s=$('sort').value;return a.sort((x,y)=>s==='fit'?analyse(y).score-analyse(x).score||y.salary-x.salary:s==='salary'?y.salary-x.salary:s==='hourly'?hourly(y)-hourly(x):s==='hours'?(x.hours||999)-(y.hours||999):x.employer.localeCompare(y.employer))}
+function statusOpts(v){return STATUSES.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}
+function card(p,compact=false){const a=analyse(p),m=mark(p),inComp=state.compare.includes(p.id),h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry'),icon=sector(p)==='Hospital'?'🏥':sector(p)==='General Practice'?'🩺':sector(p)==='Industry'?'🏭':'💊';const tags=[p.region&&`📍 ${p.region}`,`${icon} ${sector(p)}`,p.hours&&`⏱️ ${p.hours}h/week`,p.settings.length>1&&'🔀 Split',h&&`🏥 ${h}w`,g&&`🩺 ${g}w`,c&&`🛍️ ${c}w`,i&&`🏭 ${i}w`].filter(Boolean);return `<article class="placement card" data-id="${esc(p.id)}"><div class="placementTop"><div><div class="eyebrow">${esc(p.postcodes.join(' · ')||p.area||p.region)}</div><h3>${esc(p.title||p.employer)}</h3><div class="employer">${esc(p.employer)}</div></div><div><div class="salary">${p.salary?'£'+p.salary.toLocaleString():'Salary n/a'}</div><div class="hourly">${hourly(p)?'≈ £'+hourly(p).toFixed(2)+'/hr gross':''}</div></div></div><div class="badges">${tags.map(x=>`<span class="badge">${esc(x)}</span>`).join('')}${a.bad.map(x=>`<span class="badge warn">${esc(x)}</span>`).join('')}</div><div class="fit"><div class="score"><span>For you</span><b>${a.score}</b><small>${esc(a.band)}</small></div><div class="why">${(a.good.length?a.good:['🤷 Not enough strong signals either way']).map(x=>`<span class="reason">${esc(x)}</span>`).join('')}</div></div>${compact?'':`<p class="desc">${esc(p.desc||'No programme description supplied.')}</p><button class="more" data-action="more">Read more</button>`}<div class="controls"><select data-action="status">${statusOpts(m.status)}</select><div class="rate">${[1,2,3,4,5].map(n=>`<button class="star ${m.rating>=n?'on':''}" data-action="rate" data-value="${n}" title="${n}/5">⭐</button>`).join('')}</div><input class="manualPriority" data-action="priority" inputmode="numeric" value="${esc(m.priority||'')}" placeholder="#" title="Manual priority"><input data-action="note" value="${esc(m.note||'')}" placeholder="📝 Your note…"><button class="btn compare ${inComp?'on':''}" data-action="compare">${inComp?'✓ Comparing':'⚖️ Compare'}</button><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((p.postcodes[0]||p.title)+', UK')}">Map ↗</a></div></article>`}
+function populate(){const sec=[...new Set(placements.map(sector).filter(Boolean))].sort(),reg=[...new Set(placements.map(p=>p.region).filter(Boolean))].sort();$('sector').innerHTML='<option value="">Any</option>'+sec.map(x=>`<option>${esc(x)}</option>`).join('');$('region').innerHTML='<option value="">Any</option>'+reg.map(x=>`<option>${esc(x)}</option>`).join('')}
+function stats(){const marks=Object.values(state.marks),short=marks.filter(x=>SHORT.has(x.status)).length,london=placements.filter(x=>x.region.toLowerCase()==='london').length,hosp=placements.filter(x=>sector(x)==='Hospital').length,gp=placements.filter(x=>sector(x)==='General Practice').length,max=Math.max(...placements.map(x=>x.salary),0),strong=placements.filter(x=>analyse(x).score>=78).length;const d=[['❤️',short,'Shortlisted'],['📍',london,'London options'],['🏥',hosp,'Hospital-led'],['🩺',gp,'GP-led'],['💷',max?'£'+Math.round(max/1000)+'k':'—','Highest salary'],['✨',strong,'Strong-fit flags']];$('stats').innerHTML=d.map(x=>`<div class="stat"><div class="k">${x[0]} ${x[1]}</div><div class="l">${x[2]}</div></div>`).join('')}
+function explore(){const a=sorted(placements.filter(matches));$('count').textContent=`${a.length.toLocaleString()} placements`;const shown=a.slice(0,180);$('results').innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty">No placements match those filters.</div>';if(a.length>180)$('results').insertAdjacentHTML('beforeend',`<div class="card empty">Showing the first 180 of ${a.length}. Refine the filters to narrow it down.</div>`)}
+function reco(){const arr=placements.filter(p=>p.region.toLowerCase()==='london').map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);$('reco').innerHTML=arr.map((x,i)=>`<article class="reco card"><div class="eyebrow">#${i+1} TO LOOK AT · ${x.a.score}/100</div><h3>${esc(x.p.title)}</h3><div class="badges"><span class="badge good">✨ ${esc(x.a.band)}</span><span class="badge">💷 ${x.p.salary?'£'+x.p.salary.toLocaleString():'n/a'}</span><span class="badge">⏱️ ${x.p.hours||'?'}h</span></div><p>${esc(x.a.good.slice(0,4).join(' · ')||'Worth a closer look based on your current preferences.')}</p><button class="btn" data-open="${esc(x.p.id)}">Open in Explore</button></article>`).join('')}
+function shortlist(){const a=placements.filter(p=>SHORT.has(mark(p).status)).sort((x,y)=>{const px=Number(mark(x).priority)||999,py=Number(mark(y).priority)||999;return px-py||(mark(y).rating||0)-(mark(x).rating||0)||analyse(y).score-analyse(x).score});$('shortlistList').innerHTML=a.length?a.map(p=>card(p,true)).join(''):'<div class="card empty">Nothing shortlisted yet. Mark placements 😍 ❤️ 🤔 or 😐 and they’ll appear here.</div>'}
+function compare(){const a=state.compare.map(id=>placements.find(p=>p.id===id)).filter(Boolean);if(!a.length){$('compareArea').innerHTML='<div class="card empty">Pick up to five placements from Explore.</div>';return}const rows=[['Salary',p=>p.salary?'£'+p.salary.toLocaleString():'—'],['Hours',p=>p.hours?p.hours+'h/week':'—'],['Effective hourly',p=>hourly(p)?'£'+hourly(p).toFixed(2):'—'],['Sector',sector],['Split',split],['Hospital weeks',p=>weeks(p,'hospital')||'—'],['GP weeks',p=>weeks(p,'general practice')||'—'],['Community weeks',p=>weeks(p,'community')||'—'],['Industry weeks',p=>weeks(p,'industry')||'—'],['For You',p=>`${analyse(p).score}/100 · ${analyse(p).band}`],['Good signals',p=>analyse(p).good.slice(0,4).join(' · ')||'—'],['Cautions',p=>analyse(p).bad.join(' · ')||'—'],['Your status',p=>STATUSES.find(x=>x[0]===mark(p).status)?.[1]||'Unmarked'],['Your rating',p=>mark(p).rating?'⭐'.repeat(mark(p).rating):'—'],['Manual priority',p=>mark(p).priority||'—']];$('compareArea').innerHTML=`<table class="compareTable"><thead><tr><th>Attribute</th>${a.map(p=>`<th>${esc(p.employer)}<br><span class="smallnote">${esc(p.postcodes[0]||'')}</span></th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><th>${r[0]}</th>${a.map(p=>`<td>${esc(r[1](p))}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function prefs(){const lab={money:'💷 Money',hospital:'🏥 Hospital',gp:'🩺 GP',lifestyle:'🧘 Lifestyle / hours',location:'📍 Area fit',progression:'🚀 CV & progression',independence:'🎧 Independent-work signals',communityPenalty:'🛍️ Penalise community-heavy'};$('weights').innerHTML=Object.entries(state.prefs.weights).map(x=>`<div class="weight"><b>${lab[x[0]]}</b><input type="range" min="0" max="5" step="1" value="${x[1]}" data-weight="${x[0]}"><span>${x[1]}</span></div>`).join('');$('likes').value=state.prefs.likes;$('avoids').value=state.prefs.avoids}
+function renderAll(){stats();explore();reco();shortlist();compare();prefs()}
+function switchTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='shortlist')shortlist();if(id==='compare')compare();if(id==='prefs')prefs()}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportDecisions(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=[['Priority','Status','Rating','Employer','Programme','Region','Postcodes','Salary','Hours','For You','Note']];placements.forEach(p=>{const m=mark(p);if(m.status||m.rating||m.note||m.priority)rows.push([m.priority,STATUSES.find(x=>x[0]===m.status)?.[1]||'',m.rating,p.employer,p.title,p.region,p.postcodes.join('; '),p.salary,p.hours,analyse(p).score,m.note])});download('phivos-oriel-decisions.csv',rows.map(r=>r.map(q).join(',')).join('\n'),'text/csv')}
+function backup(){download('phivos-placement-desk-backup.json',JSON.stringify({v:2,exportedAt:new Date().toISOString(),state,uploaded:localStorage.getItem(DATAKEY)?JSON.parse(localStorage.getItem(DATAKEY)):null},null,2),'application/json')}
+function bind(){document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>switchTab(x.dataset.tab));['search','sector','region','hours','salary','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',explore));$('quick').onclick=e=>{const b=e.target.closest('[data-q]');if(!b)return;quick.has(b.dataset.q)?quick.delete(b.dataset.q):quick.add(b.dataset.q);b.classList.toggle('on');explore()};$('resetBtn').onclick=()=>{$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';quick.clear();document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));explore()};$('uploadBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const csv=await f.text();const test=rowsToPlacements(csv);placements=test;localStorage.setItem(DATAKEY,JSON.stringify({csv,name:f.name,date:new Date().toISOString()}));populate();renderAll();toast(`Loaded ${placements.length.toLocaleString()} placements`)}catch(err){alert(err.message)}e.target.value=''};$('exportBtn').onclick=exportDecisions;$('backupBtn').onclick=backup;$('savePrefs').onclick=()=>{state.prefs.likes=$('likes').value;state.prefs.avoids=$('avoids').value;save();renderAll();toast('Preferences saved ✨')};$('clearData').onclick=()=>{if(confirm('Clear your saved Placement Desk data on this browser?')){localStorage.removeItem(KEY);localStorage.removeItem(DATAKEY);location.reload()}};$('clearCompare').onclick=()=>{state.compare=[];save();compare();explore()};document.body.addEventListener('input',e=>{if(e.target.dataset.weight){state.prefs.weights[e.target.dataset.weight]=Number(e.target.value);e.target.nextElementSibling.textContent=e.target.value;save()}const c=e.target.closest('.placement');if(!c)return;const p=placements.find(x=>x.id===c.dataset.id);if(!p)return;if(e.target.dataset.action==='note')setMark(p,{note:e.target.value},false);if(e.target.dataset.action==='priority')setMark(p,{priority:e.target.value},false)});document.body.addEventListener('change',e=>{const c=e.target.closest('.placement');if(!c)return;const p=placements.find(x=>x.id===c.dataset.id);if(!p)return;if(e.target.dataset.action==='status')setMark(p,{status:e.target.value})});document.body.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){const p=placements.find(x=>x.id===o.dataset.open);switchTab('explore');$('search').value=p?.title||'';explore();scrollTo({top:0,behavior:'smooth'});return}const c=e.target.closest('.placement');if(!c)return;const p=placements.find(x=>x.id===c.dataset.id);if(!p)return;const a=e.target.closest('[data-action]');if(!a)return;if(a.dataset.action==='rate'){setMark(p,{rating:Number(a.dataset.value)});return}if(a.dataset.action==='more'){c.classList.toggle('open');a.textContent=c.classList.contains('open')?'Show less':'Read more';return}if(a.dataset.action==='compare'){const i=state.compare.indexOf(p.id);if(i>=0)state.compare.splice(i,1);else if(state.compare.length<5)state.compare.push(p.id);else return toast('Compare up to five placements');save();explore();compare()}})}
+(async()=>{bind();try{await loadData();populate();renderAll()}catch(err){$('results').innerHTML=`<div class="errorBox"><b>Couldn’t load the built-in placement list.</b><br>${esc(err.message)}<br><br>You can still use the app by clicking <b>Upload latest Oriel CSV</b>.</div>`;$('count').textContent='Data load error';console.error(err)}})();
+</script>
 </body>
 </html>
