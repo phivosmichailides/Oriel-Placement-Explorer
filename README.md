@@ -1,42 +1,29 @@
-# Phivos' Oriel Placement Explorer
+# Phivos’ Placement Desk
 
-Personal decision desk for the 2027/28 pharmacy foundation-training preference round.
+A personal Oriel decision tool based on [Acid555’s Oriel Placement Explorer](https://github.com/Acid555/Oriel-Placement-Explorer).
 
 **Live app:** https://phivosmichailides.github.io/Oriel-Placement-Explorer/
 
-## Current deadline
+## Using it
 
-- First real ranking pass: **10–12 October 2026**
-- Personal finish target: **19 October 2026**
-- Official Oriel preference deadline: **22 October 2026 at 12:00 UK**
+- Explore starts with London selected and hides excluded programmes and your avoided areas. Filters can reveal them again.
+- The interactive map and list use the same filters. Click a pin to see all programmes at that location. Multiple sites are shown where postcodes are supplied.
+- **Prefer** adds a programme to your shortlist; **Exclude** removes it from active results and recommendations. The decision dropdown also offers Love, Maybe, Backup and Absolutely not.
+- Use up/down arrows or positive priority numbers to arrange the shortlist. **Export ranked shortlist** preserves that displayed order. Transfer final choices into Oriel yourself; this app does not submit them.
+- Compare up to five programmes; annotate decisions and give personal ratings.
+- **Backup** downloads decisions and any uploaded data. **Restore backup** validates and merges a v2 backup; matching decisions and preferences use the backup values.
+- Upload a recent Oriel CSV to replace the built-in snapshot. Programme IDs anchor saved decisions.
 
-## What the personalised view prioritises
+## Personalisation and limits
 
-The default scoring is deliberately tuned around Phivos' actual decision criteria rather than generic prestige:
+Salary and hourly pay, hospital/GP exposure, hours, London area preferences, transferable experience and independent-work keywords contribute to adjustable scores. The score is a heuristic, not a prediction of workload, job quality, autonomy, or eligibility. Missing salary is marked as unknown.
 
-- London first, especially practical Zone 1–3 / central connections
-- Hospital and GP exposure over community-heavy programmes
-- Salary and effective hourly pay
-- Manageable hours / day-to-day lifestyle
-- Strong CV, specialist, research, data, medicines-information and transferable exposure
-- More independent / desk-based work signals where the programme description supports them
-- Soft penalties for areas already ruled out and for heavily community-facing programmes
+The sponsorship filter reports the CSV field only. It does not determine personal visa eligibility. Area matching uses programme title and area rather than incidental mentions in long descriptions. It is approximate, not a transport-zone or commute calculation. Hospital, GP and industry quick filters are OR alternatives; the other filters are combined with AND.
 
-Current liked-area examples include London Bridge, Borough/Southwark, Waterloo, Holborn/Bloomsbury, Clerkenwell, Angel/Islington, Shoreditch, Camden/Fitzrovia, Westminster, Vauxhall/Battersea, Kensington/Chelsea, Hammersmith/Fulham, Ealing and Wembley. Current avoid examples include Croydon, Barnet, Wood Green, Morden, New Addington, Romford, Dagenham and Enfield.
+The original snapshot contains 4,064 programmes, including 786 labelled London. 760 London postcode coordinates were resolved using postcodes.io for the October 2026 update. Unknown/retired postcodes remain visible in the list. **Locate missing** requests remaining postcode coordinates, including for newly uploaded files or other regions. The background map uses OpenStreetMap; the list and cached pins remain usable if tiles fail.
 
-## Workflow
+## Storage and deployment
 
-1. Use **Explore** to filter London / hospital / GP / split / industry, hours and salary.
-2. Mark each credible option as Love, Strong yes, Maybe, Backup, No or Never.
-3. Add a manual priority and note — manual judgement always beats the app score.
-4. Use **Shortlist** and **Compare** for the top group.
-5. Export decisions before entering the final order in Oriel.
-6. Upload a newer Oriel CSV at any time; the built-in snapshot remains available as fallback data.
+Static GitHub Pages site from `main`, no build step. `index.html`, `app.js` and `desk.css` form the active interface; `vendor/` contains Leaflet 1.9.4 and its licence. `legacy.html` preserves the original interface and CSV snapshot. Older `core.js`, `ui.js`, and `styles.css` are retained but are not loaded by the current page.
 
-Ratings, notes, priorities and uploaded CSV data are saved locally in the browser, so use **Backup** before changing devices or clearing browser data.
-
-## Deployment
-
-GitHub Pages is configured from `main`. The latest Pages build/deploy completed successfully on 8 October 2026 and evaluated the production URL shown above.
-
-`legacy.html` preserves the original explorer/data snapshot; the root `index.html` is the personalised interface.
+Decisions are stored under the existing `phivos-desk-v2` browser key. They are local to the browser, not synced to GitHub or Oriel. Use Backup before changing devices or clearing browser data. No personal decisions or notes are committed to this public repository.
