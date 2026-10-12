@@ -6,8 +6,8 @@ A personal Oriel decision tool based on [Acid555’s Oriel Placement Explorer](h
 
 ## Using it
 
-- Explore starts with London selected and hides excluded programmes and your avoided areas. Filters can reveal them again.
-- The interactive map and list use the same filters. Click a pin to see all programmes at that location. Multiple sites are shown where postcodes are supplied.
+- Explore starts with London selected and hides programmes you explicitly exclude. Areas you dislike are penalised in recommendations but remain visible unless you choose **Hide avoided areas entirely**.
+- The interactive map and list use the same filters. Click a pin to see all programmes at that location. Multiple sites are shown where postcodes are supplied. Quick filters include hospital-led, GP-heavy, hospital+GP, industry, low-community, desk-ish and CV-boost views.
 - **Prefer** adds a programme to your shortlist; **Exclude** removes it from active results and recommendations. The decision dropdown also offers Love, Maybe, Backup and Absolutely not.
 - Use up/down arrows or positive priority numbers to arrange the shortlist. **Export ranked shortlist** preserves that displayed order. Transfer final choices into Oriel yourself; this app does not submit them.
 - Compare up to five programmes; annotate decisions and give personal ratings.
@@ -18,7 +18,7 @@ A personal Oriel decision tool based on [Acid555’s Oriel Placement Explorer](h
 
 Salary and hourly pay, hospital/GP exposure, hours, London area preferences, transferable experience and independent-work keywords contribute to adjustable scores. The score is a heuristic, not a prediction of workload, job quality, autonomy, or eligibility. Missing salary is marked as unknown.
 
-The sponsorship filter reports the CSV field only. It does not determine personal visa eligibility. Area matching uses programme title and area rather than incidental mentions in long descriptions. It is approximate, not a transport-zone or commute calculation. Hospital, GP and industry quick filters are OR alternatives; the other filters are combined with AND.
+The sponsorship filter reports the CSV field only. It does not determine personal visa eligibility. Area matching uses programme title and area rather than incidental mentions in long descriptions. It is approximate, not a transport-zone or commute calculation. Hospital-led, GP-heavy and industry quick filters are OR alternatives; the other quick filters are combined with AND. Common London trust acronyms such as UCLH, GSTT, KCH, GOSH, CNWL and SLaM are recognised in search.
 
 The original snapshot contains 4,064 programmes, including 786 labelled London. 760 London postcode coordinates were resolved using postcodes.io for the October 2026 update. Unknown/retired postcodes remain visible in the list. **Locate missing** requests remaining postcode coordinates, including for newly uploaded files or other regions. The background map uses OpenStreetMap; the list and cached pins remain usable if tiles fail.
 
