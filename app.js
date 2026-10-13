@@ -2,7 +2,7 @@
 (()=>{
   const hadSaved=(()=>{try{return !!localStorage.getItem('phivos-desk-v2')}catch{return false}})();
   const base=document.createElement('script');
-  base.src='app-base.js?v=20261012-1';
+  base.src='app-base.js?v=20261013-oriel-snapshot';
   base.onload=()=>{
     const aliases=[
       [/university college london hospitals|university college hospital/i,' uclh '],
@@ -81,3 +81,4 @@
   };
   document.body.appendChild(base);
 })();
+
