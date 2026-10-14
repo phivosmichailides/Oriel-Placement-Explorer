@@ -1,29 +1,103 @@
 # Phivos’ Placement Desk
 
-A personal Oriel decision tool based on [Acid555’s Oriel Placement Explorer](https://github.com/Acid555/Oriel-Placement-Explorer).
+A personalised decision tool for choosing and ranking NHS pharmacy foundation training programmes through Oriel.
 
 **Live app:** https://phivosmichailides.github.io/Oriel-Placement-Explorer/
 
-## Using it
+## The problem I was trying to solve
 
-- Explore starts with London selected and hides programmes you explicitly exclude. Areas you dislike are penalised in recommendations but remain visible unless you choose **Hide avoided areas entirely**.
-- The interactive map and list use the same filters. Click a pin to see all programmes at that location. Multiple sites are shown where postcodes are supplied. Quick filters include hospital-led, GP-heavy, hospital+GP, industry, low-community, desk-ish and CV-boost views.
-- **Prefer** adds a programme to your shortlist; **Exclude** removes it from active results and recommendations. The decision dropdown also offers Love, Maybe, Backup and Absolutely not.
-- Use up/down arrows or positive priority numbers to arrange the shortlist. **Export ranked shortlist** preserves that displayed order. Transfer final choices into Oriel yourself; this app does not submit them.
-- Compare up to five programmes; annotate decisions and give personal ratings.
-- **Backup** downloads decisions and any uploaded data. **Restore backup** validates and merges a v2 backup; matching decisions and preferences use the backup values.
-- Upload a recent Oriel CSV to replace the built-in snapshot. Programme IDs anchor saved decisions.
+Oriel is the NHS recruitment platform pharmacy students use to preference foundation training programmes. The underlying information is extensive, but the difficult part is not finding more data — it is deciding what deserves attention when thousands of programmes differ across location, salary, working hours, hospital/GP/community exposure, career value and other trade-offs.
 
-## Personalisation and limits
+The built-in October 2026 snapshot contains **4,064 programmes**, including **786 labelled London**. **760 London postcode locations** have been resolved for the map.
 
-Salary and hourly pay, hospital/GP exposure, hours, London area preferences, transferable experience and independent-work keywords contribute to adjustable scores. The score is a heuristic, not a prediction of workload, job quality, autonomy, or eligibility. Missing salary is marked as unknown.
+I have ADHD, and this kind of high-volume decision becomes much harder when every field is presented with equal visual weight and I have to keep too many criteria in my head at once. I wanted a cleaner experience that could progressively reduce the information into a decision I could actually make.
 
-The sponsorship filter reports the CSV field only. It does not determine personal visa eligibility. Area matching uses programme title and area rather than incidental mentions in long descriptions. It is approximate, not a transport-zone or commute calculation. Hospital-led, GP-heavy and industry quick filters are OR alternatives; the other quick filters are combined with AND. Common London trust acronyms such as UCLH, GSTT, KCH, GOSH, CNWL and SLaM are recognised in search.
+## What I built
 
-The original snapshot contains 4,064 programmes, including 786 labelled London. 760 London postcode coordinates were resolved using postcodes.io for the October 2026 update. Unknown/retired postcodes remain visible in the list. **Locate missing** requests remaining postcode coordinates, including for newly uploaded files or other regions. The background map uses OpenStreetMap; the list and cached pins remain usable if tiles fail.
+I started with [Acid555’s open-source Oriel Placement Explorer](https://github.com/Acid555/Oriel-Placement-Explorer), which provided a useful starting dataset and explorer. I then rebuilt the active experience around the decision problem I personally needed to solve, using AI-assisted development throughout the process.
 
-## Storage and deployment
+The current Placement Desk adds:
 
-Static GitHub Pages site from `main`, no build step. `index.html`, `app.js` and `desk.css` form the active interface; `vendor/` contains Leaflet 1.9.4 and its licence. `legacy.html` preserves the original interface and CSV snapshot. Older `core.js`, `ui.js`, and `styles.css` are retained but are not loaded by the current page.
+- a personalised fit score driven by adjustable priorities;
+- explicit **“why it could fit”** and **“trade-offs to check”** explanations rather than a score with no reasoning;
+- an interactive London map kept in sync with the filtered programme list;
+- filtering for hospital, GP, hospital+GP, industry, lower-community exposure, desk/independent-work signals, CV-building signals, hours and pay;
+- salary and effective hourly-pay comparisons;
+- training-place counts where Oriel states them;
+- shortlist, exclusion and decision states such as **Love, Strong yes, Maybe, Backup and Absolutely not**;
+- ratings, notes and manual priority numbers;
+- side-by-side programme comparison;
+- ranked-shortlist export;
+- local backup and restore;
+- CSV upload so a newer Oriel export can replace the built-in snapshot.
 
-Decisions are stored under the existing `phivos-desk-v2` browser key. They are local to the browser, not synced to GitHub or Oriel. Use Backup before changing devices or clearing browser data. No personal decisions or notes are committed to this public repository.
+The scoring is deliberately a **heuristic, not a black-box prediction**. It uses the available programme text and structured fields to surface options worth looking at, while keeping the user in control of the final decision.
+
+## Real use, not a theoretical portfolio project
+
+I am using the product during my own live Oriel application.
+
+My 13 October export contained **25 programmes already saved in an official preference order** and **566 programmes still marked “No Preference”**. I imported those states into the tool so that the product reflects the actual stage of my application rather than a fabricated demo.
+
+Using it myself has repeatedly exposed problems that I then fixed. Recent iterations have included:
+
+- rebuilding the personalised Placement Desk from scratch;
+- restoring the interactive map and a reliable shortlist workflow;
+- improving mobile cards;
+- making map pins keyboard accessible;
+- refining recommendation filters and recommendation UX;
+- importing my current ranked Oriel choices;
+- adding a dedicated review filter for the 566 programmes I still need to classify.
+
+That feedback loop is the part of the project I find most valuable: **use the product, notice where the decision still feels difficult, then redesign that part.**
+
+## Product principles
+
+### 1. Reduce overload
+The interface should surface the information most relevant to the current decision instead of treating every field as equally important.
+
+### 2. Explain recommendations
+A user should be able to understand why an option is being surfaced. The app therefore shows positive signals and trade-offs alongside the fit score.
+
+### 3. Personalisation should change the product
+Location, pay, hospital/GP exposure, lifestyle, transferable career value, independence and community-pharmacy exposure feed into adjustable scoring rather than existing as decorative preferences.
+
+### 4. Preserve user control
+The tool can recommend, but it should not silently make a high-stakes career choice. Users can override, shortlist, exclude, annotate, compare and manually rank programmes.
+
+### 5. Build from real behaviour
+The product is being designed around an actual live decision process, not around a hypothetical persona.
+
+## What I want to build next
+
+The next stage is deeper personalisation and clearer decision support:
+
+- a lightweight onboarding flow that asks what matters most before showing recommendations;
+- more explicit programme-level pros and cons based on the user’s own criteria;
+- cleaner commute and area context rather than postcode alone;
+- better distinction between **unknown data** and a genuinely negative signal;
+- stronger explanation of how each recommendation score was formed;
+- a clearer final-review mode for resolving remaining undecided programmes.
+
+The long-term goal is simple: a user should be able to open a programme and quickly understand **why it may suit them, what they would be compromising on, and what still needs checking before they rank it**.
+
+## Data and technical notes
+
+The current site is a static GitHub Pages app with no build step.
+
+Active interface files:
+
+- `index.html`
+- `app.js`
+- `app-base.js`
+- `desk.css`
+
+Leaflet 1.9.4 powers the map and OpenStreetMap provides background tiles. London postcode coordinates were resolved using postcodes.io for the October 2026 update.
+
+Decisions are stored locally in the browser under the `phivos-desk-v2` key. They are not synced to GitHub or submitted to Oriel. Backup/restore is available before changing devices or clearing browser data.
+
+## Important limitations
+
+This is a personal decision-support tool, not an official NHS or Oriel service.
+
+Recommendation scores are based on available structured fields and text signals. They are **not** verified predictions of workload, autonomy, culture, commute quality or programme eligibility. Salary, sponsorship and programme details should be checked against the current Oriel listing and employer information before making a final decision.
