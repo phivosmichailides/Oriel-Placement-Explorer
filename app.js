@@ -5,6 +5,16 @@
   product.onload=()=>{
     const sectors=document.createElement('script');
     sectors.src='sector-map.js?v=20261014-sector-pins';
+    sectors.onload=()=>{
+      const onboarding=document.createElement('script');
+      onboarding.src='onboarding.js?v=20261014-personal';
+      document.body.appendChild(onboarding);
+    };
+    sectors.onerror=()=>{
+      const onboarding=document.createElement('script');
+      onboarding.src='onboarding.js?v=20261014-personal';
+      document.body.appendChild(onboarding);
+    };
     document.body.appendChild(sectors);
   };
   product.onerror=()=>{
