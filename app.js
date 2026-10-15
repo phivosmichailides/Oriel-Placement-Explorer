@@ -12,7 +12,7 @@
 
   const loadOnboarding=()=>{
     const onboarding=document.createElement('script');
-    onboarding.src='onboarding.js?v=20261015-quiz-icons';
+    onboarding.src='onboarding.js?v=20261015-no-ratings';
     onboarding.onload=loadDeadlineDates;
     onboarding.onerror=loadDeadlineDates;
     document.body.appendChild(onboarding);
@@ -20,7 +20,7 @@
 
   const loadSectors=()=>{
     const sectors=document.createElement('script');
-    sectors.src='sector-map.js?v=20261015-quiz-icons';
+    sectors.src='sector-map.js?v=20261015-no-ratings';
     sectors.onload=loadOnboarding;
     sectors.onerror=loadOnboarding;
     document.body.appendChild(sectors);
@@ -28,14 +28,14 @@
 
   const loadGeneric=()=>{
     const generic=document.createElement('script');
-    generic.src='generic-public.js?v=20261015-quiz-icons';
+    generic.src='generic-public.js?v=20261015-no-ratings';
     generic.onload=loadSectors;
     generic.onerror=loadSectors;
     document.body.appendChild(generic);
   };
 
   const product=document.createElement('script');
-  product.src='app-product.js?v=20261015-quiz-icons';
+  product.src='app-product.js?v=20261015-no-ratings';
   product.onload=loadGeneric;
   product.onerror=()=>{
     const r=document.getElementById('results');
