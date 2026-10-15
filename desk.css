@@ -48,3 +48,13 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 
 .historyControls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.historyControls button:disabled{opacity:.4;cursor:default}.colourChoice{display:inline-flex;align-items:center;gap:8px;margin:8px 12px 8px 0}.colourChoice input{width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px}.distanceFilter{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.distanceFilter summary{cursor:pointer;font-weight:750}
+
+/* Restrained semantic accents; text labels remain readable without colour. */
+.badge.badge-hospital{background:#edf3fc;border-color:#d5e2f5;color:#28548a}
+.badge.badge-gp{background:#edf6ee;border-color:#d4e7d6;color:#326440}
+.badge.badge-industry{background:#f3effa;border-color:#e2d9f1;color:#684891}
+.badge.badge-community{background:#eaf5f3;border-color:#cde6e0;color:#24675e}
+.badge.badge-sponsorship-warning{background:#fff5e4;border-color:#efdab2;color:#855a13}
+.salary-value{color:#267047}
+.tabs .tab{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0}
+.tab-icon{width:17px;height:17px;flex:none}

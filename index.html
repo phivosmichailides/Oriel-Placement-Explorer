@@ -12,7 +12,7 @@
 @media(max-width:720px){.shell{padding:12px}.top{flex-direction:column}.actions{justify-content:flex-start}.top h1{font-size:24px}.stats{grid-template-columns:repeat(2,1fr)}.placementTop{grid-template-columns:1fr}.salary,.hourly{text-align:left}.fit{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.settings{grid-template-columns:1fr}.weight{grid-template-columns:1fr 1fr 30px}.sectionHero{align-items:flex-start;flex-direction:column}}
 </style>
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="desk.css?v=20261015-usability">
+<link rel="stylesheet" href="desk.css?v=20261015-sector-style">
 </head>
 <body>
 <div class="shell">
@@ -21,7 +21,7 @@
   <div class="actions"><button class="btn" id="exportBtn"> Export decisions</button><button class="btn" id="backupBtn"> Backup</button><button class="btn" id="restoreBtn">Restore backup</button><input hidden type="file" id="restoreInput" accept=".json,application/json"><button class="btn primary" id="uploadBtn">Upload latest Oriel CSV</button><input hidden type="file" id="fileInput" accept=".csv,text/csv"></div>
 </header><p class="smallnote" id="saveHelp" style="margin:-6px 0 18px;max-width:900px">Save your shortlist so you don’t lose it. Export downloads a spreadsheet of your decisions; Backup saves your decisions, notes and preferences for Restore backup. Neither updates Oriel.</p>
 <nav class="tabs">
-  <button class="tab active" data-tab="explore">🔎 Explore</button><button class="tab" data-tab="foryou">✨ For You</button><button class="tab" data-tab="shortlist">❤️ Shortlist</button><button class="tab" data-tab="compare">⚖️ Compare</button><button class="tab" data-tab="prefs">⚙️ Preferences</button>
+  <button class="tab active" data-tab="explore"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><span>Explore</span></button><button class="tab" data-tab="foryou"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg><span>For You</span></button><button class="tab" data-tab="shortlist"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4h12v17l-6-4-6 4Z"/></svg><span>Shortlist</span></button><button class="tab" data-tab="compare"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg><span>Compare</span></button><button class="tab" data-tab="prefs"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Preferences</span></button>
 </nav>
 <section class="panel active" id="explore">
   <div class="stats" id="stats"></div>
@@ -47,8 +47,8 @@
 <footer class="app-footer">Based on <a href="https://github.com/Acid555/Oriel-Placement-Explorer" target="_blank" rel="noopener">Acid555’s Oriel Placement Explorer</a> · Built-in snapshot: 1 October 2026, not live Oriel data. Upload your latest CSV to refresh. Scores are text-based suggestions, not verified working conditions.</footer><div class="toast" role="status" id="toast"></div>
 <script src="vendor/leaflet.js"></script>
 <script src="research-core.js?v=1"></script>
-<script src="research.js?v=20261015-usability"></script>
+<script src="research.js?v=20261015-sector-style"></script>
 <script src="desk-enhancements.js?v=1"></script>
-<script src="app.js?v=20261015-usability"></script>
+<script src="app.js?v=20261015-sector-style"></script>
 </body>
 </html>
