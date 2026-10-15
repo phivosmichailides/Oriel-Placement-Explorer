@@ -40,7 +40,7 @@ The current Placement Desk adds:
 - local backup and restore;
 - session undo/redo for decisions and preferences;
 - custom map colours and a straight-line radius filter around a postcode or chosen map point;
-- an opt-in local study with activation events, feedback, export/import analysis and a randomly assigned shortlist-button experiment;
+- archived local study exports/imports; the previous button experiment is paused following usability feedback;
 - CSV upload so a newer England & Wales Oriel export can replace the built-in snapshot.
 
 The scoring is deliberately a **heuristic, not a black-box prediction**. It uses the available programme text and structured fields to surface options worth looking at, while keeping the user in control of the final decision.
@@ -88,7 +88,9 @@ The product is being designed around an actual live decision process, not around
 
 The project now includes the infrastructure to test whether new applicants can reach a useful shortlist. **External usability testing has not yet been run, and no activation uplift or retention result is claimed.** My own use remains discovery evidence, separate from independent validation.
 
-The first planned round is five applicant sessions, measuring independent task completion, time to first save, understanding of trade-offs and points of friction. The optional button experiment compares “Prefer” with a more prominent “Save to shortlist” action. QA sessions are excluded from reports.
+The first planned round is five applicant sessions, measuring independent task completion, time to first save, understanding of trade-offs and points of friction. The previous “Prefer” versus “Save to shortlist” experiment is paused. All visitors now see “Add to shortlist”; historical results remain exportable, and new events are not added to those sessions. QA sessions are excluded from historical reports.
+
+Reported usability feedback prompted clearer shortlisting, fewer decorative emojis and explanations of export and backup. This feedback does not establish an activation or retention improvement.
 
 Study data stays in the participant’s browser unless they deliberately export and share it. It contains action names and timing, not programme IDs, notes, searches or postcodes. The local report deduplicates browser IDs and makes pending observation windows explicit. This is a recruited-study tool, not site-wide analytics.
 

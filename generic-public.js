@@ -90,7 +90,7 @@
 
     // Copy should describe the product, not the creator's personal London search.
     const notice=document.querySelector('.notice');
-    if(notice)notice.innerHTML='<b>🧭 Start broad, then make it yours.</b><br>You can explore every programme in the England & Wales dataset, or narrow the map by region, setting, pay, hours and your own preferences. Nothing is hidden just because it would not suit the creator.';
+    if(notice)notice.innerHTML='<b> Start broad, then make it yours.</b><br>You can explore every programme in the England & Wales dataset, or narrow the map by region, setting, pay, hours and your own preferences. Nothing is hidden just because it would not suit the creator.';
 
     const principles=[...document.querySelectorAll('.productPrinciples>div')];
     if(principles[2])principles[2].innerHTML='<span>03</span><b>Personalise without limiting</b><small>Start with the full dataset, then let each applicant decide what matters to them.</small>';

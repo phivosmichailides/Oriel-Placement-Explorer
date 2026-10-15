@@ -12,7 +12,7 @@
 
   const loadOnboarding=()=>{
     const onboarding=document.createElement('script');
-    onboarding.src='onboarding.js?v=20261015-research';
+    onboarding.src='onboarding.js?v=20261015-usability';
     onboarding.onload=loadDeadlineDates;
     onboarding.onerror=loadDeadlineDates;
     document.body.appendChild(onboarding);
@@ -20,7 +20,7 @@
 
   const loadSectors=()=>{
     const sectors=document.createElement('script');
-    sectors.src='sector-map.js?v=20261015-research';
+    sectors.src='sector-map.js?v=20261015-usability';
     sectors.onload=loadOnboarding;
     sectors.onerror=loadOnboarding;
     document.body.appendChild(sectors);
@@ -28,14 +28,14 @@
 
   const loadGeneric=()=>{
     const generic=document.createElement('script');
-    generic.src='generic-public.js?v=20261015-research';
+    generic.src='generic-public.js?v=20261015-usability';
     generic.onload=loadSectors;
     generic.onerror=loadSectors;
     document.body.appendChild(generic);
   };
 
   const product=document.createElement('script');
-  product.src='app-product.js?v=20261015-research';
+  product.src='app-product.js?v=20261015-usability';
   product.onload=loadGeneric;
   product.onerror=()=>{
     const r=document.getElementById('results');
