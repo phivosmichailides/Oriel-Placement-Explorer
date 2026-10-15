@@ -1,8 +1,12 @@
-# Phivos’ Placement Desk
+# Oriel Placement Desk — by Phivos
 
 A personalised decision tool for exploring, comparing and ranking **England & Wales Foundation Pharmacy training programmes** from Oriel.
 
 **Live app:** https://phivosmichailides.github.io/Oriel-Placement-Explorer/
+
+## Try it in two minutes
+
+Open the app, personalise your region and priorities, inspect a recommendation and save it with the **Prefer** button. Add two programmes to **Compare**, then use **Shortlist** to order and export choices. Preferences includes map colours and the optional study; Explore includes distance filtering.
 
 ## The problem I was trying to solve
 
@@ -16,11 +20,12 @@ I have ADHD, and this kind of high-volume decision becomes much harder when ever
 
 I started with [Acid555’s open-source Oriel Placement Explorer](https://github.com/Acid555/Oriel-Placement-Explorer), which provided a useful starting dataset and explorer. I then rebuilt the active experience around the decision problem I personally needed to solve, using AI-assisted development throughout the process.
 
-London remains my personal default because that is where I am applying, but it is **not a product limitation**. Another user can switch to East Midlands, North West, Wales, West Midlands or any other region represented in the England & Wales dataset and use the same recommendation, filtering, comparison and ranking system.
+The public experience starts across England & Wales. A short setup lets each applicant choose a region, priorities and practical limits. My own search is London-focused, but personal defaults should not become product limitations.
 
 The current Placement Desk adds:
 
-- a personalised fit score driven by adjustable priorities;
+- a five-step setup and personalised fit score driven by adjustable priorities;
+- consistent salary and hours limits across exploration and recommendations;
 - explicit **“why it could fit”** and **“trade-offs to check”** explanations rather than a score with no reasoning;
 - region-aware recommendations across all 12 England & Wales regions;
 - an interactive map kept in sync with the selected region and filtered programme list;
@@ -33,6 +38,9 @@ The current Placement Desk adds:
 - side-by-side programme comparison;
 - ranked-shortlist export;
 - local backup and restore;
+- session undo/redo for decisions and preferences;
+- custom map colours and a straight-line radius filter around a postcode or chosen map point;
+- an opt-in local study with activation events, feedback, export/import analysis and a randomly assigned shortlist-button experiment;
 - CSV upload so a newer England & Wales Oriel export can replace the built-in snapshot.
 
 The scoring is deliberately a **heuristic, not a black-box prediction**. It uses the available programme text and structured fields to surface options worth looking at, while keeping the user in control of the final decision.
@@ -76,12 +84,24 @@ The tool can recommend, but it should not silently make a high-stakes career cho
 ### 6. Build from real behaviour
 The product is being designed around an actual live decision process, not around a hypothetical persona.
 
+## Measurement and independent user testing
+
+The project now includes the infrastructure to test whether new applicants can reach a useful shortlist. **External usability testing has not yet been run, and no activation uplift or retention result is claimed.** My own use remains discovery evidence, separate from independent validation.
+
+The first planned round is five applicant sessions, measuring independent task completion, time to first save, understanding of trade-offs and points of friction. The optional button experiment compares “Prefer” with a more prominent “Save to shortlist” action. QA sessions are excluded from reports.
+
+Study data stays in the participant’s browser unless they deliberately export and share it. It contains action names and timing, not programme IDs, notes, searches or postcodes. The local report deduplicates browser IDs and makes pending observation windows explicit. This is a recruited-study tool, not site-wide analytics.
+
+- [Research plan, PRD, metrics and experiment rules](docs/RESEARCH_PLAN.md)
+- [Implementation decisions, AI-assisted workflow and verification](docs/IMPLEMENTATION_NOTES.md)
+- After deployment: [join the optional study](https://phivosmichailides.github.io/Oriel-Placement-Explorer/?study=1). Use `?study=qa` for practice runs.
+
 ## What I want to build next
 
 The next stage is deeper personalisation and clearer decision support:
 
-- a lightweight onboarding flow that asks region and priorities before showing recommendations;
-- more explicit programme-level pros and cons based on the user’s own criteria;
+- run the first independent usability sessions and prioritise observed friction;
+- assess whether applicants understand the existing reasons and trade-offs;
 - cleaner commute and area context rather than postcode alone;
 - better distinction between **unknown data** and a genuinely negative signal;
 - stronger explanation of how each recommendation score was formed;
@@ -97,12 +117,15 @@ Active interface files:
 
 - `index.html`
 - `app.js`
-- `app-base.js`
+- `app-base.js`, `app-product.js`, `generic-public.js`
+- `onboarding.js`, `sector-map.js`, `deadline-dates.js`
+- `desk-enhancements.js`
+- `research-core.js`, `research.js`
 - `desk.css`
 
 Leaflet 1.9.4 powers the map and OpenStreetMap provides background tiles. The October 2026 project includes a cache of resolved programme postcodes, with additional locations resolved on demand through postcodes.io when a user explores another region.
 
-Decisions are stored locally in the browser under the `phivos-desk-v2` key. They are not synced to GitHub or submitted to Oriel. Backup/restore is available before changing devices or clearing browser data.
+Decisions are stored locally in the browser under the `phivos-desk-v2` key. They are not synced to GitHub or submitted to Oriel. Backup/restore is available before changing devices or clearing browser data. Optional study data uses a separate `oriel-research-v1` key and separate export; it is not included in ordinary desk backups. Radius centres and undo history last only for the current page session.
 
 ## Important limitations
 

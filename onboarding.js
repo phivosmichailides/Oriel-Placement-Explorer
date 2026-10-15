@@ -37,30 +37,33 @@
       prefsCard.appendChild(wrap);
     }
     const introActions=document.querySelector('.introActions');
-    if(introActions&&!document.getElementById('personaliseTop'))introActions.insertAdjacentHTML('beforeend','<button class="btn" id="personaliseTop">✨ Personalise for me</button>');
+
 
     const loadAnswers=()=>{
       try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
     };
 
-    const defaultAnswers=()=>({region:'London',environment:'mixed',priorities:[],salary:'',hours:'40',community:'less'});
+    const defaultAnswers=()=>({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some'});
 
     const openSetup=(force=false)=>{
       if(document.querySelector('.onboardOverlay'))return;
+      document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_started'}}));
+      const previousFocus=document.activeElement;
       let answers={...defaultAnswers(),...(loadAnswers()||{})};
       answers.priorities=Array.isArray(answers.priorities)?answers.priorities:[];
       let step=-1;
       const overlay=document.createElement('div');overlay.className='onboardOverlay';overlay.setAttribute('role','presentation');
       const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise your Placement Desk');overlay.appendChild(card);document.body.appendChild(overlay);
-      const close=()=>{overlay.remove();try{sessionStorage.setItem(SESSION_SKIP,'1')}catch{}};
+      const close=()=>{document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_skipped'}}));overlay.remove();previousFocus?.focus();try{sessionStorage.setItem(SESSION_SKIP,'1')}catch{}};
       overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
-      document.addEventListener('keydown',function escClose(e){if(e.key==='Escape'&&document.body.contains(overlay)){close();document.removeEventListener('keydown',escClose)}});
+      overlay.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...card.querySelectorAll('button,select,input')].filter(x=>!x.disabled);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
 
       const regions=[...new Set(placements.map(p=>p.region).filter(Boolean))].sort((a,b)=>a==='London'?-1:b==='London'?1:a.localeCompare(b));
-      const choice=(value,emoji,title,desc,selected,wide=false)=>`<button type="button" class="onboardChoice ${selected?'selected':''} ${wide?'wide':''}" data-value="${esc(value)}"><span class="emoji">${emoji}</span><span><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span></button>`;
+      const choice=(value,emoji,title,desc,selected,wide=false)=>`<button type="button" class="onboardChoice ${selected?'selected':''} ${wide?'wide':''}" data-value="${esc(value)}" aria-pressed="${selected}"><span class="emoji">${emoji}</span><span><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span></button>`;
       const progress=()=>step<0?0:Math.min(100,(step+1)/5*100);
 
       const render=()=>{
+        queueMicrotask(()=>card.querySelector('.onboardChoice.selected, #obNext, #obFinish, #obStart, button')?.focus());
         if(step===-1){
           card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardSpark">✨</div><div class="onboardStepLabel">A tiny setup before we start</div><h2>Let’s learn a bit more about you!</h2><p class="onboardLead">There are thousands of Oriel programmes, so instead of making you stare at all of them equally, I can use a few quick answers to make the map, recommendations and fit scores feel much more like <i>your</i> search.</p><div class="onboardReassure"><span>♡</span><span><b>Nothing here is permanent.</b> You can change every answer later in Preferences, retake this setup, or ignore the recommendations completely.</span></div><div class="onboardActions"><button class="btn primary" id="obStart">Okay, personalise it ✨</button><span class="spacer"></span><button class="textbtn" id="obLater">Maybe later</button></div><div class="onboardFine">About 30 seconds. No account or extra data is sent anywhere — your choices stay in this browser.</div>`;
           card.querySelector('.onboardClose').onclick=close;card.querySelector('#obLater').onclick=close;card.querySelector('#obStart').onclick=()=>{step=0;render()};return;
@@ -98,7 +101,7 @@
         if(step===3){const sal=card.querySelector('#obSalary'),hrs=card.querySelector('#obHours');sal.value=answers.salary;hrs.value=answers.hours;sal.onchange=()=>answers.salary=sal.value;hrs.onchange=()=>answers.hours=hrs.value;}
         if(step===4){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.community=b.dataset.value;render()});}
         if(card.querySelector('#obBack'))card.querySelector('#obBack').onclick=()=>{step--;render()};
-        if(card.querySelector('#obNext'))card.querySelector('#obNext').onclick=()=>{step++;render()};
+        if(card.querySelector('#obNext'))card.querySelector('#obNext').onclick=()=>{document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_step_completed',step:step+1}}));step++;render()};
         if(final)card.querySelector('#obFinish').onclick=()=>finish();
       };
 
@@ -140,16 +143,17 @@
             document.querySelector('[data-tab="foryou"]')?.click();
           }catch{}
         },0);
-        overlay.remove();toast('Your Placement Desk is personalised ✨');
+        overlay.remove();document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Desk is personalised ✨');
       };
 
-      render();
+      render();card.querySelector('button')?.focus();
     };
 
     document.getElementById('personaliseAgain')?.addEventListener('click',()=>openSetup(true));
     document.getElementById('personaliseTop')?.addEventListener('click',()=>openSetup(true));
     let done=false,skipped=false;try{done=localStorage.getItem(DONE_KEY)==='1';skipped=sessionStorage.getItem(SESSION_SKIP)==='1'}catch{}
-    if(!done&&!skipped)setTimeout(()=>openSetup(false),350);
+    if(done)document.body.classList.add('deskPersonalised');
+    if(!done&&!skipped&&!new URLSearchParams(location.search).has('study'))setTimeout(()=>openSetup(false),350);
     return true;
   };
 

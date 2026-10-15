@@ -19,6 +19,9 @@
       Other:'#98a2ad'
     };
 
+    const defaults={...palette};
+    const refreshPalette=()=>{for(const key of Object.keys(palette)){const colour=state.prefs.mapColours?.[key];palette[key]=/^#[0-9a-f]{6}$/i.test(colour||'')?colour:defaults[key];}};
+    refreshPalette();
     const label={
       Hospital:'Hospital',
       'General Practice':'GP',
@@ -58,18 +61,25 @@
     legend.id='sectorMapLegend';
     legend.setAttribute('aria-label','Map pin colour legend');
     legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:#fff';
-    legend.innerHTML=[
+    const renderLegend=()=>{refreshPalette();legend.innerHTML=[
       ['Hospital','Hospital'],
       ['General Practice','GP'],
       ['Community Pharmacy','Community'],
       ['Industry','Industry'],
       ['Mixed','Mixed / split'],
       ['Other','Other']
-    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Dark ring = shortlisted · red ring = excluded</span>';
+    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Dark ring = shortlisted · red ring = excluded</span>';};
+    renderLegend();
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
-    drawMap=list=>{
+    const settings=document.createElement('div');settings.className='settingsCard card';
+    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><h2>Map colours</h2><p class="muted">Choose colours for each setting. Text labels remain available on the legend and pins.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button>';
+    document.querySelector('#prefs .settings').appendChild(settings);
+    settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
+    document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
+    document.addEventListener('desk:palette',()=>{renderLegend();settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});
+    drawMap=list=>{refreshPalette();renderLegend();
       if(!placementMap)return;
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
