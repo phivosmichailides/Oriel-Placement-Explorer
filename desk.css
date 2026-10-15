@@ -58,3 +58,20 @@
 .salary-value{color:#267047}
 .tabs .tab{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0}
 .tab-icon{width:17px;height:17px;flex:none}
+
+.decisionPicker{position:relative;min-width:0;color:#4b5752}
+.decisionPicker summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;border:1px solid #dce6df;border-radius:14px;padding:10px 12px;background:#f5f8f5;font-weight:700;font-size:12px;min-height:42px}
+.decisionPicker summary::-webkit-details-marker{display:none}
+.decisionPicker summary:focus-visible,.decisionChoice:focus-visible{outline:2px solid #36745d;outline-offset:3px}
+.decisionChoices{position:absolute;z-index:50;top:calc(100% + 7px);left:0;width:225px;max-width:calc(100vw - 48px);padding:7px;background:#fff;border:1px solid #e0e8e2;border-radius:18px;box-shadow:0 12px 32px #173b2524;display:grid;gap:4px}
+.decisionChoice{display:flex;align-items:center;gap:9px;text-align:left;border:1px solid transparent;background:transparent;border-radius:11px;padding:10px;font-size:13px;font-weight:650;min-height:40px}
+.decisionChoice:hover{background:#f2f6f3}.decisionChoice[aria-pressed="true"]{background:#eaf4ed;border-color:#c6ddcc}.decisionTick{margin-left:auto}
+.decision-love summary{background:#fbecf1;border-color:#f0d4df;color:#8e3858}
+.decision-yes summary{background:#eaf5ef;border-color:#cee5d7;color:#286345}
+.decision-maybe summary,.decision-backup summary{background:#fff7e9;border-color:#ecdcb9;color:#805d20}
+.decision-no summary,.decision-never summary{background:#faeeee;border-color:#edcece;color:#934949}
+.placement .badges .badge-hospital{background:#eaf1fc;border-color:#cdddf6;color:#28548a}
+.placement .badges .badge-gp{background:#eaf5ec;border-color:#cde4d1;color:#326440}
+.placement .badges .badge-industry{background:#f1ebfa;border-color:#dfd2f1;color:#684891}
+.placement .badges .badge-community{background:#e6f4f1;border-color:#c4e3dc;color:#24675e}
+.placement .badges .badge-sponsorship-warning{background:#fff3dc;border-color:#ecd3a5;color:#855a13}
