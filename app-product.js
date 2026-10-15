@@ -2,7 +2,7 @@
 (()=>{
   const hadSaved=(()=>{try{return !!localStorage.getItem('phivos-desk-v2')}catch{return false}})();
   const base=document.createElement('script');
-  base.src='app-base.js?v=20261013-oriel-snapshot';
+  base.src='app-base.js?v=20261015-research';
   base.onload=()=>{
     const aliases=[
       [/university college london hospitals|university college hospital/i,' uclh '],
@@ -62,10 +62,8 @@
       }
     };
 
-    const originalAreaPref=areaPref;
     areaPref=p=>{
-      const selected=activeRegion();
-      if(selected==='London')return originalAreaPref(p);
+      const selected=state.prefs.onboarding?.region||'';
       const t=`${p.title} ${p.area}`.toLowerCase();
       const avoids=tokens(state.prefs.avoids),likes=tokens(state.prefs.likes);
       const areaMatch=x=>(' '+t.replace(/[^a-z0-9]+/g,' ')+' ').includes(' '+x.replace(/[^a-z0-9]+/g,' ')+' ');
@@ -78,7 +76,7 @@
     const originalAnalyse=analyse;
     analyse=p=>{
       const result=originalAnalyse(p);
-      const selected=activeRegion();
+      const selected=state.prefs.onboarding?.region||'';
       if(selected&&selected!=='London')result.good=result.good.map(x=>x==='📍 London location'?`📍 ${selected} location`:x);
       return result;
     };
@@ -131,10 +129,10 @@
 
     reco=()=>{
       const region=activeRegion();
-      const arr=placements.filter(p=>(!region||p.region===region)&&!isExcluded(p)&&(!$('hideAvoid').checked||areaPref(p)!==-2)&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
+      const arr=placements.filter(p=>(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!isExcluded(p)&&(!$('hideAvoid').checked||areaPref(p)!==-2)&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
       const title=document.querySelector('#foryou .sectionHero h2');
       if(title)title.textContent=`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`;
-      $('reco').innerHTML=arr.map((x,i)=>`<article class="reco card"><div class="eyebrow">#${i+1} TO LOOK AT · ${x.a.score}/100</div><h3>${esc(x.p.title)}</h3><div class="badges"><span class="badge good">✨ ${esc(x.a.band)}</span><span class="badge">📍 ${esc(x.p.region)}</span>${x.p.places?`<span class="badge">👥 ${x.p.places} ${x.p.places===1?'place':'places'}</span>`:''}<span class="badge">💷 ${x.p.salary?'£'+x.p.salary.toLocaleString():'n/a'}</span><span class="badge">⏱️ ${x.p.hours||'?'}h</span></div><div class="miniFit"><b>Why:</b> ${esc(x.a.good.slice(0,3).join(' · ')||'No strong signals yet.')}</div>${x.a.bad.length?`<div class="miniFit warning"><b>Check:</b> ${esc(x.a.bad.slice(0,2).join(' · '))}</div>`:''}<button class="btn" data-open="${esc(x.p.id)}">Open in Explore</button></article>`).join('');
+      $('reco').innerHTML=arr.length?arr.map((x,i)=>`<article class="reco card"><div class="eyebrow">#${i+1} TO LOOK AT · ${x.a.score}/100</div><h3>${esc(x.p.title)}</h3><div class="badges"><span class="badge good">✨ ${esc(x.a.band)}</span><span class="badge">📍 ${esc(x.p.region)}</span>${x.p.places?`<span class="badge">👥 ${x.p.places} ${x.p.places===1?'place':'places'}</span>`:''}<span class="badge">💷 ${x.p.salary?'£'+x.p.salary.toLocaleString():'n/a'}</span><span class="badge">⏱️ ${x.p.hours||'?'}h</span></div><div class="miniFit"><b>Why:</b> ${esc(x.a.good.slice(0,3).join(' · ')||'No strong signals yet.')}</div>${x.a.bad.length?`<div class="miniFit warning"><b>Check:</b> ${esc(x.a.bad.slice(0,2).join(' · '))}</div>`:''}<button class="btn" data-open="${esc(x.p.id)}">Open in Explore</button></article>`).join(''):'<div class="card empty">No programmes match these limits. Loosen your salary or hours filters in Explore, or retake setup in Preferences.</div>';
     };
 
     const fitCurrentMap=()=>{
@@ -142,6 +140,16 @@
       const pts=mapLayer.getLayers().map(l=>l.getLatLng());
       if(pts.length)placementMap.fitBounds(L.latLngBounds(pts),{padding:[30,30],maxZoom:11});
     };
+
+    const updateMapHeading=()=>{
+      const region=activeRegion();
+      const title=document.querySelector('.map-heading h2');
+      const eyebrow=document.querySelector('.map-heading .eyebrow');
+      if(title)title.textContent=region?`See where you could work in ${region}`:'See where you could work across England & Wales';
+      if(eyebrow)eyebrow.textContent=region?`${region.toUpperCase()} PROGRAMMES`:'ENGLAND & WALES PROGRAMMES';
+    };
+    const baseExplore=explore;
+    explore=()=>{baseExplore();updateMapHeading();};
 
     const refreshScope=async({locate=false}={})=>{
       stats();explore();reco();
@@ -159,9 +167,9 @@
       if(document.querySelector('.productIntro'))return;
       const header=document.querySelector('header.top');if(!header)return;
       const intro=document.createElement('section');intro.className='productIntro card';
-      intro.innerHTML=`<div class="productIntroCopy"><div class="eyebrow">ENGLAND & WALES · PERSONALISED ORIEL DECISION TOOL</div><h2>4,064 programmes across 12 regions. One long-term decision.</h2><p><b>Oriel</b> gives pharmacy applicants thousands of England & Wales Foundation Pharmacy programmes to preference. This desk turns the dataset into a cleaner decision by filtering and explaining each programme against the priorities that matter to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Tune what matters to you</button><button class="btn" id="showForYou">Show my strongest matches</button></div></div><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>London can be the default without making London the product.</small></div></div>`;
+      intro.innerHTML=`<div class="productIntroCopy"><div class="eyebrow">ENGLAND & WALES · PERSONALISED ORIEL DECISION TOOL</div><h2>4,064 programmes across 12 regions. One long-term decision.</h2><p><b>Oriel</b> gives pharmacy applicants thousands of England & Wales Foundation Pharmacy programmes to preference. This desk turns the dataset into a cleaner decision by filtering and explaining each programme against the priorities that matter to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Personalise my desk</button><button class="btn" id="showForYou">Show my strongest matches</button></div></div><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>Choose the region and priorities that work for you.</small></div></div>`;
       header.insertAdjacentElement('afterend',intro);
-      $('tuneCriteria')?.addEventListener('click',()=>document.querySelector('[data-tab="prefs"]')?.click());
+      $('tuneCriteria')?.addEventListener('click',()=>document.getElementById('personaliseAgain')?.click());
       $('showForYou')?.addEventListener('click',()=>document.querySelector('[data-tab="foryou"]')?.click());
     };
 
@@ -190,6 +198,7 @@
     if($('locateBtn'))$('locateBtn').onclick=resolveScopePins;
     $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:false});};
 
+    ['salary','hours'].forEach(id=>$(id).addEventListener('change',reco));
     injectProductIntro();injectContextStrip();
     try{renderAll();setTimeout(()=>placementMap?.invalidateSize(),0);}catch{}
   };

@@ -18,7 +18,8 @@
     if(!ready()||window.__genericPublicInstalled)return false;
     window.__genericPublicInstalled=true;
 
-    const profile=readJSON(PROFILE_KEY);
+    const profile=state.prefs.onboarding||readJSON(PROFILE_KEY);
+    if(profile&&has(DONE_KEY))state.prefs.onboarding=profile;
     const onboardingDone=has(DONE_KEY);
     const uploaded=has(DATAKEY);
     const wasFresh=window.__placementDeskWasFresh===true;
@@ -58,7 +59,8 @@
     card=(p,compact=false)=>{
       let html=baseCard(p,compact)
         .replace(/ · Saved in Oriel #\d+/g,'')
-        .replace(/ · Oriel: No Preference/g,'');
+        .replace(/ · Oriel: No Preference/g,'')
+        .replace(/ · Not in saved Oriel export/g,'');
       if(p.orielRank){
         const code=String(p.id).split('/').pop();
         html=html.replace(`Programme ${esc(code)}</span>`,`Programme ${esc(code)} · Your uploaded Oriel rank ${esc(p.orielRank)}</span>`);
@@ -130,6 +132,7 @@
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>allBtn?.classList.remove('on'));
 
     try{renderAll()}catch{}
+    document.dispatchEvent(new CustomEvent('desk:ready'));
 
     // On an unpersonalised broad visit, build the England & Wales map in the background.
     // Coordinates are cached locally afterwards, so this is primarily a first-visit cost.

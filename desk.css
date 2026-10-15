@@ -30,3 +30,21 @@
 .badges .badge:first-child{font-weight:800}
 @media(max-width:1100px){.productIntro{grid-template-columns:1fr}.productPrinciples{grid-template-columns:repeat(3,1fr)}.productPrinciples>div{grid-template-columns:30px 1fr}}
 @media(max-width:720px){.productIntro{padding:17px;gap:17px}.productIntro h2{font-size:25px}.productPrinciples{grid-template-columns:1fr}.contextStrip{align-items:flex-start;flex-direction:column}.contextMeta{white-space:normal}.fit.fitExpanded{grid-template-columns:1fr}.fitBreakdown{grid-template-columns:1fr}.score{align-items:flex-start;flex-direction:column;gap:2px}.score em{margin-top:3px}}
+
+/* Keep the workspace in view after setup. */
+.deskPersonalised .productIntro{padding:16px;display:block}
+.deskPersonalised .productIntro h2{font-size:20px;margin:0 0 8px}
+.deskPersonalised .productIntroCopy>p,.deskPersonalised .productPrinciples,.deskPersonalised .productIntroCopy>.eyebrow{display:none}
+.researchPanel{margin-top:16px;padding:18px}
+.researchPanel summary{cursor:pointer;font-weight:800;font-size:18px}
+.researchPanel p{max-width:760px;line-height:1.65}
+.researchActions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.researchTable{border-collapse:collapse;width:100%;margin:12px 0}
+.researchTable th,.researchTable td{border:1px solid var(--line);padding:9px;text-align:left}
+.researchTableWrap{overflow:auto}
+.researchConsent{display:block;margin:12px 0;max-width:750px}
+.researchPanel [role=status]{margin:10px 0}
+.researchPanel textarea{min-height:80px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.historyControls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.historyControls button:disabled{opacity:.4;cursor:default}.colourChoice{display:inline-flex;align-items:center;gap:8px;margin:8px 12px 8px 0}.colourChoice input{width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px}.distanceFilter{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.distanceFilter summary{cursor:pointer;font-weight:750}
