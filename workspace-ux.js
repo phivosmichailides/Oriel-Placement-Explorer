@@ -384,11 +384,46 @@
    refreshSite();
    return panel;
  }
- function enhanceCard(article){
+ function workSchedule(p){
+   const d=document.createElement('details');d.className='uxWorkSchedule';
+   const hours=Number(p.hours),hasHours=Number.isFinite(hours)&&hours>0;
+   const equivalent=hasHours?hours/5:0;
+   const fmt=n=>{
+     const mins=Math.round(n*60),h=Math.floor(mins/60),m=mins%60;
+     return h+'h'+(m?' '+String(m).padStart(2,'0')+'m':'');
+   };
+   const summary=document.createElement('summary');
+   summary.textContent=hasHours?'Working hours · '+hours+'h per week · View daily rota':'Working hours · Not stated · View daily rota';
+   d.append(summary);
+   const inner=document.createElement('div');inner.className='uxWorkDetail';
+   const start=document.createElement('p');
+   start.textContent=hasHours?'Contracted '+hours+' hours/week. A five-day split would average '+fmt(equivalent)+' per day, but actual shift lengths and start/finish times are not provided in the structured Oriel export.':'The employer has not supplied contracted weekly hours in this dataset.';
+   inner.append(start);
+   const dayRow=document.createElement('div');dayRow.className='uxWorkDays';
+   ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day=>{
+     const box=document.createElement('div');
+     const b=document.createElement('b');b.textContent=day;box.append(b);
+     const value=document.createElement('span');value.textContent='Not published';box.append(value);
+     dayRow.append(box);
+   });
+   inner.append(dayRow);
+   const desc=String(p.desc||'');
+   // This is a description hint, not a fabricated placement shift.
+   const weekdayHint=desc.match(/\b(?:monday|mon)\s*(?:to|-|–|through)\s*(?:friday|fri)\b/i);
+   if(weekdayHint){
+     const p2=document.createElement('p');p2.textContent='Description mentions '+weekdayHint[0]+'. Check whether that is the trainee rota or simply the pharmacy opening schedule.';
+     inner.append(p2);
+   }
+   const note=document.createElement('p');
+   note.textContent='Individual daily shift times, breaks, weekend coverage and the rota at each rotation site must be confirmed with the employer. This table intentionally does not assume Monday–Friday 9–5.';
+   inner.append(note);d.append(inner);return d;
+ }
+  function enhanceCard(article){
    if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
    const p=byId().get(article.dataset.id);if(!p)return;
    article.dataset.uxEnhanced='1';
    addTakeHome(article,p);
+   if(!article.querySelector('.uxWorkSchedule')){const work=workSchedule(p);const fitParent=article.querySelector('.fit.fitExpanded');if(fitParent)fitParent.after(work);else article.append(work)}
    const fit=article.querySelector('.fit.fitExpanded');
    if(fit){
      fit.classList.add('uxFitWithLocation');
