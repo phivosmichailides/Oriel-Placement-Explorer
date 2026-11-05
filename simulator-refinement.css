@@ -247,3 +247,12 @@ html[data-layout="grid"] .placement:not(.uxExpanded) .uxWorkSchedule{display:non
 .uxMapCustom:hover{color:var(--ink);border-color:var(--ux-accent-border)}
 html[data-theme="dark"][data-palette="forest"] .uxMapCustom{background:#4e3842;color:#f1dbe0}
 #prefs .uxMapColourSettings .btn{margin-top:14px}
+
+/* Simulator copy icon stays on the far right; secondary ordering tools sit quietly below. */
+.simItem{grid-template-columns:30px minmax(0,1fr) 30px}
+.simItem .simRank{grid-column:1;grid-row:1}
+.simItem .simItemMain{grid-column:2;grid-row:1}
+.simItem .simCopy{grid-column:3;grid-row:1;justify-self:end}
+.simItem .simItemActions{grid-column:2/4;grid-row:2;justify-content:flex-end;gap:5px}
+.simItem .simMove{max-width:150px;flex:0 1 140px}
+.simItem .simCopy:hover{background:var(--ux-pick-soft);color:var(--ux-pick);border-color:var(--ux-pick-border)}
