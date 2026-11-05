@@ -104,11 +104,11 @@
         const preferred=entries.some(p=>SHORT.has(mark(p).status));
         const excluded=entries.every(isExcluded);
         const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
-        const radius=(entries.length>1?9:6)+(preferred?1:0);
+        const radius=(entries.length>1?5.7:3.8)+(preferred?.8:0);
         const pin=L.circleMarker(c,{
           radius,
           color:stroke,
-          weight:preferred?4:excluded?3:2,
+          weight:preferred?2.7:excluded?2.4:1.6,
           fillColor:palette[mapSector]||palette.Other,
           fillOpacity:excluded?.38:.94,
           opacity:excluded?.9:1
