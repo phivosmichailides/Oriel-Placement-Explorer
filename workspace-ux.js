@@ -154,6 +154,7 @@
    pagination.append(controls);
  };
  const results=$('results');
+ let mapPending=0;
  function renderExplore(){
    if(!results||typeof sorted!=='function'||typeof matches!=='function')return;
    let options=[];
@@ -169,7 +170,8 @@
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
    pager(shown.length,total);
    enhanceCards(results);
-   try{drawMap(options)}catch(e){console.warn('Map could not refresh:',e)}
+   clearTimeout(mapPending);
+   mapPending=setTimeout(()=>{try{drawMap(options)}catch(e){console.warn('Map could not refresh:',e)}},160);
  }
  // The core app sees this hook before any future Explore rerender; it cannot change saved decisions.
  window.uxWorkspaceRenderExplore=renderExplore;
@@ -329,6 +331,18 @@
      L.circleMarker(central,{radius:3.5,color:'#444',weight:1.8,fillColor:'#f6ede0',fillOpacity:1}).addTo(map).bindTooltip('Central London');
      L.circleMarker([selected.lat,selected.lng],{radius:5.8,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
      map.fitBounds(L.latLngBounds([central,[selected.lat,selected.lng]]),{padding:[20,20],maxZoom:12,animate:false});
+     const openSelected=()=>{
+       const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(selected.pc+', UK');
+       window.open(url,'_blank','noopener,noreferrer');
+     };
+     holder.setAttribute('role','link');holder.setAttribute('tabindex','0');
+     holder.setAttribute('aria-label','Open map for '+selected.pc+' in a new tab');
+     holder.title='Click to open the selected training site in Maps';
+     holder.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSelected()}};
+     map.on('click',e=>{
+       if(e.originalEvent?.target?.closest?.('.leaflet-control-attribution'))return;
+       openSelected();
+     });
      miniMaps.set(holder,map);
      requestAnimationFrame(()=>{if(holder.isConnected)map.invalidateSize(false)});
    }catch(e){holder.textContent='Map unavailable — use the route link'}
