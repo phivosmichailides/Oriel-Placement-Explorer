@@ -331,3 +331,27 @@ html[data-theme="dark"] .themeToggle,html[data-theme="dark"] .uxLayoutBtn{color:
 .uxSiteControls .uxSiteArrow:not(:last-child){border-right:1px solid var(--line);border-radius:8px 0 0 8px}
 .uxLocationPanel .uxMiniMap{height:143px;min-height:143px}
 .uxLocationPanel .uxLocationSummary{font-size:11px;color:var(--ux-accent-ink);font-weight:750}
+
+/* Shortlist colour identity and safe expanded layout. */
+.rank-controls strong,html[data-theme="dark"] .rank-controls strong{color:var(--ux-pick)}
+html[data-layout="grid"] #shortlistList>.rank-row.uxExpanded{grid-column:span 2;z-index:2}
+html[data-layout="grid"] #shortlistList>.rank-row.uxExpanded .placement{height:auto}
+@media(max-width:610px){html[data-layout="grid"] #shortlistList>.rank-row.uxExpanded{grid-column:span 1}}
+/* Newly loaded onboarding dialog should match selected brightness and palette. */
+html[data-theme="dark"] .onboardCard{background:var(--panel);color:var(--ink);border-color:var(--line);box-shadow:0 35px 100px #0009}
+html[data-theme="dark"] .onboardLead,
+html[data-theme="dark"] .onboardFine,
+html[data-theme="dark"] .onboardChoice small{color:var(--mut)}
+html[data-theme="dark"] .onboardClose{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .onboardReassure,
+html[data-theme="dark"] .onboardSummary span{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .onboardProgress{background:var(--soft)}
+html[data-theme="dark"] .onboardProgress>span{background:var(--ux-accent)}
+html[data-theme="dark"] .onboardChoice{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .onboardChoice:hover{background:var(--ux-accent-soft);border-color:var(--ux-accent-border)}
+html[data-theme="dark"] .onboardChoice.selected{background:var(--ux-accent-soft);border-color:var(--ux-accent);box-shadow:inset 0 0 0 1px var(--ux-accent-border)}
+html[data-theme="dark"] .onboardField select{background:var(--soft);border-color:var(--line);color:var(--ink)}
+html[data-theme="dark"] .onboardStepLabel,
+html[data-theme="dark"] .onboardField span{color:var(--ux-accent-ink)}
+html[data-theme="dark"] .phivosSignature{color:var(--ux-accent)}
+html[data-theme="dark"] .phivosSignature .heart{color:var(--ux-pick)}
