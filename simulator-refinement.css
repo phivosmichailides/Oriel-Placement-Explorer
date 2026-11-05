@@ -231,3 +231,19 @@ html[data-layout="grid"] .placement:not(.uxExpanded) .uxWorkSchedule{display:non
 .simFoot .btn{flex-shrink:0}
 @media(max-width:1020px){.simColumns{min-width:770px}.simHero{flex-direction:column;align-items:flex-start}}
 @media(max-width:610px){.simSummary,.simTools,.simFoot{flex-direction:column;align-items:stretch}.simTools>.btn{width:100%}.uxWorkDays{grid-template-columns:repeat(4,minmax(0,1fr))}.uxGlobalZoom output{min-width:30px}}
+
+/* Curated map colours: pill-shaped pastel swatches instead of the rectangular native picker. */
+#prefs .uxMapColourSettings{align-self:start}
+#prefs .uxMapColourSettings .colourChoice{padding:6px 7px;border:none;background:none;display:flex;margin:10px 0 2px;font-size:14px}
+#prefs .uxMapColourSettings .uxNativeColourInput{
+ position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;
+ padding:0!important;border:0!important;overflow:hidden!important;
+}
+.uxMapSwatchOptions{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:2px 0 6px 4px}
+.uxMapSwatch{background:var(--ux-map-choice);width:27px;height:27px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 2px 7px #0002;cursor:pointer;transition:transform .12s,outline-color .12s}
+.uxMapSwatch:hover{transform:scale(1.12)}
+.uxMapSwatch[aria-pressed="true"]{outline:2px solid var(--ux-accent);outline-offset:2px}
+.uxMapCustom{border:1px solid var(--line);background:var(--soft);color:var(--mut);border-radius:999px;padding:5px 10px;font-size:11px;cursor:pointer}
+.uxMapCustom:hover{color:var(--ink);border-color:var(--ux-accent-border)}
+html[data-theme="dark"][data-palette="forest"] .uxMapCustom{background:#4e3842;color:#f1dbe0}
+#prefs .uxMapColourSettings .btn{margin-top:14px}
