@@ -125,7 +125,48 @@
    if(mapCard.previousElementSibling!==appearance)appearance.after(mapCard);
    mapCard.querySelector('h2').textContent='🗺 Map pin colours';
    const description=mapCard.querySelector('p.muted');
-   if(description)description.textContent='Customise the map markers separately from the interface theme. Try the circular swatches below; the desk palette is controlled by the box next to this one.';
+   if(description)description.textContent='Choose soft, harmonious map-marker colours below. The entire interface theme is selected in the neighbouring box. Use Custom only when you want an exact colour.';
+   if(!mapCard.dataset.uxCurated){
+     mapCard.dataset.uxCurated='1';
+     const sets={
+       'Hospital':['#57799c','#6d95b3','#829dbd','#496f95','#80adca','#aac4d5'],
+       'General Practice':['#4e8d80','#70a597','#5d8f76','#83a79d','#416e68','#a4c6af'],
+       'Community Pharmacy':['#9076a6','#ac93b7','#7c6a9b','#bca7c7','#69578a','#9e87be'],
+       'Industry':['#b5895b','#c09b75','#d3b086','#a77554','#deb99a','#8e755e'],
+       'Mixed':['#af7187','#cb8da5','#98677c','#cba1ad','#ad8299','#d6b7c1'],
+       'Other':['#8c969e','#9ba5ac','#758995','#a9b5b7','#656f76','#c2c3c2']
+     };
+     const updateOne=(input,palette)=>{
+       const chosen=input.value.toLowerCase();
+       palette.querySelectorAll('button[data-ux-map-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxMapChoice===chosen)));
+     };
+     mapCard.querySelectorAll('input[data-sector-colour]').forEach(input=>{
+       const label=input.closest('.colourChoice');if(!label)return;
+       const group=document.createElement('div');group.className='uxMapSwatchOptions';group.setAttribute('role','group');
+       const key=input.dataset.sectorColour;
+       group.setAttribute('aria-label','Preset colours for '+key);
+       (sets[key]||sets.Other).forEach(value=>{
+         const b=document.createElement('button');b.type='button';b.dataset.uxMapChoice=value;
+         b.className='uxMapSwatch';b.style.setProperty('--ux-map-choice',value);
+         b.title=value+' for '+key;b.setAttribute('aria-label','Choose '+value+' for '+key);
+         b.setAttribute('aria-pressed','false');
+         b.addEventListener('click',()=>{input.value=value;input.dispatchEvent(new Event('change',{bubbles:true}));updateOne(input,group)});
+         group.append(b);
+       });
+       const custom=document.createElement('button');custom.type='button';custom.className='uxMapCustom';
+       custom.textContent='Custom';custom.setAttribute('aria-label','Choose custom colour for '+key);
+       custom.addEventListener('click',()=>input.click());group.append(custom);
+       input.classList.add('uxNativeColourInput');
+       label.after(group);
+       input.addEventListener('change',()=>updateOne(input,group));
+       updateOne(input,group);
+     });
+     const sync=()=>mapCard.querySelectorAll('input[data-sector-colour]').forEach(input=>{
+       const group=input.closest('label')?.nextElementSibling;
+       if(group?.classList.contains('uxMapSwatchOptions'))updateOne(input,group);
+     });
+     document.addEventListener('desk:palette',()=>setTimeout(sync,0));
+   }
    return true;
  };
  let colourTries=0;
