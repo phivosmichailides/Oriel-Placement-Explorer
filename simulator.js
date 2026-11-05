@@ -78,7 +78,8 @@
    }).slice(0,12);
    if(!found.length){results.append(el('div','simEmpty','No matching programmes.'));return}
    for(const p of found){
-     const b=el('button','simResult');b.type='button';
+     const b=el('button','simResult');b.type='button';b.draggable=true;
+     b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',p.id);e.dataTransfer.effectAllowed='move'});
      b.append(el('span','simResultCode',codes(p)),el('span','simResultName',p.title||p.employer));
      const existing=zoneOf(p.id);if(existing)b.append(el('small','simResultStatus',labels[existing]));
      b.addEventListener('click',()=>{move(p.id,zone);input.value='';results.replaceChildren();msg('Added '+codes(p)+' to '+labels[zone]+'.')});
@@ -100,7 +101,7 @@
    const copyBtn=el('button','simIcon simCopy');copyBtn.type='button';
    copyBtn.title='Copy programme code '+codes(p);copyBtn.setAttribute('aria-label',copyBtn.title);
    copyBtn.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
-   copyBtn.addEventListener('click',()=>copy(codes(p),copyBtn));actions.append(copyBtn);
+   copyBtn.addEventListener('click',()=>copy(codes(p),copyBtn));
    const up=el('button','simIcon','↑');up.type='button';up.title='Move up';up.disabled=i===0;
    up.addEventListener('click',()=>{if(i>0){const list=state[z];[list[i-1],list[i]]=[list[i],list[i-1]];save();render()}});actions.append(up);
    const down=el('button','simIcon','↓');down.type='button';down.title='Move down';down.disabled=i>=state[z].length-1;
@@ -109,7 +110,7 @@
    for(const next of Z){const opt=el('option',null,labels[next]);opt.value=next;opt.selected=next===z;select.append(opt)}
    const rem=el('option',null,'Remove');rem.value='unassigned';select.append(rem);
    select.addEventListener('change',()=>{if(select.value==='unassigned')remove(p.id);else move(p.id,select.value)});actions.append(select);
-   item.append(rank,main,actions);
+   item.append(rank,main,copyBtn,actions);
    item.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',p.id);e.dataTransfer.effectAllowed='move';item.classList.add('simDragging')});
    item.addEventListener('dragend',()=>item.classList.remove('simDragging'));
    item.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();item.classList.add('simHover')});
@@ -152,6 +153,12 @@
        if(e.key==='Escape'){input.value='';search(z)}
      });
      const list=document.querySelector('[data-sim-list="'+z+'"]');
+     const col=document.querySelector('[data-sim-col="'+z+'"]');
+     col?.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
+     col?.addEventListener('drop',e=>{
+       if(e.target.closest('.simItem')||e.target.closest('.simList'))return;
+       e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(byId.has(id))move(id,z);
+     });
      list.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
      list.addEventListener('drop',e=>{if(e.target.closest('.simItem'))return;e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(byId.has(id))move(id,z)});
    }
