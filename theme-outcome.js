@@ -86,7 +86,7 @@
   const findProgramme=()=>{
     const query=$('outcomeProgrammeId').value.trim().replace(/^#/,'');
     if(!query)return null;
-    return getPlacements().find(p=>String(p.id)===query)||null;
+    return getPlacements().find(p=>String(p.id).trim()===query||String(p.id).split('/').pop().trim()===query)||null;
   };
   const el=(tag,text,cls)=>{
     const node=document.createElement(tag);
@@ -118,7 +118,7 @@
     }
     container.append(el('div',p.title||p.employer,'outcomeProgrammeTitle'));
     const grid=el('div',null,'outcomeDetailGrid');
-    [['Salary (advertised)',cash(p.salary)],['Hours/week',p.hours?p.hours+'h':'Not stated'],['Region',p.region||'Not stated'],['Programme code',p.id]].forEach(([label,value])=>{
+    [['Salary (advertised)',cash(p.salary)],['Est. take-home / month',window.OrielPay?.estimate(p.salary)?window.OrielPay.money(window.OrielPay.estimate(p.salary).monthly):'Not available'],['Hours/week',p.hours?p.hours+'h':'Not stated'],['Region',p.region||'Not stated'],['Programme code',p.id]].forEach(([label,value])=>{
       const cell=el('div');cell.append(el('span',label),el('b',value));grid.append(cell);
     });
     container.append(grid);
@@ -143,13 +143,13 @@
     candidates.forEach((p,i)=>{if(!rows.some(x=>x.p.id===p.id))rows.push({p,flag:'Shortlist #'+(i+1)})});
     const wrap=el('div',null,'outcomeTableWrap'), table=el('table',null,'outcomeTable');
     const thead=el('thead'), header=el('tr');
-    ['Position','Programme','Advertised pay','Weekly hours','Rotations'].forEach(x=>header.append(el('th',x)));
+    ['Position','Programme','Advertised pay','Est. take-home/mo','Weekly hours','Rotations'].forEach(x=>header.append(el('th',x)));
     thead.append(header);table.append(thead);
     const body=el('tbody');
     rows.forEach(({p,flag})=>{
       const tr=el('tr');
       if(flag==='Your entered offer')tr.className='isOffer';
-      [flag,p.title||p.employer,cash(p.salary),p.hours?p.hours+'h':'—',rotations(p)].forEach(x=>tr.append(el('td',x)));
+      [flag,p.title||p.employer,cash(p.salary),window.OrielPay?.estimate(p.salary)?window.OrielPay.money(window.OrielPay.estimate(p.salary).monthly):'—',p.hours?p.hours+'h':'—',rotations(p)].forEach(x=>tr.append(el('td',x)));
       body.append(tr);
     });
     table.append(body);wrap.append(table);container.append(wrap);
@@ -210,13 +210,14 @@
     if(getPlacements().length){
       const list=$('outcomeProgrammeOptions');
       const fragment=document.createDocumentFragment();
-      getPlacements().forEach(p=>{const option=document.createElement('option');option.value=String(p.id);option.label=p.title||p.employer||'';fragment.append(option)});
+      getPlacements().forEach(p=>{const option=document.createElement('option');option.value=String(p.id).split('/').pop().trim();option.label=p.title||p.employer||'';fragment.append(option)});
       list.replaceChildren(fragment);
       refresh();
       clearInterval(timer);
     }else if(checkCount>=150){clearInterval(timer);refresh()}
   },400);
   document.addEventListener('desk:action',()=>{if(getPlacements().length)showComparison()});
+  document.addEventListener('desk:pay-settings',refresh);
   refresh();
   // Shortlist viewing order is a presentation preference only.
   // Reorder rendered rows, never modify the desk's saved ranks or localStorage state.
