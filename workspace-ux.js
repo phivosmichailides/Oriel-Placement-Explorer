@@ -111,7 +111,7 @@
    if(filter)filter.checked=!!snapshot.hideShortlisted;
    if(typeof quick!=='undefined')quick=new Set(snapshot.quick);
    document.querySelectorAll('.chip[data-q]').forEach(b=>b.classList.toggle('on',snapshot.quick.includes(b.dataset.q)));
-   page=snapshot.page||1;syncHide();explore();if(typeof reco==='function')reco();
+   page=snapshot.page||1;skipResetOnce=true;syncHide();explore();if(typeof reco==='function')reco();
  };
  const backBtn=document.createElement('button');
  backBtn.type='button';backBtn.className='btn uxBackToResults';
@@ -127,7 +127,7 @@
    if(open){filterSnapshots.push(snapshotFilters());if(filterSnapshots.length>3)filterSnapshots.shift();backBtn.hidden=false}
  },true);
 
- let page=1,lastFilterKey='';
+ let page=1,lastFilterKey='',skipResetOnce=false;
  const pagination=$('uxExplorePager');
  const pager=(count,total)=>{
    if(!pagination)return;
@@ -158,7 +158,7 @@
    try{options=sorted(getData().filter(matches))}catch{return}
    const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,
     qs:typeof quick!=='undefined'?[...quick]:[]});
-   if(newKey!==lastFilterKey){page=1;lastFilterKey=newKey}
+   if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
    const total=options.length,pages=Math.max(1,Math.ceil(total/20));
    page=Math.min(Math.max(1,page),pages);
    const shown=options.slice((page-1)*20,page*20);
@@ -182,13 +182,14 @@
  const renderDrawer=()=>{
    if(!drawerItems)return;
    const query=(drawerSearch?.value||'').toLowerCase().trim();
-   const list=getRanks().filter(p=>(p.title+' '+p.employer+' '+p.id).toLowerCase().includes(query));
+   const all=getRanks();const indexes=new Map(all.map((p,i)=>[p.id,i+1]));
+   const list=all.filter(p=>(p.title+' '+p.employer+' '+p.id).toLowerCase().includes(query));
    drawerItems.replaceChildren();
    if(!list.length){const emp=document.createElement('div');emp.className='uxDrawerEmpty';emp.textContent='No shortlisted programmes match.';drawerItems.append(emp);return}
    const frag=document.createDocumentFragment();
    list.forEach(p=>{
      const box=document.createElement('div');box.className='uxDrawerItem';
-     const idx=getRanks().findIndex(x=>x.id===p.id)+1;
+     const idx=indexes.get(p.id)||'?';
      box.innerHTML='<small>#'+idx+' · '+escape(p.region||'')+'</small><b>'+escape(p.title||p.employer)+'</b><p>'+escape(p.employer||'')+' · '+escape(money(p.salary))+'</p>';
      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='View programme';
      btn.addEventListener('click',()=>{
@@ -293,8 +294,7 @@
  const miniMaps=new Map();
  let miniObserver=null,cardObserver=null;
  function cleanupMiniMaps(){
-   for(const [holder,map] of miniMaps){try{map.remove()}catch{}miniMaps.delete(holder)}
-   if(miniObserver)miniObserver.disconnect();
+   for(const [holder,map] of miniMaps){if(!holder.closest('#results'))continue;try{map.remove()}catch{}miniMaps.delete(holder);miniObserver?.unobserve(holder)}
  }
  function mapVisible(holder){
    if(!holder.isConnected||miniMaps.has(holder))return;
@@ -384,6 +384,7 @@
    expand.setAttribute('aria-expanded',String(expanded));
    const holder=card.querySelector('.uxMiniMap');
    if(expanded&&holder)requestAnimationFrame(()=>mapVisible(holder));
+   if(expanded&&!card.querySelector('.desc')){const p=byId().get(card.dataset.id);if(p?.desc){const d=document.createElement('p');d.className='desc';d.textContent=p.desc;card.querySelector('.decision-quick')?.before(d)}}
    if(!expanded&&holder&&miniMaps.has(holder)){try{miniMaps.get(holder).invalidateSize(false)}catch{}}
  });
  // Observe the three containers since the original app re-renders them after every decision.
@@ -416,7 +417,7 @@
  // Download public postcode coordinates only if needed; same file the app already uses.
  fetch('./locations.json').then(r=>r.ok?r.json():null).then(value=>{
    if(value&&typeof value==='object'){postcodeLocations=value;enhancedContainers.forEach(id=>enhanceCards($(id)));
-     document.querySelectorAll('.uxMiniMap').forEach(holder=>{if(holder.closest('.placement')?.dataset.uxEnhanced)enableMini(holder)});
+     document.querySelectorAll('.uxMiniMap').forEach(holder=>{if(holder.closest('.placement')?.dataset.uxEnhanced){enableMini(holder);if(holder.getBoundingClientRect().top<window.innerHeight+100)mapVisible(holder)}});
    }
  }).catch(()=>{});
 })();
