@@ -355,3 +355,13 @@ html[data-theme="dark"] .onboardStepLabel,
 html[data-theme="dark"] .onboardField span{color:var(--ux-accent-ink)}
 html[data-theme="dark"] .phivosSignature{color:var(--ux-accent)}
 html[data-theme="dark"] .phivosSignature .heart{color:var(--ux-pick)}
+
+/* Compact view also applies to curated For You suggestions. */
+html[data-layout="grid"] #reco{grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:10px}
+html[data-layout="grid"] #reco .reco{padding:12px;min-width:0}
+html[data-layout="grid"] #reco .reco h3{font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+html[data-layout="grid"] #reco .reco .badge{font-size:10px}
+html[data-layout="grid"] #reco .reco p{font-size:11px}
+@media(max-width:1180px){html[data-layout="grid"] #reco{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:850px){html[data-layout="grid"] #reco{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:610px){html[data-layout="grid"] #reco{grid-template-columns:1fr}}
