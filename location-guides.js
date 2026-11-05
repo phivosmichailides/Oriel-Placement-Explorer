@@ -51,7 +51,7 @@ window.OrielLocationGuide=(()=>{
   ['^SE7(?:\\s|$)','Charlton / south-east London','National Rail via Charlton towards London Bridge/Cannon Street is a useful starting point.','national'],
   ['^SE9(?:\\s|$)','Eltham / south-east London','Southeastern rail towards London Bridge, Charing Cross or Cannon Street is useful, depending on the station.','national'],
   ['^SE12(?:\\s|$)','Lee / south-east London','Southeastern rail from Lee is a useful route towards central London.','national'],
-  ['^SW1','Westminster / Victoria','Victoria, Waterloo and central Tube interchanges are useful; check the site’s nearest station.','tfl'],
+  ['^SW1(?:\\s|$)','Westminster / Victoria','Victoria, Waterloo and central Tube interchanges are useful; check the site’s nearest station.','tfl'],
   ['^SW3(?:\\s|$)','Chelsea / west London','Sloane Square/South Kensington Underground and local buses can be useful; check the final leg.','tfl'],
   ['^SW6(?:\\s|$)','Fulham / south-west London','District line via Fulham Broadway/Parsons Green and buses are useful corridors.','tfl'],
   ['^SW10(?:\\s|$)','Chelsea / west London','District line and buses from Earl’s Court/Fulham Broadway may help; check the exact hospital entrance.','tfl'],
