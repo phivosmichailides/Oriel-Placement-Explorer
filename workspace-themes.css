@@ -1,0 +1,268 @@
+/* Placement Desk workspace v3: neutral surfaces, palette accents, compact discovery, contextual location. */
+:root{
+ --ux-accent:#526954;--ux-accent-ink:#35523d;--ux-accent-soft:#e7ebe5;
+ --ux-accent-border:#ccd6cb;--ux-cream:#f3f0e9;
+ --ux-pick:#77515a;--ux-pick-soft:#f3e9eb;--ux-pick-border:#dabdc4;
+ --ux-map-stroke:#83545e;
+}
+:root[data-palette="forest"]{--ux-accent:#526954;--ux-accent-ink:#35523d;--ux-accent-soft:#e7ebe5;--ux-accent-border:#ccd6cb}
+:root[data-palette="copper"]{--ux-accent:#4d7393;--ux-accent-ink:#315875;--ux-accent-soft:#e7edf3;--ux-accent-border:#cad9e6}
+:root[data-palette="mauve"]{--ux-accent:#866484;--ux-accent-ink:#72506f;--ux-accent-soft:#f0e9ef;--ux-accent-border:#dfcddb}
+:root[data-palette="amber"]{--ux-accent:#a3703f;--ux-accent-ink:#79502b;--ux-accent-soft:#f5ede2;--ux-accent-border:#e7d5ba}
+:root[data-palette="cocoa"]{--ux-accent:#805e51;--ux-accent-ink:#634539;--ux-accent-soft:#eee7e2;--ux-accent-border:#ddcec2}
+:root[data-palette="mono"]{--ux-accent:#393d40;--ux-accent-ink:#181a1b;--ux-accent-soft:#eceeef;--ux-accent-border:#d5d9dd}
+html[data-theme="light"]{
+ color-scheme:light;--bg:#f5f4f0;--panel:#fffefa;--ink:#292e2a;--mut:#5b665f;--line:#dce1da;
+ --soft:#f0efeb;--dark:#242c26;--shadow:0 9px 24px #191d1910;
+ --green:var(--ux-accent-ink);--blue:var(--ux-accent-ink);
+}
+html[data-theme="light"][data-palette="copper"]{--bg:#f4f6f7;--panel:#fbfcfd;--soft:#edf0f2;--line:#dce3e8}
+html[data-theme="light"][data-palette="mauve"]{--bg:#f8f5f7;--panel:#fefbfd;--soft:#f2ecf0;--line:#e6dfe4}
+html[data-theme="light"][data-palette="amber"]{--bg:#faf7f2;--panel:#fffdf8;--soft:#f4efe7;--line:#e9ded1}
+html[data-theme="light"][data-palette="cocoa"]{--bg:#f7f4f0;--panel:#fffcf8;--soft:#f0ece7;--line:#e3d9d0}
+html[data-theme="light"][data-palette="mono"]{--bg:#f7f7f6;--panel:#fff;--soft:#f0f0f0;--line:#d9d9d9}
+html[data-theme="dark"]{
+ color-scheme:dark;
+ --bg:#171a19;--panel:#252a28;--ink:#f3f2e9;--mut:#c3c9c0;--line:#474d48;--soft:#343a35;
+ --dark:#111514;--shadow:0 12px 30px #0004;
+ --ux-accent:#b8cdb6;--ux-accent-ink:#d1e1cc;--ux-accent-soft:#37443a;--ux-accent-border:#607262;--ux-cream:#dfd7c9;
+ --ux-pick:#d4a9b1;--ux-pick-soft:#493339;--ux-pick-border:#7a545f;
+ --green:var(--ux-accent-ink);--blue:var(--ux-accent-ink);
+}
+html[data-theme="dark"][data-palette="copper"]{--bg:#171d23;--panel:#252e38;--line:#495665;--soft:#354150;--ux-accent:#9dbfda;--ux-accent-ink:#c0d9ea;--ux-accent-soft:#324a5a;--ux-accent-border:#66849a}
+html[data-theme="dark"][data-palette="mauve"]{--bg:#1d1920;--panel:#2d2931;--line:#514754;--soft:#403644;--ux-accent:#d4b1cf;--ux-accent-ink:#ebd1e6;--ux-accent-soft:#4f3c51;--ux-accent-border:#846a84}
+html[data-theme="dark"][data-palette="amber"]{--bg:#201b17;--panel:#302923;--line:#53463b;--soft:#44382e;--ux-accent:#e4c199;--ux-accent-ink:#f2dac0;--ux-accent-soft:#51402f;--ux-accent-border:#84684b}
+html[data-theme="dark"][data-palette="cocoa"]{--bg:#1e1a18;--panel:#302a27;--line:#564b44;--soft:#443931;--ux-accent:#d7bca9;--ux-accent-ink:#f0d9ca;--ux-accent-soft:#544236;--ux-accent-border:#856956}
+html[data-theme="dark"][data-palette="mono"]{--bg:#0f1011;--panel:#242527;--line:#494b4e;--soft:#343639;--ux-accent:#e0e1e3;--ux-accent-ink:#f5f5f5;--ux-accent-soft:#414349;--ux-accent-border:#6a6c72}
+html body{background:var(--bg);color:var(--ink)}
+html .tabs{background:var(--soft);border-color:var(--line)}
+html .tab{color:var(--mut)}
+html .tab:hover{background:var(--ux-accent-soft);color:var(--ink)}
+html .tab.active{background:var(--panel);color:var(--ux-accent-ink);box-shadow:0 3px 10px #0001}
+html .logo{background:var(--ux-accent);color:#fff}
+html[data-theme="dark"] .logo{color:#161a19}
+html .btn.primary{background:var(--ux-accent);border-color:var(--ux-accent);color:#fff}
+html[data-theme="dark"] .btn.primary{color:#19211c}
+html .score{background:var(--ux-accent);color:#fff}
+html[data-theme="dark"] .score{background:var(--soft);border:1px solid var(--line);color:var(--ink)}
+html[data-theme="dark"] .score span,html[data-theme="dark"] .score small,html[data-theme="dark"] .score em{color:var(--mut)}
+html .chip.on{background:var(--ux-accent);color:#fff;border-color:var(--ux-accent)}
+html[data-theme="dark"] .chip.on{color:#19211c}
+html .notice{background:var(--soft);color:var(--mut)}
+html .notice b,html .app-footer a,html .textbtn,html .more{color:var(--ux-accent-ink)}
+html .productIntro{background:linear-gradient(130deg,var(--panel),var(--ux-accent-soft));border-color:var(--line)}
+html .productPrinciples>div{background:var(--panel);border-color:var(--ux-accent-border)}
+html .productPrinciples span{color:var(--ux-accent-ink)}
+html .fitColumn,html .fitColumn.positive,html .fitColumn.caution{background:var(--soft);border-color:var(--line)}
+html .fitLabel,html .fitColumn.caution .fitLabel,html .fitPoint{color:var(--ink)}
+html .miniFit,html .miniFit.warning,html .reason{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html .recoWarn{background:var(--soft);border-color:var(--line);color:var(--ink)}
+html .decisionPicker summary{border-color:var(--line)}
+html[data-theme="dark"] .decisionPicker summary,
+html[data-theme="dark"] .decisionPicker.decision-love summary,
+html[data-theme="dark"] .decisionPicker.decision-yes summary,
+html[data-theme="dark"] .decisionPicker.decision-maybe summary,
+html[data-theme="dark"] .decisionPicker.decision-backup summary,
+html[data-theme="dark"] .decisionPicker.decision-no summary,
+html[data-theme="dark"] .decisionPicker.decision-never summary{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .decisionChoices{background:var(--panel)}
+html[data-theme="dark"] .decisionChoice:hover,html[data-theme="dark"] .decisionChoice[aria-pressed="true"]{background:var(--ux-accent-soft);color:var(--ink)}
+html .salary-value{color:var(--ux-accent-ink)}
+html #sectorMapLegend{background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important;border-radius:0;font-size:11px}
+html .map-caption{background:var(--panel);border-top:1px solid var(--line)}
+html .map-caption .dot.green{background:var(--ux-pick)}
+html .map-caption .dot.red{background:#a64e55}
+html #placementMap{background:var(--soft)}
+html .map-selection-head{background:var(--soft)}
+html .badge.good{background:var(--ux-accent-soft);border-color:var(--ux-accent-border);color:var(--ux-accent-ink)}
+html .btn.selected{background:var(--ux-pick-soft);border-color:var(--ux-pick-border);color:var(--ux-pick)}
+html .shortlist-toolbar .btn.primary{background:var(--ux-pick);border-color:var(--ux-pick);color:#fff}
+html .shortlistViewOrder select{background:var(--panel);color:var(--ink);border-color:var(--line)}
+html .outcomeInfo{background:var(--ux-accent-soft);border-color:var(--ux-accent-border)}
+html .outcomeInfo a{color:var(--ux-accent-ink)}
+html .deadlineBox,html .deadlineBox.deadlineClosed{background:var(--soft);border-color:var(--line);box-shadow:none}
+html .deadlineLabel,html .deadlineValue,html .deadlineBox.deadlineClosed .deadlineValue{color:var(--ux-accent-ink)}
+html .deadlineExact{color:var(--mut)}
+html .deadlineLink{color:var(--ux-accent-ink)}
+html .programmeDates{background:var(--soft);border-color:var(--line);color:var(--mut)}
+html .programmeDates b{color:var(--ink)}
+html .badge,html[data-theme="dark"] .badge{border-color:var(--line)}
+html[data-theme="dark"] .controls input,
+html[data-theme="dark"] .controls select,
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .field textarea{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .btn,html[data-theme="dark"] .chip,html[data-theme="dark"] .stat,html[data-theme="dark"] .card{background:var(--panel);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .btn.primary{background:var(--ux-accent);color:#20251f;border-color:var(--ux-accent)}
+html[data-theme="dark"] .btn.selected{background:var(--ux-pick-soft);color:var(--ux-pick);border-color:var(--ux-pick-border)}
+html[data-theme="dark"] .btn.excluded{background:#493136;color:#ffb6b5;border-color:#8a555c}
+html[data-theme="dark"] .btn.danger{background:transparent;color:#ffbbb8}
+html[data-theme="dark"] .productIntro{background:linear-gradient(125deg,var(--panel),var(--soft))}
+html[data-theme="dark"] .fitColumn,html[data-theme="dark"] .fitColumn.positive,html[data-theme="dark"] .fitColumn.caution{background:var(--soft);border-color:var(--line)}
+html[data-theme="dark"] .fitLabel,html[data-theme="dark"] .fitColumn.caution .fitLabel,html[data-theme="dark"] .fitPoint{color:var(--ink)}
+html[data-theme="dark"] .reason{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .decisionPicker summary{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .tab.active{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .chip.on{background:var(--ux-accent);color:#1c221c}
+html[data-theme="dark"] .badge.good{background:var(--ux-accent-soft);color:var(--ux-accent-ink);border-color:var(--ux-accent-border)}
+html[data-theme="dark"] .score{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .miniFit,html[data-theme="dark"] .miniFit.warning{background:var(--soft)}
+html[data-theme="dark"] .notice b{color:var(--ux-accent-ink)}
+html[data-theme="dark"] .outcomeInfo{background:var(--ux-accent-soft);border-color:var(--ux-accent-border)}
+html[data-theme="dark"] .salary-value{color:var(--ux-accent-ink)}
+html[data-theme="dark"] .map-caption{background:var(--panel)}
+html[data-theme="dark"] #sectorMapLegend{background:var(--panel)!important;color:var(--ink)!important}
+html[data-theme="dark"] .programmeDates{background:var(--soft);border-color:var(--line);color:var(--mut)}
+html[data-theme="dark"] .programmeDates b{color:var(--ink)}
+html[data-theme="dark"] .deadlineBox.deadlineClosed .deadlineValue{color:var(--ux-accent-ink)}
+html[data-theme="light"] .btn.selected{background:var(--ux-pick-soft);color:var(--ux-pick);border-color:var(--ux-pick-border)}
+/* Keep sector colours distinct. Burgundy means shortlisted and never substitutes for sector fill. */
+html .badge.badge-hospital,html .placement .badges .badge-hospital{background:#e5edf6;color:#315b80;border-color:#c6d9ea}
+html .badge.badge-gp,html .placement .badges .badge-gp{background:#e5f0e9;color:#326447;border-color:#c3dec9}
+html .badge.badge-community,html .placement .badges .badge-community{background:#e3efef;color:#285e5d;border-color:#c1dddd}
+html .badge.badge-industry,html .placement .badges .badge-industry{background:#eee8f5;color:#705080;border-color:#d8c8e7}
+html[data-theme="dark"] .badge.badge-hospital,html[data-theme="dark"] .placement .badges .badge-hospital{background:#304052;color:#c5deef;border-color:#56708a}
+html[data-theme="dark"] .badge.badge-gp,html[data-theme="dark"] .placement .badges .badge-gp{background:#2c4035;color:#c4e5cd;border-color:#537763}
+html[data-theme="dark"] .badge.badge-community,html[data-theme="dark"] .placement .badges .badge-community{background:#2d4544;color:#bedfdc;border-color:#557c79}
+html[data-theme="dark"] .badge.badge-industry,html[data-theme="dark"] .placement .badges .badge-industry{background:#40364a;color:#dfcce8;border-color:#685777}
+html[data-theme="light"][data-palette="mono"] .logo,html[data-theme="light"][data-palette="mono"] .btn.primary{background:#252627;color:#fff}
+html[data-theme="dark"][data-palette="mono"] .logo,html[data-theme="dark"][data-palette="mono"] .btn.primary{background:#d5d5d5;color:#181818}
+/* Browsing toolbars & pagination */
+.uxExploreToolbar,.uxRecommendationsTools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+.uxExploreToolbar .uxToolbarLead{display:grid;gap:2px;margin-right:auto}
+.uxToolbarLead b{font-size:14px}
+.uxToolbarLead small{font-size:11px;color:var(--mut)}
+.uxLayoutControls{display:inline-flex;gap:3px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:3px;background:var(--soft)}
+.uxLayoutControls .btn{font-size:12px;padding:7px 11px;border:1px solid transparent;box-shadow:none;min-height:33px}
+.uxLayoutControls .btn[aria-pressed="true"]{background:var(--ux-accent-soft);color:var(--ux-accent-ink);border-color:var(--ux-accent-border)}
+.uxCompactBtn[aria-pressed="true"]{background:var(--ux-pick-soft);color:var(--ux-pick);border-color:var(--ux-pick-border)}
+.uxHideCheck{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--soft);font-weight:700}
+.uxHideCheck input{accent-color:var(--ux-pick)}
+.uxExplorePager{display:flex;gap:7px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:16px 0 5px;color:var(--mut);font-size:12px}
+.uxPagerButtons{display:flex;gap:5px;flex-wrap:wrap}
+.uxPagerButtons button{min-width:34px;min-height:32px;padding:5px 9px}
+.uxPagerButtons button[aria-current="page"]{background:var(--ux-accent-soft);color:var(--ux-accent-ink);border-color:var(--ux-accent-border)}
+.uxPagerButtons button:disabled{opacity:.35}
+.uxRecommendationsTools{margin-top:0}
+/* 4-column grid at desktop width, gracefully 3/2/1 at narrower widths. */
+html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:10px}
+html[data-layout="grid"] #results>.placement,html[data-layout="grid"] #shortlistList>.rank-row{min-width:0;width:100%;height:100%}
+html[data-layout="grid"] #shortlistList .rank-row{display:flex;flex-direction:column;gap:5px}
+html[data-layout="grid"] #shortlistList .rank-controls{flex-direction:row;align-items:center;justify-content:flex-start;padding:3px 7px}
+html[data-layout="grid"] #shortlistList .rank-controls strong{font-size:13px;margin-right:auto}
+html[data-layout="grid"] .placement{display:flex;flex-direction:column;gap:7px;padding:11px;border-radius:13px;min-width:0}
+html[data-layout="grid"] .placement h3{font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+html[data-layout="grid"] .placementTop{display:flex;flex-direction:column;gap:7px}
+html[data-layout="grid"] .placement .employer{font-size:10px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html[data-layout="grid"] .placement .eyebrow{font-size:9px}
+html[data-layout="grid"] .salary,html[data-layout="grid"] .hourly{text-align:left}
+html[data-layout="grid"] .salary{font-size:18px}
+html[data-layout="grid"] .hourly{font-size:10px}
+html[data-layout="grid"] .placement .badges{gap:4px;margin:2px 0}
+html[data-layout="grid"] .placement .badge{font-size:9px;padding:3px 5px}
+html[data-layout="grid"] .placement .badges .badge:nth-child(n+7){display:none}
+html[data-layout="grid"] .placement .fit{display:none}
+html[data-layout="grid"] .placement .desc,
+html[data-layout="grid"] .placement .more,
+html[data-layout="grid"] .placement .programmeDates,
+html[data-layout="grid"] .placement .uxLocationPanel{display:none}
+html[data-layout="grid"] .placement .decision-quick{margin-top:auto;display:flex;gap:5px;flex-wrap:wrap}
+html[data-layout="grid"] .placement .decision-quick .smallnote{font-size:9px;width:100%}
+html[data-layout="grid"] .placement .decision-quick .btn{font-size:11px;min-height:30px;padding:7px 8px;flex:1 1 100px}
+html[data-layout="grid"] .placement .controls{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:0}
+html[data-layout="grid"] .placement .controls>.compare,html[data-layout="grid"] .placement .controls>a{display:none}
+html[data-layout="grid"] .placement .controls .manualPriority{max-width:100%;width:100%!important}
+html[data-layout="grid"] .placement .controls input,html[data-layout="grid"] .placement .controls select{font-size:11px}
+html[data-layout="grid"] .placement .decisionPicker summary{padding:7px 9px;min-height:34px}
+html[data-layout="grid"] .placement .uxDetailButton{display:flex}
+html[data-layout="grid"] .placement.uxExpanded{grid-column:span 2;z-index:1;box-shadow:0 18px 38px #0002;border-color:var(--ux-accent-border)}
+html[data-layout="grid"] .placement.uxExpanded .fit{display:grid}
+html[data-layout="grid"] .placement.uxExpanded .desc,html[data-layout="grid"] .placement.uxExpanded .more,
+html[data-layout="grid"] .placement.uxExpanded .programmeDates,
+html[data-layout="grid"] .placement.uxExpanded .uxLocationPanel{display:block}
+html[data-layout="grid"] .placement.uxExpanded .controls>.compare,html[data-layout="grid"] .placement.uxExpanded .controls>a{display:block}
+html[data-layout="grid"] .placement.uxExpanded .badges .badge:nth-child(n+7){display:inline-flex}
+html[data-layout="grid"] #results>.uxEmptyState,html[data-layout="grid"] #shortlistList>.empty{grid-column:1/-1}
+.uxDetailButton{display:none;width:100%;justify-content:center;align-items:center;text-align:center;margin-top:3px;font-size:11px;padding:8px 10px;min-height:30px}
+html[data-layout="grid"] .placement .uxDetailButton{display:flex}
+/* All cards in detailed view place fit/tradeoffs near the left and the location on the right. */
+.placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(94px,105px) minmax(235px,1fr) minmax(230px,310px);gap:10px;align-items:stretch}
+.placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{grid-template-columns:1fr;gap:7px}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn{padding:9px 11px}
+.uxLocationPanel{border:1px solid var(--line);border-radius:13px;padding:10px;background:var(--soft);min-width:0;display:flex;flex-direction:column;gap:7px}
+.uxLocationTitle{font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:850;color:var(--ux-accent-ink)}
+.uxLocationSummary{font-size:12px;font-weight:800;line-height:1.4;color:var(--ink)}
+.uxLocationInfo{color:var(--mut);font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+.uxMiniMap{height:130px;min-height:130px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;isolation:isolate}
+.uxMiniMap .leaflet-control-attribution{font-size:8px;padding:1px 4px;background:var(--panel);color:var(--mut)}
+.uxMiniMap .leaflet-control-zoom{display:none}
+.uxMiniMap .leaflet-container{background:var(--soft)}
+.uxMiniMap .leaflet-tile-pane{filter:saturate(.35) contrast(.88)}
+html[data-theme="dark"] .uxMiniMap .leaflet-tile-pane{filter:saturate(.18) invert(.92) hue-rotate(165deg) brightness(.78) contrast(.82)}
+.uxMiniMapSkeleton{height:100%;display:grid;place-items:center;padding:12px;color:var(--mut);font-size:11px;text-align:center}
+.uxMapLinks{display:flex;gap:8px;flex-wrap:wrap;font-size:10px}
+.uxMapLinks a{color:var(--ux-accent-ink);font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.uxMapFootnote{font-size:9px;color:var(--mut);line-height:1.4}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitBreakdown{grid-template-columns:1fr 1fr}
+html[data-layout="grid"] .placement.uxExpanded .uxLocationPanel{display:flex}
+html[data-layout="grid"] .placement.uxExpanded .uxMiniMap{height:160px}
+/* Appearance and themes */
+.uxAppearanceSettings{grid-column:1/-1}
+.uxThemeRow{display:flex;align-items:center;gap:15px;justify-content:space-between;margin:16px 0;font-weight:700}
+.uxPaletteOptions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.uxPaletteOption{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:12px;cursor:pointer;min-height:113px}
+.uxPaletteOption[aria-pressed="true"]{border:2px solid var(--ux-accent);background:var(--ux-accent-soft);padding:11px}
+.uxPaletteOption b{font-size:12px}
+.uxPaletteOption small{font-size:10px;color:var(--mut)}
+.uxPaletteSwatches{display:flex;gap:4px;margin-bottom:8px}
+.uxPaletteSwatches i{display:inline-block;background:var(--swatch);width:23px;height:23px;border-radius:6px;border:1px solid #aaa3}
+.uxPaletteOption:focus-visible{outline:3px solid var(--ux-accent);outline-offset:2px}
+/* Contextual shortlist drawer: preserves filtering and scroll on Explore. */
+.uxDrawerLauncher{position:fixed;right:19px;bottom:22px;z-index:400;border:1px solid var(--ux-pick-border);background:var(--ux-pick);color:#fff;border-radius:999px;padding:12px 16px;box-shadow:0 8px 30px #0003;cursor:pointer;font:700 13px Inter,sans-serif}
+.uxDrawerBackdrop{position:fixed;inset:0;background:#0709079c;z-index:700}
+.uxDrawerBackdrop[hidden]{display:none}
+.uxDrawer{position:fixed;top:0;bottom:0;right:0;width:min(440px,100vw);z-index:710;background:var(--panel);border-left:1px solid var(--line);box-shadow:-15px 0 38px #0004;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .21s ease;visibility:hidden}
+.uxDrawer.uxOpen{visibility:visible;transform:translateX(0)}
+.uxDrawerHead{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;padding:22px 19px 15px;border-bottom:1px solid var(--line)}
+.uxDrawerHead h2{font-size:19px;margin:3px 0}
+.uxDrawerHead p{font-size:12px;color:var(--mut);margin:0}
+.uxDrawerTools{padding:12px 17px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--line)}
+.uxDrawerTools input{flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:10px 12px;color:var(--ink)}
+.uxDrawerItems{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 17px;display:grid;align-content:start;gap:8px}
+.uxDrawerItem{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--soft)}
+.uxDrawerItem b{font-size:12px;line-height:1.35;display:block;margin:5px 0}
+.uxDrawerItem p{font-size:11px;color:var(--mut);margin:3px 0}
+.uxDrawerItem small{font-size:10px;color:var(--ux-pick)}
+.uxDrawerItem button{font-size:11px;padding:6px 8px;margin-top:7px}
+.uxDrawerEmpty{font-size:13px;color:var(--mut);padding:24px 10px}
+html.uxDrawerOpen{overflow:hidden}
+html[data-theme="dark"] .uxDrawerLauncher{background:#81535e;border-color:#9e6f7b;color:#fff}
+/* Responsive layouts */
+@media(max-width:1400px){
+  html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:100px minmax(220px,1fr) minmax(210px,290px)}
+}
+@media(max-width:1120px){
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:100px minmax(200px,1fr) minmax(200px,300px)}
+  html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:880px){
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:100px 1fr}
+  .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:1/-1}
+  .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{grid-template-columns:1fr 1fr}
+  html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .uxPaletteOptions{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:610px){
+  html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:1fr}
+  html[data-layout="grid"] .placement.uxExpanded{grid-column:span 1}
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr}
+  .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:auto}
+  .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{grid-template-columns:1fr}
+  .uxPaletteOptions{grid-template-columns:1fr 1fr}
+  .uxExploreToolbar .uxToolbarLead{flex-basis:100%}
+  .uxDrawerLauncher{right:12px;bottom:12px}
+  .uxExplorePager{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){.uxDrawer{transition:none}}
