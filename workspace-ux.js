@@ -433,19 +433,21 @@
    const card=expand.closest('.placement');
    if(!card)return;
    const expanded=card.classList.toggle('uxExpanded');
+   card.closest('#shortlistList .rank-row')?.classList.toggle('uxExpanded',expanded);
    expand.textContent=expanded?'Collapse details':'See full details, location & pay';
    expand.setAttribute('aria-expanded',String(expanded));
    const holder=card.querySelector('.uxMiniMap');
-   if(expanded&&holder)requestAnimationFrame(()=>mapVisible(holder));
+   if(expanded&&holder)requestAnimationFrame(()=>{if(miniMaps.has(holder))miniMaps.get(holder).invalidateSize(false);else mapVisible(holder)});
    if(expanded&&!card.querySelector('.desc')){const p=byId().get(card.dataset.id);if(p?.desc){const d=document.createElement('p');d.className='desc';d.textContent=p.desc;card.querySelector('.decision-quick')?.before(d)}}
    if(!expanded&&holder&&miniMaps.has(holder)){try{miniMaps.get(holder).invalidateSize(false)}catch{}}
  });
  // Observe the three containers since the original app re-renders them after every decision.
+ const pruneDetachedMiniMaps=()=>{for(const [holder,map] of miniMaps){if(holder.isConnected)continue;try{map.remove()}catch{}miniMaps.delete(holder);miniObserver?.unobserve(holder)}};
  const refreshObserved=container=>{
    if(!container)return;
    const observer=new MutationObserver(entries=>{
      if(!entries.some(e=>e.type==='childList'))return;
-     enhanceCards(container);
+     pruneDetachedMiniMaps();enhanceCards(container);
    });
    observer.observe(container,{childList:true,subtree:false});
  };
