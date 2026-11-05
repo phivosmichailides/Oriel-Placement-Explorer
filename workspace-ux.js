@@ -268,6 +268,8 @@
      const estimate=window.OrielPay?.estimate(p.salary);
      section.textContent=(estimate?'Est. take-home '+money(estimate.monthly)+'/mo · '+money(estimate.annual)+'/yr · ':'')+(endDate(p)||'Start date not stated');
      section.title=window.OrielPay?.descriptor()||'';
+     let loc=item.querySelector('.uxRecoLocationToggle');
+     if(!loc){loc=document.createElement('button');loc.type='button';loc.className='btn uxRecoLocationToggle';loc.setAttribute('data-ux-reco-location','');loc.setAttribute('aria-expanded','false');loc.textContent='⌖ Show location & connections';item.append(loc)}
    });
  }
  // Geocoded locations come from the same postcode dataset used by the principal map.
@@ -298,8 +300,9 @@
  }
  function mapVisible(holder){
    if(!holder.isConnected||miniMaps.has(holder))return;
-   if(layout==='grid'&&!holder.closest('.uxExpanded'))return;
-   const p=byId().get(holder.closest('.placement')?.dataset.id);if(!p)return;
+   if(layout==='grid'&&holder.closest('.placement')&&!holder.closest('.uxExpanded'))return;
+   const reference=holder.closest('.placement')?.dataset.id||holder.closest('.reco')?.querySelector('[data-open]')?.getAttribute('data-open');
+   const p=byId().get(reference);if(!p)return;
    const sites=getSites(p);
    if(!sites.length){holder.innerHTML='<div class="uxMiniMapSkeleton">Pin not available in current postcode map · use the route link below</div>';return}
    if(!window.L)return;
@@ -373,6 +376,16 @@
  document.addEventListener('desk:dataset',()=>{
    byId.previous=null;lastFilterKey='';
    page=1;explore();enhanceCards($('shortlistList'));updateCounts();
+ });
+ document.addEventListener('click',e=>{
+   const toggler=e.target.closest('[data-ux-reco-location]');
+   if(toggler){const card=toggler.closest('.reco');const code=card?.querySelector('[data-open]')?.getAttribute('data-open');const p=byId().get(code);if(!card||!p)return;
+     let panel=card.querySelector('.uxLocationPanel');if(!panel){panel=locationPanel(p);card.append(panel)}
+     const active=card.classList.toggle('uxRecoOpen');
+     toggler.textContent=active?'⌃ Hide location':'⌖ Show location & connections';
+     toggler.setAttribute('aria-expanded',String(active));
+     if(active)requestAnimationFrame(()=>mapVisible(panel.querySelector('.uxMiniMap')));
+   }
  });
  document.addEventListener('click',e=>{
    const expand=e.target.closest('[data-ux-expand]');
