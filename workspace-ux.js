@@ -300,8 +300,7 @@
    const generic=new Set(['london','dartford','slough','kingston','surrey','england']);
    const bySlash=prefix.split('/').map(x=>x.trim()).filter(x=>x.length>6&&!generic.has(x.toLowerCase()));
    if(bySlash.length>=count&&bySlash[index])return bySlash[index].slice(0,85);
-   const setting=p.settings?.[index]?.[0];
-   return (setting?setting:'Training')+' site · '+site.pc;
+   return 'Training location '+(index+1)+' · '+site.pc;
  };
  const miniMaps=new Map();
  let miniObserver=null,cardObserver=null;
