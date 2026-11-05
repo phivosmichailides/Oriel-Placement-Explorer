@@ -14,6 +14,7 @@ window.OrielLocationGuide=(()=>{
  const regexp=(pattern)=>new RegExp(pattern,'i');
  const guides=[
   // Each entry is intentionally restricted to a district or narrower: employer name is NOT a location.
+  ['^N1\\s*0SL$','Clockwork Pharmacy · Caledonian Road','161 Caledonian Road is around a 10–15 minute walk from King’s Cross St Pancras; Caledonian Road & Barnsbury Overground is another nearby option.','tfl'],
   ['^N1(?:\\s|$)','Islington / Caledonian Road','King’s Cross/St Pancras and the Piccadilly line are useful starting points; check the specific branch address.','tfl'],
   ['^N7(?:\\s|$)','Holloway / Islington','Piccadilly line (Caledonian Road/Holloway Road) and north London rail connections are useful corridors.','tfl'],
   ['^N11(?:\\s|$)','Bounds Green / north London','Piccadilly line via Bounds Green is a useful central-London connection.','tfl'],
@@ -51,7 +52,7 @@ window.OrielLocationGuide=(()=>{
   ['^SE7(?:\\s|$)','Charlton / south-east London','National Rail via Charlton towards London Bridge/Cannon Street is a useful starting point.','national'],
   ['^SE9(?:\\s|$)','Eltham / south-east London','Southeastern rail towards London Bridge, Charing Cross or Cannon Street is useful, depending on the station.','national'],
   ['^SE12(?:\\s|$)','Lee / south-east London','Southeastern rail from Lee is a useful route towards central London.','national'],
-  ['^SW1(?:\\s|$)','Westminster / Victoria','Victoria, Waterloo and central Tube interchanges are useful; check the site’s nearest station.','tfl'],
+  ['^SW1[A-Z]?(?:\\s|$)','Westminster / Victoria','Victoria, Waterloo and central Tube interchanges are useful; check the site’s nearest station.','tfl'],
   ['^SW3(?:\\s|$)','Chelsea / west London','Sloane Square/South Kensington Underground and local buses can be useful; check the final leg.','tfl'],
   ['^SW6(?:\\s|$)','Fulham / south-west London','District line via Fulham Broadway/Parsons Green and buses are useful corridors.','tfl'],
   ['^SW10(?:\\s|$)','Chelsea / west London','District line and buses from Earl’s Court/Fulham Broadway may help; check the exact hospital entrance.','tfl'],
