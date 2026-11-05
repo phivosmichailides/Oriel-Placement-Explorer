@@ -266,3 +266,55 @@ html[data-theme="dark"] .uxDrawerLauncher{background:#81535e;border-color:#9e6f7
   .uxExplorePager{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.uxDrawer{transition:none}}
+
+/* Financial text and badge hierarchy */
+.uxTakeHome{display:block;font-size:11px;line-height:1.5;font-weight:650;color:var(--mut);max-width:250px;margin-top:3px;text-align:right}
+html[data-layout="grid"] .uxTakeHome{font-size:10px;text-align:left}
+.uxRecoMeta{margin:10px 0 0;color:var(--mut);font-size:11px;line-height:1.6;border-top:1px solid var(--line);padding-top:8px}
+.uxRecoLocationToggle{font-size:11px;margin-top:8px;padding:7px 11px}
+.reco .uxLocationPanel{display:none;margin-top:9px}
+.reco.uxRecoOpen .uxLocationPanel{display:flex}
+.reco .uxMiniMap{height:150px}
+.placement .fitLabel{color:var(--ux-accent-ink);font-weight:900;letter-spacing:.105em}
+.placement .fitColumn.caution .fitLabel{color:var(--ux-pick)}
+.placement .fitPoint{color:var(--ink);font-size:12px;line-height:1.55;font-weight:500}
+.placement .score>span{font-weight:900;letter-spacing:.10em}
+.placement .score>b{font-size:28px;line-height:1.1}
+.placement .score>small{font-size:12px;font-weight:650}
+.placement .fitBreakdown .fitColumn{box-shadow:none}
+html .placement .badge{font-size:11px;font-weight:650}
+html[data-theme="light"] .placement .badge.warn,
+html[data-theme="light"] .badge-sponsorship-warning,
+html[data-theme="light"] .placement .badges .badge-sponsorship-warning{background:#f3ede5;color:#765b36;border-color:#ddcdb8}
+html[data-theme="dark"] .placement .badge.warn,
+html[data-theme="dark"] .badge-sponsorship-warning,
+html[data-theme="dark"] .placement .badges .badge-sponsorship-warning{background:#454039;color:#e8d6b8;border-color:#716551}
+html[data-theme="light"] .placement .badge.bad{background:#f4e9eb;color:#87505c;border-color:#ddc4c9}
+html[data-theme="dark"] .placement .badge.bad{background:#46353c;color:#edbcc5;border-color:#75525b}
+html .placement .badge:first-child{background:var(--soft);border-color:var(--line);color:var(--ink)}
+html[data-theme="dark"] .placement .badge:first-child{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .badge.good{background:var(--ux-accent-soft);border-color:var(--ux-accent-border);color:var(--ux-accent-ink)}
+.uxPaySettings{grid-column:1/-1}
+.uxPaySettings .grid2{gap:10px}
+.uxPaySettings .field>select{width:100%;background:var(--soft);color:var(--ink);border:1px solid var(--line);padding:10px;border-radius:10px;min-width:0}
+.uxPaySettings .smallnote{line-height:1.65}
+.uxPaySettings a{color:var(--ux-accent-ink)}
+.uxBackToResults{margin-left:auto;color:var(--ux-pick)}
+.uxPagerEllipsis{align-self:center;padding:0 4px}
+html[data-layout="grid"] #mapSelection .placement{display:block;padding:17px}
+html[data-layout="grid"] #mapSelection .placement .fit{display:grid}
+html[data-layout="grid"] #mapSelection .placement .desc,
+html[data-layout="grid"] #mapSelection .placement .more,
+html[data-layout="grid"] #mapSelection .placement .programmeDates{display:block}
+html[data-layout="grid"] #mapSelection .placement .uxLocationPanel{display:flex}
+html[data-layout="grid"] #mapSelection .placement .placementTop{display:grid;grid-template-columns:minmax(0,1fr) auto}
+html[data-layout="grid"] #mapSelection .placement .controls{display:grid;grid-template-columns:165px 70px minmax(90px,1fr)}
+html[data-layout="grid"] #mapSelection .placement .controls>.compare,
+html[data-layout="grid"] #mapSelection .placement .controls>a{display:block}
+html[data-layout="grid"] #mapSelection .placement .uxDetailButton{display:none}
+html[data-layout="grid"] #mapSelection .placement .badges .badge:nth-child(n+7){display:inline-flex}
+html[data-layout="grid"] #mapSelection .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:100px minmax(190px,1fr) minmax(210px,300px)}
+html[data-theme="dark"] .themeToggle,html[data-theme="dark"] .uxLayoutBtn{color:var(--ink)}
+@media(max-width:880px){html[data-layout="grid"] #mapSelection .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr 1fr}html[data-layout="grid"] #mapSelection .placement .uxLocationPanel{grid-column:1/-1}}
+@media(max-width:610px){html[data-layout="grid"] #mapSelection .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr}html[data-layout="grid"] #mapSelection .placement .controls{grid-template-columns:1fr 1fr}}
+@media(min-width:1180px) and (max-width:1400px){html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:repeat(4,minmax(0,1fr))}}
