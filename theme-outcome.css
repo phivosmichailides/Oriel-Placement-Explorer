@@ -167,3 +167,12 @@ html[data-theme="dark"] .outcomeTable .isOffer{background:#2c4733}
 html[data-theme="dark"] .outcomeNotice{background:#293c2f;color:#c7decf}
 html[data-theme="dark"] .recoWarn{border-color:#6f6448}
 @media(prefers-reduced-motion:reduce){html[data-theme="dark"] *,html[data-theme="light"] *{transition:none!important}}
+
+/* Shortlist viewing order. This does not alter stored ranking. */
+.shortlist-toolbar{flex-wrap:wrap}
+.shortlistViewOrder{display:inline-flex;align-items:center;gap:8px;margin-left:auto;color:var(--mut);font-size:12px;font-weight:750}
+.shortlistViewOrder select{padding:9px 11px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:11px;min-height:39px;max-width:230px}
+.shortlistViewOrder select:focus-visible{outline:3px solid #6caaed;outline-offset:2px}
+.shortlistViewHint{margin:-5px 0 12px}
+html[data-theme="dark"] .shortlistViewOrder select{background:#15221b;color:var(--ink);border-color:#486352}
+@media(max-width:720px){.shortlistViewOrder{margin-left:0;flex-wrap:wrap}.shortlistViewOrder select{max-width:100%}}
