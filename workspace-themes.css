@@ -318,3 +318,16 @@ html[data-theme="dark"] .themeToggle,html[data-theme="dark"] .uxLayoutBtn{color:
 @media(max-width:880px){html[data-layout="grid"] #mapSelection .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr 1fr}html[data-layout="grid"] #mapSelection .placement .uxLocationPanel{grid-column:1/-1}}
 @media(max-width:610px){html[data-layout="grid"] #mapSelection .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr}html[data-layout="grid"] #mapSelection .placement .controls{grid-template-columns:1fr 1fr}}
 @media(min-width:1180px) and (max-width:1400px){html[data-layout="grid"] #results,html[data-layout="grid"] #shortlistList{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* One-site-at-a-time location navigator (split placements). */
+.uxSiteBar{display:flex;align-items:center;gap:8px;justify-content:space-between;min-width:0;margin-top:1px}
+.uxSiteHeading{display:flex;flex-direction:column;gap:2px;min-width:0}
+.uxSiteName{color:var(--ink);font-weight:850;font-size:12px;line-height:1.34;overflow-wrap:anywhere}
+.uxSiteNumber{font-size:10px;line-height:1.2;color:var(--mut);font-variant-numeric:tabular-nums}
+.uxSiteControls{display:inline-flex;flex:none;gap:4px;border-radius:10px;background:var(--panel);border:1px solid var(--line);padding:3px}
+.uxSiteControls .uxSiteArrow,html[data-theme="dark"] .uxSiteControls .uxSiteArrow{min-width:30px;min-height:30px;width:30px;height:30px;padding:0;border:0;background:transparent;color:var(--ux-accent-ink);font-size:23px;font-weight:550;line-height:1;display:grid;place-items:center;border-radius:8px}
+.uxSiteControls .uxSiteArrow:hover{background:var(--ux-accent-soft)}
+.uxSiteControls .uxSiteArrow:focus-visible{outline:2px solid var(--ux-accent);outline-offset:2px}
+.uxSiteControls .uxSiteArrow:not(:last-child){border-right:1px solid var(--line);border-radius:8px 0 0 8px}
+.uxLocationPanel .uxMiniMap{height:143px;min-height:143px}
+.uxLocationPanel .uxLocationSummary{font-size:11px;color:var(--ux-accent-ink);font-weight:750}
