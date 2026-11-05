@@ -86,7 +86,7 @@
   const findProgramme=()=>{
     const query=$('outcomeProgrammeId').value.trim().replace(/^#/,'');
     if(!query)return null;
-    return getPlacements().find(p=>String(p.id)===query)||null;
+    return getPlacements().find(p=>String(p.id).trim()===query||String(p.id).split('/').pop().trim()===query)||null;
   };
   const el=(tag,text,cls)=>{
     const node=document.createElement(tag);
@@ -210,7 +210,7 @@
     if(getPlacements().length){
       const list=$('outcomeProgrammeOptions');
       const fragment=document.createDocumentFragment();
-      getPlacements().forEach(p=>{const option=document.createElement('option');option.value=String(p.id);option.label=p.title||p.employer||'';fragment.append(option)});
+      getPlacements().forEach(p=>{const option=document.createElement('option');option.value=String(p.id).split('/').pop().trim();option.label=p.title||p.employer||'';fragment.append(option)});
       list.replaceChildren(fragment);
       refresh();
       clearInterval(timer);
