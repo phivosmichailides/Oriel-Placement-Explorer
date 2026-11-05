@@ -50,7 +50,6 @@
    const target=$('uxFilterSidebar');target?.scrollIntoView({behavior:'smooth',block:'start'});
  });
  const dock=$('uxFloatingTools'),dockToggle=$('uxFloatToggle'),dockInner=$('uxFloatInner'),topBtn=$('uxBackTop');
- setCollapsed(collapsed,false);
  const closeDock=()=>{if(dockInner)dockInner.hidden=true;dockToggle?.setAttribute('aria-expanded','false')};
  dockToggle?.addEventListener('click',()=>{
    if(!dockInner)return;
@@ -86,6 +85,7 @@
    }
    if(topBtn)topBtn.classList.toggle('uxTopVisible',y>420);
  }
+ setCollapsed(collapsed,false);
  topBtn?.addEventListener('click',()=>{
    window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
  });
