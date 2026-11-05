@@ -217,7 +217,7 @@
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>{if(quick.has('london'))regionEl.value='';setTimeout(()=>refreshScope({locate:false}),0);});
     $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;refreshScope({locate:false});});
     if($('locateBtn'))$('locateBtn').onclick=resolveScopePins;
-    $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:false});};
+    $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;if($('hideShortlisted')){$('hideShortlisted').checked=false;$('hideShortlisted').dispatchEvent(new Event('change',{bubbles:true}))}$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:false});};
 
     ['salary','hours'].forEach(id=>$(id).addEventListener('change',reco));
     injectProductIntro();injectContextStrip();
