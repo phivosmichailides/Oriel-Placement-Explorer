@@ -11,12 +11,12 @@
     window.__sectorPinsInstalled=true;
 
     const palette={
-      Hospital:'#155eef',
-      'General Practice':'#14a38b',
-      'Community Pharmacy':'#8b5cf6',
-      Industry:'#f28c28',
-      Mixed:'#e05283',
-      Other:'#98a2ad'
+      Hospital:'#57799c',
+      'General Practice':'#4e8d80',
+      'Community Pharmacy':'#9076a6',
+      Industry:'#b5895b',
+      Mixed:'#af7187',
+      Other:'#8c969e'
     };
 
     const defaults={...palette};
