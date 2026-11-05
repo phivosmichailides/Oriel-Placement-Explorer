@@ -1,0 +1,178 @@
+/* 2027/28 Oriel UI additions. Loaded after the existing stylesheet. */
+.themeToggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.themeGlyph{font-size:19px;line-height:1}
+.themeToggle:focus-visible,.outcomeActions button:focus-visible{outline:3px solid #6caaed;outline-offset:3px}
+
+.outcomeLayout{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(290px,.9fr);gap:13px;align-items:start}
+.outcomeForm,.outcomeInfo,.outcomeDetails,.outcomeComparison{padding:19px}
+.outcomeForm h3,.outcomeInfo h3,.outcomeDetails h3,.outcomeComparison h3{margin:4px 0 12px;font-size:19px}
+.outcomeForm .field>input,.outcomeForm .field>select,.outcomeForm .field>textarea{display:block;width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:var(--panel);color:var(--ink)}
+.outcomeForm input:focus-visible,.outcomeForm select:focus-visible,.outcomeForm textarea:focus-visible{outline:3px solid #7cb69e;outline-offset:1px}
+.outcomeInsights{display:grid;gap:13px}
+.outcomeInfo{background:#eaf5ef;border-color:#c9dfd0}
+.outcomeInfo p{line-height:1.6}
+.outcomeInfo a,.outcomeHelpLink{color:var(--green)}
+.outcomeActions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.outcomeActions .btn{min-height:39px}
+.outcomeComparison{margin-top:14px}
+.outcomeComparison h3{margin-bottom:4px}
+.outcomeTableWrap{overflow-x:auto;max-width:100%;margin-top:9px}
+.outcomeTable{width:100%;border-collapse:collapse;font-size:12px}
+.outcomeTable th,.outcomeTable td{text-align:left;border-bottom:1px solid var(--line);padding:10px 9px;vertical-align:top}
+.outcomeTable th{font-size:11px;color:var(--mut);font-weight:800;white-space:nowrap}
+.outcomeTable .isOffer{font-weight:800;background:var(--soft)}
+.outcomeProgrammeTitle{font-size:15px;font-weight:800;margin:3px 0 8px;line-height:1.4}
+.outcomeDetailGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.outcomeDetailGrid>div{border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0}
+.outcomeDetailGrid b{display:block;font-size:15px;color:var(--ink)}
+.outcomeDetailGrid span{color:var(--mut);font-size:10px;display:block}
+.outcomeRotations{font-size:12px;line-height:1.65;margin-top:10px}
+.outcomeNotice{margin-top:10px;padding:11px;border-radius:11px;background:var(--soft);color:var(--mut);font-size:12px}
+@media(max-width:960px){.outcomeLayout{grid-template-columns:1fr}}
+@media(max-width:720px){.outcomeHelpLink{width:100%}.outcomeForm,.outcomeInfo,.outcomeDetails,.outcomeComparison{padding:14px}.outcomeDetailGrid{grid-template-columns:1fr}.outcomeActions .btn{flex:1 1 130px}.themeToggle{min-height:40px}}
+
+/* Global dark tokens. Theme is applied on <html> before CSS loads, avoiding a flash. */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101916;
+  --panel:#1b2923;
+  --ink:#edf5ef;
+  --mut:#b4c8bc;
+  --line:#3a5145;
+  --soft:#27382f;
+  --dark:#0c1510;
+  --green:#8addb0;
+  --red:#ffaaa7;
+  --amber:#f0d38f;
+  --blue:#a9c5ff;
+  --purple:#d0b6f5;
+  --shadow:0 12px 35px rgba(0,0,0,.20);
+}
+html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+html[data-theme="dark"] .logo{background:#2a5e45;color:#fff}
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .stat{background:var(--panel);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .btn.primary{background:#2d7754;border-color:#56b087;color:#fff}
+html[data-theme="dark"] .btn.danger{color:#ffb4b0;border-color:#915350}
+html[data-theme="dark"] .btn.subtle{background:var(--soft)}
+html[data-theme="dark"] .btn.selected{background:#224934;color:#c7f8d8;border-color:#5f9e75}
+html[data-theme="dark"] .btn.excluded{background:#492c2d;color:#ffc3c0;border-color:#8a5456}
+html[data-theme="dark"] .tabs{background:#22352b;border-color:var(--line)}
+html[data-theme="dark"] .tab{color:#bed4c5}
+html[data-theme="dark"] .tab:hover{background:#334c3d}
+html[data-theme="dark"] .tab.active{background:#385443;color:#fff;box-shadow:0 2px 8px #0004}
+html[data-theme="dark"] .chip.on{background:#3e684e;border-color:#85c49d;color:#fff}
+html[data-theme="dark"] .notice,
+html[data-theme="dark"] .reason,
+html[data-theme="dark"] .score,
+html[data-theme="dark"] .empty,
+html[data-theme="dark"] .recoWarn,
+html[data-theme="dark"] .miniFit,
+html[data-theme="dark"] .miniFit.warning{background:var(--soft);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .notice b{color:#a2e3bb}
+html[data-theme="dark"] .desc,
+html[data-theme="dark"] .reco p,
+html[data-theme="dark"] .sectionHero p,
+html[data-theme="dark"] .outcomeInfo p{color:#c8d5cc}
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .controls input,
+html[data-theme="dark"] .controls select,
+html[data-theme="dark"] .outcomeForm .field>input,
+html[data-theme="dark"] .outcomeForm .field>select,
+html[data-theme="dark"] .outcomeForm .field>textarea{
+  background:#15221b;color:var(--ink);border-color:#486352
+}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#a3b8ab}
+html[data-theme="dark"] .field input:focus,
+html[data-theme="dark"] .field select:focus,
+html[data-theme="dark"] .field textarea:focus{background:#20352a;border-color:#83cfa1}
+html[data-theme="dark"] .badge{background:#2b3d32;color:#e0eee5;border-color:var(--line)}
+html[data-theme="dark"] .badge.good,
+html[data-theme="dark"] .badge-hospital,
+html[data-theme="dark"] .placement .badges .badge-hospital{background:#243e58;color:#c8e3ff;border-color:#4d7695}
+html[data-theme="dark"] .badge.bad,
+html[data-theme="dark"] .badge-sponsorship-warning,
+html[data-theme="dark"] .placement .badges .badge-sponsorship-warning{background:#503a23;color:#ffdfad;border-color:#846444}
+html[data-theme="dark"] .badge.warn{background:#4e3b28;color:#f8dfa3;border-color:#8c7043}
+html[data-theme="dark"] .badge-gp,
+html[data-theme="dark"] .placement .badges .badge-gp{background:#234633;color:#b8f6d0;border-color:#468562}
+html[data-theme="dark"] .badge-community,
+html[data-theme="dark"] .placement .badges .badge-community{background:#234844;color:#acf6e8;border-color:#4b8d7e}
+html[data-theme="dark"] .badge-industry,
+html[data-theme="dark"] .placement .badges .badge-industry{background:#443052;color:#ebd1ff;border-color:#71578a}
+html[data-theme="dark"] .salary-value{color:#a2e2b8}
+html[data-theme="dark"] .fitColumn,
+html[data-theme="dark"] .fitColumn.positive,
+html[data-theme="dark"] .fitColumn.caution{background:#25392d;border-color:var(--line)}
+html[data-theme="dark"] .fitLabel,
+html[data-theme="dark"] .fitColumn.caution .fitLabel,
+html[data-theme="dark"] .fitPoint{color:#c4d7c9}
+html[data-theme="dark"] .decisionPicker{color:var(--ink)}
+html[data-theme="dark"] .decisionPicker summary,
+html[data-theme="dark"] .decisionPicker.decision-love summary,
+html[data-theme="dark"] .decisionPicker.decision-yes summary,
+html[data-theme="dark"] .decisionPicker.decision-maybe summary,
+html[data-theme="dark"] .decisionPicker.decision-backup summary,
+html[data-theme="dark"] .decisionPicker.decision-no summary,
+html[data-theme="dark"] .decisionPicker.decision-never summary{background:#2a3d31;border-color:#56735c;color:#e6f2ea}
+html[data-theme="dark"] .decisionChoices{background:#1c2c22;border-color:#4a6653;box-shadow:0 12px 36px #0008}
+html[data-theme="dark"] .decisionChoice{color:var(--ink)}
+html[data-theme="dark"] .decisionChoice:hover,
+html[data-theme="dark"] .decisionChoice[aria-pressed="true"]{background:#30543d;color:#fff;border-color:#5d8b6b}
+html[data-theme="dark"] .productIntro{background:linear-gradient(135deg,#1b2b21,#293c2e);border-color:var(--line)}
+html[data-theme="dark"] .productIntro p{color:#c5d4c9}
+html[data-theme="dark"] .productPrinciples>div{background:#294332;border-color:#456a50}
+html[data-theme="dark"] .contextStrip,
+html[data-theme="dark"] .contextMeta{color:#bcccbf}
+html[data-theme="dark"] .compareTable{background:#1a2b21}
+html[data-theme="dark"] .compareTable th,
+html[data-theme="dark"] .compareTable td{border-color:var(--line)}
+html[data-theme="dark"] .compareTable thead th,
+html[data-theme="dark"] .compareTable tbody th{background:#2c4433;color:#f0f8f2}
+html[data-theme="dark"] .researchTable th,
+html[data-theme="dark"] .researchTable td{border-color:var(--line)}
+html[data-theme="dark"] .researchPanel,
+html[data-theme="dark"] .researchTable{background:var(--panel);color:var(--ink)}
+html[data-theme="dark"] .errorBox{background:#4d2d31;color:#ffcfcd;border-color:#985f61}
+html[data-theme="dark"] .toast{background:#eaf7ee;color:#162c1d}
+html[data-theme="dark"] .app-footer a{color:#9cddb4}
+html[data-theme="dark"] #placementMap{background:#1b342b}
+html[data-theme="dark"] #placementMap .leaflet-tile-pane{filter:grayscale(.4) invert(.9) hue-rotate(170deg) brightness(.82) contrast(.91)}
+html[data-theme="dark"] .leaflet-control-zoom a,
+html[data-theme="dark"] .leaflet-control-attribution,
+html[data-theme="dark"] .leaflet-popup-content-wrapper,
+html[data-theme="dark"] .leaflet-popup-tip{background:#1b2d24;color:#e8f2eb;border-color:#536d5b}
+html[data-theme="dark"] .leaflet-control-attribution a,
+html[data-theme="dark"] .leaflet-popup-content a{color:#a5c8ff}
+html[data-theme="dark"] .map-selection-head{background:#22362a}
+html[data-theme="dark"] .map-caption{color:#b8cabe}
+html[data-theme="dark"] .programmeDates{background:#24372a;border-color:#48614d;color:#d2e1d4}
+html[data-theme="dark"] .programmeDates b{color:#f1f8f0}
+html[data-theme="dark"] .dateDivider{color:#b0c4b4}
+html[data-theme="dark"] .deadlineBox{background:#223b2c;border-color:#527f60;box-shadow:none}
+html[data-theme="dark"] .deadlineLabel{color:#b9d6c4}
+html[data-theme="dark"] .deadlineValue{color:#ecfff1}
+html[data-theme="dark"] .deadlineExact{color:#bdcfbf}
+html[data-theme="dark"] .deadlineBox.deadlineClosed{background:#2a3930;border-color:#53775d}
+html[data-theme="dark"] .deadlineBox.deadlineClosed .deadlineValue{color:#f1f5e9}
+html[data-theme="dark"] .outcomeInfo{background:#263f31;border-color:#4a7659}
+html[data-theme="dark"] .outcomeInfo a,
+html[data-theme="dark"] .outcomeHelpLink{color:#9bddb7}
+html[data-theme="dark"] .outcomeDetailGrid>div{border-color:#44614d}
+html[data-theme="dark"] .outcomeTable .isOffer{background:#2c4733}
+html[data-theme="dark"] .outcomeNotice{background:#293c2f;color:#c7decf}
+html[data-theme="dark"] .recoWarn{border-color:#6f6448}
+@media(prefers-reduced-motion:reduce){html[data-theme="dark"] *,html[data-theme="light"] *{transition:none!important}}
+
+/* Shortlist viewing order. This does not alter stored ranking. */
+.shortlist-toolbar{flex-wrap:wrap}
+.shortlistViewOrder{display:inline-flex;align-items:center;gap:8px;margin-left:auto;color:var(--mut);font-size:12px;font-weight:750}
+.shortlistViewOrder select{padding:9px 11px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:11px;min-height:39px;max-width:230px}
+.shortlistViewOrder select:focus-visible{outline:3px solid #6caaed;outline-offset:2px}
+.shortlistViewHint{margin:-5px 0 12px}
+html[data-theme="dark"] .shortlistViewOrder select{background:#15221b;color:var(--ink);border-color:#486352}
+@media(max-width:720px){.shortlistViewOrder{margin-left:0;flex-wrap:wrap}.shortlistViewOrder select{max-width:100%}}
