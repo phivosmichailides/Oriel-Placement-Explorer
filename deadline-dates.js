@@ -52,24 +52,46 @@
     const box=document.createElement('div');
     box.id='orielDeadline';
     box.className='deadlineBox';
-    box.innerHTML='<div class="deadlineLabel">ORIEL SELECTION DEADLINE</div><div class="deadlineValue" id="deadlineValue">Calculating…</div><div class="deadlineExact">22 Oct 2026 · 12:00 UK</div>';
+    box.setAttribute('role','status');
+    box.setAttribute('aria-live','polite');
+    box.innerHTML='<div class="deadlineLabel" id="deadlineLabel">ORIEL 2027/28 · TRAINING INTAKE</div><div class="deadlineValue" id="deadlineValue">Checking recruitment stage…</div><div class="deadlineExact" id="deadlineExact"></div><a class="deadlineLink" href="https://london.wtepharmacy.nhs.uk/national-recruitment/offers/" target="_blank" rel="noopener noreferrer">Official offers guidance ↗</a>';
     actions.prepend(box);
 
+    const offersStart=new Date('2026-11-04T00:00:00Z').getTime();
+    const upgradeEnd=new Date('2026-11-25T12:00:00Z').getTime();
     const tick=()=>{
-      const out=document.getElementById('deadlineValue');
-      if(!out)return;
-      let ms=DEADLINE.getTime()-Date.now();
-      if(ms<=0){out.textContent='Selection window closed';box.classList.add('deadlineClosed');return;}
-      box.classList.remove('deadlineClosed');
-      const d=Math.floor(ms/86400000);ms%=86400000;
-      const h=Math.floor(ms/3600000);ms%=3600000;
-      const m=Math.floor(ms/60000);ms%=60000;
-      const s=Math.floor(ms/1000);
-      out.textContent=`${d}d ${h}h ${m}m ${s}s`;
-      box.classList.toggle('deadlineSoon',d<2);
+      const now=Date.now();
+      const label=document.getElementById('deadlineLabel');
+      const value=document.getElementById('deadlineValue');
+      const exact=document.getElementById('deadlineExact');
+      if(!label||!value||!exact)return;
+      box.classList.remove('deadlineSoon','deadlineClosed');
+      if(now<DEADLINE.getTime()){
+        let ms=DEADLINE.getTime()-now;
+        const days=Math.floor(ms/86400000);ms%=86400000;
+        const hours=Math.floor(ms/3600000);ms%=3600000;
+        const minutes=Math.floor(ms/60000);
+        label.textContent='ORIEL 2027/28 · PREFERENCING';
+        value.textContent=days+'d '+hours+'h '+minutes+'m remaining';
+        exact.textContent='Initial preferencing closes 22 Oct 2026 · 12:00 UK';
+        box.classList.toggle('deadlineSoon',days<2);
+      }else if(now<offersStart){
+        label.textContent='ORIEL 2027/28 · OFFERS NEXT';
+        value.textContent='Initial preferencing closed';
+        exact.textContent='First offers begin 4 Nov 2026';
+      }else if(now<=upgradeEnd){
+        label.textContent='ORIEL 2027/28 · OFFERS STAGE';
+        value.textContent='Offers underway';
+        exact.textContent='Final upgrades: 25 Nov 2026 · 12:00 UK';
+      }else{
+        label.textContent='ORIEL 2027/28 · RECRUITMENT UPDATE';
+        value.textContent='Offer upgrade window ended';
+        exact.textContent='Deadline was 25 Nov 2026 · Check official Oriel for current status';
+        box.classList.add('deadlineClosed');
+      }
     };
     tick();
-    setInterval(tick,1000);
+    setInterval(tick,60000);
   };
 
   const installStyles=()=>{
@@ -78,7 +100,7 @@
     st.id='deadlineDateStyles';
     st.textContent=`
       .programmeDates{display:flex;align-items:center;flex-wrap:wrap;gap:6px 9px;margin:9px 0 2px;padding:8px 10px;border:1px solid #e4e7e4;background:#fafbf9;border-radius:11px;font-size:11px;color:#555b57}.programmeDates b{color:#252927}.dateDivider{color:#9aa09b}.dateBasis{margin-left:auto;color:var(--mut);font-size:10px}
-      .deadlineBox{min-width:190px;padding:8px 11px;border:1px solid #d9e5dc;background:#f5faf7;border-radius:12px;text-align:right;box-shadow:0 4px 14px rgba(25,60,42,.05)}.deadlineLabel{font-size:9px;letter-spacing:.09em;font-weight:850;color:#567064}.deadlineValue{font-size:17px;line-height:1.15;font-weight:900;letter-spacing:-.02em;color:#164d3d;margin:2px 0}.deadlineExact{font-size:10px;color:var(--mut)}.deadlineBox.deadlineSoon{background:#fff7e8;border-color:#ead5a9}.deadlineBox.deadlineSoon .deadlineValue{color:#9a5b0d}.deadlineBox.deadlineClosed{background:#fff0f0;border-color:#e7caca}.deadlineBox.deadlineClosed .deadlineValue{font-size:13px;color:#9b3838}
+      .deadlineBox{min-width:190px;padding:8px 11px;border:1px solid #d9e5dc;background:#f5faf7;border-radius:12px;text-align:right;box-shadow:0 4px 14px rgba(25,60,42,.05)}.deadlineLabel{font-size:9px;letter-spacing:.09em;font-weight:850;color:#567064}.deadlineValue{font-size:17px;line-height:1.15;font-weight:900;letter-spacing:-.02em;color:#164d3d;margin:2px 0}.deadlineExact{font-size:10px;color:var(--mut)}.deadlineBox.deadlineSoon{background:#fff7e8;border-color:#ead5a9}.deadlineBox.deadlineSoon .deadlineValue{color:#9a5b0d}.deadlineBox.deadlineClosed{background:#edf1ec;border-color:#cfddce}.deadlineBox.deadlineClosed .deadlineValue{font-size:13px;color:#164d3d}.deadlineLink{display:inline-block;font-size:10px;font-weight:750;color:var(--blue);margin-top:4px;text-decoration:underline;text-underline-offset:2px}.deadlineBox{min-width:240px}
       @media(max-width:720px){.deadlineBox{width:100%;text-align:left;order:-1}.dateBasis{flex-basis:100%;margin-left:0}}
     `;
     document.head.appendChild(st);
