@@ -128,6 +128,8 @@
  },true);
 
  let page=1,lastFilterKey='',skipResetOnce=false;
+ window.uxGetExplorePage=()=>page;
+ window.uxSetExplorePage=value=>{const n=Number(value);if(!Number.isInteger(n)||n<1)return;page=n;skipResetOnce=true;if(typeof explore==='function')explore()};
  const pagination=$('uxExplorePager');
  const pager=(count,total)=>{
    if(!pagination)return;
