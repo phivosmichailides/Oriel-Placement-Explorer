@@ -283,15 +283,25 @@
    return String(postcode||'').replace(/\s/g,'').toUpperCase();
  };
  const getSites=p=>{
-   const g=geoFor(),pts=[],seen=new Set();
-   (p.postcodes||[]).filter(Boolean).forEach(pc=>{
-     const coord=g[normPC(pc)];
-     if(!Array.isArray(coord)||coord.length<2||!Number.isFinite(+coord[0])||!Number.isFinite(+coord[1]))return;
-     const key=(+coord[0]).toFixed(4)+','+(+coord[1]).toFixed(4);
+   const g=geoFor(),seen=new Set(),sites=[];
+   (p.postcodes||[]).filter(Boolean).forEach((pc,i)=>{
+     const key=normPC(pc);
      if(seen.has(key))return;seen.add(key);
-     pts.push({pc,lat:+coord[0],lng:+coord[1]});
+     const coord=g[key],valid=Array.isArray(coord)&&coord.length>=2&&Number.isFinite(+coord[0])&&Number.isFinite(+coord[1]);
+     sites.push({pc,lat:valid?+coord[0]:null,lng:valid?+coord[1]:null,index:i});
    });
-   return pts;
+   return sites;
+ };
+ const siteName=(p,site,index,count)=>{
+   const title=String(p.title||''),p0=title.search(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
+   const prefix=(p0>=0?title.slice(0,p0):title).replace(/[\/+\s]+$/,'');
+   const byPlus=prefix.split('+').map(x=>x.split('/')[0].trim()).filter(Boolean);
+   if(byPlus.length>=count&&byPlus[index])return byPlus[index].slice(0,85);
+   const generic=new Set(['london','dartford','slough','kingston','surrey','england']);
+   const bySlash=prefix.split('/').map(x=>x.trim()).filter(x=>x.length>6&&!generic.has(x.toLowerCase()));
+   if(bySlash.length>=count&&bySlash[index])return bySlash[index].slice(0,85);
+   const setting=p.settings?.[index]?.[0];
+   return (setting?setting:'Training')+' site · '+site.pc;
  };
  const miniMaps=new Map();
  let miniObserver=null,cardObserver=null;
@@ -299,26 +309,28 @@
    for(const [holder,map] of miniMaps){if(!holder.closest('#results'))continue;try{map.remove()}catch{}miniMaps.delete(holder);miniObserver?.unobserve(holder)}
  }
  function mapVisible(holder){
-   if(!holder.isConnected||miniMaps.has(holder))return;
+   if(!holder?.isConnected||miniMaps.has(holder))return;
    if(layout==='grid'&&holder.closest('.placement')&&!holder.closest('.uxExpanded'))return;
-   const reference=holder.closest('.placement')?.dataset.id||holder.closest('.reco')?.querySelector('[data-open]')?.getAttribute('data-open');
-   const p=byId().get(reference);if(!p)return;
-   const sites=getSites(p);
-   if(!sites.length){holder.innerHTML='<div class="uxMiniMapSkeleton">Pin not available in current postcode map · use the route link below</div>';return}
+   const id=holder.closest('.placement')?.dataset.id||holder.closest('.reco')?.querySelector('[data-open]')?.getAttribute('data-open');
+   const p=byId().get(id);if(!p)return;
+   const sites=getSites(p),index=Number(holder.closest('.uxLocationPanel')?.dataset.uxSiteIndex||0);
+   const selected=sites[index]||sites[0];
+   if(!selected||selected.lat===null){
+     holder.innerHTML='<div class="uxMiniMapSkeleton">No mapped pin for this site · use the location link below</div>';
+     return;
+   }
    if(!window.L)return;
    try{
      holder.replaceChildren();
      const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:true});
      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OSM</a>'}).addTo(map);
-     // White marker locates the West End; muted burgundy marks programme sites.
-     const center=[51.5074,-.1278];
-     L.circleMarker(center,{radius:3.5,color:'#414443',weight:2,fillColor:'#fff5e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
-     for(const s of sites)L.circleMarker([s.lat,s.lng],{radius:5.5,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(s.pc);
-     const bounds=L.latLngBounds([center,...sites.map(x=>[x.lat,x.lng])]);
-     map.fitBounds(bounds,{padding:[20,20],maxZoom:12,animate:false});
+     const central=[51.5074,-.1278];
+     L.circleMarker(central,{radius:3.5,color:'#444',weight:1.8,fillColor:'#f6ede0',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     L.circleMarker([selected.lat,selected.lng],{radius:5.8,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
+     map.fitBounds(L.latLngBounds([central,[selected.lat,selected.lng]]),{padding:[20,20],maxZoom:12,animate:false});
      miniMaps.set(holder,map);
      requestAnimationFrame(()=>{if(holder.isConnected)map.invalidateSize(false)});
-   }catch(e){holder.textContent='Map unavailable — see route link below'}
+   }catch(e){holder.textContent='Map unavailable — use the route link'}
  }
  function enableMini(holder){
    if(!holder)return;
@@ -329,20 +341,48 @@
    else if(holder.getBoundingClientRect().top<window.innerHeight+200)mapVisible(holder);
  }
  function locationPanel(p){
-   const guides=window.OrielLocationGuide;
-   const pts=getSites(p);
-   const loc=guides?.lookup(p,pts)||{headline:p.region||'Location',relative:'',connections:'Check the postcode and journey.',detail:'',source:'tfl',postcodes:p.postcodes||[]};
-   const panel=document.createElement('div');panel.className='uxLocationPanel';
+   const guides=window.OrielLocationGuide,sites=getSites(p);
+   const panel=document.createElement('div');panel.className='uxLocationPanel';panel.dataset.uxSiteIndex='0';
    const title=document.createElement('div');title.className='uxLocationTitle';title.textContent='Location & connections';panel.append(title);
-   const headline=document.createElement('div');headline.className='uxLocationSummary';headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');panel.append(headline);
-   const minimap=document.createElement('div');minimap.className='uxMiniMap';minimap.innerHTML='<div class="uxMiniMapSkeleton">Map appears here when visible</div>';panel.append(minimap);
-   const info=document.createElement('div');info.className='uxLocationInfo';info.textContent=loc.connections+' '+loc.detail;panel.append(info);
-   const foot=document.createElement('div');foot.className='uxMapFootnote';
-   foot.textContent=loc.postcodes.length>1?'Training locations: '+loc.postcodes.join(' · '):'Site postcode: '+(loc.postcodes[0]||'Not provided');
-   panel.append(foot);
+   const bar=document.createElement('div');bar.className='uxSiteBar';panel.append(bar);
+   const labels=document.createElement('div');labels.className='uxSiteHeading';bar.append(labels);
+   const siteTitle=document.createElement('strong');siteTitle.className='uxSiteName';labels.append(siteTitle);
+   const count=document.createElement('small');count.className='uxSiteNumber';labels.append(count);
+   const headline=document.createElement('div');headline.className='uxLocationSummary';panel.append(headline);
+   const map=document.createElement('div');map.className='uxMiniMap';map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';panel.append(map);
+   const info=document.createElement('div');info.className='uxLocationInfo';panel.append(info);
+   const foot=document.createElement('div');foot.className='uxMapFootnote';panel.append(foot);
    const links=document.createElement('div');links.className='uxMapLinks';
-   const link=document.createElement('a');link.target='_blank';link.rel='noopener noreferrer';link.textContent='Check journey ↗';link.href=(guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/');links.append(link);
-   const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open location ↗';maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.postcodes||[])[0]||p.title||'London')+', UK';links.append(maps);panel.append(links);
+   const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Check rail/Tube route ↗';links.append(route);
+   const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open selected site ↗';links.append(maps);panel.append(links);
+   const refreshSite=()=>{
+     const i=Number(panel.dataset.uxSiteIndex)||0;
+     const site=sites[i]||{pc:(p.postcodes||[])[i]||'',lat:null,lng:null};
+     const scoped={...p,postcodes:[site.pc]};
+     const loc=guides?.lookup(scoped,site.lat===null?[]:[site])||{headline:p.region||'Location',relative:'',connections:'Check precise location.',detail:'',source:'tfl'};
+     siteTitle.textContent=siteName(p,site,i,sites.length);
+     count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
+     headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
+     info.textContent=loc.connections+' '+(sites.length>1?'Each training site may need a different commute.':loc.detail||'');
+     foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
+     route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
+     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((site.pc||p.title||'London')+', UK');
+     if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
+     map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';
+     if(panel.isConnected&&panel.getBoundingClientRect().width>0)requestAnimationFrame(()=>mapVisible(map));
+   };
+   if(sites.length>1){
+     const controls=document.createElement('div');controls.className='uxSiteControls';bar.append(controls);
+     const addArrow=(text,delta,label)=>{
+       const b=document.createElement('button');b.className='btn uxSiteArrow';b.type='button';b.textContent=text;b.setAttribute('aria-label',label);
+       b.addEventListener('click',()=>{
+         panel.dataset.uxSiteIndex=String((Number(panel.dataset.uxSiteIndex)+delta+sites.length)%sites.length);
+         refreshSite();
+       });controls.append(b);
+     };
+     addArrow('‹',-1,'Previous training site');addArrow('›',1,'Next training site');
+   }
+   refreshSite();
    return panel;
  }
  function enhanceCard(article){
