@@ -218,4 +218,52 @@
   },400);
   document.addEventListener('desk:action',()=>{if(getPlacements().length)showComparison()});
   refresh();
+  // Shortlist viewing order is a presentation preference only.
+  // Reorder rendered rows, never modify the desk's saved ranks or localStorage state.
+  const shortlistOrderKey='oriel-shortlist-view-order-v1';
+  const shortlistSelect=$('shortlistViewOrder');
+  const shortlistList=$('shortlistList');
+  if(shortlistSelect&&shortlistList){
+    let displayOrder='asc';
+    try{if(localStorage.getItem(shortlistOrderKey)==='desc')displayOrder='desc'}catch{}
+    shortlistSelect.value=displayOrder;
+    const priorityNumber=row=>{
+      const label=row.querySelector('.rank-controls strong');
+      const value=Number((label?.textContent||'').replace(/[^0-9]/g,''));
+      return Number.isFinite(value)?value:0;
+    };
+    const arrangeShortlist=()=>{
+      const rows=[...shortlistList.children].filter(row=>row.classList.contains('rank-row'));
+      if(!rows.length)return;
+      const direction=displayOrder==='desc'?-1:1;
+      const sorted=[...rows].sort((a,b)=>direction*(priorityNumber(a)-priorityNumber(b)));
+      if(rows.some((row,i)=>row!==sorted[i])){
+        // Rows keep their rank numbers, notes and controls: only the visual sequence changes.
+        shortlistList.replaceChildren(...sorted);
+      }
+      sorted.forEach(row=>{
+        const higher=row.querySelector('[data-move="up"]');
+        const lower=row.querySelector('[data-move="down"]');
+        if(higher){
+          higher.textContent=displayOrder==='desc'?'↓':'↑';
+          higher.setAttribute('aria-label','Move to higher priority, closer to #1');
+          higher.title='Move to higher priority, closer to #1';
+        }
+        if(lower){
+          lower.textContent=displayOrder==='desc'?'↑':'↓';
+          lower.setAttribute('aria-label','Move to lower priority, farther from #1');
+          lower.title='Move to lower priority, farther from #1';
+        }
+      });
+    };
+    shortlistSelect.addEventListener('change',()=>{
+      displayOrder=shortlistSelect.value==='desc'?'desc':'asc';
+      try{localStorage.setItem(shortlistOrderKey,displayOrder)}catch{}
+      arrangeShortlist();
+    });
+    const observer=new MutationObserver(arrangeShortlist);
+    observer.observe(shortlistList,{childList:true});
+    arrangeShortlist();
+  }
+
 })();
