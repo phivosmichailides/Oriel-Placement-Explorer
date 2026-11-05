@@ -115,6 +115,21 @@
    requestAnimationFrame(()=>requestAnimationFrame(()=>{window.scrollTo({top:y,behavior:'instant'});syncFloating();snapshot()}));
  },true);
  window.addEventListener('pagehide',()=>snapshot());
+ // Keep whole-interface colours and map-pin colours adjacent, but independent.
+ const arrangePreferenceColours=()=>{
+   const settings=document.querySelector('#prefs .settings'),appearance=settings?.querySelector('.uxAppearanceSettings');
+   if(!settings||!appearance)return false;
+   const mapCard=[...settings.querySelectorAll('.settingsCard')].find(c=>c.querySelector('h2')?.textContent.trim()==='Map colours');
+   if(!mapCard)return false;
+   mapCard.classList.add('uxMapColourSettings');
+   if(mapCard.previousElementSibling!==appearance)appearance.after(mapCard);
+   mapCard.querySelector('h2').textContent='🗺 Map pin colours';
+   const description=mapCard.querySelector('p.muted');
+   if(description)description.textContent='Customise the map markers separately from the interface theme. Try the circular swatches below; the desk palette is controlled by the box next to this one.';
+   return true;
+ };
+ let colourTries=0;
+ const colourTimer=setInterval(()=>{colourTries++;if(arrangePreferenceColours()||colourTries>150)clearInterval(colourTimer)},140);
  const saved=getSaved();
  function restore(){
    if(!saved||restoreDone)return;
