@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="desk.css?v=20261015-no-ratings">
 <link rel="stylesheet" href="theme-outcome.css?v=20261105">
 <link rel="stylesheet" href="workspace-themes.css?v=20261105c">
+<link rel="stylesheet" href="simulator-refinement.css?v=20261105d">
 </head>
 <body>
 <div class="shell">
@@ -105,17 +106,17 @@
 </section>
 <section class="panel" id="compare"><div class="sectionHero card"><div><div class="eyebrow">SIDE BY SIDE</div><h2>⚖️ Compare placements</h2><p>Add up to five from Explore.</p></div><button class="btn" id="clearCompare">Clear comparison</button></div><div class="compareWrap" id="compareArea"></div></section>
 <section class="panel" id="prefs"><div class="settings"><div class="settingsCard card"><div class="eyebrow">YOUR PROFILE</div><h2>⚙️ What matters</h2><p class="muted">Change these whenever you change your mind. They only affect recommendations.</p><div id="weights"></div></div><div class="settingsCard card"><div class="eyebrow">LONDON</div><h2>🧭 Area preferences</h2><label class="field"><span>Areas you like</span><textarea id="likes"></textarea></label><label class="field"><span>Areas you’d rather avoid</span><textarea id="avoids"></textarea></label><button class="btn primary" id="savePrefs">Save preferences</button></div><div class="settingsCard card"><div class="eyebrow">BACKUP</div><h2>🛟 Original explorer</h2><p class="muted">Built from Acid555’s original Oriel Placement Explorer. The original interface and data snapshot are preserved here.</p><a class="btn" style="display:inline-block;text-decoration:none" href="legacy.html">Open legacy explorer ↗</a></div><div class="settingsCard card uxAppearanceSettings">
-  <div class="eyebrow">PERSONALISE THE APP</div>
-  <h2>🎨 Appearance</h2>
-  <p class="muted">Six calming palettes, each designed for light and dark mode. Themes only change colours and layout — never your saved Oriel choices.</p>
+  <div class="eyebrow">WHOLE-SITE APPEARANCE · NOT MAP PINS</div>
+  <h2>🎨 Interface colour themes</h2>
+  <p class="muted">Choose a coordinated colour identity for the <b>entire Placement Desk</b> — backgrounds, panels, buttons, headings, labels and controls. Each design has separate light and dark versions. Map pin colours are a different setting beside this panel.</p>
   <div class="uxThemeRow"><span>Brightness</span><div class="uxLayoutControls" role="group" aria-label="Appearance brightness"><button class="btn" type="button" data-ux-brightness="light" aria-pressed="false">☀ Light</button><button class="btn" type="button" data-ux-brightness="dark" aria-pressed="false">☾ Dark</button></div></div>
   <div class="uxPaletteOptions" id="uxPaletteOptions" role="group" aria-label="Colour theme">
     <button type="button" class="uxPaletteOption" data-ux-palette="forest" aria-pressed="true"><span class="uxPaletteSwatches"><i style="--swatch:#536d58"></i><i style="--swatch:#dccdba"></i><i style="--swatch:#2a332c"></i></span><b>Methadone Forest</b><small>sage · cream · charcoal</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="copper" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#3f6589"></i><i style="--swatch:#b3d7de"></i><i style="--swatch:#1e2d40"></i></span><b>Copper Blue</b><small>steel · sky · midnight</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="mauve" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#875f85"></i><i style="--swatch:#d5bccc"></i><i style="--swatch:#312436"></i></span><b>Mauve</b><small>plum · dusty rose</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="amber" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#b67c45"></i><i style="--swatch:#edd7bc"></i><i style="--swatch:#3f3228"></i></span><b>Warm Amber</b><small>clay · ochre · sand</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="cocoa" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#77584c"></i><i style="--swatch:#c9ac94"></i><i style="--swatch:#34271f"></i></span><b>Cocoa Brown</b><small>espresso · cream</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="mono" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#282a2c"></i><i style="--swatch:#93999d"></i><i style="--swatch:#f1f2f1"></i></span><b>Monochrome</b><small>black · white · graphite</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="copper" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#3f6589"></i><i style="--swatch:#b3d7de"></i><i style="--swatch:#1e2d40"></i></span><b>Copper Sulfate · Blue</b><small>steel · sky · midnight</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="mauve" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#875f85"></i><i style="--swatch:#d5bccc"></i><i style="--swatch:#312436"></i></span><b>Mauveine · Violet</b><small>plum · dusty rose</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="amber" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#b67c45"></i><i style="--swatch:#edd7bc"></i><i style="--swatch:#3f3228"></i></span><b>Bunsen · Amber</b><small>clay · ochre · sand</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="cocoa" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#77584c"></i><i style="--swatch:#c9ac94"></i><i style="--swatch:#34271f"></i></span><b>Theobromine · Brown</b><small>espresso · cream</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="mono" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#282a2c"></i><i style="--swatch:#93999d"></i><i style="--swatch:#f1f2f1"></i></span><b>Carbon · Monochrome</b><small>black · white · graphite</small></button>
   </div>
 </div><div class="settingsCard card"><div class="eyebrow">RESET</div><h2>🧹 Start fresh</h2><p class="muted">Clears your ratings, notes and uploaded CSV on this browser only.</p><button class="btn danger" id="clearData">Clear local data</button></div></div></section>
 </div>
@@ -125,7 +126,8 @@
   <div class="uxDrawerHead"><div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="uxDrawerTitle">Shortlisted programmes</h2><p>Your saved choices stay here while you explore.</p></div><button type="button" class="btn" id="uxDrawerClose" aria-label="Close shortlist panel">✕</button></div>
   <div class="uxDrawerTools"><input id="uxDrawerSearch" type="search" placeholder="Search your shortlist by name or code" aria-label="Search shortlisted programmes"><button class="btn" type="button" data-ux-navigate="shortlist">Open full shortlist</button></div>
   <div class="uxDrawerItems" id="uxDrawerItems"></div>
-</aside><footer class="app-footer">Based on <a href="https://github.com/Acid555/Oriel-Placement-Explorer" target="_blank" rel="noopener">Acid555’s Oriel Placement Explorer</a> · Built-in snapshot: 1 October 2026, not live Oriel data. Upload your latest CSV to refresh. Scores are text-based suggestions, not verified working conditions.</footer><div class="toast" role="status" id="toast"></div>
+</aside><button class="uxBackTop" type="button" id="uxBackTop" aria-label="Scroll to the top" title="Back to top">↑ <span>Top</span></button>
+<footer class="app-footer">Based on <a href="https://github.com/Acid555/Oriel-Placement-Explorer" target="_blank" rel="noopener">Acid555’s Oriel Placement Explorer</a> · Built-in snapshot: 1 October 2026, not live Oriel data. Upload your latest CSV to refresh. Scores are text-based suggestions, not verified working conditions.</footer><div class="toast" role="status" id="toast"></div>
 <script src="vendor/leaflet.js"></script>
 <script src="research-core.js?v=1"></script>
 <script src="research.js?v=20261015-no-ratings"></script>
@@ -135,5 +137,7 @@
 <script src="app.js?v=20261015-no-ratings"></script>
 <script src="theme-outcome.js?v=20261105"></script>
 <script src="workspace-ux.js?v=20261105c"></script>
+<script src="simulator.js?v=20261105d"></script>
+<script src="session-ui.js?v=20261105d"></script>
 </body>
 </html>
