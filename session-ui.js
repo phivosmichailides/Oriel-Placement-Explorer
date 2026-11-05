@@ -21,7 +21,7 @@
    const tab=getTab();
    const positions={...(current.positions||{})};
    if(position)positions[tab]=Math.max(0,Math.round(window.scrollY||0));
-   storage.set(S,SESSION,JSON.stringify({version:1,tab,positions,filters:currentFilters(),savedAt:Date.now()}));
+   storage.set(S,SESSION,JSON.stringify({version:1,tab,positions,filters:currentFilters(),explorePage:window.uxGetExplorePage?.()||1,savedAt:Date.now()}));
  }
  function applyZoom(next){
    zoom=Math.max(70,Math.min(130,Math.round(next/5)*5));
@@ -97,7 +97,7 @@
  },{passive:true});
  document.addEventListener('desk:after-navigation',e=>{
    lastTab=e.detail?.to||getTab();updateFloating();
-   requestAnimationFrame(()=>snapshot());
+   setTimeout(()=>snapshot(),150);
  });
  document.addEventListener('desk:before-navigation',e=>{lastTab=e.detail?.from||getTab();snapshot()});
  // Capture the scroll position before a filter re-renders the results list.
@@ -150,6 +150,7 @@
      document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',quick.has(x.dataset.q)));
    }
    try{explore()}catch{}
+   try{window.uxSetExplorePage?.(saved.explorePage||1)}catch{}
    try{if(typeof reco==='function')reco()}catch{}
    const available=new Set([...document.querySelectorAll('.panel')].map(x=>x.id));
    const tab=available.has(saved.tab)?saved.tab:'explore';
