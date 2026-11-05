@@ -60,7 +60,7 @@
     const legend=document.createElement('div');
     legend.id='sectorMapLegend';
     legend.setAttribute('aria-label','Map pin colour legend');
-    legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:#fff';
+    legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:var(--panel)';
     const renderLegend=()=>{refreshPalette();legend.innerHTML=[
       ['Hospital','Hospital'],
       ['General Practice','GP'],
@@ -68,7 +68,7 @@
       ['Industry','Industry'],
       ['Mixed','Mixed / split'],
       ['Other','Other']
-    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Dark ring = shortlisted · red ring = excluded</span>';};
+    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
@@ -103,7 +103,7 @@
         const mapSector=groupMapSector(entries);
         const preferred=entries.some(p=>SHORT.has(mark(p).status));
         const excluded=entries.every(isExcluded);
-        const stroke=excluded?'#b74444':preferred?'#172b22':'#ffffff';
+        const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
         const radius=(entries.length>1?9:6)+(preferred?1:0);
         const pin=L.circleMarker(c,{
           radius,
