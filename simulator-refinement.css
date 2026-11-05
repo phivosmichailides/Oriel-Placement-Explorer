@@ -1,0 +1,233 @@
+/* Editorial Oriel refinement — neutral typography, wine/dark contrast, comfortable cards and simulator. */
+/* Light mode deliberately preserves the existing olive/cream/burgundy palette. */
+html,html body,html button,html input,html select,html textarea,html .card,html .tab,html .chip,html .badge,html .simCol{
+  font-family:"Times New Roman",Times,Georgia,serif!important;
+}
+html body{font-size:15px}
+html .brand h1{font-weight:700;letter-spacing:-.025em}
+html .card,html .placement,html .settingsCard,html .map-card{border-radius:18px}
+html .btn,html select,html input,html textarea{border-radius:11px}
+html .btn{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease}
+html button:focus-visible,html input:focus-visible,html select:focus-visible,html a:focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+html .eyebrow,html .fitLabel{font-size:11px;font-weight:750;letter-spacing:.09em}
+html .badge{font-size:12px}
+html .logo,html[data-theme="light"] .logo,html[data-theme="dark"] .logo{
+  background:none!important;color:var(--ink)!important;box-shadow:none!important;border:0!important;
+  width:43px;height:48px;border-radius:0;display:flex;align-items:center;justify-content:center;
+}
+html .logo svg{display:block;width:40px;height:40px;color:inherit;stroke-width:1.4}
+html[data-theme="dark"] .logo svg{color:#f1dfe0}
+/* Main page zoom; affects layout and controls, unlike a font-only adjustment. */
+:root{--ux-page-zoom:1}
+html .shell{zoom:var(--ux-page-zoom)}
+.uxGlobalZoom{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid var(--line);background:var(--panel);border-radius:13px}
+.uxGlobalZoom .btn{min-height:31px;height:31px;min-width:28px;padding:2px 7px;border:0;background:transparent;box-shadow:none;font-size:18px;font-weight:600}
+.uxGlobalZoom output{min-width:34px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums;color:var(--mut);font-weight:700}
+.uxGlobalZoom .btn:hover{background:var(--soft)}
+html[data-theme="dark"] .uxGlobalZoom .btn{background:transparent;color:var(--ink)}
+html[data-theme="dark"] .uxGlobalZoom .btn:hover{background:var(--soft)}
+/* Default night version of the olive/cream theme: wine/burgundy rather than dark-green. */
+html[data-theme="dark"][data-palette="forest"]{
+ --bg:#1d161b;--panel:#30242b;--soft:#3d3038;--line:#66535d;
+ --ink:#f8f0ec;--mut:#e1cfd3;--dark:#130e11;
+ --ux-accent:#e6b4b9;--ux-accent-ink:#ffe0e1;
+ --ux-accent-soft:#583840;--ux-accent-border:#9e757b;
+ --ux-pick:#edd1c4;--ux-pick-soft:#4d343b;--ux-pick-border:#a0737d;
+ --green:#f5d3d4;--blue:#f0bcc3;
+}
+html[data-theme="dark"][data-palette="forest"] .productIntro{background:linear-gradient(120deg,#30212c,#403038)}
+html[data-theme="dark"][data-palette="forest"] .tabs{background:#35272e;border-color:#5b4953}
+html[data-theme="dark"][data-palette="forest"] .tab.active{background:#58404d;color:#fff0e9}
+html[data-theme="dark"][data-palette="forest"] .tab{color:#e6d3d5}
+html[data-theme="dark"][data-palette="forest"] .chip.on{background:#d0a5ad;color:#24171b;border-color:#d0a5ad}
+html[data-theme="dark"][data-palette="forest"] .btn.primary{background:#d6aeb4;color:#271a1f;border-color:#d6aeb4}
+html[data-theme="dark"][data-palette="forest"] .btn.primary:hover{background:#e6c0c4}
+html[data-theme="dark"][data-palette="forest"] .uxPaletteOption[aria-pressed="true"]{background:#49333c;color:#fff1f0}
+html[data-theme="dark"] .notice,html[data-theme="dark"] .recoWarn,html[data-theme="dark"] .miniFit,
+html[data-theme="dark"] .fitColumn,html[data-theme="dark"] .fitColumn.positive,html[data-theme="dark"] .fitColumn.caution{
+ color:var(--ink)!important;border-color:var(--line)!important;background:var(--soft)!important;
+}
+html[data-theme="dark"] .fitLabel,html[data-theme="dark"] .fitColumn.caution .fitLabel{
+ color:var(--ink)!important;
+}
+html[data-theme="dark"] .fitPoint{color:var(--ink)!important}
+html[data-theme="dark"] .score b,html[data-theme="dark"] .score small,html[data-theme="dark"] .score span,html[data-theme="dark"] .score em{color:inherit!important}
+html[data-theme="dark"] .badge{font-weight:600}
+html[data-theme="dark"] .outcomeInfo,html[data-theme="dark"] .uxAppearanceSettings{border-color:var(--line)}
+html[data-theme="dark"] #placementMap .leaflet-tile-pane{filter:saturate(.7) brightness(.82) contrast(.94)!important}
+html[data-theme="dark"] .uxMiniMap .leaflet-tile-pane{filter:saturate(.65) brightness(.8) contrast(.93)!important}
+html[data-theme="dark"] #sectorMapLegend{background:var(--panel)!important;color:var(--ink)!important}
+/* Personal fit enlarged; explanation columns compact and centred; location retains its useful width. */
+.placement .fit.fitExpanded.uxFitWithLocation{
+ display:grid;grid-template-columns:minmax(158px,190px) minmax(230px,1fr) minmax(220px,310px);
+ gap:13px;align-items:start;justify-content:space-between;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .score{min-height:160px;padding:18px 17px;border:1px solid #0001;border-radius:16px;justify-content:center;align-items:center;text-align:center}
+.placement .score span{font-size:12px;letter-spacing:.06em}
+.placement .score b{font-size:42px;line-height:1.2;letter-spacing:-.02em}
+.placement .score small{font-size:16px;font-weight:650}
+.placement .score em{font-size:11px;line-height:1.35}
+.placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+ display:flex;flex-direction:column;gap:9px;align-items:center;justify-content:center;
+ min-width:0;align-self:center;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn{
+ align-self:center;justify-self:center;width:max-content;min-width:min(205px,100%);max-width:min(100%,330px);
+ padding:11px 15px;border-radius:14px;height:auto;text-align:center;box-shadow:none;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{font-size:12px;font-weight:800;margin-bottom:7px;line-height:1.3}
+.placement .fit.fitExpanded.uxFitWithLocation .fitPoint{font-size:13px;line-height:1.5;font-weight:500;color:var(--ink);margin:2px auto;max-width:29ch}
+.placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{width:100%;max-width:310px;justify-self:end}
+.placement .score[data-fit-tone="poor"]{background:#f3dfe1!important;color:#713d45!important;border-color:#e3bdc2!important}
+.placement .score[data-fit-tone="mixed"]{background:#faebdd!important;color:#80502b!important;border-color:#e9ceb5!important}
+.placement .score[data-fit-tone="good"]{background:#f2efcf!important;color:#626032!important;border-color:#dfdaa7!important}
+.placement .score[data-fit-tone="excellent"]{background:#e5eee0!important;color:#345a42!important;border-color:#cbdcc5!important}
+.placement .score[data-fit-tone] span,.placement .score[data-fit-tone] small,.placement .score[data-fit-tone] em{color:inherit!important}
+html[data-theme="dark"] .placement .score[data-fit-tone="poor"]{background:#5b303a!important;color:#ffe4e4!important;border-color:#925967!important}
+html[data-theme="dark"] .placement .score[data-fit-tone="mixed"]{background:#55402f!important;color:#ffe7ca!important;border-color:#826448!important}
+html[data-theme="dark"] .placement .score[data-fit-tone="good"]{background:#4b4c32!important;color:#fbf2c9!important;border-color:#7a7852!important}
+html[data-theme="dark"] .placement .score[data-fit-tone="excellent"]{background:#294b3a!important;color:#d9f7e0!important;border-color:#577562!important}
+/* Small explanatory boxes can shrink to their content; avoid empty stretched slabs. */
+html[data-theme="light"] .fitColumn.positive{background:#f1f3eb!important;border-color:#dfe5d4!important}
+html[data-theme="light"] .fitColumn.caution{background:#f5efea!important;border-color:#e8dbcf!important}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(0,1fr)}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitBreakdown{display:flex;flex-direction:row;flex-wrap:wrap}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{max-width:100%}
+@media(max-width:1100px){
+ .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(150px,185px) minmax(210px,1fr) minmax(210px,285px);gap:9px}
+ .placement .fit.fitExpanded.uxFitWithLocation .fitColumn{max-width:100%}
+}
+@media(max-width:850px){
+ .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(145px,180px) minmax(230px,1fr)}
+ .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:1/-1;max-width:100%;justify-self:stretch}
+}
+@media(max-width:610px){
+ .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr}
+ .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{display:flex;flex-direction:column}
+ .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:auto}
+ .placement .fit.fitExpanded.uxFitWithLocation .score{min-height:0}
+}
+/* Decision selector: editorial rounded popover instead of default system grey/blue. */
+html .decisionPicker{position:relative}
+html .decisionPicker summary{background:var(--panel)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none;border-radius:13px;padding:10px 12px;font-size:14px}
+html .decisionPicker summary:hover,html .decisionPicker[open] summary{background:var(--soft)!important;border-color:var(--ux-accent-border)!important}
+html .decisionChoices{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:0 14px 33px #0003;border-radius:18px;padding:7px;width:235px;z-index:200}
+html .decisionChoice{color:var(--ink);font-size:14px;font-weight:550;border-radius:12px;gap:9px;transition:background-color .14s ease}
+html .decisionChoice>span:first-child{font-size:19px;width:25px;text-align:center;color:var(--ux-pick)}
+html .decisionChoice:hover,html .decisionChoice[aria-pressed="true"]{background:var(--ux-pick-soft)!important;border:1px solid var(--ux-pick-border);color:var(--ink)!important}
+html .decisionChoice[aria-pressed="true"]{font-weight:700}
+html .decisionTick{color:var(--ux-pick)}
+html[data-theme="dark"] .decisionChoices{background:var(--panel)!important}
+html[data-theme="dark"] .decisionChoice{color:var(--ink)}
+/* The map's greenery remains visible; its legend is a quiet integrated footer. */
+html #sectorMapLegend{border-radius:12px!important}
+html .map-caption{background:var(--panel);border-color:var(--line)}
+/* Whole-site palettes next to map palette, with round swatches. */
+#prefs .settings .uxAppearanceSettings{grid-column:auto;align-self:start}
+#prefs .settings .uxAppearanceSettings+.settingsCard{align-self:start}
+.uxPaletteOptions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.uxPaletteOption{border-radius:17px;min-height:103px;padding:12px;transition:background-color .15s,border-color .15s,transform .12s}
+.uxPaletteOption:hover{transform:translateY(-1px);border-color:var(--ux-accent-border)}
+.uxPaletteSwatches{gap:0;align-items:center}
+.uxPaletteSwatches i{width:28px;height:28px;border-radius:50%;margin-left:-4px;border:2px solid var(--panel);box-shadow:0 2px 5px #0002}
+.uxPaletteSwatches i:first-child{margin-left:0}
+.uxPaletteOption b{font-size:14px}
+.uxPaletteOption small{font-size:12px}
+#prefs .settings .colourChoice{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--soft);border-radius:13px;padding:9px 12px;margin:6px 0;color:var(--ink);font-size:14px;font-weight:650}
+#prefs .settings input[type="color"]{appearance:none;-webkit-appearance:none;width:30px;height:30px;flex:0 0 30px;border:0;background:transparent;padding:0;cursor:pointer}
+#prefs .settings input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+#prefs .settings input[type="color"]::-webkit-color-swatch{border:2px solid var(--panel);border-radius:50%;box-shadow:0 2px 5px #0002}
+#prefs .settings input[type="color"]::-moz-color-swatch{border-radius:50%;border:2px solid var(--panel)}
+@media(max-width:980px){#prefs .settings .uxAppearanceSettings{grid-column:1/-1}}
+@media(max-width:650px){.uxPaletteOptions{grid-template-columns:1fr 1fr}}
+/* Collapsible filters, persistent optional floating quick controls. */
+.uxFilterHeadActions{display:flex;align-items:center;gap:5px}
+.uxIconControl{border:1px solid var(--line);background:var(--panel);color:var(--ink);height:32px;width:32px;border-radius:10px;display:grid;place-items:center;cursor:pointer}
+.uxIconControl:hover{background:var(--soft);border-color:var(--ux-accent-border)}
+#explore.uxFiltersCollapsed .layout{grid-template-columns:minmax(0,1fr)}
+#explore.uxFiltersCollapsed #uxFilterSidebar{display:none}
+.uxFloatingTools{position:fixed;right:17px;bottom:146px;z-index:650;display:flex;align-items:flex-end;gap:7px;flex-direction:column;visibility:hidden;opacity:0;pointer-events:none;transform:translateX(10px);transition:opacity .17s,transform .17s}
+.uxFloatingTools.uxFloatVisible{visibility:visible;opacity:1;pointer-events:auto;transform:none}
+.uxFloatHandle{display:grid;place-items:center;width:41px;height:41px;border-radius:50%;border:1px solid var(--ux-accent-border);color:var(--ux-accent-ink);background:var(--panel);box-shadow:0 5px 15px #0002;cursor:pointer}
+.uxFloatInner{min-width:220px;width:240px;padding:11px;border-radius:17px;border:1px solid var(--line);box-shadow:0 12px 35px #0003;background:var(--panel);display:grid;gap:9px}
+.uxFloatInner[hidden]{display:none}
+.uxFloatRow{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ink);font-size:14px;font-weight:600}
+button.uxFloatRow{width:100%;border:0;border-radius:10px;padding:8px;background:var(--soft);text-align:left;cursor:pointer}
+.uxFloatRow input[type="checkbox"]{accent-color:var(--ux-pick);width:17px;height:17px}
+.uxFloatRow select{width:115px;min-height:32px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;padding:4px 7px;font-size:13px}
+.uxBackTop{position:fixed;right:18px;bottom:88px;z-index:651;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .16s,transform .16s;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 5px 20px #0002;cursor:pointer}
+.uxBackTop.uxTopVisible{visibility:visible;opacity:1;pointer-events:auto;transform:translateY(0)}
+.uxBackTop span{display:none}
+.uxBackTop:hover,.uxFloatHandle:hover{background:var(--soft)}
+/* No sudden accordion animation, just a gentle result surface fade. */
+#results>.placement,#results>.empty{animation:uxAppear .16s ease-out both}
+@keyframes uxAppear{from{opacity:.72;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+#results{overflow-anchor:none;min-width:0}
+@media(prefers-reduced-motion:reduce){#results>.placement,#results>.empty{animation:none}.uxFloatingTools,.uxBackTop{transition:none}}
+@media(max-width:850px){.uxFloatingTools{bottom:143px;right:12px}.uxBackTop{bottom:88px;right:12px}.uxGlobalZoom{order:1}}
+/* Daily work information from the original programme description, without inventing actual shifts. */
+.uxWorkSchedule{margin:8px 0 3px;border:1px solid var(--line);border-radius:12px;background:var(--soft);max-width:620px;overflow:hidden}
+.uxWorkSchedule summary{list-style:none;cursor:pointer;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ink);font-size:13px;font-weight:700}
+.uxWorkSchedule summary::-webkit-details-marker{display:none}
+.uxWorkSchedule summary:after{content:"⌄";font-size:16px;color:var(--mut)}
+.uxWorkSchedule[open] summary:after{content:"⌃"}
+.uxWorkSchedule .uxWorkDetail{padding:0 12px 12px;color:var(--mut);font-size:13px;line-height:1.5}
+.uxWorkDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:8px 0}
+.uxWorkDays>div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 3px;text-align:center;font-size:11px}
+.uxWorkDays b{display:block;font-size:11px;color:var(--ink)}
+.uxWorkDays span{display:block;font-size:9px;color:var(--mut)}
+html[data-layout="grid"] .placement:not(.uxExpanded) .uxWorkSchedule{display:none}
+/* Simulator columns: compact, rounded and designed for keyboard and drag/drop usage. */
+#simulator{min-width:0}
+.simHero{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px}
+.simHero h2{font-size:30px;margin:5px 0 8px}
+.simHero p{max-width:800px;line-height:1.6;color:var(--mut)}
+.simSummary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:13px 0;padding:17px 20px;background:var(--soft)}
+.simSummaryBig{display:flex;align-items:baseline;gap:7px;font-variant-numeric:tabular-nums;font-size:30px;font-weight:700;color:var(--ink)}
+.simSummaryBig strong:first-child{color:var(--ux-pick)}
+.simSummaryBig span{color:var(--mut);font-size:19px}
+.simSummary p{margin:5px 0 0;color:var(--mut);font-size:13px}
+.simTools{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.simTools>.btn{font-size:12px;padding:9px}
+.simZoom{display:flex;gap:4px;align-items:center;background:var(--panel);padding:4px;border:1px solid var(--line);border-radius:12px}
+.simZoom .btn{min-height:31px;min-width:29px;padding:4px;border:0;background:transparent;font-size:16px}
+.simZoom output{min-width:40px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums;color:var(--mut)}
+.simHint{font-size:14px;line-height:1.6;color:var(--mut);margin:12px 0}
+.simViewport{overflow-x:auto;padding-bottom:10px;border-radius:18px}
+.simColumns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:12px;min-width:790px}
+.simCol{background:var(--panel);border:1px solid var(--line);border-radius:19px;min-width:0;overflow:hidden}
+.simCol[data-sim-col="preferred"]{border-top:4px solid var(--ux-pick)}
+.simCol[data-sim-col="neutral"]{border-top:4px solid var(--ux-accent)}
+.simCol[data-sim-col="unwanted"]{border-top:4px solid #a27b79}
+.simCol>header{padding:15px 12px 12px;background:var(--soft);border-bottom:1px solid var(--line)}
+.simColHeading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.simColHeading h3{font-size:22px;font-weight:700;margin:3px 0 13px;color:var(--ink)}
+.simColHeading h3 small{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--mut);vertical-align:middle}
+.simColHeading>span{font-size:22px;color:var(--ux-pick)}
+.simCol label{display:block;color:var(--ink);font-size:13px;margin:4px 0 5px}
+.simCol input[type="search"]{width:100%;padding:10px 12px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;font-size:14px}
+.simResults{max-height:210px;overflow-y:auto;display:grid;gap:4px}
+.simResult{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px;text-align:left;cursor:pointer}
+.simResult:hover{background:var(--ux-accent-soft);border-color:var(--ux-accent-border)}
+.simResultCode{font-size:13px;color:var(--ux-pick);font-weight:750}
+.simResultName{font-size:12px;line-height:1.3}
+.simResultStatus{font-size:10px;color:var(--mut)}
+.simList{padding:11px;min-height:190px;display:grid;align-content:start;gap:7px}
+.simEmpty{padding:22px 8px;text-align:center;font-size:13px;color:var(--mut)}
+.simMore{padding:0 11px 14px;text-align:center}
+.simItem{border:1px solid var(--line);border-radius:13px;padding:8px;display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:center;background:var(--soft);cursor:grab;transition:border-color .13s,background-color .13s}
+.simItem:hover,.simItem.simHover{border-color:var(--ux-accent-border);background:var(--ux-accent-soft)}
+.simItem.simDragging{opacity:.55}
+.simRank{display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ux-pick);font-size:14px;font-weight:750;height:32px;width:30px;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
+.simItemMain{min-width:0}
+.simItemName{font-size:13px;line-height:1.35;display:block;overflow-wrap:anywhere}
+.simItemMeta{font-size:11px;line-height:1.4;color:var(--mut);display:block;margin-top:3px}
+.simItemActions{grid-column:2;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.simIcon{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;min-width:29px;height:29px;display:grid;place-items:center;cursor:pointer;font-size:13px}
+.simIcon.simCopied{background:var(--ux-accent-soft);color:var(--ux-accent-ink)}
+.simMove{min-width:0;flex:1;padding:5px;font-size:11px;min-height:29px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px}
+.simFoot{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:15px;margin-top:10px}
+.simFoot p{font-size:13px;color:var(--mut)}
+.simFoot .btn{flex-shrink:0}
+@media(max-width:1020px){.simColumns{min-width:770px}.simHero{flex-direction:column;align-items:flex-start}}
+@media(max-width:610px){.simSummary,.simTools,.simFoot{flex-direction:column;align-items:stretch}.simTools>.btn{width:100%}.uxWorkDays{grid-template-columns:repeat(4,minmax(0,1fr))}.uxGlobalZoom output{min-width:30px}}
