@@ -49,8 +49,8 @@
    setCollapsed(false);$('uxFloatInner').hidden=true;$('uxFloatToggle')?.setAttribute('aria-expanded','false');
    const target=$('uxFilterSidebar');target?.scrollIntoView({behavior:'smooth',block:'start'});
  });
- setCollapsed(collapsed,false);
  const dock=$('uxFloatingTools'),dockToggle=$('uxFloatToggle'),dockInner=$('uxFloatInner'),topBtn=$('uxBackTop');
+ setCollapsed(collapsed,false);
  const closeDock=()=>{if(dockInner)dockInner.hidden=true;dockToggle?.setAttribute('aria-expanded','false')};
  dockToggle?.addEventListener('click',()=>{
    if(!dockInner)return;
