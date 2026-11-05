@@ -1,0 +1,422 @@
+'use strict';
+/* Browsing and layout enhancements. Saved rankings/decisions remain in the existing app state.
+   Appearance, pagination and salary assumptions live in separate local-only keys. */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const root=document.documentElement;
+ const KEYS={palette:'oriel-desk-palette-v1',layout:'oriel-desk-layout-v1'};
+ const palettes=new Set(['forest','copper','mauve','amber','cocoa','mono']);
+ const read=(k,fallback)=>{try{return localStorage.getItem(k)||fallback}catch{return fallback}};
+ const write=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
+ const getData=()=>{try{return typeof placements!=='undefined'&&Array.isArray(placements)?placements:[]}catch{return []}};
+ const getRanks=()=>{try{return typeof ranked==='function'?ranked():[]}catch{return []}};
+ const isShortlisted=p=>{try{return SHORT.has(mark(p).status)}catch{return false}};
+ const byId=()=>{
+   const list=getData();
+   if(byId.previous!==list){byId.previous=list;byId.map=new Map(list.map(p=>[String(p.id),p]))}
+   return byId.map||new Map();
+ };
+ const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const money=n=>window.OrielPay?.money(n)||'£'+Math.round(Number(n)||0).toLocaleString('en-GB');
+ let layout=read(KEYS.layout,'list')==='grid'?'grid':'list';
+ let palette=palettes.has(read(KEYS.palette,'forest'))?read(KEYS.palette,'forest'):'forest';
+ const setLayout=(next,rerender=true)=>{
+   layout=next==='grid'?'grid':'list';root.setAttribute('data-layout',layout);write(KEYS.layout,layout);
+   document.querySelectorAll('[data-ux-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxLayout===layout)));
+   if(rerender&&typeof explore==='function')explore();
+ };
+ const setPalette=next=>{
+   if(!palettes.has(next))return;
+   palette=next;root.setAttribute('data-palette',next);write(KEYS.palette,next);
+   document.querySelectorAll('[data-ux-palette]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxPalette===next)));
+ };
+ const updateBrightness=()=>{
+   const theme=root.getAttribute('data-theme')||'light';
+   document.querySelectorAll('[data-ux-brightness]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxBrightness===theme)));
+ };
+ setPalette(palette);setLayout(layout,false);updateBrightness();
+ document.addEventListener('click',e=>{
+   const layoutBtn=e.target.closest('[data-ux-layout]');
+   if(layoutBtn){setLayout(layoutBtn.dataset.uxLayout);return}
+   const paletteBtn=e.target.closest('[data-ux-palette]');
+   if(paletteBtn){setPalette(paletteBtn.dataset.uxPalette);return}
+   const brightnessBtn=e.target.closest('[data-ux-brightness]');
+   if(brightnessBtn){
+      if(root.getAttribute('data-theme')!==brightnessBtn.dataset.uxBrightness)$('themeToggle')?.click();
+      updateBrightness();return;
+   }
+ });
+ $('themeToggle')?.addEventListener('click',()=>requestAnimationFrame(updateBrightness));
+
+ const filter=$('hideShortlisted'),hideBtn=$('uxHideShortlistedBtn');
+ const syncHide=()=>{
+   if(!filter)return;
+   if(hideBtn){hideBtn.setAttribute('aria-pressed',String(filter.checked));hideBtn.textContent=filter.checked?'✓ Showing unshortlisted only':'○ Hide shortlisted'}
+ };
+ hideBtn?.addEventListener('click',()=>{
+   if(!filter)return;
+   filter.checked=!filter.checked;
+   filter.dispatchEvent(new Event('change',{bubbles:true}));
+   if(typeof reco==='function')reco();
+   syncHide();
+ });
+ filter?.addEventListener('change',()=>{page=1;syncHide();if(typeof reco==='function')reco()});
+ syncHide();
+
+ // Optional PAYE/pension preferences are deliberately separate from ranked decisions.
+ const payCard=document.createElement('div');
+ payCard.className='settingsCard card uxPaySettings';
+ payCard.innerHTML='<div class="eyebrow">PAY &amp; PENSIONS</div><h2>💷 Estimated take-home</h2><p class="muted">Shown beneath advertised annual salaries. Illustrative UK PAYE for tax year 2027/28 (England/Wales), 2027/28 National Insurance assumptions, one job and standard tax code. Actual payroll depends on pension scheme, tax code, benefits and loan repayments.</p>'+
+ '<div class="grid2"><label class="field"><span>Employee pension assumption</span><select id="uxPayPension"><option value="standard">Workplace minimum: 5% of qualifying earnings</option><option value="nhs">NHS scheme: current published tiers</option><option value="none">No pension deduction</option></select></label><label class="field"><span>Student loan</span><select id="uxPayLoan"><option value="none">No repayment</option><option value="plan5">Plan 5 (illustrative threshold)</option></select></label></div>'+
+ '<p class="smallnote" id="uxPayAssumption"></p>'+
+ '<p class="smallnote">NHS pension tiers use the published <b>2026/27</b> rates as an estimate; 2027/28 deductions may differ. Student-loan Plan 5 uses the £25,000 2026/27 reference threshold pending the applicable later figure. Pension relief model assumes the net-pay method, not salary sacrifice. A 52-week annual salary is used, even for placements beginning July/August.</p>'+
+ '<p class="smallnote"><a target="_blank" rel="noopener" href="https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances">Income Tax rates</a> · <a target="_blank" rel="noopener" href="https://www.gov.uk/national-insurance/how-much-you-pay">National Insurance</a> · <a target="_blank" rel="noopener" href="https://www.nhsbsa.nhs.uk/cy/node/1275">NHS pension tiers</a></p>';
+ document.querySelector('#prefs .settings')?.append(payCard);
+ const payPension=$('uxPayPension'),payLoan=$('uxPayLoan'),payAssumption=$('uxPayAssumption');
+ const fillPay=()=>{
+   if(!window.OrielPay)return;
+   const s=window.OrielPay.read();payPension.value=s.pension;payLoan.value=s.studentLoan;
+   if(payAssumption)payAssumption.textContent=window.OrielPay.descriptor();
+ };
+ fillPay();
+ const onPay=()=>{window.OrielPay?.save({pension:payPension.value,studentLoan:payLoan.value});fillPay()};
+ payPension?.addEventListener('change',onPay);
+ payLoan?.addEventListener('change',onPay);
+
+ // Preserve where users were in Explore even after visiting Shortlist/For You.
+ const scrollByTab=new Map(),filterSnapshots=[];
+ let currentTab='explore',pendingNavigation=null;
+ document.addEventListener('desk:before-navigation',e=>{
+   const from=e.detail?.from||currentTab;
+   if(from)scrollByTab.set(from,window.scrollY||0);
+   pendingNavigation=e.detail?.to;
+ });
+ document.addEventListener('desk:after-navigation',e=>{
+   currentTab=e.detail?.to||'explore';
+   const restore=scrollByTab.get(currentTab)||0;
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+     if(pendingNavigation!==currentTab)return;
+     window.scrollTo({top:restore,behavior:'instant'});
+   }));
+ });
+ const snapshotFilters=()=>{
+   let quickValues=[];
+   try{quickValues=[...quick]}catch{}
+   return {fields:['search','sector','region','hours','salary','sort','decision','visa'].map(id=>[id,$(id)?.value]),quick:quickValues,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,page};
+ };
+ const restoreFilters=snapshot=>{
+   if(!snapshot)return;
+   for(const [id,value] of snapshot.fields){if($(id))$(id).value=value}
+   if($('hideAvoid'))$('hideAvoid').checked=!!snapshot.hideAvoid;
+   if(filter)filter.checked=!!snapshot.hideShortlisted;
+   if(typeof quick!=='undefined')quick=new Set(snapshot.quick);
+   document.querySelectorAll('.chip[data-q]').forEach(b=>b.classList.toggle('on',snapshot.quick.includes(b.dataset.q)));
+   page=snapshot.page||1;syncHide();explore();if(typeof reco==='function')reco();
+ };
+ const backBtn=document.createElement('button');
+ backBtn.type='button';backBtn.className='btn uxBackToResults';
+ backBtn.textContent='↩ Back to my previous results';backBtn.hidden=true;
+ $('uxExploreToolbar')?.append(backBtn);
+ backBtn.addEventListener('click',()=>{
+   const old=filterSnapshots.pop();restoreFilters(old);
+   backBtn.hidden=filterSnapshots.length===0;
+ });
+ document.addEventListener('click',e=>{
+   // Capture happens before the base app changes query and quick filters.
+   const open=e.target.closest('[data-open]');
+   if(open){filterSnapshots.push(snapshotFilters());if(filterSnapshots.length>3)filterSnapshots.shift();backBtn.hidden=false}
+ },true);
+
+ let page=1,lastFilterKey='';
+ const pagination=$('uxExplorePager');
+ const pager=(count,total)=>{
+   if(!pagination)return;
+   pagination.replaceChildren();
+   const pages=Math.max(1,Math.ceil(total/20));
+   if(!total){pagination.textContent='No matching results.';return}
+   const info=document.createElement('span');
+   info.textContent='Showing '+(count?((page-1)*20+1):0)+'–'+(Math.min(page*20,total))+' of '+total.toLocaleString('en-GB')+' · Page '+page+'/'+pages;
+   pagination.append(info);
+   if(pages===1)return;
+   const controls=document.createElement('div');controls.className='uxPagerButtons';
+   const make=(label,target,disabled=false,active=false)=>{
+     const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;btn.disabled=disabled;
+     if(active)btn.setAttribute('aria-current','page');
+     btn.addEventListener('click',()=>{page=target;if(typeof explore==='function')explore();$('uxExploreToolbar')?.scrollIntoView({behavior:'smooth',block:'start'})});
+     controls.append(btn);
+   };
+   make('‹',Math.max(1,page-1),page===1);
+   const pageNumbers=new Set([1,pages,page-2,page-1,page,page+1,page+2].filter(n=>n>=1&&n<=pages));
+   let prev=0;[...pageNumbers].sort((a,b)=>a-b).forEach(n=>{if(prev&&n-prev>1){const dots=document.createElement('span');dots.textContent='…';dots.className='uxPagerEllipsis';controls.append(dots)}make(String(n),n,false,n===page);prev=n});
+   make('›',Math.min(pages,page+1),page===pages);
+   pagination.append(controls);
+ };
+ const results=$('results');
+ function renderExplore(){
+   if(!results||typeof sorted!=='function'||typeof matches!=='function')return;
+   let options=[];
+   try{options=sorted(getData().filter(matches))}catch{return}
+   const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,
+    qs:typeof quick!=='undefined'?[...quick]:[]});
+   if(newKey!==lastFilterKey){page=1;lastFilterKey=newKey}
+   const total=options.length,pages=Math.max(1,Math.ceil(total/20));
+   page=Math.min(Math.max(1,page),pages);
+   const shown=options.slice((page-1)*20,page*20);
+   $('count').textContent=total.toLocaleString('en-GB')+' matching programmes';
+   cleanupMiniMaps();
+   results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
+   pager(shown.length,total);
+   enhanceCards(results);
+   try{drawMap(options)}catch(e){console.warn('Map could not refresh:',e)}
+ }
+ // The core app sees this hook before any future Explore rerender; it cannot change saved decisions.
+ window.uxWorkspaceRenderExplore=renderExplore;
+
+ // Shortlist drawer is an overlay rather than another page; it preserves filters and scroll.
+ const drawer=$('uxDrawer'),backdrop=$('uxDrawerBackdrop'),drawerItems=$('uxDrawerItems'),drawerSearch=$('uxDrawerSearch');
+ let drawerOpener=null;
+ const updateCounts=()=>{
+   const count=getRanks().length;
+   document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent=count?'('+count+')':'(0)');
+ };
+ const renderDrawer=()=>{
+   if(!drawerItems)return;
+   const query=(drawerSearch?.value||'').toLowerCase().trim();
+   const list=getRanks().filter(p=>(p.title+' '+p.employer+' '+p.id).toLowerCase().includes(query));
+   drawerItems.replaceChildren();
+   if(!list.length){const emp=document.createElement('div');emp.className='uxDrawerEmpty';emp.textContent='No shortlisted programmes match.';drawerItems.append(emp);return}
+   const frag=document.createDocumentFragment();
+   list.forEach(p=>{
+     const box=document.createElement('div');box.className='uxDrawerItem';
+     const idx=getRanks().findIndex(x=>x.id===p.id)+1;
+     box.innerHTML='<small>#'+idx+' · '+escape(p.region||'')+'</small><b>'+escape(p.title||p.employer)+'</b><p>'+escape(p.employer||'')+' · '+escape(money(p.salary))+'</p>';
+     const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='View programme';
+     btn.addEventListener('click',()=>{
+       closeDrawer();
+       if(typeof switchTab==='function')switchTab('explore');
+       filterSnapshots.push(snapshotFilters());backBtn.hidden=false;
+       $('search').value=p.id;
+       $('decision').value='all';
+       filter.checked=false;syncHide();
+       $('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';
+       quick=new Set();document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
+       page=1;explore();
+       $('uxExploreToolbar')?.scrollIntoView({behavior:'smooth'});
+     });
+     box.append(btn);frag.append(box);
+   });
+   drawerItems.append(frag);
+ };
+ const openDrawer=e=>{
+   if(!drawer||!backdrop)return;
+   drawerOpener=e?.currentTarget||document.activeElement;
+   drawer.classList.add('uxOpen');drawer.setAttribute('aria-hidden','false');drawer.inert=false;
+   backdrop.hidden=false;root.classList.add('uxDrawerOpen');
+   renderDrawer();$('uxDrawerClose')?.focus();
+ };
+ const closeDrawer=()=>{
+   if(!drawer||!backdrop)return;
+   drawer.classList.remove('uxOpen');drawer.setAttribute('aria-hidden','true');drawer.inert=true;
+   backdrop.hidden=true;root.classList.remove('uxDrawerOpen');
+   drawerOpener?.focus?.();
+ };
+ document.addEventListener('click',e=>{
+   const opener=e.target.closest('[data-ux-open-drawer]');if(opener){openDrawer({currentTarget:opener});return}
+   const nav=e.target.closest('[data-ux-navigate]');if(nav){closeDrawer();if(typeof switchTab==='function')switchTab(nav.dataset.uxNavigate)}
+ });
+ $('uxDrawerClose')?.addEventListener('click',closeDrawer);
+ backdrop?.addEventListener('click',closeDrawer);
+ document.addEventListener('keydown',e=>{
+   if(e.key==='Escape'&&drawer?.classList.contains('uxOpen')){e.preventDefault();closeDrawer()}
+   if(e.key==='Tab'&&drawer?.classList.contains('uxOpen')){
+     const focusable=[...drawer.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]')];
+     if(focusable.length){const i=focusable.indexOf(document.activeElement);if(e.shiftKey&&i===0){e.preventDefault();focusable[focusable.length-1].focus()}else if(!e.shiftKey&&i===focusable.length-1){e.preventDefault();focusable[0].focus()}}
+   }
+ });
+ drawerSearch?.addEventListener('input',renderDrawer);
+
+ // Salary under every advertised gross salary (list, shortlist, map selections, recommendations).
+ const currentPayElement=document.createElement('div');
+ function addTakeHome(cardEl,p){
+   if(!p?.salary||!window.OrielPay)return;
+   const parent=cardEl.querySelector('.salary')?.parentElement;
+   if(!parent)return;
+   let line=parent.querySelector('.uxTakeHome');
+   if(!line){line=document.createElement('div');line.className='uxTakeHome';parent.append(line)}
+   const estimate=window.OrielPay.estimate(p.salary);
+   line.textContent='Est. take-home '+money(estimate.monthly)+'/mo · '+money(estimate.annual)+'/yr';
+   line.title=window.OrielPay.descriptor()+'. Illustrative PAYE, not guaranteed payslip income.';
+ }
+ const endDate=p=>{
+   if(!p.start)return null;
+   const m=String(p.start).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+   if(!m)return null;
+   const start=new Date(Date.UTC(+m[3],+m[2]-1,+m[1],12));
+   const weeks=Number((p.settings||[]).reduce((sum,x)=>sum+(Number(x[1])||0),0))||52;
+   const end=new Date(start.getTime()+weeks*7*86400000);
+   const fmt=d=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d);
+   return 'Starts '+fmt(start)+' · Est. finish ~'+fmt(end)+' ('+weeks+'w)';
+ };
+ function enhanceRecommendations(){
+   document.querySelectorAll('#reco .reco').forEach(item=>{
+     const code=item.querySelector('[data-open]')?.getAttribute('data-open');
+     const p=byId().get(code);
+     if(!p)return;
+     let section=item.querySelector('.uxRecoMeta');
+     if(!section){section=document.createElement('div');section.className='uxRecoMeta';item.append(section)}
+     const estimate=window.OrielPay?.estimate(p.salary);
+     section.textContent=(estimate?'Est. take-home '+money(estimate.monthly)+'/mo · '+money(estimate.annual)+'/yr · ':'')+(endDate(p)||'Start date not stated');
+     section.title=window.OrielPay?.descriptor()||'';
+   });
+ }
+ // Geocoded locations come from the same postcode dataset used by the principal map.
+ let postcodeLocations=null;
+ const geoFor=()=>{
+   try{if(typeof geo!=='undefined'&&geo&&Object.keys(geo).length>100)return geo}catch{}
+   return postcodeLocations||{};
+ };
+ const normPC=postcode=>{
+   try{if(typeof pcKey==='function')return pcKey(postcode)}catch{}
+   return String(postcode||'').replace(/\s/g,'').toUpperCase();
+ };
+ const getSites=p=>{
+   const g=geoFor(),pts=[],seen=new Set();
+   (p.postcodes||[]).filter(Boolean).forEach(pc=>{
+     const coord=g[normPC(pc)];
+     if(!Array.isArray(coord)||coord.length<2||!Number.isFinite(+coord[0])||!Number.isFinite(+coord[1]))return;
+     const key=(+coord[0]).toFixed(4)+','+(+coord[1]).toFixed(4);
+     if(seen.has(key))return;seen.add(key);
+     pts.push({pc,lat:+coord[0],lng:+coord[1]});
+   });
+   return pts;
+ };
+ const miniMaps=new Map();
+ let miniObserver=null,cardObserver=null;
+ function cleanupMiniMaps(){
+   for(const [holder,map] of miniMaps){try{map.remove()}catch{}miniMaps.delete(holder)}
+   if(miniObserver)miniObserver.disconnect();
+ }
+ function mapVisible(holder){
+   if(!holder.isConnected||miniMaps.has(holder))return;
+   if(layout==='grid'&&!holder.closest('.uxExpanded'))return;
+   const p=byId().get(holder.closest('.placement')?.dataset.id);if(!p)return;
+   const sites=getSites(p);
+   if(!sites.length){holder.innerHTML='<div class="uxMiniMapSkeleton">Pin not available in current postcode map · use the route link below</div>';return}
+   if(!window.L)return;
+   try{
+     holder.replaceChildren();
+     const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:true});
+     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OSM</a>'}).addTo(map);
+     // White marker locates the West End; muted burgundy marks programme sites.
+     const center=[51.5074,-.1278];
+     L.circleMarker(center,{radius:3.5,color:'#414443',weight:2,fillColor:'#fff5e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     for(const s of sites)L.circleMarker([s.lat,s.lng],{radius:5.5,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(s.pc);
+     const bounds=L.latLngBounds([center,...sites.map(x=>[x.lat,x.lng])]);
+     map.fitBounds(bounds,{padding:[20,20],maxZoom:12,animate:false});
+     miniMaps.set(holder,map);
+     requestAnimationFrame(()=>{if(holder.isConnected)map.invalidateSize(false)});
+   }catch(e){holder.textContent='Map unavailable — see route link below'}
+ }
+ function enableMini(holder){
+   if(!holder)return;
+   if(!miniObserver&&'IntersectionObserver'in window){
+     miniObserver=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)mapVisible(e.target)}),{rootMargin:'120px',threshold:.01});
+   }
+   if(miniObserver)miniObserver.observe(holder);
+   else if(holder.getBoundingClientRect().top<window.innerHeight+200)mapVisible(holder);
+ }
+ function locationPanel(p){
+   const guides=window.OrielLocationGuide;
+   const pts=getSites(p);
+   const loc=guides?.lookup(p,pts)||{headline:p.region||'Location',relative:'',connections:'Check the postcode and journey.',detail:'',source:'tfl',postcodes:p.postcodes||[]};
+   const panel=document.createElement('div');panel.className='uxLocationPanel';
+   const title=document.createElement('div');title.className='uxLocationTitle';title.textContent='Location & connections';panel.append(title);
+   const headline=document.createElement('div');headline.className='uxLocationSummary';headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');panel.append(headline);
+   const minimap=document.createElement('div');minimap.className='uxMiniMap';minimap.innerHTML='<div class="uxMiniMapSkeleton">Map appears here when visible</div>';panel.append(minimap);
+   const info=document.createElement('div');info.className='uxLocationInfo';info.textContent=loc.connections+' '+loc.detail;panel.append(info);
+   const foot=document.createElement('div');foot.className='uxMapFootnote';
+   foot.textContent=loc.postcodes.length>1?'Training locations: '+loc.postcodes.join(' · '):'Site postcode: '+(loc.postcodes[0]||'Not provided');
+   panel.append(foot);
+   const links=document.createElement('div');links.className='uxMapLinks';
+   const link=document.createElement('a');link.target='_blank';link.rel='noopener noreferrer';link.textContent='Check journey ↗';link.href=(guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/');links.append(link);
+   const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open location ↗';maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.postcodes||[])[0]||p.title||'London')+', UK';links.append(maps);panel.append(links);
+   return panel;
+ }
+ function enhanceCard(article){
+   if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
+   const p=byId().get(article.dataset.id);if(!p)return;
+   article.dataset.uxEnhanced='1';
+   addTakeHome(article,p);
+   const fit=article.querySelector('.fit.fitExpanded');
+   if(fit){
+     fit.classList.add('uxFitWithLocation');
+     fit.append(locationPanel(p));
+     enableMini(fit.querySelector('.uxMiniMap'));
+   }
+   const more=document.createElement('button');more.type='button';more.className='btn uxDetailButton';more.setAttribute('data-ux-expand','');
+   more.setAttribute('aria-expanded','false');more.textContent='See full details, location & pay';
+   article.append(more);
+ }
+ const enhancedContainers=['results','shortlistList','mapSelection'];
+ function enhanceCards(scope){
+   scope?.querySelectorAll('.placement').forEach(enhanceCard);
+   enhanceRecommendations();
+   updateCounts();
+   if(drawer?.classList.contains('uxOpen'))renderDrawer();
+ }
+ function refreshAllPay(){
+   document.querySelectorAll('.placement').forEach(article=>{const p=byId().get(article.dataset.id);if(p)addTakeHome(article,p)});
+   enhanceRecommendations();
+   fillPay();
+ }
+ document.addEventListener('desk:pay-settings',refreshAllPay);
+ document.addEventListener('desk:dataset',()=>{
+   byId.previous=null;lastFilterKey='';
+   page=1;explore();enhanceCards($('shortlistList'));updateCounts();
+ });
+ document.addEventListener('click',e=>{
+   const expand=e.target.closest('[data-ux-expand]');
+   if(!expand)return;
+   const card=expand.closest('.placement');
+   if(!card)return;
+   const expanded=card.classList.toggle('uxExpanded');
+   expand.textContent=expanded?'Collapse details':'See full details, location & pay';
+   expand.setAttribute('aria-expanded',String(expanded));
+   const holder=card.querySelector('.uxMiniMap');
+   if(expanded&&holder)requestAnimationFrame(()=>mapVisible(holder));
+   if(!expanded&&holder&&miniMaps.has(holder)){try{miniMaps.get(holder).invalidateSize(false)}catch{}}
+ });
+ // Observe the three containers since the original app re-renders them after every decision.
+ const refreshObserved=container=>{
+   if(!container)return;
+   const observer=new MutationObserver(entries=>{
+     if(!entries.some(e=>e.type==='childList'))return;
+     enhanceCards(container);
+   });
+   observer.observe(container,{childList:true,subtree:false});
+ };
+ const init=()=>{
+   if(!getData().length||typeof explore!=='function'||typeof card!=='function')return false;
+   refreshObserved($('results'));refreshObserved($('shortlistList'));refreshObserved($('mapSelection'));
+   // Updating For You also refreshes net income and start date metadata.
+   new MutationObserver(()=>enhanceRecommendations()).observe($('reco'),{childList:true});
+   syncHide();updateCounts();fillPay();
+   // Preserve location details and date row wrapper, which is loaded by app.js after init.
+   explore();
+   enhanceCards($('shortlistList'));
+   enhanceCards($('mapSelection'));
+   enhanceRecommendations();
+   return true;
+ };
+ let attempts=0;
+ const timer=setInterval(()=>{
+   attempts++;
+   if((window.__programmeDatesInstalled&&init())||attempts>160)clearInterval(timer);
+ },125);
+ // Download public postcode coordinates only if needed; same file the app already uses.
+ fetch('./locations.json').then(r=>r.ok?r.json():null).then(value=>{
+   if(value&&typeof value==='object'){postcodeLocations=value;enhancedContainers.forEach(id=>enhanceCards($(id)));
+     document.querySelectorAll('.uxMiniMap').forEach(holder=>{if(holder.closest('.placement')?.dataset.uxEnhanced)enableMini(holder)});
+   }
+ }).catch(()=>{});
+})();
