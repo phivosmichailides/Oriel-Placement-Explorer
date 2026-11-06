@@ -561,3 +561,12 @@ html[data-theme="dark"][data-palette="forest"]{
   --green:var(--ux-accent-ink);--blue:var(--ux-accent-ink);
 }
 html[data-theme="dark"][data-palette="forest"] .btn.primary{color:#fff!important}
+
+
+/* Mauveine badge balance: keep sector blue/industry plum and sponsorship warnings distinct;
+   neutralise the repeated green GP/community/location/hour chips. */
+html[data-palette="mauve"] .placement .badges .badge:not(.badge-hospital):not(.badge-industry):not(.badge-sponsorship-warning):not(.badge-specialist),
+html[data-palette="mauve"] .placement .badges .badge-gp,
+html[data-palette="mauve"] .placement .badges .badge-community{
+  background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
