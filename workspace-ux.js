@@ -522,13 +522,58 @@
    article.tabIndex=0;
    article.setAttribute('aria-label','Select programme '+(p.title||p.employer||p.id));
    article.classList.toggle('uxProgramSelected',article.dataset.id===selectedProgrammeId);
-   addTakeHome(article,p);
+   const title=article.querySelector('.placementTop h3');
+   if(title){
+     const fullTitle=p.title||p.employer||'Programme';
+     title.title=fullTitle+' — click or tap to expand the full title';
+     title.tabIndex=0;
+     title.setAttribute('role','button');
+     title.setAttribute('aria-label','Expand full title: '+fullTitle);
+     title.setAttribute('aria-expanded','false');
+     const toggleTitle=()=>{
+       const isExpanded=title.classList.toggle('uxTitleExpanded');
+       title.setAttribute('aria-expanded',String(isExpanded));
+       title.setAttribute('aria-label',(isExpanded?'Collapse':'Expand')+' full title: '+fullTitle);
+     };
+     title.addEventListener('click',event=>{event.stopPropagation();toggleTitle()});
+     title.addEventListener('keydown',event=>{
+       if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();toggleTitle();}
+     });
+   }
+   try{addTakeHome(article,p)}catch(error){console.warn('Pay display unavailable',error)}
    const fit=article.querySelector('.fit.fitExpanded');
    if(fit){
      fit.classList.add('uxFitWithLocation');
-     const location=locationPanel(p);fit.append(location);
-     enableMini(location.querySelector('.uxMiniMap'));
-     enableCommute(location);
+     try{
+       const location=locationPanel(p);
+       fit.append(location);
+       enableMini(location.querySelector('.uxMiniMap'));
+       enableCommute(location);
+     }catch(error){
+       console.error('Could not initialise location for programme '+p.id,error);
+       // A missing commute source should never remove the map and directions
+       // for an otherwise valid programme, or stop the rest of the cards.
+       const panel=document.createElement('section');
+       panel.className='uxLocationPanel uxLocationFallback';
+       const label=document.createElement('strong');
+       label.className='uxLocationTitle';label.textContent='Location & connections';
+       panel.append(label);
+       const pcs=[...new Set((p.postcodes||[]).filter(Boolean))];
+       const detail=document.createElement('p');detail.className='uxLocationInfo';
+       detail.textContent=pcs.length?'Training postcode'+(pcs.length>1?'s':'')+': '+pcs.join(' · '):'Training site postcode not provided.';
+       panel.append(detail);
+       if(pcs.length){
+         const links=document.createElement('div');links.className='uxMapLinks';
+         for(const pc of pcs){
+           const mapLink=document.createElement('a');
+           mapLink.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(pc+', UK');
+           mapLink.target='_blank';mapLink.rel='noopener noreferrer';mapLink.textContent='View '+pc+' in Google Maps ↗';
+           links.append(mapLink);
+         }
+         panel.append(links);
+       }
+       fit.append(panel);
+     }
    }
    const more=document.createElement('button');more.type='button';more.className='btn uxDetailButton';more.setAttribute('data-ux-expand','');
    more.setAttribute('aria-expanded','false');more.textContent='See full details, location & pay';
@@ -573,7 +618,7 @@
  });
  const enhancedContainers=['results','shortlistList','mapSelection'];
  function enhanceCards(scope){
-   scope?.querySelectorAll('.placement').forEach(enhanceCard);
+   scope?.querySelectorAll('.placement').forEach(article=>{try{enhanceCard(article)}catch(error){console.error('Programme card enhancement failed',article.dataset.id,error)}});
    enhanceRecommendations();
    updateCounts();
    if(drawer?.classList.contains('uxOpen'))renderDrawer();
