@@ -40,8 +40,9 @@
     // Keep a lightweight raster frame underneath the main vector map.
     // If WebGL temporarily clears during a zoom, the user sees a map
     // instead of a black flash or a tile boundary grid.
+    let retainedUnderlay=null;
     if(!mini){
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      retainedUnderlay=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
         maxZoom:19,keepBuffer:3,updateWhenIdle:true,
         className:'oriel-map-backup',
         attribution:RASTER_ATTR
@@ -55,7 +56,8 @@
       if(timeout)clearTimeout(timeout);
       instances.delete(record);
       try{map.removeLayer(layer)}catch{}
-      raster(map);
+      if(retainedUnderlay)holder.dataset.basemap='raster-fallback';
+      else raster(map);
     };
     try{
       layer=L.maplibreGL({
