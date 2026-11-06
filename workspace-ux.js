@@ -388,10 +388,19 @@
      siteTitle.textContent=siteName(p,site,i,sites.length);
      count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
      headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
-     info.textContent=loc.connections+' '+(sites.length>1?'Each training site may need a different commute.':loc.detail||'');
+     const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
+     info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
-     route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
      const siteLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
+     if(loc.hub&&site.pc){
+       route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
+       route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
+       route.title='Open a Google Maps public-transport route from this programme postcode to '+loc.hub;
+     }else{
+       route.textContent='Check rail/Tube route ↗';
+       route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
+       route.title='Open the relevant public transport journey planner';
+     }
      maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(siteLookup+', UK');
      if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
      map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';
