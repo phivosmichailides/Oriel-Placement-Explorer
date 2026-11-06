@@ -62,7 +62,26 @@
    syncHide();
  });
  filter?.addEventListener('change',()=>{page=1;syncHide();if(typeof reco==='function')reco()});
- syncHide();
+ const excludedFilter=$('hideExcluded'),excludedBtn=$('uxHideExcludedBtn');
+ const syncExcluded=()=>{
+   if(!excludedBtn||!excludedFilter)return;
+   excludedBtn.setAttribute('aria-pressed',String(excludedFilter.checked));
+   excludedBtn.textContent=excludedFilter.checked?'✓ Hide excluded':'○ Show excluded';
+ };
+ excludedBtn?.addEventListener('click',()=>{
+   if(!excludedFilter)return;
+   excludedFilter.checked=!excludedFilter.checked;
+   excludedFilter.dispatchEvent(new Event('change',{bubbles:true}));
+ });
+ for(const id of ['hideExcluded','hideOuterLondon']){
+   $(id)?.addEventListener('change',()=>{
+     page=1;
+     if(id==='hideExcluded')syncExcluded();
+     if(typeof explore==='function')explore();
+     if(typeof reco==='function')reco();
+   });
+ }
+ syncHide();syncExcluded();
 
  // Optional PAYE/pension preferences are deliberately separate from ranked decisions.
  const payCard=document.createElement('div');
@@ -103,18 +122,20 @@
  const snapshotFilters=()=>{
    let quickValues=[];
    try{quickValues=[...quick]}catch{}
-   return {fields:['search','sector','region','hours','salary','sort','decision','visa'].map(id=>[id,$(id)?.value]),quick:quickValues,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,page};
+   return {fields:['search','sector','region','hours','salary','sort','decision','visa'].map(id=>[id,$(id)?.value]),quick:quickValues,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,page};
  };
  const restoreFilters=snapshot=>{
    if(!snapshot)return;
    for(const [id,value] of snapshot.fields){if($(id))$(id).value=value}
    if($('hideAvoid'))$('hideAvoid').checked=!!snapshot.hideAvoid;
+   if(excludedFilter&&snapshot.hideExcluded!==undefined)excludedFilter.checked=!!snapshot.hideExcluded;
+   if($('hideOuterLondon')&&snapshot.hideOuterLondon!==undefined)$('hideOuterLondon').checked=!!snapshot.hideOuterLondon;
    if(filter)filter.checked=!!snapshot.hideShortlisted;
    for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=!!snapshot[id];
    if($('specialistView'))$('specialistView').value=snapshot.specialistView||'all';
    if(typeof quick!=='undefined')quick=new Set(snapshot.quick);
    document.querySelectorAll('.chip[data-q]').forEach(b=>b.classList.toggle('on',snapshot.quick.includes(b.dataset.q)));
-   page=snapshot.page||1;skipResetOnce=true;syncHide();explore();if(typeof reco==='function')reco();
+   page=snapshot.page||1;skipResetOnce=true;syncHide();syncExcluded();explore();if(typeof reco==='function')reco();
  };
  const backBtn=document.createElement('button');
  backBtn.type='button';backBtn.className='btn uxBackToResults';
@@ -162,7 +183,7 @@
    if(!results||typeof sorted!=='function'||typeof matches!=='function')return;
    let options=[];
    try{options=sorted(getData().filter(matches))}catch{return}
-   const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
+   const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
    const total=options.length,pages=Math.max(1,Math.ceil(total/20));
