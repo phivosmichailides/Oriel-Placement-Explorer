@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106readable1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')&&(await page.content()).includes('map-basemap.js?v=20261106v3')&&(await page.content()).includes('design-refresh.css?v=20261106readable2')&&(await page.content()).includes('app.js?v=20261106smooth1')){fresh=true;break;}
+      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106filters1')&&(await page.content()).includes('app.js?v=20261106filters1')&&(await page.content()).includes('programme-preview.js?v=20261106a')&&(await page.content()).includes('locations-bundled.js?v=20261106a')&&(await page.content()).includes('map-basemap.js?v=20261106v3')&&(await page.content()).includes('design-refresh.css?v=20261106readable2')&&(await page.content()).includes('app.js?v=20261106smooth1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -156,6 +156,46 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'England & Wales unexpectedly maps zero programmes');
     await page.locator('[data-q="london"]').first().click();
 
+    // Visibility rules inspect every training-site postcode, not merely
+    // the first site name; these are synthetic fixtures, never user edits.
+    const areas=await page.evaluate(()=>{
+      const split={id:'test/0000',title:'Central London Hospital / Split GP',area:'London',
+        region:'London',postcodes:['SW1A 1AA','CR0 1AA','SE13 6AA'],settings:[['Hospital',26],['GP',26]]};
+      const orpington={...split,postcodes:['SW1A 1AA','BR5 3AA']};
+      return {
+        croydon:OrielAreaRules.isAvoided(split,'Croydon'),
+        lewisham:OrielAreaRules.isAvoided(split,'Lewisham'),
+        splitAvoid:OrielAreaRules.isAvoided(split,'Croydon, Lewisham'),
+        orpington:OrielAreaRules.isOuterTown(orpington)
+      };
+    });
+    assert(areas.croydon&&areas.lewisham&&areas.splitAvoid&&areas.orpington,
+      'All-site avoid or inner-London filtering failed '+JSON.stringify(areas));
+    // This toggle must always be available even when the sidebar is hidden.
+    const sidebarButton=page.locator('#uxToolbarFilters');
+    const sidebarFirst=await sidebarButton.getAttribute('aria-expanded');
+    await sidebarButton.click();
+    assert.notEqual(await sidebarButton.getAttribute('aria-expanded'),sidebarFirst,
+      'Sidebar show/hide button did not change state');
+    await sidebarButton.click();
+    assert.equal(await sidebarButton.getAttribute('aria-expanded'),sidebarFirst,
+      'Sidebar could not be reopened from the results toolbar');
+    await page.locator('#uxHideExcludedBtn').click();
+    assert(!(await page.locator('#hideExcluded').isChecked()),
+      'Show excluded toolbar toggle did not update the canonical filter');
+    await page.locator('#uxHideExcludedBtn').click();
+    assert(await page.locator('#hideExcluded').isChecked(),'Hide excluded could not be reenabled');
+    await page.locator('#uxResultsSort').selectOption('salary');
+    await page.waitForTimeout(500);
+    assert.equal(await page.locator('#sort').inputValue(),'salary',
+      'Results toolbar sort did not update the canonical salary sort');
+    const descending=await page.evaluate(()=>{
+      const list=[...document.querySelectorAll('#results .placement')].map(el=>
+        placements.find(p=>p.id===el.dataset.id)?.salary||0);
+      return list.every((v,i)=>i===0||list[i-1]>=v);
+    });
+    assert(descending,'Salary ordering did not apply to filtered programme results');
+    await page.locator('#uxResultsSort').selectOption('fit');
     const palettes=['forest','copper','mauve','amber','cocoa','mono'];
     const themeStyles=await page.evaluate(palettes=>{
       const root=document.documentElement,rows=[];
@@ -197,6 +237,21 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       if(bounds)assert(bounds.startRight<=bounds.endLeft+3,'Compact date columns overlap');
     }
     await page.screenshot({path:output+'/desktop-grid.png',fullPage:false});
+    // Simulation title opens a modal in this same page, not a new tab.
+    await page.locator('nav.tabs [data-tab="simulator"]').click();
+    await page.locator('#simInput-preferred').fill('SW10');
+    await page.locator('[data-sim-results="preferred"] .simResult').first().click();
+    await page.locator('[data-sim-list="preferred"] .simItemNameButton').first().click();
+    const preview=page.locator('.progPeekDialog');
+    await preview.waitFor({state:'visible'});
+    assert(await preview.getByText('Gross · yearly').count()===1,'Preview missing annual gross pay');
+    assert(await preview.getByText('Estimated take-home · monthly').count()===1,'Preview missing monthly take-home');
+    assert(await preview.getByText('Hours per week').count()===1,'Preview missing weekly hours');
+    assert(await preview.getByText('Training setting and split').count()===1,'Preview missing sector split');
+    assert(await preview.locator('a[href*="google.com/maps/search"]').count()>=1,'Preview missing training location');
+    await page.keyboard.press('Escape');
+    assert(await preview.count()===0,'Escape should close the same-page summary');
+
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
     console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,basemap:browserBasemaps,allRegionPins,cards,panels,bullets,readable,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
