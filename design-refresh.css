@@ -1,0 +1,439 @@
+/*
+ * Oriel Placement Desk · editorial system, 6 Nov 2026
+ * All six palettes: consistent accent in light and dark modes.
+ * Semantic fit scores and neutral ivory explanation panels stay independent of palette.
+ * Loaded last so earlier layout iterations cannot reintroduce forest colours or tiny text.
+ */
+:root{
+  --ui-action-bg:#506d55;
+  --ui-action-hover:#405d46;
+  --ui-action-fg:#fff;
+  --ui-contrast:#fff;
+  --fit-ivory:#fbf7ed;
+  --fit-ivory-border:#e7deca;
+  --fit-sand:#f7f0e5;
+  --fit-sand-border:#e7d7c3;
+  --fit-ink:#3b413c;
+  --fit-heading:#685f4a;
+  --fit-green-bg:#e3f2e6;
+  --fit-green-border:#b8d7c1;
+  --fit-green-ink:#255e40;
+  --fit-green-good-bg:#e9f2e4;
+  --fit-green-good-border:#cadcbe;
+  --fit-green-good-ink:#3b6c41;
+  --fit-mixed-bg:#fbf0df;
+  --fit-mixed-border:#ead6b7;
+  --fit-mixed-ink:#885e30;
+  --fit-low-bg:#f8e8e8;
+  --fit-low-border:#e9caca;
+  --fit-low-ink:#914947;
+  --ui-inner-shadow:0 2px 6px rgba(31,33,29,.025);
+}
+/* Light palettes */
+html[data-theme="light"][data-palette="forest"]{
+  --bg:#f6f6f1;--panel:#fffefa;--ink:#28312c;--mut:#606c64;--line:#dce5d9;--soft:#eef1e9;
+  --dark:#27372b;--ux-accent:#557459;--ux-accent-ink:#385c40;
+  --ux-accent-soft:#e7efe5;--ux-accent-border:#cbdcc9;
+  --ui-action-bg:#507152;--ui-action-hover:#405f44;
+}
+html[data-theme="light"][data-palette="copper"]{
+  --bg:#f5f8fb;--panel:#fff;--ink:#233544;--mut:#607585;--line:#d8e3ed;--soft:#edf2f7;
+  --dark:#203e56;--ux-accent:#41769a;--ux-accent-ink:#2a5d80;
+  --ux-accent-soft:#e5f0f8;--ux-accent-border:#c3d9e9;
+  --ui-action-bg:#3e7198;--ui-action-hover:#315e81;
+}
+html[data-theme="light"][data-palette="mauve"]{
+  --bg:#faf7fa;--panel:#fffdfd;--ink:#382d38;--mut:#746878;--line:#e9dfe8;--soft:#f4eff4;
+  --dark:#49344c;--ux-accent:#936d91;--ux-accent-ink:#765574;
+  --ux-accent-soft:#f2e9f2;--ux-accent-border:#dfcde0;
+  --ui-action-bg:#865f85;--ui-action-hover:#714c72;
+}
+html[data-theme="light"][data-palette="amber"]{
+  --bg:#fbf8f2;--panel:#fffdf8;--ink:#3c3428;--mut:#786c5c;--line:#eae0d1;--soft:#f4eee4;
+  --dark:#59442b;--ux-accent:#aa7a3e;--ux-accent-ink:#835922;
+  --ux-accent-soft:#f8eddd;--ux-accent-border:#ead3b1;
+  --ui-action-bg:#986b36;--ui-action-hover:#815729;
+}
+html[data-theme="light"][data-palette="cocoa"]{
+  --bg:#f9f6f3;--panel:#fffdfa;--ink:#342c28;--mut:#746a62;--line:#e7dcd4;--soft:#f2ece7;
+  --dark:#493630;--ux-accent:#856453;--ux-accent-ink:#684a3b;
+  --ux-accent-soft:#f0e8e1;--ux-accent-border:#dfcfc3;
+  --ui-action-bg:#7c5949;--ui-action-hover:#634333;
+}
+html[data-theme="light"][data-palette="mono"]{
+  --bg:#f8f9f9;--panel:#fff;--ink:#272b2e;--mut:#667178;--line:#dee2e5;--soft:#f0f2f3;
+  --dark:#22292c;--ux-accent:#434f57;--ux-accent-ink:#333d43;
+  --ux-accent-soft:#e9edf0;--ux-accent-border:#cbd4da;
+  --ui-action-bg:#3d4951;--ui-action-hover:#2b343b;
+}
+/* Dark mode: every surface, hint and interaction belongs to its selected palette. */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --shadow:0 12px 35px rgba(0,0,0,.18);
+  --fit-ivory:#38352c;--fit-ivory-border:#676151;
+  --fit-sand:#40372d;--fit-sand-border:#796454;
+  --fit-ink:#f5f1e5;--fit-heading:#f0dbc0;
+  --fit-green-bg:#1d4533;--fit-green-border:#448264;--fit-green-ink:#d2f5dc;
+  --fit-green-good-bg:#2a4932;--fit-green-good-border:#578363;--fit-green-good-ink:#caefd2;
+  --fit-mixed-bg:#4b3c2a;--fit-mixed-border:#847048;--fit-mixed-ink:#f5dfb3;
+  --fit-low-bg:#503236;--fit-low-border:#8b5b60;--fit-low-ink:#f8d5d3;
+  --ui-action-fg:#f9fcff;
+}
+html[data-theme="dark"][data-palette="forest"]{
+  --bg:#161d18;--panel:#222b24;--ink:#f0f4ef;--mut:#bbc9be;--line:#445647;--soft:#2f3b32;
+  --dark:#121a14;--ux-accent:#a4c5a5;--ux-accent-ink:#d2ead4;
+  --ux-accent-soft:#334b38;--ux-accent-border:#628168;
+  --ui-action-bg:#4c7654;--ui-action-hover:#5c8a64;
+}
+html[data-theme="dark"][data-palette="copper"]{
+  --bg:#111b25;--panel:#1d2b38;--ink:#eef5fc;--mut:#b6c8d8;--line:#3c5366;--soft:#273a4b;
+  --dark:#0c1821;--ux-accent:#9cbfde;--ux-accent-ink:#d0e8fb;
+  --ux-accent-soft:#294760;--ux-accent-border:#597f9d;
+  --ui-action-bg:#396c94;--ui-action-hover:#487fa8;
+}
+html[data-theme="dark"][data-palette="mauve"]{
+  --bg:#1b1720;--panel:#2b2430;--ink:#f7eef7;--mut:#d0c0d0;--line:#57475a;--soft:#403346;
+  --dark:#16101a;--ux-accent:#d6b0d2;--ux-accent-ink:#f2d7ee;
+  --ux-accent-soft:#4f3b53;--ux-accent-border:#866d87;
+  --ui-action-bg:#79567d;--ui-action-hover:#8f6894;
+}
+html[data-theme="dark"][data-palette="amber"]{
+  --bg:#211b14;--panel:#30271e;--ink:#fcf1e1;--mut:#d9c7ac;--line:#5e4d39;--soft:#433527;
+  --dark:#1a140f;--ux-accent:#e2bc83;--ux-accent-ink:#f8e0b6;
+  --ux-accent-soft:#57412c;--ux-accent-border:#916e42;
+  --ui-action-bg:#8c6439;--ui-action-hover:#a07848;
+}
+html[data-theme="dark"][data-palette="cocoa"]{
+  --bg:#201a16;--panel:#302721;--ink:#f9f0ea;--mut:#d2c2b8;--line:#5b4b42;--soft:#43362f;
+  --dark:#16120f;--ux-accent:#d9b7a1;--ux-accent-ink:#f3d9c6;
+  --ux-accent-soft:#554033;--ux-accent-border:#8f705d;
+  --ui-action-bg:#805e4d;--ui-action-hover:#96725e;
+}
+html[data-theme="dark"][data-palette="mono"]{
+  --bg:#141619;--panel:#24282c;--ink:#f2f4f5;--mut:#c0c9ce;--line:#494f55;--soft:#363c40;
+  --dark:#0f1215;--ux-accent:#d9e0e3;--ux-accent-ink:#f5f8fa;
+  --ux-accent-soft:#414a50;--ux-accent-border:#707f87;
+  --ui-action-bg:#63717a;--ui-action-hover:#788892;
+}
+/* Keep all interactive secondary accents in their own palette too. */
+html[data-theme][data-palette]{
+  --ux-pick:var(--ux-accent-ink);
+  --ux-pick-soft:var(--ux-accent-soft);
+  --ux-pick-border:var(--ux-accent-border);
+  --ux-map-stroke:var(--ux-accent);
+  --blue:var(--ux-accent-ink);
+  --green:var(--ux-accent-ink);
+}
+html[data-theme] body{background:var(--bg)!important;color:var(--ink)!important}
+html,html body,html button,html input,html select,html textarea,html .card,html .tab,html .chip,html .badge,html .simCol,html .field{
+  font-family:"Plus Jakarta Sans","Avenir Next",Avenir,Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+html body{font-size:15.5px!important;line-height:1.55!important;-webkit-font-smoothing:antialiased}
+html .shell{max-width:1680px}
+html .card,html .placement{box-shadow:var(--ui-inner-shadow)}
+html .top h1{font-size:clamp(27px,2.1vw,35px);font-weight:800!important;letter-spacing:-.05em!important}
+html .top .brand p{font-size:13.5px;line-height:1.5}
+html .eyebrow{font-size:11.5px!important;letter-spacing:.085em!important;font-weight:800!important}
+html .muted,html .smallnote{line-height:1.55}
+html .smallnote{font-size:12px!important}
+html .btn,html .chip{font-size:12.8px;font-weight:750!important}
+html .btn{min-height:36px}
+html .btn.primary,html[data-theme="dark"] .btn.primary,html[data-theme="dark"][data-palette="forest"] .btn.primary{
+  background:var(--ui-action-bg)!important;
+  border-color:var(--ui-action-bg)!important;
+  color:var(--ui-action-fg)!important;
+}
+html .btn.primary:hover,html[data-theme="dark"] .btn.primary:hover,html[data-theme="dark"][data-palette="forest"] .btn.primary:hover{
+  background:var(--ui-action-hover)!important;border-color:var(--ui-action-hover)!important;
+}
+html .btn:not(.primary):not(.danger):hover{background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important;color:var(--ux-accent-ink)!important}
+html .tabs,html[data-theme="dark"] .tabs,html[data-theme="dark"][data-palette="forest"] .tabs{
+  background:var(--soft)!important;border-color:var(--line)!important;
+}
+html .tab,html[data-theme="dark"] .tab,html[data-theme="dark"][data-palette="forest"] .tab{
+  color:var(--mut)!important;font-size:12.8px;font-weight:750;
+}
+html .tab.active,html[data-theme="dark"] .tab.active,html[data-theme="dark"][data-palette="forest"] .tab.active{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+  box-shadow:inset 0 0 0 1px var(--ux-accent-border)!important;
+}
+html .tab:hover{background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important}
+html .chip.on,html[data-theme="dark"] .chip.on,html[data-theme="dark"][data-palette="forest"] .chip.on{
+  background:var(--ui-action-bg)!important;border-color:var(--ui-action-bg)!important;color:var(--ui-action-fg)!important;
+}
+html .textbtn,html .more,html .uxMapLinks a,html .app-footer a{color:var(--ux-accent-ink)!important}
+html .uxDrawerLauncher,html[data-theme="dark"] .uxDrawerLauncher{
+  background:var(--ui-action-bg)!important;border-color:var(--ui-action-bg)!important;color:var(--ui-action-fg)!important;
+  font-family:inherit!important;font-weight:800!important;
+}
+html .uxDrawerLauncher:hover{background:var(--ui-action-hover)!important}
+html .btn.selected:not(.danger),html[data-theme="dark"] .btn.selected:not(.danger),html .btn.compare.on{
+  background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important;color:var(--ux-accent-ink)!important;
+}
+html[data-theme="dark"] .btn.excluded,html .btn.excluded{
+  background:var(--fit-low-bg)!important;border-color:var(--fit-low-border)!important;color:var(--fit-low-ink)!important;
+}
+html .decisionPicker summary,html[data-theme="dark"] .decisionPicker summary,
+html[data-theme="dark"] .decisionPicker.decision-love summary,html[data-theme="dark"] .decisionPicker.decision-yes summary,
+html[data-theme="dark"] .decisionPicker.decision-maybe summary,html[data-theme="dark"] .decisionPicker.decision-backup summary,
+html[data-theme="dark"] .decisionPicker.decision-no summary,html[data-theme="dark"] .decisionPicker.decision-never summary{
+  background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html .decisionPicker summary:hover,html .decisionPicker[open] summary{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+}
+html .decisionChoices,html[data-theme="dark"] .decisionChoices{background:var(--panel)!important;border-color:var(--line)!important}
+html .decisionChoice,html[data-theme="dark"] .decisionChoice{background:var(--panel);color:var(--ink)!important}
+html .decisionChoice:hover,html .decisionChoice[aria-pressed="true"],html[data-theme="dark"] .decisionChoice[aria-pressed="true"]{
+  background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important;color:var(--ux-accent-ink)!important;
+}
+html .decisionTick,html .rank-controls strong,html .simResultCode,html .simRank,html .uxBackToResults{color:var(--ux-accent-ink)!important}
+html .uxLayoutControls .btn[aria-pressed="true"],html .uxPaletteOption[aria-pressed="true"],html .uxCompactBtn[aria-pressed="true"]{
+  background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important;color:var(--ux-accent-ink)!important;
+}
+html .productIntro,html[data-theme="dark"] .productIntro,html[data-theme="dark"][data-palette="forest"] .productIntro{
+  background:linear-gradient(125deg,var(--panel) 20%,var(--ux-accent-soft) 100%)!important;border-color:var(--line)!important;
+}
+html .productPrinciples>div,html[data-theme="dark"] .productPrinciples>div{
+  background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html .productPrinciples span{color:var(--ux-accent-ink)!important}
+html .stat{padding:17px}
+html .stat .k{font-size:clamp(23px,2vw,29px);font-weight:850!important;letter-spacing:-.03em}
+html .stat .l{font-size:12.4px;color:var(--mut);font-weight:650}
+html .sectionHero h2{font-size:clamp(21px,1.8vw,26px);font-weight:800}
+html .sectionHero p{font-size:13.5px;line-height:1.6}
+html .field>span{font-size:11.5px!important;font-weight:800!important}
+html .field input,html .field select,html .field textarea,html .controls input,html .controls select{
+  background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important;font-size:13.5px;
+}
+html .field input:focus,html .field select:focus,html .field textarea:focus,html .controls input:focus{
+  background:var(--panel)!important;border-color:var(--ux-accent)!important;
+}
+html .field input::placeholder,html .controls input::placeholder,html input::placeholder,html textarea::placeholder{color:var(--mut);opacity:.8}
+html .uxExploreToolbar{padding:12px 15px}
+html .uxToolbarLead b{font-size:14.5px;font-weight:800}
+html .uxToolbarLead small{font-size:12px;line-height:1.5}
+html .uxExplorePager{font-size:12.5px}
+/* Placement cards: readable, genuinely designed rather than a dense administration form. */
+html .placement{padding:clamp(17px,1.6vw,22px);overflow:visible}
+html .placement h3{font-size:clamp(17px,1.28vw,20px)!important;font-weight:800!important;line-height:1.34;letter-spacing:-.025em}
+html .placement .employer{font-size:13px;font-weight:700;line-height:1.45}
+html .placement .salary{font-size:22px;font-weight:850;letter-spacing:-.035em}
+html .placement .hourly,html .uxTakeHome{font-size:11.8px;font-weight:650;line-height:1.5}
+html .placement .badges{gap:6px;margin:12px 0}
+html .placement .badge,html .placement .badges .badge{
+  font-size:11.6px!important;font-weight:700!important;line-height:1.4;
+  padding:5px 8px;
+}
+html .placement .badge.badge-hospital,html .placement .badge.badge-gp,
+html .placement .badge.badge-community,html .placement .badge.badge-industry{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;border-color:var(--ux-accent-border)!important;
+}
+html .placement .badge.badge-sponsorship-warning,html .placement .badge.warn{background:var(--fit-mixed-bg)!important;color:var(--fit-mixed-ink)!important;border-color:var(--fit-mixed-border)!important}
+html .placement .desc{color:var(--ink)!important;font-size:13.7px;line-height:1.68;font-weight:500}
+html .placement .decision-quick{gap:9px}
+html .placement .controls{gap:9px}
+html .programmeDates,html .placement .programmeDates{font-size:12px!important;line-height:1.55!important;padding:11px 13px!important}
+html .programmeDates .dateBasis{font-size:11.5px!important;line-height:1.48!important}
+html .programmeDates b{color:var(--ink)!important}
+html .programmeDates{background:var(--soft)!important;border-color:var(--line)!important;color:var(--mut)!important}
+/* High scores are always GREEN. These are semantic, not decorative theme accents. */
+html .placement .score[data-fit-tone="excellent"],html[data-theme="dark"] .placement .score[data-fit-tone="excellent"]{
+  background:var(--fit-green-bg)!important;color:var(--fit-green-ink)!important;border:1px solid var(--fit-green-border)!important;
+}
+html .placement .score[data-fit-tone="good"],html[data-theme="dark"] .placement .score[data-fit-tone="good"]{
+  background:var(--fit-green-good-bg)!important;color:var(--fit-green-good-ink)!important;border:1px solid var(--fit-green-good-border)!important;
+}
+html .placement .score[data-fit-tone="mixed"],html[data-theme="dark"] .placement .score[data-fit-tone="mixed"]{
+  background:var(--fit-mixed-bg)!important;color:var(--fit-mixed-ink)!important;border-color:var(--fit-mixed-border)!important;
+}
+html .placement .score[data-fit-tone="poor"],html[data-theme="dark"] .placement .score[data-fit-tone="poor"]{
+  background:var(--fit-low-bg)!important;color:var(--fit-low-ink)!important;border-color:var(--fit-low-border)!important;
+}
+html .placement .score[data-fit-tone]>*{color:inherit!important}
+html .placement .fit.fitExpanded.uxFitWithLocation{
+  display:grid!important;
+  grid-template-columns: minmax(170px,195px) minmax(260px,400px) minmax(220px,315px)!important;
+  column-gap:clamp(11px,1.1vw,18px)!important;
+  row-gap:13px!important;
+  align-items:start!important;
+  justify-content:space-between!important;
+  min-width:0!important;
+  overflow:visible!important;
+  margin:15px 0!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  min-height:171px!important;height:auto!important;
+  padding:18px 17px!important;border-radius:16px!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;justify-content:center!important;text-align:left!important;
+  overflow:visible!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score>span{font-size:12px!important;line-height:1.45;font-weight:850}
+html .placement .fit.fitExpanded.uxFitWithLocation .score>b{font-size:43px!important;line-height:1.12!important;letter-spacing:-.035em;font-weight:850}
+html .placement .fit.fitExpanded.uxFitWithLocation .score>small{font-size:14.5px!important;font-weight:750;line-height:1.42}
+html .placement .fit.fitExpanded.uxFitWithLocation .score>em{font-size:11.5px!important;line-height:1.5;font-weight:600}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  display:flex!important;flex-direction:column!important;
+  justify-content:center!important;align-items:center!important;
+  align-self:stretch!important;
+  gap:10px!important;width:100%!important;min-width:0!important;
+  height:auto!important;overflow:visible!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{
+  display:block!important;flex:0 0 auto!important;flex-shrink:0!important;
+  align-self:center!important;justify-self:center!important;
+  box-sizing:border-box!important;
+  width:100%!important;max-width:390px!important;min-width:0!important;
+  min-height:max-content!important;height:auto!important;
+  padding:14px 18px 15px!important;border-radius:14px!important;
+  text-align:center!important;overflow:visible!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.positive,
+html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.positive{
+  background:var(--fit-ivory)!important;border:1px solid var(--fit-ivory-border)!important;
+  color:var(--fit-ink)!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution,
+html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution{
+  background:var(--fit-sand)!important;border:1px solid var(--fit-sand-border)!important;
+  color:var(--fit-ink)!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel,
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel,
+html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{
+  margin:0 0 7px!important;text-align:center!important;
+  font-size:12px!important;line-height:1.45!important;font-weight:850!important;
+  color:var(--fit-heading)!important;letter-spacing:.075em!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  display:grid!important;grid-template-columns:12px minmax(0,1fr)!important;
+  align-items:start!important;gap:7px!important;
+  min-width:0!important;max-width:100%!important;width:100%!important;
+  margin:5px auto 0!important;
+  padding:0!important;
+  font-size:14px!important;line-height:1.55!important;font-weight:650!important;
+  text-align:left!important;color:var(--fit-ink)!important;
+  overflow-wrap:anywhere!important;word-break:normal!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint::before{
+  content:"•"!important;display:block!important;grid-column:1!important;
+  font-size:18px!important;line-height:1.25!important;font-weight:900!important;
+  color:var(--fit-heading)!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;min-width:0!important;max-width:315px!important;
+  align-self:stretch!important;justify-self:end!important;
+  grid-column:auto!important;
+  background:var(--soft)!important;color:var(--ink)!important;
+  border:1px solid var(--line)!important;border-radius:15px!important;
+  padding:14px!important;gap:9px!important;
+  overflow:visible!important;
+}
+html .uxLocationPanel .uxLocationTitle{font-size:11.5px!important;font-weight:850!important;color:var(--ux-accent-ink)!important}
+html .uxLocationPanel .uxSiteName{font-size:13px!important;font-weight:800!important;line-height:1.45}
+html .uxLocationPanel .uxSiteNumber{font-size:11.5px!important;color:var(--mut)!important}
+html .uxLocationPanel .uxLocationSummary{font-size:12.5px!important;font-weight:750!important;color:var(--ink)!important}
+html .uxLocationPanel .uxLocationInfo{font-size:12px!important;line-height:1.58!important}
+html .uxLocationPanel .uxMapFootnote,html .uxLocationPanel .uxMapLinks{font-size:11px!important;line-height:1.4!important}
+html .uxLocationPanel .uxMiniMap{
+  display:block!important;height:170px!important;min-height:170px!important;
+  background:var(--panel)!important;border-radius:12px!important;
+  border:1px solid var(--line)!important;overflow:hidden!important;
+}
+html .uxMiniMapSkeleton{color:var(--mut)!important;font-size:12px!important;line-height:1.5}
+html .uxCommuteAdvice{font-size:12px!important;line-height:1.5!important;background:var(--panel)!important;border-color:var(--line)!important}
+html .uxCommuteAdvice>strong{font-size:12px!important}
+html .uxCommuteSummary{font-size:12px!important}
+html .uxCommuteDetails,html .uxCommuteMeta{font-size:11px!important}
+html .uxSiteControls .uxSiteArrow{color:var(--ux-accent-ink)!important}
+html .uxSiteControls{background:var(--panel)!important;border-color:var(--line)!important}
+/* A map should be meaningful on first paint, even before remote tiles arrive. */
+html #placementMap{background:linear-gradient(135deg,var(--ux-accent-soft),var(--soft))!important;min-height:340px}
+html .map-heading h2{font-size:clamp(20px,1.6vw,25px);font-weight:800!important}
+html .map-caption{font-size:12px!important;line-height:1.6!important;background:var(--panel)!important;color:var(--mut)!important}
+html #sectorMapLegend{background:var(--panel)!important;color:var(--ink)!important;font-size:11.6px!important}
+html .leaflet-control-zoom a,html .leaflet-control-attribution,html .leaflet-popup-content-wrapper,html .leaflet-popup-tip{
+  background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
+html[data-theme="dark"] #placementMap .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap .leaflet-tile-pane{
+  filter:saturate(.58) brightness(.80) contrast(.92)!important;
+}
+/* Other pages inherit palette, not a fixed dark-forest skin. */
+html[data-theme="dark"] .compareTable,html[data-theme="dark"] .outcomeTable,html[data-theme="dark"] .researchTable{
+  background:var(--panel)!important;color:var(--ink)!important;
+}
+html[data-theme="dark"] .compareTable thead th,html[data-theme="dark"] .compareTable tbody th,
+html[data-theme="dark"] .outcomeTable th,html[data-theme="dark"] .researchTable th{
+  background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
+html[data-theme="dark"] .compareTable td,html[data-theme="dark"] .outcomeTable td,html[data-theme="dark"] .researchTable td{border-color:var(--line)!important}
+html[data-theme="dark"] .outcomeInfo,html[data-theme="dark"] .deadlineBox,
+html[data-theme="dark"] .deadlineBox.deadlineClosed{
+  background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important;color:var(--ink)!important;
+}
+html[data-theme="dark"] .deadlineValue,html[data-theme="dark"] .deadlineLabel,
+html[data-theme="dark"] .outcomeInfo a{color:var(--ux-accent-ink)!important}
+html[data-theme="dark"] .programmeDates,html[data-theme="dark"] .notice,
+html[data-theme="dark"] .uxProfileApplied,html[data-theme="dark"] .uxHomePostcodeFilter{
+  background:var(--soft)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html[data-theme="dark"] .onboardHomeBase{background:var(--soft)!important;border-color:var(--line)!important;color:var(--ink)!important}
+html[data-theme="dark"] .onboardCard .onboardChoice.selected{background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important}
+html[data-theme="dark"] .onboardCard .onboardChoice.selected b{color:var(--ux-accent-ink)!important}
+html[data-theme="dark"] .onboardField input,html[data-theme="dark"] .onboardField select,
+html[data-theme="dark"] .cloudEmailRow input{background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important}
+html .simColHeading h3{font-size:18px!important;font-weight:800}
+html .simItem{background:var(--panel)!important;border-color:var(--line)!important}
+html .simItemMeta,html .simResultStatus{font-size:11.5px!important;line-height:1.5!important}
+html .simCol[data-sim-col="preferred"]{border-top-color:var(--ux-accent)!important}
+html .simCol[data-sim-col="neutral"]{border-top-color:var(--ux-accent-border)!important}
+html .simItem:hover,html .simItem.simHover{background:var(--ux-accent-soft)!important;border-color:var(--ux-accent-border)!important}
+html .simRank{background:var(--soft)!important;border-color:var(--line)!important}
+html .simSummaryBig strong:first-child{color:var(--ux-accent-ink)!important}
+html .uxPaletteOption{background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important}
+html .uxPaletteOption[aria-pressed="true"]{background:var(--ux-accent-soft)!important;border-color:var(--ux-accent)!important;color:var(--ux-accent-ink)!important}
+html[data-theme="dark"] .uxPaletteOption small{color:var(--mut)!important}
+/* Responsive fit panels: never let a bullet or the location map overflow. */
+@media(max-width:1210px){
+  html .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(170px,195px) minmax(250px,1fr)!important;justify-content:stretch!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{align-items:center!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1/-1!important;max-width:none!important;justify-self:stretch!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxMiniMap{height:190px!important;min-height:190px!important}
+}
+@media(max-width:710px){
+  html .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:1fr!important;gap:10px!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .score{min-height:0!important;padding:15px 17px!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{align-items:stretch!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn{max-width:none!important;width:100%!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:1!important}
+  html .placement h3{font-size:17px!important}
+  html .placement .salary{font-size:19px}
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{font-size:14.5px!important}
+  html .placement .badges .badge{font-size:11.5px!important}
+}
+/* Compact Grid keeps its purpose: details/maps are revealed only after expanding. */
+html[data-layout="grid"] .placement:not(.uxExpanded) .fit,
+html[data-layout="grid"] .placement:not(.uxExpanded) .uxLocationPanel{display:none!important}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation{
+  display:grid!important;grid-template-columns:1fr!important;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  display:flex!important;grid-column:1!important;max-width:100%!important;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitColumn{
+  max-width:100%!important;flex:0 0 auto!important;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  font-size:13.5px!important;
+}
