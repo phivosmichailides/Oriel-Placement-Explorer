@@ -6,7 +6,7 @@
 
   const loadDeadlineDates=()=>{
     const extra=document.createElement('script');
-    extra.src='deadline-dates.js?v=20261106f';
+    extra.src='deadline-dates.js?v=20261106g';
     document.body.appendChild(extra);
   };
 
@@ -20,7 +20,7 @@
 
   const loadSectors=()=>{
     const sectors=document.createElement('script');
-    sectors.src='sector-map.js?v=20261106f';
+    sectors.src='sector-map.js?v=20261106g';
     sectors.onload=loadOnboarding;
     sectors.onerror=loadOnboarding;
     document.body.appendChild(sectors);
@@ -35,7 +35,7 @@
   };
 
   const product=document.createElement('script');
-  product.src='app-product.js?v=20261106f';
+  product.src='app-product.js?v=20261106g';
   product.onload=loadGeneric;
   product.onerror=()=>{
     const r=document.getElementById('results');
