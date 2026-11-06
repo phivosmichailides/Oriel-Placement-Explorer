@@ -11,7 +11,7 @@ const output = '/tmp/oriel-map-theme-smoke';
 fs.mkdirSync(output, {recursive:true});
 const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
 (async()=>{
-  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   const page=await browser.newPage({viewport:{width:1440,height:960}});
   const errors=[];
   page.on('pageerror',e=>{errors.push(e.message);console.log('RUNTIME ERROR:',e.message)});
@@ -120,6 +120,15 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       cssFilter:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter
     }));
     console.log('BASEMAP DIAGNOSTICS:',JSON.stringify(browserBasemaps));
+    if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
+      await page.waitForFunction(()=>{
+        const state=document.querySelector('#placementMap')?.dataset.basemap;
+        return state==='vector-positron'||state==='raster-fallback';
+      },null,{timeout:14000});
+      const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
+      console.log('GPU BASEMAP:',finalState);
+      assert(finalState==='vector-positron'||finalState==='raster-fallback','WebGL map hung during initialisation');
+    }
     assert(['vector-positron','vector-loading','raster-fallback'].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
     await card.locator('.uxLocationMore summary').click();
