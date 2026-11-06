@@ -419,6 +419,7 @@
    const commuteMeta=document.createElement('small');commuteMeta.className='uxCommuteMeta';commuteAdvice.append(commuteMeta);
    const map=document.createElement('div');map.className='uxMiniMap';map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';panel.append(map);
    const caption=document.createElement('div');caption.className='uxLocationCaption';panel.append(caption);
+   const personalisedHint=document.createElement('div');personalisedHint.className='uxCommutePersonalisation';panel.append(personalisedHint);
    const more=document.createElement('details');more.className='uxLocationMore';
    const moreLabel=document.createElement('summary');moreLabel.textContent='More connections & commute';more.append(moreLabel);
    const info=document.createElement('div');info.className='uxLocationInfo';more.append(info);
@@ -434,7 +435,7 @@
    };
    const captionStatus=(status,details='')=>{
      const prefix=status==='good'?'Convenient':status==='bad'?'Not convenient':
-       status==='loading'?'Checking commute':'Commute not verified';
+       status==='loading'?'Checking your commute':status==='general'?'Area connections':status==='missing'?'Exact site location needed':'Journey time unavailable';
      caption.dataset.commuteTone=status;
      caption.textContent=prefix+(details?' · '+details:'')+(captionBase?' · '+captionBase:'');
      caption.title=caption.textContent;
@@ -443,7 +444,10 @@
      const site=activeSite,loc=activeLocation,siteLookup=activeLookup;
      const origin=window.OrielCommuteProfile?.read?.()||'';
      if(!origin){
-       captionStatus('unknown');
+       // Without a starting postcode, show the area's transport links, not an invented commute assessment.
+       captionStatus('general');
+       personalisedHint.textContent='General transport guidance · Add a home postcode to personalise travel time and convenience.';
+       personalisedHint.hidden=false;
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
@@ -459,7 +463,9 @@
        return;
      }
      if(!site?.pc){
-       captionStatus('unknown');
+       captionStatus('missing');
+       personalisedHint.textContent='A precise site postcode is needed for personal commute estimates. General area guidance is still available.';
+       personalisedHint.hidden=false;
        commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-unverified';
        commuteLabel.textContent='Journey not assessed';
        commuteSummary.textContent='Oriel does not provide a training-site postcode for this location, so a reliable journey time cannot be calculated.';
@@ -474,6 +480,8 @@
      const key=origin+'|'+site.pc;
      if(panel.dataset.uxCommuteKey===key&&panel.dataset.uxCommuteLoadedKey===key)return;
      captionStatus('loading');
+     personalisedHint.textContent='Checking a weekday morning journey from '+originLabel+'.';
+     personalisedHint.hidden=false;
      commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
      commuteLabel.textContent='Checking your commute…';
      commuteSummary.textContent='From '+originLabel+' to '+(siteTitle.textContent||site.pc);
@@ -491,6 +499,7 @@
          if(panel.dataset.uxCommuteKey!==key)return;
          const convenient=Number(journey.duration)<=40;
          captionStatus(convenient?'good':'bad',Math.round(journey.duration)+' min');
+         personalisedHint.textContent='Personalised to '+originLabel+' · typical weekday morning sample.';
          commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
          commuteLabel.textContent=convenient?'Convenient':'Not Convenient';
          commuteSummary.textContent=journey.duration+' min from '+originLabel+' to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
@@ -502,9 +511,10 @@
          commuteMeta.textContent=[journey.sampleDate,(journey.departure||'08:00')+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
        }catch{
          if(panel.dataset.uxCommuteKey!==key)return;
-         captionStatus('unknown');
+         captionStatus('unavailable');
+         personalisedHint.textContent='Journey time unavailable from the planner; the area connections remain useful general guidance.';
          commuteAdvice.className='uxCommuteAdvice is-unverified';
-         commuteLabel.textContent='Journey not verified';
+         commuteLabel.textContent='Exact journey time unavailable';
          commuteSummary.textContent='The transport planner did not return a reliable journey time from '+origin+' to '+site.pc+'.';
          commuteDetails.textContent='No time or convenience rating has been guessed. Use the route link to check the exact journey.';
          commuteMeta.textContent='Route data unavailable for this postcode pair.';
