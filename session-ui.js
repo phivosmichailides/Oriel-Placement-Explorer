@@ -7,13 +7,13 @@
  const root=document.documentElement,explorePanel=$('explore'),sidebar=$('uxFilterSidebar');
  const storage={get:(s,k)=>{try{return s.getItem(k)}catch{return null}},set:(s,k,v)=>{try{s.setItem(k,v)}catch{}}};
  const S=window.sessionStorage,L=window.localStorage;
- const ids=['search','sector','region','hours','salary','sort','decision','visa'];
+ const ids=['search','sector','region','hours','salary','sort','decision','visa','specialistView'];
  const getTab=()=>document.querySelector('.tab.active')?.dataset.tab||'explore';
  let lastTab=getTab(),restoreDone=false,restoreInProgress=false;
  let collapsed=storage.get(L,COLLAPSE)==='1';
  let zoom=Number(storage.get(L,ZOOM)||100);
  if(!Number.isFinite(zoom)||zoom<70||zoom>130)zoom=100;
- function currentFilters(){const fields={};ids.forEach(id=>fields[id]=$(id)?.value??'');return {fields,quick:typeof quick!=='undefined'?[...quick]:[],hideAvoid:!!$('hideAvoid')?.checked,hideShortlisted:!!$('hideShortlisted')?.checked}}
+ function currentFilters(){const fields={};ids.forEach(id=>fields[id]=$(id)?.value??'');return {fields,quick:typeof quick!=='undefined'?[...quick]:[],hideAvoid:!!$('hideAvoid')?.checked,hideShortlisted:!!$('hideShortlisted')?.checked,hideJustice:!!$('hideJustice')?.checked,hideMental:!!$('hideMental')?.checked,hideOtherSpecialist:!!$('hideOtherSpecialist')?.checked}}
  const getSaved=()=>{try{const v=JSON.parse(storage.get(S,SESSION)||'null');return v&&v.version===1?v:null}catch{return null}};
  function snapshot(position=true){
    if(restoreInProgress)return;
@@ -46,8 +46,9 @@
  };
  $('uxCollapseFilters')?.addEventListener('click',()=>setCollapsed(!collapsed));
  $('uxOpenFilters')?.addEventListener('click',()=>{
-   setCollapsed(false);$('uxFloatInner').hidden=true;$('uxFloatToggle')?.setAttribute('aria-expanded','false');
-   const target=$('uxFilterSidebar');target?.scrollIntoView({behavior:'smooth',block:'start'});
+   setCollapsed(!collapsed);$('uxFloatInner').hidden=true;$('uxFloatToggle')?.setAttribute('aria-expanded','false');
+   // Toggle without automatically jumping the scroll position.
+   updateFloating();
  });
  const dock=$('uxFloatingTools'),dockToggle=$('uxFloatToggle'),dockInner=$('uxFloatInner'),topBtn=$('uxBackTop');
  const closeDock=()=>{if(dockInner)dockInner.hidden=true;dockToggle?.setAttribute('aria-expanded','false')};
@@ -83,6 +84,7 @@
      dock.classList.toggle('uxFloatVisible',visible);
      if(!visible)closeDock();
    }
+   const paneToggle=$('uxOpenFilters');if(paneToggle)paneToggle.textContent=collapsed?'☷ Show full sidebar':'☷ Hide full sidebar';
    if(topBtn)topBtn.classList.toggle('uxTopVisible',y>420);
  }
  setCollapsed(collapsed,false);
@@ -186,6 +188,7 @@
    }
    if($('hideAvoid'))$('hideAvoid').checked=!!f.hideAvoid;
    if($('hideShortlisted'))$('hideShortlisted').checked=!!f.hideShortlisted;
+   for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=f[id]===undefined?(id!=='hideOtherSpecialist'):!!f[id];
    if(Array.isArray(f.quick)&&typeof quick!=='undefined'){
      quick=new Set(f.quick);
      document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',quick.has(x.dataset.q)));
