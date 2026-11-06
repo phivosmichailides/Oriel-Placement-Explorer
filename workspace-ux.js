@@ -285,7 +285,7 @@
    });
  }
  // Geocoded locations come from the same postcode dataset used by the principal map.
- let postcodeLocations=null;
+ let postcodeLocations=window.ORIEL_BUNDLED_LOCATIONS||{};
  const geoFor=()=>{
    try{if(typeof geo!=='undefined'&&geo&&Object.keys(geo).length>100)return geo}catch{}
    return postcodeLocations||{};
@@ -334,18 +334,14 @@
    try{
      holder.replaceChildren();
      const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false});
-     let fallbackUsed=false;
-     const tile=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-       maxZoom:18,subdomains:'abcd',
-       attribution:'© <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © CARTO'
+     // The standard OSM raster endpoint is key-free. CARTO's unkeyed URL
+     // may return an HTTP-200 "API KEY REQUIRED" image, not a tile error.
+     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+       maxZoom:19,
+       keepBuffer:2,
+       updateWhenIdle:true,
+       attribution:'&copy; <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
      }).addTo(map);
-     tile.on('tileerror',()=>{
-       if(fallbackUsed)return;
-       fallbackUsed=true;tile.remove();
-       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-         maxZoom:18,attribution:'© OpenStreetMap'
-       }).addTo(map);
-     });
      const sitePoint=[selected.lat,selected.lng];
      const central=p.region==='London'?[51.5074,-.1278]:null;
      if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
@@ -698,10 +694,11 @@
    if(init()||attempts>160)clearInterval(timer);
  },125);
  document.addEventListener('desk:ready',()=>{if(init())clearInterval(timer)});
- // Download public postcode coordinates only if needed; same file the app already uses.
- fetch('./locations.json').then(r=>r.ok?r.json():null).then(value=>{
-   if(value&&typeof value==='object'){postcodeLocations=value;enhancedContainers.forEach(id=>enhanceCards($(id)));
-     document.querySelectorAll('.uxMiniMap').forEach(holder=>{if(holder.closest('.placement')?.dataset.uxEnhanced){enableMini(holder);if(holder.getBoundingClientRect().top<window.innerHeight+100)mapVisible(holder)}});
-   }
- }).catch(()=>{});
+ // Public postcode locations are now bundled at page load, so card directions
+ // and map pins work immediately without a second network request.
+ if(postcodeLocations&&Object.keys(postcodeLocations).length){
+   document.addEventListener('desk:cards-ready',()=>{
+     enhancedContainers.forEach(id=>enhanceCards($(id)));
+   },{once:true});
+ }
 })();
