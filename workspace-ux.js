@@ -425,11 +425,12 @@
        return;
      }
      const area=window.OrielCommuteProfile?.areaLabel?.(origin)||guides?.describePostcode?.(origin)?.headline||origin;
+     const originLabel=area===origin?origin:area+' ('+origin+')';
      const key=origin+'|'+site.pc;
      if(panel.dataset.uxCommuteKey===key&&panel.dataset.uxCommuteLoadedKey===key)return;
      commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
      commuteLabel.textContent='Checking your commute…';
-     commuteSummary.textContent='From '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc);
+     commuteSummary.textContent='From '+originLabel+' to '+(siteTitle.textContent||site.pc);
      commuteDetails.textContent='Checking a typical weekday morning public-transport journey.';
      commuteMeta.textContent='Your map pin remains the training site; only this travel advice uses your starting postcode.';
      route.textContent='Open home-to-site route ↗';
@@ -445,7 +446,7 @@
          const convenient=Number(journey.duration)<=40;
          commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
          commuteLabel.textContent=convenient?'Convenient':'Not Convenient';
-         commuteSummary.textContent=journey.duration+' min from '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
+         commuteSummary.textContent=journey.duration+' min from '+originLabel+' to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
          commuteDetails.textContent=(journey.legs||[]).join(' → ')||'The planner returned a journey time but no leg-by-leg description.';
          const notes=[];
          notes.push(journey.transfers===0?'No changes':journey.transfers+' '+(journey.transfers===1?'change':'changes'));
