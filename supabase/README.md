@@ -41,7 +41,7 @@ The workspace is a single JSONB document per applicant so the current app can be
 - If the account already has a workspace and the current browser has meaningful local data, the app asks which copy to keep. It never silently overwrites one with the other.
 - If the browser has no meaningful local data, the cloud workspace is restored automatically.
 - Subsequent changes are saved automatically after a short debounce.
-- Signing out does not delete the local browser copy.
+- Signing out clears visible account data from the shared browser after confirming the latest changes have synchronised; the private Supabase copy remains available when the applicant signs in again.
 - A newer remote edit and unsynchronised local edits trigger a conflict choice rather than an automatic last-write-wins overwrite.
 
 ## Manual verification checklist
