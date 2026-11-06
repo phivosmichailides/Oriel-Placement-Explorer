@@ -187,6 +187,7 @@
 
     renderAppliedProfile(loadAnswers()||{homePostcode:window.OrielCommuteProfile?.read?.()||''});
     document.addEventListener('desk:commute-origin-changed',()=>{const profile=loadAnswers()||{};profile.homePostcode=window.OrielCommuteProfile?.read?.()||'';renderAppliedProfile(profile)});
+    window.openOrielPersonalisation=()=>openSetup(true);
     document.getElementById('personaliseAgain')?.addEventListener('click',()=>openSetup(true));
     document.getElementById('personaliseTop')?.addEventListener('click',()=>openSetup(true));
     let done=false,skipped=false;try{done=localStorage.getItem(DONE_KEY)==='1';skipped=sessionStorage.getItem(SESSION_SKIP)==='1'}catch{}
