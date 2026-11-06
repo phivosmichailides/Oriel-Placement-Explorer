@@ -368,7 +368,7 @@
  function scheduleCommute(panel){
    if(!panel?.isConnected||typeof panel._uxRunCommute!=='function')return;
    const rect=panel.getBoundingClientRect();
-   if(rect.top<window.innerHeight+180&&rect.bottom>-180){panel._uxRunCommute();return;}
+   if(rect.width>0&&rect.height>0&&rect.top<window.innerHeight+180&&rect.bottom>-180){panel._uxRunCommute();return;}
    if(!('IntersectionObserver'in window)){return;}
    if(!commuteObserver)commuteObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target._uxRunCommute?.()}),{rootMargin:'180px',threshold:.01});
    commuteObserver.observe(panel);
@@ -444,7 +444,7 @@
          if(panel.dataset.uxCommuteKey!==key)return;
          const convenient=Number(journey.duration)<=40;
          commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
-         commuteLabel.textContent=convenient?'Convenient':'Not convenient';
+         commuteLabel.textContent=convenient?'Convenient':'Not Convenient';
          commuteSummary.textContent=journey.duration+' min from '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
          commuteDetails.textContent=(journey.legs||[]).join(' → ')||'The planner returned a journey time but no leg-by-leg description.';
          const notes=[];
