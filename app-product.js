@@ -47,30 +47,48 @@
     };
     const scopeName=()=>activeRegion()||'England & Wales';
 
+    // Locate a small, focused batch, never 3,900+ postcodes automatically.
+    // Bundled coordinates paint immediately; new pins appear progressively.
     const resolveScopePins=async()=>{
-      if(geoBusy)return;
+      if(geoBusy||typeof geo==='undefined')return;
       const region=activeRegion();
       const source=region?scopePlacements():placements.filter(matches);
-      const pcs=[...new Set(source.flatMap(p=>p.postcodes.map(pcKey)))].filter(pc=>!geo[pc]);
-      if(!pcs.length){drawMap(placements.filter(matches));return;}
+      const missing=[...new Set(source.flatMap(p=>p.postcodes.map(pcKey)))].filter(pc=>!geo[pc]);
+      if(!missing.length){drawMap(placements.filter(matches));return;}
+      const limit=240;
+      const pcs=missing.slice(0,limit);
       geoBusy=true;
-      if($('locateBtn'))$('locateBtn').disabled=true;
+      const locateButton=$('locateBtn');
+      if(locateButton)locateButton.disabled=true;
+      let completed=0,located=0;
       try{
-        for(let i=0;i<pcs.length;i+=100){
-          $('mapStatus').textContent=`Locating ${scopeName()} programme postcodes: ${Math.min(i+100,pcs.length)} of ${pcs.length}…`;
-          const r=await fetch('https://api.postcodes.io/postcodes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postcodes:pcs.slice(i,i+100)}),signal:AbortSignal.timeout(15000)});
-          if(!r.ok)throw Error();
+        const batches=[];
+        for(let i=0;i<pcs.length;i+=80)batches.push(pcs.slice(i,i+80));
+        // At most three postcode.io calls in parallel, and only when needed.
+        await Promise.all(batches.map(async batch=>{
+          const r=await fetch('https://api.postcodes.io/postcodes',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({postcodes:batch}),signal:AbortSignal.timeout(11000)
+          });
+          if(!r.ok)throw Error('postcode service unavailable');
           const j=await r.json();
-          j.result.forEach(x=>{if(x.result)geo[pcKey(x.query)]=[x.result.latitude,x.result.longitude]});
-        }
+          (j.result||[]).forEach(x=>{
+            if(x.result){geo[pcKey(x.query)]=[x.result.latitude,x.result.longitude];located++;}
+          });
+          completed+=batch.length;
+          $('mapStatus').textContent=`Adding map pins · ${completed} of ${pcs.length} checked`;
+        }));
         try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
         drawMap(placements.filter(matches));
-        toast(`${scopeName()} map locations updated.`);
+        document.dispatchEvent(new CustomEvent('desk:locations-updated'));
+        const remaining=Math.max(0,missing.length-pcs.length);
+        toast(remaining?`Added ${located} locations. Use Locate missing for the next batch.`:`Added ${located} map locations.`);
       }catch{
-        $('mapStatus').textContent='Postcode lookup unavailable. Existing pins and all list results remain usable.';
+        drawMap(placements.filter(matches));
+        $('mapStatus').textContent='Some locations could not be added. Existing pins are available; retry Locate missing.';
       }finally{
         geoBusy=false;
-        if($('locateBtn'))$('locateBtn').disabled=false;
+        if(locateButton)locateButton.disabled=false;
       }
     };
 
