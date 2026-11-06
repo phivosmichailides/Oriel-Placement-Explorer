@@ -12,7 +12,7 @@
 
   const loadOnboarding=()=>{
     const onboarding=document.createElement('script');
-    onboarding.src='onboarding.js?v=20261106f';
+    onboarding.src='onboarding.js?v=20261106g';
     onboarding.onload=loadDeadlineDates;
     onboarding.onerror=loadDeadlineDates;
     document.body.appendChild(onboarding);
