@@ -27,6 +27,8 @@
 @media(max-width:720px){.shell{padding:12px}.top{flex-direction:column}.actions{justify-content:flex-start}.top h1{font-size:24px}.stats{grid-template-columns:repeat(2,1fr)}.placementTop{grid-template-columns:1fr}.salary,.hourly{text-align:left}.fit{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.settings{grid-template-columns:1fr}.weight{grid-template-columns:1fr 1fr 30px}.sectionHero{align-items:flex-start;flex-direction:column}}
 </style>
 <link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
 <link rel="stylesheet" href="desk.css?v=20261015-no-ratings">
 <link rel="stylesheet" href="theme-outcome.css?v=20261105">
 <link rel="stylesheet" href="workspace-themes.css?v=20261106f">
@@ -154,6 +156,9 @@
 <button class="uxBackTop" type="button" id="uxBackTop" aria-label="Scroll to the top" title="Back to top">↑ <span>Top</span></button>
 <footer class="app-footer">Based on <a href="https://github.com/Acid555/Oriel-Placement-Explorer" target="_blank" rel="noopener">Acid555’s Oriel Placement Explorer</a> · Built-in snapshot: 1 October 2026, not live Oriel data. Upload your latest CSV to refresh. Scores are text-based suggestions, not verified working conditions.</footer><div class="toast" role="status" id="toast"></div>
 <script src="vendor/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
+<script src="map-basemap.js?v=20261106v1"></script>
 <script src="research-core.js?v=1"></script>
 <script src="research.js?v=20261015-no-ratings"></script>
 <script src="desk-enhancements.js?v=20261106g"></script>
@@ -166,9 +171,9 @@
 <script src="supabase-config.js?v=20261106a"></script>
 <script src="supabase-cloud.js?v=20261106c"></script>
 <script src="locations-bundled.js?v=20261106a"></script>
-<script src="app.js?v=20261106tile1"></script>
+<script src="app.js?v=20261106vector1"></script>
 <script src="theme-outcome.js?v=20261106i"></script>
-<script src="workspace-ux.js?v=20261106tile1"></script>
+<script src="workspace-ux.js?v=20261106vector1"></script>
 <script src="simulator.js?v=20261106h"></script>
 <script src="session-ui.js?v=20261106i"></script>
 </body>
