@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106tile1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')){fresh=true;break;}
+      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106readable1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -62,15 +62,37 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return e && (e.classList.contains('leaflet-container')||e.textContent.includes('No mapped pin'));
     },null,{timeout:30000});
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
-    await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-tile-loaded').length>0,null,{timeout:30000});
+    await page.waitForFunction(()=>{
+      const holder=document.querySelector('#results .placement .uxMiniMap');
+      return holder&&(holder.dataset.basemap==='vector-positron'||holder.dataset.basemap==='vector-dark'||holder.querySelector('.leaflet-tile-loaded'));
+    },null,{timeout:30000});
+    const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
     const miniTileSources=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
     })));
-    assert(miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
-      'Programme mini map still uses an invalid provider or has no readable imagery: '+JSON.stringify(miniTileSources.slice(0,3)));
+    assert(miniBasemap.startsWith('vector')||
+      (miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100)),
+      'Mini map is blank or uses invalid imagery: '+miniBasemap);
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
+    const readable=await card.evaluate(el=>{
+      const font=sel=>parseFloat(getComputedStyle(el.querySelector(sel)).fontSize);
+      return {
+        title:font('.placementTop h3'),
+        bullet:font('.fitPoint'),
+        caption:font('.uxLocationCaption'),
+        captionLength:el.querySelector('.uxLocationCaption')?.textContent?.length||0,
+        extraExpanded:el.querySelector('.uxLocationMore')?.open,
+        middleHeight:el.querySelector('.fitColumn.positive').getBoundingClientRect().height
+      };
+    });
+    assert(readable.title>=20,'Programme title font is too small');
+    assert(readable.bullet>=16,'Fit bullets font is too small');
+    assert(readable.caption>=15,'Map caption font is too small');
+    assert(readable.captionLength<=115,'Map caption is too long');
+    assert(!readable.extraExpanded,'Extra location details should start collapsed');
+    assert(readable.middleHeight<250,'Fit boxes are still oversized');
     assert(bullets>0,'Bullets are missing');
     const overflow=await page.locator('#results .placement .fitColumn').evaluateAll(items=>
       items.some(e=>e.scrollWidth>e.clientWidth+4||e.scrollHeight>e.clientHeight+4)
@@ -89,6 +111,23 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(geometry.scoreWidth>=140&&geometry.scoreWidth<=190,'Personal Fit not slightly wider than reference');
     assert(geometry.fitRight-geometry.mapRight<26,'Fit row leaves excessive blank right-hand space');
     await page.screenshot({path:output+'/desktop-list.png',fullPage:false});
+    const browserBasemaps=await page.evaluate(()=>({
+      main:document.querySelector('#placementMap')?.dataset.basemap,
+      mini:document.querySelector('#results .placement .uxMiniMap')?.dataset.basemap,
+      maplibreLoaded:!!window.maplibregl,
+      pluginLoaded:!!window.L?.maplibreGL,
+      supported:!!window.maplibregl?.supported?.(),
+      cssFilter:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter
+    }));
+    console.log('BASEMAP DIAGNOSTICS:',JSON.stringify(browserBasemaps));
+    assert(['vector-positron','vector-loading','raster-fallback'].includes(browserBasemaps.main),
+      'Unexpected basemap mode: '+browserBasemaps.main);
+    await card.locator('.uxLocationMore summary').click();
+    assert(await card.locator('.uxLocationMore').evaluate(el=>el.open),'Extra location details do not expand');
+    await card.locator('.uxLocationMore summary').click();
+    await card.locator('.uxSiteArrow[aria-label="Next training site"]').first().click();
+    assert(/Site 2/.test(await card.locator('.uxSiteNumber').innerText()),
+      'Split site arrows failed to update location');
     // The full England & Wales view must also retain bundled pins: do not
     // let a missing external postcode request create a 0/4012 empty map.
     await page.locator('#region').selectOption('');
@@ -150,6 +189,6 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     await page.screenshot({path:output+'/desktop-grid.png',fullPage:false});
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
-    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,mainProvider:'tile.openstreetmap.org',miniProvider:'tile.openstreetmap.org',allRegionPins,cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
+    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,basemap:browserBasemaps,allRegionPins,cards,panels,bullets,readable,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
 })().catch(e=>{console.error('UI REGRESSION:',e.stack||e);process.exit(1)});
