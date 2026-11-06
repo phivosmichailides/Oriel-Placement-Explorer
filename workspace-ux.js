@@ -334,11 +334,24 @@
    try{
      holder.replaceChildren();
      const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:true});
-     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OSM</a>'}).addTo(map);
-     const central=[51.5074,-.1278];
-     L.circleMarker(central,{radius:3.5,color:'#444',weight:1.8,fillColor:'#f6ede0',fillOpacity:1}).addTo(map).bindTooltip('Central London');
-     L.circleMarker([selected.lat,selected.lng],{radius:5.8,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
-     map.fitBounds(L.latLngBounds([central,[selected.lat,selected.lng]]),{padding:[20,20],maxZoom:12,animate:false});
+     let fallbackUsed=false;
+     const tile=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+       maxZoom:18,subdomains:'abcd',
+       attribution:'© <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © CARTO'
+     }).addTo(map);
+     tile.on('tileerror',()=>{
+       if(fallbackUsed)return;
+       fallbackUsed=true;tile.remove();
+       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+         maxZoom:18,attribution:'© OpenStreetMap'
+       }).addTo(map);
+     });
+     const sitePoint=[selected.lat,selected.lng];
+     const central=p.region==='London'?[51.5074,-.1278]:null;
+     if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     L.circleMarker(sitePoint,{radius:6.2,weight:2,color:'#ffffff',fillColor:'#995c68',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
+     if(central)map.fitBounds(L.latLngBounds([central,sitePoint]),{padding:[20,20],maxZoom:12,animate:false});
+     else map.setView(sitePoint,12,{animate:false});
      const openSelected=()=>{
        const label=siteName(p,selected,index,sites.length);
        const lookup=/^Training location/.test(label)?selected.pc:label+' '+selected.pc;
@@ -375,7 +388,8 @@
  }
  function enableCommute(panel){scheduleCommute(panel)}
  function locationPanel(p){
-   const guides=window.OrielLocationGuide,sites=getSites(p);
+   const guides=window.OrielLocationGuide;
+   let sites=getSites(p);
    const panel=document.createElement('div');panel.className='uxLocationPanel';panel.dataset.uxSiteIndex='0';
    const title=document.createElement('div');title.className='uxLocationTitle';title.textContent='Location & connections';panel.append(title);
    const bar=document.createElement('div');bar.className='uxSiteBar';panel.append(bar);
@@ -465,6 +479,8 @@
      scheduleCommute(panel);
    };
    const refreshSite=()=>{
+     // Location lookups may finish after the card is created. Always read fresh pins.
+     sites=getSites(p);
      const i=Number(panel.dataset.uxSiteIndex)||0;
      const site=sites[i]||{pc:(p.postcodes||[])[i]||'',lat:null,lng:null};
      const scoped={...p,postcodes:[site.pc]};
@@ -484,6 +500,7 @@
      if(panel.isConnected&&panel.getBoundingClientRect().width>0)requestAnimationFrame(()=>mapVisible(map));
    };
    panel._uxRefreshCommute=refreshCommute;
+   panel._uxRefreshSite=refreshSite;
    if(sites.length>1){
      const controls=document.createElement('div');controls.className='uxSiteControls';bar.append(controls);
      const addArrow=(text,delta,label)=>{
@@ -595,6 +612,9 @@
    if(expanded&&!card.querySelector('.desc')){const p=byId().get(card.dataset.id);if(p?.desc){const d=document.createElement('p');d.className='desc';d.textContent=p.desc;card.querySelector('.decision-quick')?.before(d)}}
    if(!expanded&&holder&&miniMaps.has(holder)){try{miniMaps.get(holder).invalidateSize(false)}catch{}}
  });
+ document.addEventListener('desk:locations-updated',()=>{
+   document.querySelectorAll('.uxLocationPanel').forEach(panel=>panel._uxRefreshSite?.());
+ });
  document.addEventListener('desk:commute-origin-changed',()=>{
    document.querySelectorAll('.uxLocationPanel').forEach(panel=>{
      panel._uxRefreshCommute?.();
@@ -611,8 +631,11 @@
    });
    observer.observe(container,{childList:true,subtree:false});
  };
+ let uxInitialised=false;
  const init=()=>{
+   if(uxInitialised)return true;
    if(!getData().length||typeof explore!=='function'||typeof card!=='function')return false;
+   uxInitialised=true;
    refreshObserved($('results'));refreshObserved($('shortlistList'));refreshObserved($('mapSelection'));
    // Updating For You also refreshes net income and start date metadata.
    new MutationObserver(()=>enhanceRecommendations()).observe($('reco'),{childList:true});
@@ -627,8 +650,9 @@
  let attempts=0;
  const timer=setInterval(()=>{
    attempts++;
-   if((window.__programmeDatesInstalled&&init())||attempts>160)clearInterval(timer);
+   if(init()||attempts>160)clearInterval(timer);
  },125);
+ document.addEventListener('desk:ready',()=>{if(init())clearInterval(timer)});
  // Download public postcode coordinates only if needed; same file the app already uses.
  fetch('./locations.json').then(r=>r.ok?r.json():null).then(value=>{
    if(value&&typeof value==='object'){postcodeLocations=value;enhancedContainers.forEach(id=>enhanceCards($(id)));
