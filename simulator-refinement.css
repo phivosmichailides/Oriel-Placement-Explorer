@@ -725,3 +725,95 @@ html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocatio
   .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{min-height:0}
 }
 
+/* Final UX pass: real viewport-aware zoom, visible controls, commute guidance and a left-aligned fit score. */
+:root{--ux-shell-width:100%;--ux-shell-max-width:1540px}
+html .shell{
+  width:var(--ux-shell-width,100%);
+  max-width:var(--ux-shell-max-width,1540px);
+}
+/* This dock sits outside the zoomed shell, so it stays fixed to the viewport. */
+.uxPageZoomDock{
+  position:fixed;left:16px;bottom:16px;z-index:1400;
+  display:flex;align-items:center;gap:4px;
+  padding:5px;border:1px solid var(--line);border-radius:15px;
+  background:var(--panel);color:var(--ink);
+  box-shadow:0 8px 26px #0003;
+}
+.uxPageZoomDock .btn{
+  display:grid;place-items:center;
+  width:35px;height:35px;min-height:35px;min-width:35px;
+  padding:0;border:0;border-radius:10px;
+  background:var(--soft);color:var(--ink);font-size:19px;font-weight:750;
+}
+.uxPageZoomDock .btn:hover{background:var(--ux-accent-soft);color:var(--ux-accent-ink)}
+.uxPageZoomDock .btn:disabled{opacity:.38;cursor:not-allowed}
+.uxPageZoomDock output{
+  min-width:43px;text-align:center;font-size:11px;font-weight:800;
+  font-variant-numeric:tabular-nums;color:var(--mut);
+}
+.uxNoBreak{white-space:nowrap;display:inline-block}
+.productIntro h2 .uxNoBreak{white-space:nowrap}
+@media(max-width:600px){
+  .uxPageZoomDock{left:10px;bottom:10px;padding:4px;gap:2px}
+  .uxPageZoomDock .btn{width:32px;height:32px;min-width:32px;min-height:32px}
+  .uxPageZoomDock output{min-width:38px}
+}
+/* Keep the score panel's contents left-aligned, as in the original card design. */
+.placement .fit.fitExpanded.uxFitWithLocation .score{
+  align-items:flex-start!important;
+  text-align:left!important;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .score>*{text-align:left!important}
+@media(max-width:850px){
+  .placement .fit.fitExpanded.uxFitWithLocation .score{
+    align-items:flex-start!important;
+    text-align:left!important;
+  }
+}
+/* The applied quiz profile is visible in Explore without turning soft priorities into hard exclusions. */
+.uxProfileApplied{
+  margin:0 0 12px;padding:10px 11px;
+  border:1px solid var(--line);border-radius:13px;
+  background:var(--soft);
+}
+.uxProfileApplied[hidden]{display:none!important}
+.uxProfileAppliedChips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.uxProfileChip{
+  display:inline-flex;align-items:center;
+  padding:5px 8px;border:1px solid var(--ux-accent-border);
+  border-radius:999px;background:var(--ux-accent-soft);
+  color:var(--ux-accent-ink);font-size:10px;font-weight:750;line-height:1.35;
+}
+.uxProfileApplied>p{margin:7px 1px 0;color:var(--mut);font-size:10px;line-height:1.45}
+.uxHomePostcodeFilter{
+  margin:9px 0 12px;padding:11px;
+  border:1px solid var(--line);border-radius:13px;background:var(--soft);
+}
+.uxHomePostcodeFilter .field{margin-bottom:8px}
+.uxHomePostcodeFilter>.btn{width:100%;min-height:34px;padding:8px 10px}
+#uxHomePostcodeStatus{margin:7px 1px 0;line-height:1.45}
+#uxHomePostcodeStatus.is-error{color:var(--red)!important;font-weight:700}
+/* Personal commute assessment is separate from the unchanged training-site map pin. */
+.uxCommuteAdvice{
+  display:grid;gap:4px;min-width:0;
+  padding:10px 11px;border:1px solid var(--line);
+  border-radius:11px;background:var(--soft);
+  color:var(--ink);font-size:11px;line-height:1.45;
+}
+.uxCommuteAdvice[hidden]{display:none!important}
+.uxCommuteAdvice>strong{font-size:11px;font-weight:850;letter-spacing:.045em;text-transform:uppercase}
+.uxCommuteSummary{font-size:11px;font-weight:700;line-height:1.45}
+.uxCommuteDetails{font-size:10px;color:var(--ink);line-height:1.5;overflow-wrap:anywhere}
+.uxCommuteMeta{font-size:9px;color:var(--mut);line-height:1.4}
+.uxCommuteAdvice.is-convenient{background:#edf5ed;border-color:#bfd5c0}
+.uxCommuteAdvice.is-convenient>strong{color:#315b3d}
+.uxCommuteAdvice.is-not-convenient{background:#f7eee9;border-color:#e2c9bb}
+.uxCommuteAdvice.is-not-convenient>strong{color:#875044}
+.uxCommuteAdvice.is-unverified{background:var(--soft);border-color:var(--line)}
+.uxCommuteAdvice.is-unverified>strong{color:var(--mut)}
+html[data-theme="dark"] .uxCommuteAdvice.is-convenient{background:#293e30;border-color:#56745e}
+html[data-theme="dark"] .uxCommuteAdvice.is-convenient>strong{color:#c8e4cb}
+html[data-theme="dark"] .uxCommuteAdvice.is-not-convenient{background:#49312d;border-color:#80564c}
+html[data-theme="dark"] .uxCommuteAdvice.is-not-convenient>strong{color:#f0c2b5}
+html[data-theme="dark"] .uxCommuteAdvice.is-unverified{background:var(--soft);border-color:var(--line)}
+
