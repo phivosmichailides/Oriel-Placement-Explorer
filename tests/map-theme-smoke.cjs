@@ -34,6 +34,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       ()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,
       null,{timeout:70000}
     );
+    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-tile-loaded').length>0,null,{timeout:25000});
+    const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
     const cards=await page.locator('#results .placement').count();
     const panels=await page.locator('#results .placement .uxLocationPanel').count();
@@ -54,6 +56,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const e=document.querySelector('#results .placement .uxMiniMap');
       return e && (e.classList.contains('leaflet-container')||e.textContent.includes('No mapped pin'));
     },null,{timeout:30000});
+    const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
+    assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
     assert(bullets>0,'Bullets are missing');
     const overflow=await page.locator('#results .placement .fitColumn').evaluateAll(items=>
@@ -113,6 +117,6 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     await page.screenshot({path:output+'/desktop-grid.png',fullPage:false});
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
-    console.log(JSON.stringify({status:'PASS',pins,cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
+    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
 })().catch(e=>{console.error('UI REGRESSION:',e.stack||e);process.exit(1)});
