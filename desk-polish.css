@@ -227,3 +227,27 @@ html .simHeroActions .simSplitHelp {
     width: 100%;
   }
 }
+
+
+/* Sector labels retain their category distinctions, but their tint now follows
+   the selected interface palette in both brightness modes. */
+html .placement .badges .badge-hospital {
+  background: color-mix(in srgb, var(--ux-accent) 16%, var(--panel)) !important;
+  border-color: color-mix(in srgb, var(--ux-accent) 36%, var(--line)) !important;
+  color: var(--ux-accent-ink) !important;
+}
+html .placement .badges .badge-gp {
+  background: color-mix(in srgb, var(--ux-pick) 13%, var(--panel)) !important;
+  border-color: color-mix(in srgb, var(--ux-pick) 34%, var(--line)) !important;
+  color: var(--ux-pick) !important;
+}
+html .placement .badges .badge-community {
+  background: color-mix(in srgb, var(--ux-accent) 10%, var(--ux-pick-soft)) !important;
+  border-color: color-mix(in srgb, var(--ux-accent) 32%, var(--ux-pick-border)) !important;
+  color: var(--ux-accent-ink) !important;
+}
+html .placement .badges .badge-industry {
+  background: color-mix(in srgb, var(--ux-pick) 19%, var(--ux-accent-soft)) !important;
+  border-color: color-mix(in srgb, var(--ux-pick) 38%, var(--ux-accent-border)) !important;
+  color: var(--ux-pick) !important;
+}
