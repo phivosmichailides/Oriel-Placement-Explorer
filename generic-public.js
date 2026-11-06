@@ -120,13 +120,14 @@
       document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
       document.getElementById('allRegionsBtn')?.classList.add('on');
       try{renderAll()}catch{try{explore();stats();reco()}catch{}}
-      setTimeout(()=>{try{locateMissing()}catch{}},120);
+      // Use the bundled geocoded postcodes immediately; do not launch a full-country lookup.
+      requestAnimationFrame(()=>{try{placementMap?.invalidateSize(false)}catch{}});
     };
 
     // Keep the All regions chip visually and functionally meaningful.
     allBtn?.addEventListener('click',()=>{
       allBtn.classList.add('on');
-      setTimeout(()=>{try{locateMissing()}catch{}},120);
+      requestAnimationFrame(()=>{try{placementMap?.invalidateSize(false)}catch{}});
     });
     region?.addEventListener('change',()=>allBtn?.classList.toggle('on',!region.value));
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>allBtn?.classList.remove('on'));
@@ -134,13 +135,9 @@
     try{renderAll()}catch{}
     document.dispatchEvent(new CustomEvent('desk:ready'));
 
-    // On an unpersonalised broad visit, build the England & Wales map in the background.
-    // Coordinates are cached locally afterwards, so this is primarily a first-visit cost.
-    if(!region?.value){
-      const mapStatus=document.getElementById('mapStatus');
-      if(mapStatus)mapStatus.textContent='Preparing the England & Wales programme map…';
-      setTimeout(()=>{try{locateMissing()}catch{}},450);
-    }
+    // Instant map: render the 760 bundled postcode coordinates on first paint.
+    // Further lookups are opt-in through "Locate missing", or limited to the chosen region.
+    requestAnimationFrame(()=>{try{placementMap?.invalidateSize(false)}catch{}});
 
     return true;
   };
