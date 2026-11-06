@@ -389,3 +389,62 @@ html[data-palette="mauve"] .badge.good{
 html[data-theme="light"][data-palette="mauve"] .badge.good{color:#70415d!important}
 html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
 html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:var(--ink)!important}
+
+/* Mauveine balance pass: keep the pink identity, but let quiet neutral surfaces dominate.
+   The map retains its own real-world landcover colours. */
+html[data-theme="light"][data-palette="mauve"]{
+ --bg:#f6f4f3;--panel:#fffdfa;--soft:#efedeb;--line:#dfdad9;
+ --ink:#302b2d;--mut:#655d60;--dark:#292327;
+ --ux-accent:#8a687f;--ux-accent-ink:#65485d;--ux-accent-soft:#eee5eb;--ux-accent-border:#d8c7d1;
+ --ux-pick:#815c70;--ux-pick-soft:#eee5eb;--ux-pick-border:#d4c0cb;
+ --green:#52645a;--blue:#52645a;
+}
+html[data-theme="dark"][data-palette="mauve"]{
+ --bg:#1d1b20;--panel:#29272d;--soft:#343138;--line:#49444d;
+ --ink:#f2eef0;--mut:#c7c0c5;--dark:#141216;
+ --ux-accent:#bd98b2;--ux-accent-ink:#e1c9da;--ux-accent-soft:#3b303b;--ux-accent-border:#665364;
+ --ux-pick:#ad849f;--ux-pick-soft:#39303a;--ux-pick-border:#6b5365;
+ --green:#c5b7c1;--blue:#c5b7c1;
+}
+html[data-palette="mauve"] .placement,
+html[data-palette="mauve"] .reco,
+html[data-palette="mauve"] .card,
+html[data-palette="mauve"] .shortlist-toolbar,
+html[data-palette="mauve"] .uxLocationPanel{
+ background:var(--panel)!important;border-color:var(--line)!important;
+}
+html[data-palette="mauve"] .placement .salary-value,
+html[data-palette="mauve"] .salary-value{color:var(--ink)!important}
+html[data-palette="mauve"] .placement .btn.primary,
+html[data-palette="mauve"] .placement [data-action="prefer"]{
+ background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+ border-color:var(--ux-accent-border)!important;
+}
+html[data-palette="mauve"] .placement .btn.selected,
+html[data-palette="mauve"] .decisionPicker summary,
+html[data-palette="mauve"] .decision-quick .selected{
+ background:var(--ux-pick-soft)!important;color:var(--ink)!important;border-color:var(--ux-pick-border)!important;
+}
+html[data-palette="mauve"] .shortlist-toolbar .btn.primary,
+html[data-palette="mauve"] .tab.active{
+ background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;border-color:var(--ux-accent-border)!important;
+}
+html[data-theme="dark"][data-palette="mauve"] .placement .btn.primary,
+html[data-theme="dark"][data-palette="mauve"] .placement [data-action="prefer"]{
+ background:#76596f!important;color:#fff7fb!important;border-color:#94758d!important;
+}
+html[data-theme="light"][data-palette="mauve"] .placement .btn.primary,
+html[data-theme="light"][data-palette="mauve"] .placement [data-action="prefer"]{
+ background:#806174!important;color:#fff!important;border-color:#806174!important;
+}
+html[data-palette="mauve"] .badge,
+html[data-palette="mauve"] .chip,
+html[data-palette="mauve"] .decisionPicker,
+html[data-palette="mauve"] .uxWorkSchedule{
+ filter:saturate(.78);
+}
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"]{
+ background:#493b49!important;color:#f6edf4!important;border-color:#866d83!important;
+}
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:inherit!important}
