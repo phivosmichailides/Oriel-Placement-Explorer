@@ -34,6 +34,10 @@
     if(!isPostcode(place))return place;
     try{return window.OrielLocationGuide?.describePostcode(place)?.headline||place}catch{return place}
   };
+  const displayLabel=postcode=>{
+    const place=normalise(postcode),area=areaLabel(place);
+    return area===place?area:area+' ('+place+')';
+  };
   const setStatus=(message,isError=false)=>{
     const status=$('uxHomePostcodeStatus');
     if(status){status.textContent=message;status.classList.toggle('is-error',isError)}
@@ -55,7 +59,7 @@
         if(typeof window.save==='function')window.save();
       }
     }catch{}
-    if(pc)setStatus('Saved · '+areaLabel(pc)+' ('+pc+'). Commute checks use a typical weekday 08:00 journey; programme map pins stay unchanged.');
+    if(pc)setStatus('Saved · '+displayLabel(pc)+'. Commute checks use a typical weekday 08:00 journey; programme map pins stay unchanged.');
     else setStatus('No commute starting point saved. Add a postcode to personalise each training-site journey.');
     document.dispatchEvent(new CustomEvent('desk:commute-origin-changed',{detail:{postcode:pc}}));
     if(!options.silent&&typeof toast==='function')toast(pc?'Commute starting point saved.':'Commute starting point cleared.');
@@ -69,7 +73,7 @@
     input.dataset.commuteBound='1';
     const current=read();
     input.value=current;
-    if(current)setStatus('Saved · '+areaLabel(current)+' ('+current+'). Commute checks use a typical weekday 08:00 journey; programme map pins stay unchanged.');
+    if(current)setStatus('Saved · '+displayLabel(current)+'. Commute checks use a typical weekday 08:00 journey; programme map pins stay unchanged.');
     else setStatus('No commute starting point saved. Add a postcode to personalise each training-site journey.');
     const commit=()=>{
       const result=save(input.value);
