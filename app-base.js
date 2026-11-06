@@ -71,7 +71,7 @@ async function initMap(){
     if(cached&&typeof cached==='object'&&!Array.isArray(cached))Object.assign(geo,cached);
   }catch{}
   placementMap=L.map('placementMap',{
-    preferCanvas:false,scrollWheelZoom:false,zoomAnimation:false
+    preferCanvas:false,scrollWheelZoom:false,zoomAnimation:true,fadeAnimation:true
   }).setView([51.51,-.12],11);
   mapLayer=L.layerGroup().addTo(placementMap);
   // No CARTO: its current public tiles can contain an HTTP-200
