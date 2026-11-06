@@ -30,6 +30,7 @@
    if($('uxPageZoomIn'))$('uxPageZoomIn').disabled=zoom>=130;
    if($('uxPageZoomOut'))$('uxPageZoomOut').disabled=zoom<=70;
    storage.set(L,ZOOM,String(zoom));
+   document.dispatchEvent(new CustomEvent('desk:zoom-change',{detail:{zoom}}));
    requestAnimationFrame(()=>{try{placementMap?.invalidateSize(false)}catch{}});
  }
  const adjustScroll=()=>{let y=window.scrollY;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,behavior:'instant'})))};
