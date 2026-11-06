@@ -1,0 +1,180 @@
+/* Private cloud account controls and consent/conflict dialogs. Palette-aware in both modes. */
+html .cloudAccount {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+html .cloudAccountMain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+html .cloudAccountButton {
+  min-height: 36px;
+  padding: 8px 11px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+html .cloudAccountIdentity {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+html .cloudAccountHint,
+html .cloudAccountStatus {
+  display: block;
+  color: var(--mut);
+  font-size: 10px;
+  line-height: 1.35;
+}
+html .cloudAccountStatus[data-tone="success"] { color: var(--ux-accent-ink); }
+html .cloudAccountStatus[data-tone="error"] { color: #b64b4b; }
+html .cloudAccountStatus[data-tone="pending"] { color: var(--ux-pick); }
+html .cloudAccountButton:disabled { opacity: .65; cursor: not-allowed; }
+html .cloudOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(10, 12, 14, .55);
+  backdrop-filter: blur(9px);
+}
+html .cloudDialog {
+  width: min(470px, 100%);
+  max-height: min(720px, 92vh);
+  overflow: auto;
+  position: relative;
+  padding: 27px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 28px 90px rgba(0,0,0,.28);
+}
+html .cloudClose {
+  position: absolute;
+  right: 15px;
+  top: 13px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 20px;
+}
+html .cloudEyebrow {
+  margin: 0 38px 7px 0;
+  color: var(--ux-accent-ink);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+html .cloudDialog h2 {
+  margin: 0 35px 8px 0;
+  font-size: 25px;
+  line-height: 1.13;
+  letter-spacing: -.035em;
+}
+html .cloudLead {
+  margin: 0 0 18px;
+  color: var(--mut);
+  font-size: 13px;
+  line-height: 1.6;
+}
+html .cloudGoogleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 45px;
+}
+html .cloudGoogleButton span {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  color: #4285f4;
+  font-size: 15px;
+  font-weight: 900;
+}
+html .cloudOr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 17px 0;
+  color: var(--mut);
+  font-size: 11px;
+}
+html .cloudOr::before,
+html .cloudOr::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+html .cloudEmailLabel {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 800;
+}
+html .cloudEmailRow {
+  display: flex;
+  gap: 7px;
+}
+html .cloudEmailRow input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 10px 11px;
+  background: var(--soft);
+  color: var(--ink);
+}
+html .cloudFine,
+html .cloudPrivacy {
+  color: var(--mut);
+  font-size: 10px;
+  line-height: 1.55;
+}
+html .cloudFine { margin: 15px 0 7px; }
+html .cloudPrivacy {
+  padding: 10px 11px;
+  border: 1px solid var(--ux-accent-border);
+  border-radius: 11px;
+  background: var(--ux-accent-soft);
+  color: var(--ux-accent-ink);
+}
+html .cloudError {
+  min-height: 16px;
+  margin: 9px 0 0;
+  color: #b64b4b;
+  font-size: 11px;
+  line-height: 1.45;
+}
+html .cloudConflictChoices {
+  display: grid;
+  gap: 9px;
+  margin: 18px 0 13px;
+}
+html .cloudConflictChoices .btn { width: 100%; min-height: 43px; }
+@media (max-width: 720px) {
+  html .cloudAccount { width: 100%; }
+  html .cloudAccountMain { justify-content: flex-start; }
+  html .cloudAccountStatus { flex-basis: 100%; }
+  html .cloudDialog { padding: 23px 19px; }
+  html .cloudEmailRow { flex-direction: column; }
+}
