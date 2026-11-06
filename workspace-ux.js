@@ -402,7 +402,7 @@
      if(!origin){
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
-       panel.dataset.uxCommuteKey='';panel._uxRunCommute=null;
+       panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
        if(loc?.hub&&site?.pc){
          route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
          route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
@@ -421,11 +421,12 @@
        commuteDetails.textContent='No travel time has been guessed.';
        commuteMeta.textContent='Add or verify the site address with the employer.';
        route.textContent='Open journey planner ↗';route.href='https://tfl.gov.uk/plan-a-journey/';route.title='Open a public-transport journey planner';
-       panel.dataset.uxCommuteKey='';panel._uxRunCommute=null;
+       panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
        return;
      }
      const area=window.OrielCommuteProfile?.areaLabel?.(origin)||guides?.describePostcode?.(origin)?.headline||origin;
      const key=origin+'|'+site.pc;
+     if(panel.dataset.uxCommuteKey===key&&panel.dataset.uxCommuteLoadedKey===key)return;
      commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
      commuteLabel.textContent='Checking your commute…';
      commuteSummary.textContent='From '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc);
@@ -450,7 +451,7 @@
          notes.push(journey.transfers===0?'No changes':journey.transfers+' '+(journey.transfers===1?'change':'changes'));
          if(journey.walkingMinutes>0)notes.push(journey.walkingMinutes+' min walking');
          if(journey.disrupted)notes.push('Disruption flagged in this sample');
-         commuteMeta.textContent=[journey.sampleDate,journey.departure||'08:00'+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
+         commuteMeta.textContent=[journey.sampleDate,(journey.departure||'08:00')+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
        }catch{
          if(panel.dataset.uxCommuteKey!==key)return;
          commuteAdvice.className='uxCommuteAdvice is-unverified';
