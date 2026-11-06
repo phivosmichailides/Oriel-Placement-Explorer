@@ -281,6 +281,16 @@
       bootstrappingDone();return null;
     }
     client=window.supabase.createClient(cfg.url.trim().replace(/\/$/,''),cfg.publishableKey.trim(),{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+    const result=await client.auth.getSession();
+    if(result.error)throw result.error;
+    if(result.data&&result.data.session){
+      await prepareUser(result.data.session.user);
+    }else{
+      currentUser=null;renderAccount();
+      status('Sign in when you want to save this workspace across devices.','neutral');
+    }
+    // Subscribe only after the initial session has finished hydrating, so the
+    // app never starts with a duplicate, still-pending cloud restore.
     client.auth.onAuthStateChange((event,session)=>{
       if(event==='SIGNED_OUT'){
         currentUser=null;syncActive=false;conflictBlocked=false;
@@ -290,14 +300,6 @@
         setTimeout(()=>prepareUser(session.user).then(()=>{if(syncActive)flush()}).catch(error=>status('Could not load your cloud workspace. '+(error.message||''),'error')),0);
       }
     });
-    const result=await client.auth.getSession();
-    if(result.error)throw result.error;
-    if(result.data&&result.data.session){
-      await prepareUser(result.data.session.user);
-    }else{
-      currentUser=null;renderAccount();
-      status('Sign in when you want to save this workspace across devices.','neutral');
-    }
     bootstrappingDone();
     return result.data&&result.data.session||null;
   })().catch(error=>{
