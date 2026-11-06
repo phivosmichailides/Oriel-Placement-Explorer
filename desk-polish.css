@@ -1,0 +1,229 @@
+/* Placement Desk polish · 6 November 2026
+   Palette-aware fit panels, clearer hierarchy, pharmacy-cross mark and simulator actions. */
+
+/* A clean, unmistakable pharmacy cross. */
+html .brand .logo {
+  background: none !important;
+  color: var(--ux-accent-ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+}
+html .brand .logo svg {
+  display: block;
+  width: 43px;
+  height: 43px;
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Programme detail: give the score a little less width and the explanations more room. */
+html .placement .fit.fitExpanded.uxFitWithLocation {
+  display: grid;
+  grid-template-columns: minmax(150px, 176px) minmax(260px, 1fr) minmax(220px, 310px);
+  gap: 12px;
+  align-items: stretch;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score {
+  min-height: 158px;
+  padding: 17px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score > span {
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: .07em;
+  text-align: left;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score > b {
+  font-size: 42px;
+  line-height: 1.08;
+  margin: 3px 0;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score > small {
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: left;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score > em {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 5px;
+  text-align: left;
+}
+
+/* Keep the two explanation panels distinct, but let the selected palette colour both. */
+html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  align-self: stretch;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  align-self: stretch;
+  justify-self: stretch;
+  padding: 13px 15px;
+  border-radius: 14px;
+  text-align: left;
+  box-shadow: none;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.positive,
+html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.positive {
+  background: var(--ux-accent-soft) !important;
+  border: 1px solid var(--ux-accent-border) !important;
+  color: var(--ink) !important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution,
+html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution {
+  background: var(--ux-pick-soft) !important;
+  border: 1px solid var(--ux-pick-border) !important;
+  color: var(--ink) !important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.35;
+  margin: 0 0 7px;
+  text-align: left;
+  color: var(--ux-accent-ink) !important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel {
+  color: var(--ux-pick) !important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: none;
+  margin: 4px 0;
+  color: var(--ink) !important;
+  font-size: 15.5px;
+  font-weight: 550;
+  line-height: 1.48;
+  text-align: left;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint::before {
+  content: "•";
+  flex: 0 0 auto;
+  color: var(--ux-accent-ink);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitPoint::before {
+  color: var(--ux-pick);
+}
+
+/* Fit-score tones now use the active palette rather than fixed green/olive shades. */
+html .placement .score[data-fit-tone="excellent"] {
+  background: var(--ux-accent-soft) !important;
+  color: var(--ux-accent-ink) !important;
+  border: 1px solid var(--ux-accent-border) !important;
+}
+html .placement .score[data-fit-tone="good"] {
+  background: var(--ux-pick-soft) !important;
+  color: var(--ux-pick) !important;
+  border: 1px solid var(--ux-pick-border) !important;
+}
+html .placement .score[data-fit-tone="mixed"] {
+  background: var(--soft) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+}
+html .placement .score[data-fit-tone="poor"] {
+  background: var(--panel) !important;
+  color: var(--mut) !important;
+  border: 1px solid var(--line) !important;
+}
+html .placement .score[data-fit-tone] > span,
+html .placement .score[data-fit-tone] > b,
+html .placement .score[data-fit-tone] > small,
+html .placement .score[data-fit-tone] > em {
+  color: inherit !important;
+}
+
+/* Secondary simulator action: intentionally quieter than the primary Oriel link. */
+html .simHeroActions {
+  display: flex;
+  flex: 0 0 250px;
+  min-width: 220px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+}
+html .simHeroActions > .btn {
+  width: 100%;
+  text-align: center;
+}
+html .simHeroActions .simSplitButton {
+  min-height: 35px;
+  padding: 8px 11px;
+  background: var(--soft) !important;
+  border-color: var(--line) !important;
+  color: var(--mut) !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+html .simHeroActions .simSplitButton:hover {
+  background: var(--ux-accent-soft) !important;
+  border-color: var(--ux-accent-border) !important;
+  color: var(--ux-accent-ink) !important;
+}
+html .simHeroActions .simSplitHelp {
+  display: block;
+  color: var(--mut);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+}
+@media (max-width: 1120px) {
+  html .placement .fit.fitExpanded.uxFitWithLocation {
+    grid-template-columns: minmax(145px, 165px) minmax(235px, 1fr) minmax(205px, 270px);
+    gap: 10px;
+  }
+}
+@media (max-width: 880px) {
+  html .placement .fit.fitExpanded.uxFitWithLocation {
+    grid-template-columns: minmax(145px, 165px) minmax(220px, 1fr);
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    justify-self: stretch;
+  }
+}
+@media (max-width: 610px) {
+  html .placement .fit.fitExpanded.uxFitWithLocation {
+    grid-template-columns: 1fr;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .score {
+    min-height: 0;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel {
+    grid-column: auto;
+  }
+  html .simHeroActions {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}
