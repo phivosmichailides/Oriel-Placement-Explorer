@@ -79,10 +79,42 @@
     settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
     document.addEventListener('desk:palette',()=>{renderLegend();settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});
+
+    // Bi-directional programme-to-pin focus, independent of shortlist state.
+    const programmePins=new Map(),pinBases=new WeakMap();
+    let selectedProgramme=null,hoveredProgramme=null;
+    const highlightPin=pin=>{
+      const base=pinBases.get(pin);if(!base)return;
+      const selected=!!selectedProgramme&&base.ids.includes(selectedProgramme);
+      const hovered=!!hoveredProgramme&&base.ids.includes(hoveredProgramme);
+      const active=selected||hovered;
+      pin.setRadius(active?base.radius*(selected?1.8:1.52):base.radius);
+      pin.setStyle({
+        color:selected?'#fff2cf':hovered?'#eee0ce':base.color,
+        weight:selected?4:hovered?3.3:base.weight,
+        fillOpacity:active?1:base.fillOpacity,
+        opacity:1
+      });
+      const el=pin.getElement();
+      if(el)el.style.filter=active?'drop-shadow(0px 0px 5px rgba(255,225,166,.95))':'';
+    };
+    const syncMap=()=>{const unique=new Set();programmePins.forEach(pins=>pins.forEach(pin=>unique.add(pin)));unique.forEach(highlightPin)};
+    window.OrielMapInteractive={
+      select(id,pan=false){
+        selectedProgramme=id||null;syncMap();
+        if(pan&&selectedProgramme&&programmePins.has(selectedProgramme)&&placementMap){
+          const pin=programmePins.get(selectedProgramme)[0],coord=pin.getLatLng();
+          if(!placementMap.getBounds().contains(coord))placementMap.panTo(coord,{animate:true,duration:.38});
+        }
+      },
+      hover(id,active=true){hoveredProgramme=active?id:null;syncMap()},
+      current:()=>selectedProgramme
+    };
     drawMap=list=>{refreshPalette();renderLegend();
       if(!placementMap)return;
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
+      programmePins.clear();hoveredProgramme=null;
       const groups=new Map();
       let located=0;
 
@@ -114,6 +146,17 @@
           opacity:excluded?.9:1
         }).addTo(mapLayer);
 
+        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94});
+        for(const p of entries){if(!programmePins.has(p.id))programmePins.set(p.id,[]);programmePins.get(p.id).push(pin)}
+        pin.on('mouseover',()=>{
+          hoveredProgramme=entries[0]?.id||null;syncMap();
+          document.querySelectorAll('.placement[data-id]').forEach(card=>card.classList.toggle('uxProgramHover',entries.some(p=>p.id===card.dataset.id)));
+        });
+        pin.on('mouseout',()=>{
+          hoveredProgramme=null;syncMap();
+          document.querySelectorAll('.placement.uxProgramHover').forEach(card=>card.classList.remove('uxProgramHover'));
+        });
+
         const sectorSummary=groupSectorSummary(entries);
         const postcodes=[...new Set(entries.flatMap(p=>p.postcodes))].join(', ');
         pin.bindTooltip(`${entries.length} programme${entries.length===1?'':'s'} · ${sectorSummary}${postcodes?' · '+postcodes:''}`);
@@ -133,6 +176,7 @@
         }
       }
 
+      syncMap();
       if(!mapTileFailed)$('mapStatus').textContent=`${located} of ${list.length} matching programmes mapped · ${groups.size} locations${located<list.length?' · Unlocated programmes remain in the list':''}`;
     };
 
