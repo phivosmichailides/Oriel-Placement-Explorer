@@ -164,7 +164,7 @@ window.OrielLocationGuide=(()=>{
  };
  const hubFor=(postcode)=>{
    const pc=String(postcode||'').toUpperCase().replace(/\s+/g,'');
-   const district=(pc.match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)/)||[])[1]||'';
+   const district=(pc.match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)(?=\d[A-Z]{2}$)/)||[])[1]||'';
    // A practical London terminal for checking the rail/Tube corridor, not a claim
    // that this is the nearest station or the fastest route at every time of day.
    if(['SW1','SW1A','SW1E','SW1H','SW1P','SW1V','SW1W','SW1X','SW1Y','SW3','SW4','SW5','SW6','SW10','SW12','SW16','SW17','SE24','BR1'].includes(district))return 'London Victoria';
