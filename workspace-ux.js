@@ -11,6 +11,7 @@
  const getData=()=>{try{return typeof placements!=='undefined'&&Array.isArray(placements)?placements:[]}catch{return []}};
  const getRanks=()=>{try{return typeof ranked==='function'?ranked():[]}catch{return []}};
  const isShortlisted=p=>{try{return SHORT.has(mark(p).status)}catch{return false}};
+ let selectedProgrammeId=null;
  const byId=()=>{
    const list=getData();
    if(byId.previous!==list){byId.previous=list;byId.map=new Map(list.map(p=>[String(p.id),p]))}
@@ -102,13 +103,15 @@
  const snapshotFilters=()=>{
    let quickValues=[];
    try{quickValues=[...quick]}catch{}
-   return {fields:['search','sector','region','hours','salary','sort','decision','visa'].map(id=>[id,$(id)?.value]),quick:quickValues,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,page};
+   return {fields:['search','sector','region','hours','salary','sort','decision','visa'].map(id=>[id,$(id)?.value]),quick:quickValues,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,page};
  };
  const restoreFilters=snapshot=>{
    if(!snapshot)return;
    for(const [id,value] of snapshot.fields){if($(id))$(id).value=value}
    if($('hideAvoid'))$('hideAvoid').checked=!!snapshot.hideAvoid;
    if(filter)filter.checked=!!snapshot.hideShortlisted;
+   for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=!!snapshot[id];
+   if($('specialistView'))$('specialistView').value=snapshot.specialistView||'all';
    if(typeof quick!=='undefined')quick=new Set(snapshot.quick);
    document.querySelectorAll('.chip[data-q]').forEach(b=>b.classList.toggle('on',snapshot.quick.includes(b.dataset.q)));
    page=snapshot.page||1;skipResetOnce=true;syncHide();explore();if(typeof reco==='function')reco();
@@ -128,6 +131,8 @@
  },true);
 
  let page=1,lastFilterKey='',skipResetOnce=false;
+ window.uxGetExplorePage=()=>page;
+ window.uxSetExplorePage=value=>{const n=Number(value);if(!Number.isInteger(n)||n<1)return;page=n;skipResetOnce=true;if(typeof explore==='function')explore()};
  const pagination=$('uxExplorePager');
  const pager=(count,total)=>{
    if(!pagination)return;
@@ -152,11 +157,12 @@
    pagination.append(controls);
  };
  const results=$('results');
+ let mapPending=0;
  function renderExplore(){
    if(!results||typeof sorted!=='function'||typeof matches!=='function')return;
    let options=[];
    try{options=sorted(getData().filter(matches))}catch{return}
-   const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,
+   const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
    const total=options.length,pages=Math.max(1,Math.ceil(total/20));
@@ -167,7 +173,8 @@
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
    pager(shown.length,total);
    enhanceCards(results);
-   try{drawMap(options)}catch(e){console.warn('Map could not refresh:',e)}
+   clearTimeout(mapPending);
+   mapPending=setTimeout(()=>{try{drawMap(options)}catch(e){console.warn('Map could not refresh:',e)}},160);
  }
  // The core app sees this hook before any future Explore rerender; it cannot change saved decisions.
  window.uxWorkspaceRenderExplore=renderExplore;
@@ -249,14 +256,19 @@
    line.title=window.OrielPay.descriptor()+'. Illustrative PAYE, not guaranteed payslip income.';
  }
  const endDate=p=>{
-   if(!p.start)return null;
-   const m=String(p.start).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-   if(!m)return null;
-   const start=new Date(Date.UTC(+m[3],+m[2]-1,+m[1],12));
-   const weeks=Number((p.settings||[]).reduce((sum,x)=>sum+(Number(x[1])||0),0))||52;
-   const end=new Date(start.getTime()+weeks*7*86400000);
+   const raw=String(p?.start||'').trim();
+   if(!raw)return 'Start date not stated';
+   let start=null,m=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+   if(m)start=new Date(Date.UTC(+m[3],+m[2]-1,+m[1],12));
+   else if((m=raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))start=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12));
+   else {const parsed=new Date(raw);if(!Number.isNaN(parsed.getTime()))start=parsed}
+   if(!start||Number.isNaN(start.getTime()))return 'Start date not stated';
+   const settings=Array.isArray(p.settings)?p.settings:[];
+   const weeks=settings.reduce((sum,x)=>sum+(Number(x?.[1])||0),0);
    const fmt=d=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d);
-   return 'Starts '+fmt(start)+' · Est. finish ~'+fmt(end)+' ('+weeks+'w)';
+   if(!(weeks>0&&weeks<=80))return 'Starts '+fmt(start)+' · Finish date not stated (training duration unavailable)';
+   const end=new Date(start.getTime()+weeks*7*86400000);
+   return 'Starts '+fmt(start)+' · Est. finish ~'+fmt(end)+' ('+weeks+' weeks)';
  };
  function enhanceRecommendations(){
    document.querySelectorAll('#reco .reco').forEach(item=>{
@@ -327,6 +339,20 @@
      L.circleMarker(central,{radius:3.5,color:'#444',weight:1.8,fillColor:'#f6ede0',fillOpacity:1}).addTo(map).bindTooltip('Central London');
      L.circleMarker([selected.lat,selected.lng],{radius:5.8,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
      map.fitBounds(L.latLngBounds([central,[selected.lat,selected.lng]]),{padding:[20,20],maxZoom:12,animate:false});
+     const openSelected=()=>{
+       const label=siteName(p,selected,index,sites.length);
+       const lookup=/^Training location/.test(label)?selected.pc:label+' '+selected.pc;
+       const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(lookup+', UK');
+       window.open(url,'_blank','noopener,noreferrer');
+     };
+     holder.setAttribute('role','link');holder.setAttribute('tabindex','0');
+     holder.setAttribute('aria-label','Open map for '+selected.pc+' in a new tab');
+     holder.title='Click to open the selected training site in Maps';
+     holder.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSelected()}};
+     map.on('click',e=>{
+       if(e.originalEvent?.target?.closest?.('.leaflet-control-attribution'))return;
+       openSelected();
+     });
      miniMaps.set(holder,map);
      requestAnimationFrame(()=>{if(holder.isConnected)map.invalidateSize(false)});
    }catch(e){holder.textContent='Map unavailable — use the route link'}
@@ -362,10 +388,20 @@
      siteTitle.textContent=siteName(p,site,i,sites.length);
      count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
      headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
-     info.textContent=loc.connections+' '+(sites.length>1?'Each training site may need a different commute.':loc.detail||'');
+     const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
+     info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
-     route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
-     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((site.pc||p.title||'London')+', UK');
+     const siteLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
+     if(loc.hub&&site.pc){
+       route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
+       route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
+       route.title='Open a Google Maps public-transport route from this programme postcode to '+loc.hub;
+     }else{
+       route.textContent='Check rail/Tube route ↗';
+       route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
+       route.title='Open the relevant public transport journey planner';
+     }
+     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(siteLookup+', UK');
      if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
      map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';
      if(panel.isConnected&&panel.getBoundingClientRect().width>0)requestAnimationFrame(()=>mapVisible(map));
@@ -384,11 +420,44 @@
    refreshSite();
    return panel;
  }
- function enhanceCard(article){
+ function workSchedule(p){
+   const d=document.createElement('details');d.className='uxWorkSchedule';
+   const hours=Number(p.hours),hasHours=Number.isFinite(hours)&&hours>0;
+   const summary=document.createElement('summary');
+   summary.textContent=hasHours?'Working hours · '+hours+'h per week · Daily rota not published':'Working hours · Weekly hours not stated · Daily rota not published';
+   d.append(summary);
+   const inner=document.createElement('div');inner.className='uxWorkDetail';
+   const start=document.createElement('p');
+   start.textContent=hasHours?'Oriel lists '+hours+' contracted hours per week, but the dataset does not state how those hours are distributed across days or the daily start/finish times. Each day below is marked “Not published” rather than assuming a five-day pattern.':'The Oriel dataset does not state contracted weekly hours or a day-by-day rota for this programme.';
+   inner.append(start);
+   const dayRow=document.createElement('div');dayRow.className='uxWorkDays';
+   ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day=>{
+     const box=document.createElement('div');
+     const b=document.createElement('b');b.textContent=day;box.append(b);
+     const value=document.createElement('span');value.textContent='Not published';box.append(value);
+     dayRow.append(box);
+   });
+   inner.append(dayRow);
+   const desc=String(p.desc||'');
+   // This is a description hint, not a fabricated placement shift.
+   const weekdayHint=desc.match(/\b(?:monday|mon)\s*(?:to|-|–|through)\s*(?:friday|fri)\b/i);
+   if(weekdayHint){
+     const p2=document.createElement('p');p2.textContent='Description mentions '+weekdayHint[0]+'. Check whether that is the trainee rota or simply the pharmacy opening schedule.';
+     inner.append(p2);
+   }
+   const note=document.createElement('p');
+   note.textContent='Ask the employer to confirm the trainee rota, daily start and finish times, breaks, weekend expectations and whether hours change between rotation sites. Programme descriptions may mention opening hours that are not necessarily the trainee working pattern.';
+   inner.append(note);d.append(inner);return d;
+ }
+  function enhanceCard(article){
    if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
    const p=byId().get(article.dataset.id);if(!p)return;
    article.dataset.uxEnhanced='1';
+   article.tabIndex=0;
+   article.setAttribute('aria-label','Select programme '+(p.title||p.employer||p.id));
+   article.classList.toggle('uxProgramSelected',article.dataset.id===selectedProgrammeId);
    addTakeHome(article,p);
+   if(!article.querySelector('.uxWorkSchedule')){const work=workSchedule(p);const fitParent=article.querySelector('.fit.fitExpanded');if(fitParent)fitParent.after(work);else article.append(work)}
    const fit=article.querySelector('.fit.fitExpanded');
    if(fit){
      fit.classList.add('uxFitWithLocation');
@@ -399,6 +468,43 @@
    more.setAttribute('aria-expanded','false');more.textContent='See full details, location & pay';
    article.append(more);
  }
+ const selectProgramme=(id,pan=false)=>{
+   if(!id)return;
+   selectedProgrammeId=String(id);
+   document.querySelectorAll('.placement[data-id]').forEach(card=>{
+     card.classList.toggle('uxProgramSelected',card.dataset.id===selectedProgrammeId);
+   });
+   window.OrielMapInteractive?.select(selectedProgrammeId,pan);
+ };
+ const cardForEvent=e=>{
+   const card=e.target?.closest?.('.placement[data-id]');
+   return card&&card.closest('#results,#shortlistList,#mapSelection')?card:null;
+ };
+ document.addEventListener('mouseover',e=>{
+   const card=cardForEvent(e);
+   if(card&&!(e.relatedTarget&&card.contains(e.relatedTarget))){
+     card.classList.add('uxProgramHover');
+     window.OrielMapInteractive?.hover(card.dataset.id,true);
+   }
+ });
+ document.addEventListener('mouseout',e=>{
+   const card=cardForEvent(e);
+   if(card&&!(e.relatedTarget&&card.contains(e.relatedTarget))){
+     card.classList.remove('uxProgramHover');
+     window.OrielMapInteractive?.hover(card.dataset.id,false);
+   }
+ });
+ document.addEventListener('click',e=>{
+   const card=cardForEvent(e);if(!card)return;
+   // Buttons and maps continue to perform their own explicit actions.
+   if(e.target.closest('button,a,input,select,textarea,summary,.uxLocationPanel'))return;
+   selectProgramme(card.dataset.id,true);
+ });
+ document.addEventListener('keydown',e=>{
+   if(e.key!=='Enter'&&e.key!==' ')return;
+   const card=cardForEvent(e);
+   if(card&&e.target===card){e.preventDefault();selectProgramme(card.dataset.id,true)}
+ });
  const enhancedContainers=['results','shortlistList','mapSelection'];
  function enhanceCards(scope){
    scope?.querySelectorAll('.placement').forEach(enhanceCard);
