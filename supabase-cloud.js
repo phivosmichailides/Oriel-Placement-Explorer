@@ -216,7 +216,8 @@
       await writeWorkspace(user,'This browser’s workspace is now saved to your account.');
     }
     bootUserId=user.id;
-    }finally{if(preparingUserId===user.id)preparingUserId='';}
+    }catch(error){currentUser=null;syncActive=false;renderAccount();throw error;}
+    finally{if(preparingUserId===user.id)preparingUserId='';}
   };
   const flush=async()=>{
     if(!syncActive||!currentUser||!client||saving||conflictBlocked)return;
