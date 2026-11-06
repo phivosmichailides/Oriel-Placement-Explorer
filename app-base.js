@@ -58,38 +58,35 @@ function ranked(){return placements.filter(p=>SHORT.has(mark(p).status)).sort((x
 function moveRank(id,direction){const a=ranked(),i=a.findIndex(p=>p.id===id),j=i+(direction==='up'?-1:1);if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];a.forEach((p,n)=>state.marks[p.id]={...mark(p),priority:n+1});save();shortlist()}
 function exportRanked(){const a=ranked();if(!a.length)return toast('Add programmes to your shortlist first.');const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Rank','Programme ID','Programme','Employer','Decision','Salary','Hours','Sponsorship','Note'],...a.map((p,i)=>[i+1,p.id,p.title,p.employer,mark(p).status,p.salary,p.hours,p.visa===null?'Unknown':p.visa?'Yes':'No',mark(p).note])];download('phivos-ranked-shortlist.csv',rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'shortlist_exported'}}));toast('Ranked shortlist exported. Transfer your choices into Oriel.')}
 async function initMap(){
+  const status=$('mapStatus');
   if(typeof L==='undefined'){
-    $('mapStatus').textContent='Map tiles could not initialise. All programmes remain available below.';
+    if(status)status.textContent='Map library unavailable. Programme results remain accessible.';
     return;
   }
-  placementMap=L.map('placementMap',{preferCanvas:false,scrollWheelZoom:false,zoomAnimation:false}).setView([51.51,-.12],11);
-  mapLayer=L.layerGroup().addTo(placementMap);
-  // A light basemap is easier to scan than the default saturated map.
-  // If this tile provider is unavailable, retry with OpenStreetMap; pins never depend on tiles.
-  let tileFallbackUsed=false;
-  const tiles=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    maxZoom:19,subdomains:'abcd',
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · © CARTO'
-  });
-  tiles.on('tileerror',()=>{
-    if(tileFallbackUsed)return;
-    tileFallbackUsed=true;
-    tiles.remove();
-    const fallback=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-    let failed=false;
-    fallback.on('tileerror',()=>{
-      if(failed)return;
-      failed=true;mapTileFailed=true;
-      $('mapStatus').textContent='Map background unavailable. The programme pins and list still work.';
-    }).addTo(placementMap);
-  }).addTo(placementMap);
+  // A committed public postcode index makes pin rendering synchronous,
+  // independent of a slow/failed request for locations.json.
+  geo=Object.assign({},window.ORIEL_BUNDLED_LOCATIONS||{},geo);
   try{
-    const r=await fetch('./locations.json',{cache:'force-cache'});
-    if(r.ok)geo=await r.json();
+    const cached=JSON.parse(localStorage.getItem('phivos-geo-v1')||'{}');
+    if(cached&&typeof cached==='object'&&!Array.isArray(cached))Object.assign(geo,cached);
   }catch{}
-  try{Object.assign(geo,JSON.parse(localStorage.getItem('phivos-geo-v1')||'{}'))}catch{}
+  placementMap=L.map('placementMap',{
+    preferCanvas:false,scrollWheelZoom:false,zoomAnimation:false
+  }).setView([51.51,-.12],11);
+  mapLayer=L.layerGroup().addTo(placementMap);
+  // No CARTO: its current public tiles can contain an HTTP-200
+  // "API KEY REQUIRED" watermark, which does not trigger tileerror.
+  // OpenStreetMap's standard tile service requires no API key.
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,
+    keepBuffer:2,
+    updateWhenIdle:true,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
+  }).on('tileerror',()=>{
+    if(mapTileFailed)return;
+    mapTileFailed=true;
+    if(status)status.textContent='Map background could not load. Programme pins and results still work.';
+  }).addTo(placementMap);
   drawMap(placements.filter(matches));
   requestAnimationFrame(()=>placementMap?.invalidateSize(false));
 }
