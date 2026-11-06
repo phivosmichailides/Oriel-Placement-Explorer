@@ -939,3 +939,16 @@ html #placementMap .maplibregl-canvas-container,
 html .uxMiniMap .maplibregl-canvas-container{
   background-color:transparent!important;
 }
+
+
+/* Soft fallback street map for browsers without WebGL:
+   keep a readable, restrained editorial basemap instead of full-saturation
+   default road tiles; key-free OpenStreetMap remains the underlying source. */
+html[data-theme="light"] #placementMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html[data-theme="light"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane{
+  filter:saturate(.46) contrast(.97) brightness(1.055)!important;
+}
+html[data-theme="dark"] #placementMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane{
+  filter:saturate(.38) brightness(.68) contrast(.91)!important;
+}
