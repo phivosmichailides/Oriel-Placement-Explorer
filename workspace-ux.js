@@ -396,10 +396,13 @@
    const commuteSummary=document.createElement('div');commuteSummary.className='uxCommuteSummary';commuteAdvice.append(commuteSummary);
    const commuteDetails=document.createElement('div');commuteDetails.className='uxCommuteDetails';commuteAdvice.append(commuteDetails);
    const commuteMeta=document.createElement('small');commuteMeta.className='uxCommuteMeta';commuteAdvice.append(commuteMeta);
-   panel.append(commuteAdvice);
    const map=document.createElement('div');map.className='uxMiniMap';map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';panel.append(map);
-   const info=document.createElement('div');info.className='uxLocationInfo';panel.append(info);
-   const foot=document.createElement('div');foot.className='uxMapFootnote';panel.append(foot);
+   const caption=document.createElement('div');caption.className='uxLocationCaption';panel.append(caption);
+   const more=document.createElement('details');more.className='uxLocationMore';
+   const moreLabel=document.createElement('summary');moreLabel.textContent='More connections & commute';more.append(moreLabel);
+   const info=document.createElement('div');info.className='uxLocationInfo';more.append(info);
+   const foot=document.createElement('div');foot.className='uxMapFootnote';more.append(foot);
+   more.append(commuteAdvice);panel.append(more);
    const links=document.createElement('div');links.className='uxMapLinks';
    const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Check rail/Tube route ↗';links.append(route);
    const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open selected site ↗';links.append(maps);panel.append(links);
@@ -484,8 +487,14 @@
      count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
      headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
      const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
+     const connections=String(loc.connections||loc.detail||'See directions and transport links below.').replace(/\s+/g,' ').trim();
+     const lead=connections.split(/(?<=[.!?])\s/)[0]||connections;
+     const maxLead=110;
+     caption.textContent=lead.length>maxLead?lead.slice(0,maxLead).replace(/\s+\S*$/,'').trim()+'…':lead;
+     caption.title=connections;
      info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
+     more.open=false;
      activeLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
      maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(activeLookup+', UK');
      refreshCommute();
@@ -495,6 +504,7 @@
    };
    panel._uxRefreshCommute=refreshCommute;
    panel._uxRefreshSite=refreshSite;
+   more.addEventListener('toggle',()=>{if(more.open&&panel.isConnected){enableCommute(panel);if(panel._uxRunCommute)panel._uxRunCommute();}});
    if(sites.length>1){
      const controls=document.createElement('div');controls.className='uxSiteControls';bar.append(controls);
      const addArrow=(text,delta,label)=>{
