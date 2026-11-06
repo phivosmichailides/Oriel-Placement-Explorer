@@ -584,3 +584,144 @@ html select:not([multiple]){
 html select option{background:var(--panel);color:var(--ink)}
 html select option:checked{background:var(--ux-accent-soft);color:var(--ux-accent-ink)}
 html select:focus-visible{outline:2px solid var(--ux-accent);outline-offset:2px}
+
+/* Final programme-detail composition: preserve the familiar cards, give each a deliberate width. */
+/* Desktop: score and map are the wide cards; the two explanatory cards share a narrower middle column. */
+.placement .fit.fitExpanded.uxFitWithLocation{
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) minmax(190px,.82fr) minmax(300px,1.1fr);
+  gap:12px;
+  align-items:stretch;
+  justify-content:stretch;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .score{
+  width:100%;
+  min-width:0;
+  min-height:100%;
+  align-self:stretch;
+  box-sizing:border-box;
+  padding:18px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  justify-content:stretch;
+  align-self:stretch;
+  width:100%;
+  min-width:0;
+  min-height:100%;
+  gap:9px;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:none;
+  min-height:0;
+  height:auto;
+  align-self:stretch;
+  justify-self:stretch;
+  flex:1 1 0;
+  padding:13px 15px;
+  text-align:left;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child{flex:1.15 1 0}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{flex:.85 1 0}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel,
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel{
+  margin:0 0 7px;
+  color:var(--ux-accent-ink)!important;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.35;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  max-width:none;
+  margin:3px 0;
+  color:var(--ink)!important;
+  font-size:13px;
+  line-height:1.5;
+  text-align:left;
+  overflow-wrap:anywhere;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  display:flex;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  align-self:stretch;
+  justify-self:stretch;
+  box-sizing:border-box;
+}
+/* Forest's explanation headings use a clear, deeper green; dark mode uses a readable sage. */
+html[data-theme="light"][data-palette="forest"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel,
+html[data-theme="light"][data-palette="forest"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel{
+  color:#31563a!important;
+}
+html[data-theme="dark"][data-palette="forest"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel,
+html[data-theme="dark"][data-palette="forest"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel{
+  color:#c5d9c6!important;
+}
+/* An expanded grid card takes the full row, so its detail columns never spill over neighbours. */
+html[data-layout="grid"] .placement.uxExpanded{
+  grid-column:1/-1!important;
+  position:relative;
+  z-index:2;
+  width:100%;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation{
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) minmax(190px,.82fr) minmax(300px,1.1fr);
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{display:flex}
+/* Tablet: retain the familiar score → paired explanations → location sequence. */
+@media(max-width:850px){
+  .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(0,1fr);
+    gap:10px;
+  }
+  .placement .fit.fitExpanded.uxFitWithLocation .score{
+    min-height:110px;
+    align-items:flex-start;
+    text-align:left;
+    padding:15px 17px;
+  }
+  .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    align-self:auto;
+    min-height:0;
+    height:auto;
+    gap:9px;
+  }
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{
+    flex:initial;
+    min-height:112px;
+    width:100%;
+  }
+  .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1/-1;
+    max-width:none;
+  }
+}
+@media(max-width:480px){
+  .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{grid-template-columns:minmax(0,1fr)}
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{min-height:0}
+}
+
