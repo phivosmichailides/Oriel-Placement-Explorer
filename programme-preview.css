@@ -1,0 +1,43 @@
+/* Shared in-page preview for simulation and shortlist. */
+.progPeekOverlay{
+  position:fixed;inset:0;z-index:9500;display:grid;place-items:center;
+  padding:18px;background:rgba(16,20,27,.58);backdrop-filter:blur(6px);
+}
+.progPeekDialog{
+  position:relative;width:min(630px,100%);max-height:min(88vh,850px);
+  overflow-y:auto;padding:25px;border-radius:20px;
+  color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 26px 90px rgba(0,0,0,.30);outline:none;
+}
+.progPeekClose{
+  position:absolute;top:14px;right:14px;width:35px;height:35px;border-radius:50%;
+  border:1px solid var(--line);background:var(--soft);color:var(--ink);
+  font-size:23px;cursor:pointer;
+}
+.progPeekEyebrow{font-size:11px;letter-spacing:.11em;font-weight:850;color:var(--ux-accent-ink)}
+.progPeekTitle{font-size:clamp(21px,2.1vw,27px);line-height:1.3;letter-spacing:-.03em;max-width:90%;margin:6px 0 5px}
+.progPeekSub{font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:18px}
+.progPeekGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.progPeekStat{border:1px solid var(--line);border-radius:12px;background:var(--soft);padding:12px 14px;min-width:0}
+.progPeekLabel{display:block;color:var(--mut);font-size:11.5px;font-weight:750;margin-bottom:4px}
+.progPeekValue{display:block;font-size:19px;line-height:1.35;letter-spacing:-.02em;overflow-wrap:break-word}
+.progPeekSection h3{font-size:13.5px;letter-spacing:.02em;margin:13px 0 8px}
+.progPeekSettings{display:flex;flex-wrap:wrap;gap:6px}
+.progPeekSetting{font-size:13px;font-weight:700;padding:7px 10px;border-radius:9px;border:1px solid var(--ux-accent-border);background:var(--ux-accent-soft);color:var(--ux-accent-ink)}
+.progPeekSite{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}
+.progPeekSite a{color:var(--ux-accent-ink);white-space:nowrap;font-size:12px}
+.progPeekFoot,.progPeekMuted{font-size:12px;line-height:1.55;color:var(--mut)}
+.progPeekFoot{padding-top:12px;border-top:1px solid var(--line)}
+#shortlistList .placement .placementTop h3,
+.simItemNameButton{cursor:pointer}
+#shortlistList .placement .placementTop h3:hover,
+.simItemNameButton:hover{color:var(--ux-accent-ink)}
+.simItemNameButton{
+  display:block;text-align:left;width:100%;border:none;background:transparent;
+  color:var(--ink);padding:0;margin:0;font:800 13.5px/1.4 "Plus Jakarta Sans",sans-serif;
+  overflow-wrap:anywhere;
+}
+.simItemNameButton:focus-visible,#shortlistList .placement .placementTop h3:focus-visible{
+  outline:2px solid var(--ux-accent);outline-offset:3px;border-radius:4px;
+}
+@media(max-width:640px){.progPeekDialog{padding:20px 16px}.progPeekGrid{gap:7px}.progPeekStat{padding:10px}.progPeekValue{font-size:16px}.progPeekSite{flex-wrap:wrap}}
