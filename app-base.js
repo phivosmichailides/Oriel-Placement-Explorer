@@ -99,5 +99,34 @@ function validBackup(j){if(!j||j.v!==2||!j.state||typeof j.state.marks!=='object
 function bindUpgrade(){
 document.querySelector('[data-q="london"]').classList.add('on');$('exportRanked').onclick=exportRanked;$('fitMap').onclick=()=>{if(!mapLayer)return;const pts=mapLayer.getLayers().map(l=>l.getLatLng());if(pts.length)placementMap.fitBounds(L.latLngBounds(pts),{padding:[30,30],maxZoom:14});else toast('No mapped results match these filters.')};$('fitMap').insertAdjacentHTML('beforebegin','<button class="btn" id="locateBtn">Locate missing</button>');$('locateBtn').onclick=locateMissing;$('restoreBtn').onclick=()=>$('restoreInput').click();$('restoreInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text()),next=validBackup(j);if(!confirm('Merge saved decisions from this backup? Matching programme decisions and preferences will use the backup values.'))return;state={...next,marks:{...state.marks,...next.marks}};if(j.uploaded){localStorage.setItem(DATAKEY,JSON.stringify(j.uploaded));placements=rowsToPlacements(j.uploaded.csv);populate()}state.orielSnapshot=ORIEL_SNAPSHOT.version;const profile=state.prefs.onboarding;localStorage.removeItem('phivos-onboarding-profile-v1');localStorage.removeItem('phivos-onboarding-v1');if(profile){localStorage.setItem('phivos-onboarding-profile-v1',JSON.stringify(profile));localStorage.setItem('phivos-onboarding-v1','1')}quick.clear();document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));$('region').value=profile?.region||'';$('salary').value=profile?.salary||'';$('hours').value=profile?.hours||'';save();renderAll();document.dispatchEvent(new CustomEvent('desk:palette'));toast('Backup restored.')}catch(err){alert(err.message)}finally{e.target.value=''}};document.body.addEventListener('change',e=>{if(['hideAvoid','visa'].includes(e.target.id))reco()});}
 
-(async()=>{bind();bindUpgrade();try{await loadData();populate();renderAll();initMap()}catch(err){$('results').innerHTML=`<div class="errorBox"><b>Couldn’t load the built-in placement list.</b><br>${esc(err.message)}<br><br>You can still use the app by clicking <b>Upload latest Oriel CSV</b>.</div>`;$('count').textContent='Data load error';console.error(err)}})();
+(async()=>{
+  try{
+    bind();bindUpgrade();
+    await loadData();
+    populate();
+  }catch(err){
+    $('results').innerHTML=`<div class="errorBox"><b>Couldn’t load the built-in placement list.</b><br>${esc(err.message)}<br><br>You can still upload your latest Oriel CSV.</div>`;
+    $('count').textContent='Data load error';
+    console.error('Placement data loading failed',err);
+    return;
+  }
+  // Main map must be independent of errors in any card enhancement or
+  // optional directions/commute feature. Initialise before rendering cards.
+  try{
+    await initMap();
+  }catch(err){
+    $('mapStatus').textContent='Map unavailable. Programme results and saved decisions remain accessible.';
+    console.error('Main map initialisation failed',err);
+  }
+  try{
+    renderAll();
+    document.dispatchEvent(new CustomEvent('desk:cards-ready'));
+  }catch(err){
+    console.error('Programme rendering failed',err);
+    const results=$('results');
+    if(results&&!results.querySelector('.placement')){
+      results.innerHTML='<div class="errorBox">Programme details could not render. Reload to retry; your saved decisions are unchanged.</div>';
+    }
+  }
+})();
 
