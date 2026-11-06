@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106readable1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')){fresh=true;break;}
+      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106readable1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')&&(await page.content()).includes('map-basemap.js?v=20261106v3')&&(await page.content()).includes('design-refresh.css?v=20261106readable2')&&(await page.content()).includes('app.js?v=20261106smooth1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
