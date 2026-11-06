@@ -160,7 +160,23 @@ window.OrielLocationGuide=(()=>{
    const relative=bearing?bearing.label:null;
    const multi=(p.postcodes||[]).filter(Boolean).length>1;
    const detail=multi?'Multiple training locations are listed; the best route may change between rotations.':'Always check the precise address and final walk/bus leg.';
-   return {headline,relative,connections,detail,source:g?g[3]:'tfl',postcodes:(p.postcodes||[]).filter(Boolean),multi};
+   return {headline,relative,connections,detail,source:g?g[3]:'tfl',hub:hubFor(pc),postcodes:(p.postcodes||[]).filter(Boolean),multi};
+ };
+ const hubFor=(postcode)=>{
+   const pc=String(postcode||'').toUpperCase().replace(/\s+/g,'');
+   // A practical London terminal for checking the rail/Tube corridor, not a claim
+   // that this is the nearest station or the fastest route at every time of day.
+   if(/^SW(?:1|3|6|10|12)/.test(pc)||/^BR1/.test(pc)||/^SE24/.test(pc))return 'London Victoria';
+   if(/^SW(?:11|14|15|18|19|20)/.test(pc)||/^KT/.test(pc)||/^TW/.test(pc)||/^GU/.test(pc))return 'London Waterloo';
+   if(/^W(?:2|3|4|5|7|12|13)/.test(pc)||/^UB/.test(pc)||/^SL/.test(pc)||/^RG/.test(pc))return 'London Paddington';
+   if(/^NW10/.test(pc))return 'London Paddington';
+   if(/^WD(?:17|18|24)/.test(pc))return 'London Euston';
+   if(/^WD6/.test(pc)||/^AL/.test(pc)||/^LU/.test(pc))return 'London St Pancras International';
+   if(/^SG/.test(pc)||/^N/.test(pc)||/^NW/.test(pc)||/^WC/.test(pc)||/^HA/.test(pc))return 'London King’s Cross';
+   if(/^SS(?:1|16)/.test(pc))return 'London Fenchurch Street';
+   if(/^CM/.test(pc)||/^RM/.test(pc)||/^E/.test(pc)||/^EC/.test(pc)||/^SE18/.test(pc))return 'London Liverpool Street';
+   if(/^SE(?:1|5|7|9|12|15|16|17)/.test(pc)||/^BR6/.test(pc)||/^DA/.test(pc)||/^TN/.test(pc)||/^SM/.test(pc)||/^RH/.test(pc))return 'London Bridge';
+   return null;
  };
  function getDirection(lat,lon,lat0,lon0){
    const kmLat=(lat-lat0)*111.1,kmLon=(lon-lon0)*111.1*Math.cos(lat0*Math.PI/180);
