@@ -168,8 +168,8 @@ window.OrielLocationGuide=(()=>{
    // A practical London terminal for checking the rail/Tube corridor, not a claim
    // that this is the nearest station or the fastest route at every time of day.
    if(['SW1','SW1A','SW1E','SW1H','SW1P','SW1V','SW1W','SW1X','SW1Y','SW3','SW4','SW5','SW6','SW10','SW12','SW16','SW17','SE24','BR1'].includes(district))return 'London Victoria';
-   if(['SW8','SW9','SW11','SW14','SW15','SW18','SW19','SW20','KT1','KT2','KT3','KT5','KT6','KT9','KT12','TW3','TW7','TW9','TW10','TW13','TW18','GU1','GU2','GU16','GU21'].includes(district)||district.startsWith('SW'))return 'London Waterloo';
-   if(['W1','W2','W3','W4','W5','W7','W12','W13','UB1','UB3','UB7','UB8','SL1','SL2','SL6','RG1','RG2','RG4','NW10'].includes(district)||district.startsWith('UB')||district.startsWith('SL')||district.startsWith('RG'))return 'London Paddington';
+   if(['SW8','SW9','SW11','SW14','SW15','SW18','SW19','SW20','W4','KT1','KT2','KT3','KT5','KT6','KT9','KT12','TW3','TW7','TW9','TW10','TW13','TW18','GU1','GU2','GU16','GU21'].includes(district)||district.startsWith('SW'))return 'London Waterloo';
+   if(['W1','W2','W3','W5','W7','W12','W13','UB1','UB3','UB7','UB8','SL1','SL2','SL6','RG1','RG2','RG4','NW10'].includes(district)||district.startsWith('UB')||district.startsWith('SL')||district.startsWith('RG'))return 'London Paddington';
    if(['WD17','WD18','WD24'].includes(district))return 'London Euston';
    if(['WD6','AL1','AL2','LU1','LU4'].includes(district))return 'London St Pancras International';
    if(['SG1','SG6','N1','N1C','N2','N3','N7','N10','N11','N12','N15','N17','N20','N22','NW1','NW2','NW3','WC1','WC2','HA5'].includes(district)||district.startsWith('N1')||district.startsWith('NW')||district.startsWith('WC')||district.startsWith('HA'))return 'London King’s Cross';
