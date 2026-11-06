@@ -74,6 +74,14 @@
         else rawRemove(key);
       });
       setMarker(userId,updatedAt||workspace.updatedAt||isoNow());
+      // These attributes were initially set in the HTML head, before cloud hydration.
+      // Restore them to the signed-in user's selected appearance.
+      const theme=read('oriel-desk-theme-v1');
+      const palette=read('oriel-desk-palette-v1');
+      const layout=read('oriel-desk-layout-v1');
+      if(theme==='light'||theme==='dark')document.documentElement.setAttribute('data-theme',theme);
+      if(/^(forest|copper|mauve|amber|cocoa|mono)$/.test(palette||''))document.documentElement.setAttribute('data-palette',palette);
+      if(layout==='list'||layout==='grid')document.documentElement.setAttribute('data-layout',layout);
     }finally{suppress=false}
   };
   const status=(message,tone)=>{
@@ -113,7 +121,10 @@
       signout.addEventListener('click',async()=>{
         signout.disabled=true;
         status('Signing out…','pending');
-        if(syncActive)await flush();
+        if(syncActive&&read(LOCAL_CHANGE)){
+          const saved=await flush();
+          if(saved===false){status('Your latest changes are not backed up yet. Sign-out paused to protect your work.','error');signout.disabled=false;return;}
+        }
         const result=await client.auth.signOut();
         if(result.error){status('Could not sign out: '+result.error.message,'error');signout.disabled=false;}
       });
@@ -157,6 +168,13 @@
       else{overlay.querySelector('#cloudAuthError').textContent='Check your inbox for your secure sign-in link.';button.textContent='Link sent';}
     });
   };
+  const chooseFirstImport=()=>new Promise(resolve=>{
+    const overlay=element('div','cloudOverlay');
+    overlay.innerHTML='<section class="cloudDialog" role="dialog" aria-modal="true" aria-labelledby="cloudFirstTitle"><div class="cloudEyebrow">FIRST SIGN-IN</div><h2 id="cloudFirstTitle">Import this browser’s saved choices?</h2><p class="cloudLead">We found existing Placement Desk preferences and decisions on this browser. Choose whether to save them to your new account or start with an empty personal workspace.</p><div class="cloudConflictChoices"><button type="button" class="btn primary" id="cloudImportLocal">Import my browser choices</button><button type="button" class="btn" id="cloudStartEmpty">Start with a new workspace</button></div><p class="cloudPrivacy">Nothing will be taken from another signed-in account.</p></section>';
+    document.body.append(overlay);
+    overlay.querySelector('#cloudImportLocal').addEventListener('click',()=>{overlay.remove();resolve('local')});
+    overlay.querySelector('#cloudStartEmpty').addEventListener('click',()=>{overlay.remove();resolve('empty')});
+  });
   const chooseWorkspace=()=>{
     return new Promise(resolve=>{
       const overlay=element('div','cloudOverlay');
@@ -190,7 +208,15 @@
     status('Checking your saved workspace…','pending');
     const row=await fetchWorkspace(user.id);
     if(!row){
-      await writeWorkspace(user,'Your existing browser workspace has been saved to your account.');
+      const owner=read(MARKER);
+      if(owner&&owner!==user.id){
+        // Never migrate another applicant's cached choices into a new account.
+        applyWorkspace({version:VERSION,storage:{}},user.id,isoNow());
+      }else if(meaningfulLocalData()){
+        const choice=await chooseFirstImport();
+        if(choice==='empty')applyWorkspace({version:VERSION,storage:{}},user.id,isoNow());
+      }
+      await writeWorkspace(user,'Your new private workspace is ready.');
       bootUserId=user.id;
       return;
     }
@@ -207,6 +233,9 @@
       else if(localChange>lastSync)choice='local';
       else if(remoteTime>lastSync||!localExists)choice='cloud';
       else if(JSON.stringify(snapshot())!==JSON.stringify(remoteWorkspace.storage||{}))choice='local';
+    }else if(previousUser&&previousUser!==user.id){
+      // Do not offer to import another authenticated user's saved data.
+      choice='cloud';
     }else if(localExists){
       choice=await chooseWorkspace();
     }
@@ -221,7 +250,8 @@
     finally{if(preparingUserId===user.id)preparingUserId='';}
   };
   const flush=async()=>{
-    if(!syncActive||!currentUser||!client||saving||conflictBlocked)return;
+    if(!syncActive||!currentUser||!client||conflictBlocked)return false;
+    if(saving)return false;
     saving=true;
     status('Saving changes…','pending');
     try{
@@ -236,12 +266,14 @@
         if(choice==='cloud'){
           applyWorkspace(latest.workspace,currentUser.id,latest.updated_at);
           status('The newer cloud workspace has been restored.','success');
-          return;
+          return true;
         }
       }
       await writeWorkspace(currentUser,'All changes saved to your account.');
+      return true;
     }catch(error){
       status('Cloud save failed. Your browser copy is safe. '+(error.message||''),'error');
+      return false;
     }finally{saving=false}
   };
   const scheduleSave=()=>{
@@ -293,9 +325,19 @@
     // app never starts with a duplicate, still-pending cloud restore.
     client.auth.onAuthStateChange((event,session)=>{
       if(event==='SIGNED_OUT'){
-        currentUser=null;syncActive=false;conflictBlocked=false;
+        const wasAuthenticated=!!currentUser;
+        currentUser=null;syncActive=false;conflictBlocked=false;bootUserId='';
         if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
-        renderAccount();status('Signed out. This browser’s saved copy remains available.','neutral');
+        if(wasAuthenticated){
+          // Clear visible account data on sign-out, to avoid exposing it to the
+          // next applicant who uses this browser. The cloud copy is retained.
+          suppress=true;
+          try{KEYS.forEach(rawRemove);rawRemove(MARKER);rawRemove(LAST_SYNC);rawRemove(LOCAL_CHANGE);}
+          finally{suppress=false;}
+          window.location.reload();
+          return;
+        }
+        renderAccount();status('Signed out. Your private cloud workspace remains saved.','neutral');
       }else if((event==='SIGNED_IN'||event==='USER_UPDATED')&&session&&session.user&&session.user.id!==bootUserId&&session.user.id!==preparingUserId){
         setTimeout(()=>prepareUser(session.user).then(()=>{if(syncActive)flush()}).catch(error=>status('Could not load your cloud workspace. '+(error.message||''),'error')),0);
       }
