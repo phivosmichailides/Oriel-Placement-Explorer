@@ -448,3 +448,94 @@ html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="tru
 }
 html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
 html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:inherit!important}
+
+
+/* Final audit polish: date layout, fit-panel proportions, accessible palette contrast and restrained Mauveine. */
+/* Programme detail: give the fit score real room; keep the two explanation cards compact at the top. */
+.placement .fit.fitExpanded.uxFitWithLocation{
+  grid-template-columns:minmax(185px,220px) minmax(260px,1fr) minmax(250px,340px);
+  gap:12px;align-items:start;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .score{
+  min-width:185px;min-height:174px;padding:18px 16px;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  align-self:start;gap:9px;width:100%;min-width:0;padding:0;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn{
+  width:max-content;min-width:min(225px,100%);max-width:min(100%,360px);
+  min-height:0;height:auto;flex:0 0 auto;align-self:center;justify-self:center;
+  padding:11px 15px;text-align:center;
+  background:var(--soft);border:1px solid var(--line);box-shadow:none;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{
+  margin:0 0 6px;color:var(--ux-accent-ink);font-size:12px;line-height:1.3;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel{color:var(--ux-pick)}
+.placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  max-width:34ch;margin:2px auto;color:var(--ink);font-size:13px;line-height:1.45;text-align:center;
+}
+.placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  width:100%;max-width:340px;justify-self:end;min-width:0;
+}
+@media(max-width:1100px){
+  .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(175px,205px) minmax(230px,1fr) minmax(235px,300px);
+    gap:9px;
+  }
+}
+@media(max-width:850px){
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(170px,200px) minmax(0,1fr)}
+  .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:1/-1;max-width:100%;justify-self:stretch}
+}
+@media(max-width:610px){
+  .placement .fit.fitExpanded.uxFitWithLocation{grid-template-columns:minmax(0,1fr)}
+  .placement .fit.fitExpanded.uxFitWithLocation .score{min-width:0;min-height:145px}
+  .placement .fit.fitExpanded.uxFitWithLocation .fitColumn{min-width:min(240px,100%)}
+  .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{grid-column:auto}
+}
+/* The pharmacy mark is a neutral line symbol, not an emoji or a coloured tile. */
+html .logo{
+  width:46px;height:46px;min-width:46px;padding:0;
+  background:transparent!important;color:var(--mut)!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+html .logo svg{display:block;width:42px;height:42px;color:currentColor;stroke:currentColor}
+html[data-theme="dark"] .logo,html[data-theme="dark"] .logo svg{color:var(--ink)!important}
+/* Keep the forest palette's selected swatch dark and readable in dark mode. */
+html[data-theme="dark"][data-palette="forest"] .uxPaletteOption[aria-pressed="true"]{
+  background:#344538!important;border-color:#718875!important;color:#f3f4ed!important;
+}
+html[data-theme="dark"][data-palette="forest"] .uxPaletteOption[aria-pressed="true"] b,
+html[data-theme="dark"][data-palette="forest"] .uxPaletteOption[aria-pressed="true"] small{color:inherit!important}
+/* Mauveine: charcoal-plum surfaces first, dusty mauve only for selection and small accents. */
+html[data-theme="dark"][data-palette="mauve"]{
+  --bg:#1d1b20;--panel:#29282d;--soft:#353238;--line:#4a454c;
+  --ink:#f2eef1;--mut:#c7c0c5;--dark:#151318;
+  --ux-accent:#a887a0;--ux-accent-ink:#d8c6d3;--ux-accent-soft:#39323b;--ux-accent-border:#665363;
+  --ux-pick:#9b788b;--ux-pick-soft:#393239;--ux-pick-border:#65505e;
+  --green:var(--ink);--blue:var(--ink);
+}
+html[data-palette="mauve"] .placement .salary,
+html[data-palette="mauve"] .placement .salary-value{color:var(--ink)!important}
+html[data-palette="mauve"] .placement .hourly,
+html[data-palette="mauve"] .placement .uxTakeHome{color:var(--mut)!important}
+html[data-palette="mauve"] .placement .btn.selected,
+html[data-palette="mauve"] .placement .decisionPicker summary,
+html[data-palette="mauve"] .placement .decision-quick .selected{
+  background:var(--soft)!important;color:var(--ink)!important;border-color:var(--ux-pick-border)!important;
+}
+html[data-palette="mauve"] .uxDrawerLauncher{
+  background:#795d70!important;border-color:#96798c!important;color:#fff!important;
+}
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"]{
+  background:#493b49!important;color:#f6edf4!important;border-color:#866d83!important;
+}
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
+html[data-theme="dark"][data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:inherit!important}
+/* The programme date row is a real grid, so its date and duration can never run together. */
+html .programmeDates{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px 10px;min-width:0}
+html .programmeDates .dateStart{justify-self:start}
+html .programmeDates .dateEnd{text-align:right;justify-self:end}
+html .programmeDates .dateBasis{grid-column:1/-1;margin:0;white-space:normal;overflow-wrap:anywhere}
