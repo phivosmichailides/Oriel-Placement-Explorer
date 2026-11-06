@@ -11,6 +11,7 @@
  const getData=()=>{try{return typeof placements!=='undefined'&&Array.isArray(placements)?placements:[]}catch{return []}};
  const getRanks=()=>{try{return typeof ranked==='function'?ranked():[]}catch{return []}};
  const isShortlisted=p=>{try{return SHORT.has(mark(p).status)}catch{return false}};
+ let selectedProgrammeId=null;
  const byId=()=>{
    const list=getData();
    if(byId.previous!==list){byId.previous=list;byId.map=new Map(list.map(p=>[String(p.id),p]))}
@@ -334,7 +335,9 @@
      L.circleMarker([selected.lat,selected.lng],{radius:5.8,weight:2,color:'#fff4ec',fillColor:'#94616f',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
      map.fitBounds(L.latLngBounds([central,[selected.lat,selected.lng]]),{padding:[20,20],maxZoom:12,animate:false});
      const openSelected=()=>{
-       const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(selected.pc+', UK');
+       const label=siteName(p,selected,index,sites.length);
+       const lookup=/^Training location/.test(label)?selected.pc:label+' '+selected.pc;
+       const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(lookup+', UK');
        window.open(url,'_blank','noopener,noreferrer');
      };
      holder.setAttribute('role','link');holder.setAttribute('tabindex','0');
@@ -383,7 +386,8 @@
      info.textContent=loc.connections+' '+(sites.length>1?'Each training site may need a different commute.':loc.detail||'');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
      route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
-     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((site.pc||p.title||'London')+', UK');
+     const siteLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
+     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(siteLookup+', UK');
      if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
      map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';
      if(panel.isConnected&&panel.getBoundingClientRect().width>0)requestAnimationFrame(()=>mapVisible(map));
@@ -440,6 +444,9 @@
    if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
    const p=byId().get(article.dataset.id);if(!p)return;
    article.dataset.uxEnhanced='1';
+   article.tabIndex=0;
+   article.setAttribute('aria-label','Select programme '+(p.title||p.employer||p.id));
+   article.classList.toggle('uxProgramSelected',article.dataset.id===selectedProgrammeId);
    addTakeHome(article,p);
    if(!article.querySelector('.uxWorkSchedule')){const work=workSchedule(p);const fitParent=article.querySelector('.fit.fitExpanded');if(fitParent)fitParent.after(work);else article.append(work)}
    const fit=article.querySelector('.fit.fitExpanded');
@@ -452,6 +459,43 @@
    more.setAttribute('aria-expanded','false');more.textContent='See full details, location & pay';
    article.append(more);
  }
+ const selectProgramme=(id,pan=false)=>{
+   if(!id)return;
+   selectedProgrammeId=String(id);
+   document.querySelectorAll('.placement[data-id]').forEach(card=>{
+     card.classList.toggle('uxProgramSelected',card.dataset.id===selectedProgrammeId);
+   });
+   window.OrielMapInteractive?.select(selectedProgrammeId,pan);
+ };
+ const cardForEvent=e=>{
+   const card=e.target?.closest?.('.placement[data-id]');
+   return card&&card.closest('#results,#shortlistList,#mapSelection')?card:null;
+ };
+ document.addEventListener('mouseover',e=>{
+   const card=cardForEvent(e);
+   if(card&&!(e.relatedTarget&&card.contains(e.relatedTarget))){
+     card.classList.add('uxProgramHover');
+     window.OrielMapInteractive?.hover(card.dataset.id,true);
+   }
+ });
+ document.addEventListener('mouseout',e=>{
+   const card=cardForEvent(e);
+   if(card&&!(e.relatedTarget&&card.contains(e.relatedTarget))){
+     card.classList.remove('uxProgramHover');
+     window.OrielMapInteractive?.hover(card.dataset.id,false);
+   }
+ });
+ document.addEventListener('click',e=>{
+   const card=cardForEvent(e);if(!card)return;
+   // Buttons and maps continue to perform their own explicit actions.
+   if(e.target.closest('button,a,input,select,textarea,summary,.uxLocationPanel'))return;
+   selectProgramme(card.dataset.id,true);
+ });
+ document.addEventListener('keydown',e=>{
+   if(e.key!=='Enter'&&e.key!==' ')return;
+   const card=cardForEvent(e);
+   if(card&&e.target===card){e.preventDefault();selectProgramme(card.dataset.id,true)}
+ });
  const enhancedContainers=['results','shortlistList','mapSelection'];
  function enhanceCards(scope){
    scope?.querySelectorAll('.placement').forEach(enhanceCard);
