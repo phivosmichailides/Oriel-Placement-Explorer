@@ -1,0 +1,42 @@
+name: Oriel placement map and theme smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'locations.json'
+      - 'tests/map-theme-smoke.cjs'
+      - '.github/workflows/map-theme-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-smoke:
+    name: Live site maps, programme panels, themes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser testing dependency
+        run: npm install --no-save playwright@1.56.1
+      - name: Install test browser and dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Validate deployed UI
+        run: node tests/map-theme-smoke.cjs
+        env:
+          TARGET: https://phivosmichailides.github.io/Oriel-Placement-Explorer/
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oriel-map-theme-visual-checks
+          path: /tmp/oriel-map-theme-smoke/
+          if-no-files-found: ignore
+          retention-days: 7
