@@ -78,7 +78,7 @@
       record.map=glMap;
       record.layer=layer;
       instances.add(record);
-      holder.dataset.basemap='positron';
+      holder.dataset.basemap='vector-loading';
       glMap.on('load',()=>{
         if(ended)return;
         loaded=true;
