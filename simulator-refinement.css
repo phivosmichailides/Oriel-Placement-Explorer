@@ -265,3 +265,66 @@ html[data-theme="dark"] .uxPaletteOption[data-ux-palette="forest"] b{
 html[data-theme="dark"] .uxPaletteOption[data-ux-palette="forest"] small{
  color:#e3e5da!important;
 }
+
+/* Mauveine (pink) interface: every decorative accent follows this palette.
+   Green survives only when semantically meaningful (good-fit score) or on the actual map. */
+html[data-theme="light"][data-palette="mauve"]{
+  --green:#754969;--blue:#754969;
+  --ux-accent:#885d79;--ux-accent-ink:#70405f;--ux-accent-soft:#f2e3ed;--ux-accent-border:#d8bace;
+  --ux-pick:#854a63;--ux-pick-soft:#f5e6ed;--ux-pick-border:#d9bac9;
+  --bg:#faf5f8;--panel:#fffbfd;--soft:#f4e9f0;--line:#e6d5e0;--ink:#342630;--mut:#755e6d;
+}
+html[data-theme="dark"][data-palette="mauve"]{
+  --green:#efd0e6;--blue:#efd0e6;
+  --ux-accent:#dfadc9;--ux-accent-ink:#ffe0f0;--ux-accent-soft:#58374e;--ux-accent-border:#996c88;
+  --ux-pick:#efbed5;--ux-pick-soft:#563547;--ux-pick-border:#9a6e84;
+  --bg:#201721;--panel:#302432;--soft:#423043;--line:#654f65;
+  --dark:#170f19;--ink:#faf0f6;--mut:#e5d0df;
+}
+html[data-palette="mauve"] .productIntro{
+  background:linear-gradient(123deg,var(--panel),var(--ux-accent-soft))!important;border-color:var(--ux-accent-border);
+}
+html[data-palette="mauve"] .productPrinciples>div,
+html[data-palette="mauve"] .fitColumn.positive,
+html[data-palette="mauve"] .fitColumn.caution{
+  background:var(--soft)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html[data-palette="mauve"] .productPrinciples span,
+html[data-palette="mauve"] .fitLabel,
+html[data-palette="mauve"] .fitColumn.caution .fitLabel,
+html[data-palette="mauve"] .fitPoint{color:var(--ink)!important}
+html[data-palette="mauve"] .badge.good,
+html[data-palette="mauve"] .miniFit:not(.warning),
+html[data-palette="mauve"] .score:not([data-fit-tone]),
+html[data-palette="mauve"] .chip.on,
+html[data-palette="mauve"] .notice,
+html[data-palette="mauve"] .reason{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;border-color:var(--ux-accent-border)!important;
+}
+html[data-theme="light"][data-palette="mauve"] .badge.good,
+html[data-theme="light"][data-palette="mauve"] .miniFit:not(.warning),
+html[data-theme="light"][data-palette="mauve"] .chip.on{
+  color:#643954!important;
+}
+html[data-theme="dark"][data-palette="mauve"] .badge.good,
+html[data-theme="dark"][data-palette="mauve"] .miniFit:not(.warning),
+html[data-theme="dark"][data-palette="mauve"] .chip.on,
+html[data-theme="dark"][data-palette="mauve"] .reason{
+  color:#ffe2f1!important;
+}
+html[data-palette="mauve"] .tab.active,
+html[data-palette="mauve"] .uxLayoutControls .btn[aria-pressed="true"]{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;border-color:var(--ux-accent-border)!important;
+}
+html[data-palette="mauve"] .btn.primary,
+html[data-palette="mauve"] .logo{border-color:var(--ux-accent)!important}
+html[data-theme="dark"][data-palette="mauve"] .btn.primary{background:#d7a4c2!important;color:#29192a!important}
+html[data-theme="light"][data-palette="mauve"] .btn.primary{background:#8c5377!important;color:#fffafa!important}
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"]{
+  background:var(--ux-accent-soft)!important;
+  border-color:var(--ux-accent-border)!important;
+  color:var(--ink)!important;
+}
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:var(--ink)!important}
+/* All intentional good/poor fit signals remain independent of the decorative theme. */
