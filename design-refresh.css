@@ -598,3 +598,94 @@ html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocatio
 html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
   display:flex!important;grid-column:1!important;width:100%!important;max-width:none!important;
 }
+
+
+/* 07 Nov final card proportions: reference layout, slightly wider Personal Fit.
+   One integrated three-column row uses the whole available card width.
+   Semantic colours, cards and directions remain unchanged. */
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+  width:100%!important;
+  grid-template-columns:minmax(144px,165px) minmax(0,1fr) minmax(285px,325px)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  margin:14px 0 15px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .score{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  min-height:200px!important;
+  height:auto!important;
+  padding:18px 15px!important;
+  justify-content:center!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:100%!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  justify-content:stretch!important;
+  align-items:stretch!important;
+  gap:10px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{
+  width:100%!important;max-width:none!important;min-width:0!important;
+  min-height:115px!important;
+  flex:1 1 auto!important;
+  align-self:stretch!important;
+  padding:13px 15px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{
+  text-align:left!important;
+  font-size:12.8px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:100%!important;
+  grid-column:3!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+}
+html .placement .uxLocationPanel .uxMiniMap{
+  min-height:175px!important;
+  height:175px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  text-align:left!important;
+}
+@media(max-width:1080px){
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(144px,165px) minmax(0,1fr)!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1/-1!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+  }
+}
+@media(max-width:690px){
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .score{
+    min-height:0!important;
+    padding:16px!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+    height:auto!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1!important;
+    height:auto!important;
+  }
+}
