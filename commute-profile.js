@@ -16,6 +16,7 @@
   };
   const read=()=>{
     let value='';
+    const postcodeInput=$('uxHomePostcode');if(postcodeInput)postcodeInput.value=pc;
     try{
       const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
       if(profile&&typeof profile==='object'&&Object.prototype.hasOwnProperty.call(profile,'homePostcode'))return normalise(profile.homePostcode||'');
