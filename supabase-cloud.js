@@ -47,12 +47,13 @@
     try{
       const desk=JSON.parse(read('phivos-desk-v2')||'null');
       if(desk&&((desk.marks&&Object.keys(desk.marks).length)||(Array.isArray(desk.compare)&&desk.compare.length)||(desk.prefs&&desk.prefs.onboarding)))return true;
+      if(desk&&desk.prefs&&desk.prefs.weights&&Object.keys(desk.prefs.weights).some(key=>Number(desk.prefs.weights[key])!==({money:5,hospital:5,gp:5,lifestyle:4,location:4,progression:5,independence:4,communityPenalty:4}[key])))return true;
       if(desk&&desk.prefs){
         if(desk.prefs.likes&&desk.prefs.likes!=='London Bridge, Southwark, Borough, Waterloo, Holborn, Bloomsbury, Clerkenwell, Angel, Islington, Shoreditch, Camden, Fitzrovia, Westminster, Vauxhall, Battersea, Kensington, Chelsea, Hammersmith, Fulham, Ealing, Wembley')return true;
         if(desk.prefs.avoids&&desk.prefs.avoids!=='Croydon, Barnet, Wood Green, Morden, New Addington, Romford, Dagenham, Enfield, Lewisham')return true;
       }
     }catch{}
-    if(read('phivos-desk-csv-v2')||read('phivos-onboarding-profile-v1')||read('oriel-desk-home-postcode-v1')||read('oriel-desk-outcome-v1')||read('oriel-research-v1'))return true;
+    if(['phivos-desk-csv-v2','phivos-onboarding-v1','phivos-onboarding-profile-v1','oriel-desk-home-postcode-v1','oriel-desk-outcome-v1','oriel-research-v1','oriel-desk-theme-v1','oriel-desk-palette-v1','oriel-desk-layout-v1','oriel-shortlist-view-order-v1','oriel-desk-sidebar-collapsed-v1','oriel-desk-page-zoom-v1'].some(key=>read(key)!==null))return true;
     try{
       const sim=JSON.parse(read('oriel-simulator-v1')||'null');
       if(sim&&['preferred','neutral','unwanted'].some(key=>Array.isArray(sim[key])&&sim[key].length))return true;
