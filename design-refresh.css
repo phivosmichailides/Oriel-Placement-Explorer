@@ -952,3 +952,27 @@ html[data-theme="dark"] #placementMap[data-basemap="raster-fallback"] .leaflet-t
 html[data-theme="dark"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane{
   filter:saturate(.38) brightness(.68) contrast(.91)!important;
 }
+
+
+/* General vs personalised commute status in each programme map. */
+html .placement .uxCommutePersonalisation{
+  display:block;
+  padding:8px 10px;
+  margin-top:1px;
+  border-radius:9px;
+  background:var(--ux-accent-soft);
+  border:1px solid var(--ux-accent-border);
+  color:var(--ux-accent-ink);
+  font-size:13.4px;
+  line-height:1.45;
+  font-weight:650;
+}
+html .placement .uxLocationCaption[data-commute-tone="general"]{
+  color:var(--ink)!important;
+}
+html .placement .uxLocationCaption[data-commute-tone="good"]{
+  color:var(--fit-green-ink)!important;
+}
+html .placement .uxLocationCaption[data-commute-tone="bad"]{
+  color:var(--fit-low-ink)!important;
+}
