@@ -3,8 +3,8 @@
 create table if not exists public.oriel_user_workspaces (
   user_id uuid primary key references auth.users (id) on delete cascade,
   workspace jsonb not null default '{"version":1,"storage":{}}'::jsonb,
-  created_at timestamptz not null default timezone('utc', now()),
-  updated_at timestamptz not null default timezone('utc', now())
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 alter table public.oriel_user_workspaces enable row level security;
@@ -51,7 +51,7 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  new.updated_at = timezone('utc', now());
+  new.updated_at = now();
   return new;
 end;
 $$;
