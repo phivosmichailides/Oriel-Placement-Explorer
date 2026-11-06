@@ -897,3 +897,45 @@ html .placement .uxLocationPanel .uxSiteArrow{
     font-size:16px!important;
   }
 }
+
+
+/* WebGL Leaflet map seam and zoom protections:
+   Never apply the old tile-pane CSS filters to a vector canvas.
+   Keep a neutral map background and a low-saturation backup underneath
+   any WebGL repaint, including dark/light palette transitions. */
+html #placementMap,
+html .placement .uxMiniMap{
+  background:#eef1ec!important;
+  isolation:isolate!important;
+}
+html[data-theme="dark"] #placementMap,
+html[data-theme="dark"] .placement .uxMiniMap{
+  background:#232c30!important;
+}
+html #placementMap[data-basemap^="vector"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap^="vector"] .leaflet-tile-pane,
+html[data-theme="dark"] #placementMap[data-basemap^="vector"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap^="vector"] .leaflet-tile-pane{
+  filter:none!important;
+  opacity:1!important;
+}
+html #placementMap .leaflet-layer.oriel-map-backup,
+html .uxMiniMap .leaflet-layer.oriel-map-backup{
+  filter:saturate(.35) contrast(.95) brightness(1.05)!important;
+}
+html[data-theme="dark"] #placementMap .leaflet-layer.oriel-map-backup,
+html[data-theme="dark"] .uxMiniMap .leaflet-layer.oriel-map-backup{
+  filter:saturate(.4) brightness(.6) contrast(.86)!important;
+}
+html #placementMap .maplibregl-canvas,
+html .uxMiniMap .maplibregl-canvas{
+  background-color:transparent!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  backface-visibility:hidden!important;
+  transform:translateZ(0);
+}
+html #placementMap .maplibregl-canvas-container,
+html .uxMiniMap .maplibregl-canvas-container{
+  background-color:transparent!important;
+}
