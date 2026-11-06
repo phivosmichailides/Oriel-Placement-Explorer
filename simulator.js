@@ -95,7 +95,12 @@
      if(!Number.isInteger(number)||number<1||number>state[z].length){msg('Please enter a number between 1 and '+state[z].length);return}
      const list=state[z];list.splice(list.indexOf(p.id),1);list.splice(number-1,0,p.id);save();render();
    });
-   const main=el('div','simItemMain');main.append(el('strong','simItemName',p.title||p.employer||'Untitled programme'));
+   const main=el('div','simItemMain');
+   const name=el('button','simItemName simItemNameButton',p.title||p.employer||'Untitled programme');
+   name.type='button';name.title='View programme pay, hours, settings and locations';
+   name.setAttribute('aria-label','Preview '+(p.title||p.employer||'programme'));
+   name.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.OrielProgrammePreview?.open(p.id)});
+   main.append(name);
    main.append(el('small','simItemMeta',codes(p)+' · '+(p.region||'Region not stated')+(p.salary?' · £'+Number(p.salary).toLocaleString('en-GB'):'')));
    const actions=el('div','simItemActions');
    const copyBtn=el('button','simIcon simCopy');copyBtn.type='button';
