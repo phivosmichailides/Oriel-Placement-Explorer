@@ -466,3 +466,135 @@ html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocatio
 html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .fitPoint{
   font-size:13.5px!important;
 }
+
+
+/* 06 Nov repair: tightly grouped, identical four-section card architecture.
+   These follow all legacy media rules so list and grid cannot disagree. */
+html .placement .fit.fitExpanded.uxFitWithLocation{
+  grid-template-columns:minmax(166px,195px) minmax(278px,380px) minmax(252px,340px)!important;
+  justify-content:start!important;align-items:start!important;
+  gap:12px!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .score{
+  min-height:174px!important;align-self:start!important;justify-self:start!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  max-width:380px!important;
+  align-self:start!important;align-items:stretch!important;
+  justify-content:flex-start!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{
+  max-width:100%!important;width:100%!important;
+  align-self:stretch!important;
+}
+html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  grid-column:auto!important;max-width:340px!important;
+  justify-self:start!important;align-self:start!important;
+}
+html .placement .uxLocationPanel .uxMiniMap,
+html .placement .uxMiniMap{
+  min-height:170px!important;height:170px!important;
+}
+html .placement .uxLocationFallback{min-height:174px}
+html .placement .uxLocationPanel .uxMapLinks{
+  display:flex!important;flex-wrap:wrap!important;gap:7px 14px!important;
+}
+html .placement .uxLocationPanel .uxMapLinks a{
+  font-size:12px!important;line-height:1.5!important;
+  overflow-wrap:anywhere!important;
+}
+html .placement .uxLocationPanel .uxSiteBar{gap:9px}
+html .placement .uxLocationPanel .uxSiteControls .uxSiteArrow{min-width:34px;min-height:34px}
+/* Make compressed date bars in the compact four-column grid actually readable. */
+html[data-layout="grid"] .placement .programmeDates{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:start!important;
+  gap:9px 10px!important;
+  padding:12px 11px!important;
+}
+html[data-layout="grid"] .placement .programmeDates .dateStart{
+  display:block!important;grid-column:1!important;grid-row:1!important;
+  justify-self:start!important;text-align:left!important;
+  font-size:11.6px!important;line-height:1.55!important;
+  overflow-wrap:normal!important;
+}
+html[data-layout="grid"] .placement .programmeDates .dateEnd{
+  display:block!important;grid-column:2!important;grid-row:1!important;
+  justify-self:end!important;text-align:right!important;
+  font-size:11.6px!important;line-height:1.55!important;
+  overflow-wrap:normal!important;
+}
+html[data-layout="grid"] .placement .programmeDates .dateStart b,
+html[data-layout="grid"] .placement .programmeDates .dateEnd b{
+  display:block!important;font-size:11px!important;line-height:1.5!important;
+  white-space:nowrap!important;margin-bottom:2px!important;
+}
+html[data-layout="grid"] .placement .programmeDates .dateDivider{display:none!important}
+html[data-layout="grid"] .placement .programmeDates .dateBasis{
+  grid-column:1/-1!important;grid-row:2!important;
+  font-size:11.3px!important;line-height:1.5!important;
+  margin:0!important;padding-top:8px!important;
+  overflow-wrap:normal!important;
+}
+/* Full programme names expand on hover, tap or keyboard activation. */
+html[data-layout="grid"] .placement .placementTop h3{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:4!important;
+  line-clamp:4!important;
+  overflow:hidden!important;
+  overflow-wrap:anywhere!important;
+  font-size:15.5px!important;line-height:1.38!important;
+  cursor:pointer!important;
+}
+html[data-layout="grid"] .placement .placementTop h3:hover,
+html[data-layout="grid"] .placement .placementTop h3:focus-visible,
+html[data-layout="grid"] .placement .placementTop h3.uxTitleExpanded{
+  display:block!important;-webkit-line-clamp:unset!important;
+  line-clamp:unset!important;overflow:visible!important;
+}
+html[data-layout="grid"] .placement .placementTop h3:focus-visible{
+  outline:2px solid var(--ux-accent)!important;outline-offset:3px;
+}
+html[data-layout="list"] .placement .placementTop h3{cursor:default!important}
+/* Even on a medium screen prefer adjacent score + reasons, with location beneath,
+   rather than oddly separated columns or clipped links. */
+@media(max-width:1080px){
+  html .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(160px,195px) minmax(255px,1fr)!important;
+    justify-content:start!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{max-width:380px!important}
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1/-1!important;
+    width:min(100%,585px)!important;max-width:585px!important;
+    justify-self:start!important;
+  }
+}
+@media(max-width:690px){
+  html .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .score{
+    min-height:0!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+    max-width:none!important;width:100%!important;
+  }
+  html .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1!important;width:100%!important;max-width:none!important;
+  }
+}
+/* Grid mode stays compact until someone opens details. */
+html[data-layout="grid"] .placement:not(.uxExpanded) .uxLocationPanel,
+html[data-layout="grid"] .placement:not(.uxExpanded) .fit{display:none!important}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+}
+html[data-layout="grid"] .placement.uxExpanded .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  display:flex!important;grid-column:1!important;width:100%!important;max-width:none!important;
+}
