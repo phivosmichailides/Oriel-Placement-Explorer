@@ -427,11 +427,23 @@
    const links=document.createElement('div');links.className='uxMapLinks';
    const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Check rail/Tube route ↗';links.append(route);
    const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open selected site ↗';links.append(maps);panel.append(links);
-   let activeSite=null,activeLocation=null,activeLookup='';
+   let activeSite=null,activeLocation=null,activeLookup='',captionBase='';
+   const brief=text=>{
+     const x=String(text||'').replace(/\s+/g,' ').trim();
+     return x.length>73?x.slice(0,73).replace(/\s+\S*$/,'').trim()+'…':x;
+   };
+   const captionStatus=(status,details='')=>{
+     const prefix=status==='good'?'Convenient':status==='bad'?'Not convenient':
+       status==='loading'?'Checking commute':'Commute not verified';
+     caption.dataset.commuteTone=status;
+     caption.textContent=prefix+(details?' · '+details:'')+(captionBase?' · '+captionBase:'');
+     caption.title=caption.textContent;
+   };
    const refreshCommute=()=>{
      const site=activeSite,loc=activeLocation,siteLookup=activeLookup;
      const origin=window.OrielCommuteProfile?.read?.()||'';
      if(!origin){
+       captionStatus('unknown');
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
@@ -447,6 +459,7 @@
        return;
      }
      if(!site?.pc){
+       captionStatus('unknown');
        commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-unverified';
        commuteLabel.textContent='Journey not assessed';
        commuteSummary.textContent='Oriel does not provide a training-site postcode for this location, so a reliable journey time cannot be calculated.';
@@ -460,6 +473,7 @@
      const originLabel=area===origin?origin:area+' ('+origin+')';
      const key=origin+'|'+site.pc;
      if(panel.dataset.uxCommuteKey===key&&panel.dataset.uxCommuteLoadedKey===key)return;
+     captionStatus('loading');
      commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
      commuteLabel.textContent='Checking your commute…';
      commuteSummary.textContent='From '+originLabel+' to '+(siteTitle.textContent||site.pc);
@@ -476,6 +490,7 @@
          const journey=await window.OrielCommute.getJourney(origin,site.pc);
          if(panel.dataset.uxCommuteKey!==key)return;
          const convenient=Number(journey.duration)<=40;
+         captionStatus(convenient?'good':'bad',Math.round(journey.duration)+' min');
          commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
          commuteLabel.textContent=convenient?'Convenient':'Not Convenient';
          commuteSummary.textContent=journey.duration+' min from '+originLabel+' to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
@@ -487,6 +502,7 @@
          commuteMeta.textContent=[journey.sampleDate,(journey.departure||'08:00')+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
        }catch{
          if(panel.dataset.uxCommuteKey!==key)return;
+         captionStatus('unknown');
          commuteAdvice.className='uxCommuteAdvice is-unverified';
          commuteLabel.textContent='Journey not verified';
          commuteSummary.textContent='The transport planner did not return a reliable journey time from '+origin+' to '+site.pc+'.';
@@ -510,8 +526,8 @@
      const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
      const connections=String(loc.connections||loc.detail||'See directions and transport links below.').replace(/\s+/g,' ').trim();
      const lead=connections.split(/(?<=[.!?])\s/)[0]||connections;
-     const maxLead=110;
-     caption.textContent=lead.length>maxLead?lead.slice(0,maxLead).replace(/\s+\S*$/,'').trim()+'…':lead;
+     captionBase=brief(lead);
+     caption.textContent=captionBase;
      caption.title=connections;
      info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
