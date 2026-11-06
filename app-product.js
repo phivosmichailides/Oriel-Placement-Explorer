@@ -94,6 +94,7 @@
     };
 
     matches=p=>{
+      if(window.OrielSpecialist?.filterOut(p))return false;
       if(!decisionMatches(p))return false;
       const q=$('search').value.trim().toLowerCase();
       if(q&&!q.split(/\s+/).filter(Boolean).every(term=>searchText2(p).includes(term)))return false;
