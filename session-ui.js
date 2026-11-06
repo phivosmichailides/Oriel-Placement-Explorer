@@ -26,6 +26,9 @@
  function applyZoom(next){
    zoom=Math.max(70,Math.min(130,Math.round(next/5)*5));
    root.style.setProperty('--ux-page-zoom',String(zoom/100));
+   const inverse=100/zoom;
+   root.style.setProperty('--ux-shell-width',(inverse*100)+'%');
+   root.style.setProperty('--ux-shell-max-width',(1540*inverse)+'px');
    if($('uxPageZoomValue'))$('uxPageZoomValue').textContent=zoom+'%';
    if($('uxPageZoomIn'))$('uxPageZoomIn').disabled=zoom>=130;
    if($('uxPageZoomOut'))$('uxPageZoomOut').disabled=zoom<=70;
