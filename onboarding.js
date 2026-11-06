@@ -58,7 +58,7 @@
       if(p.hours)items.push('Hours · ≤'+p.hours+'h');
       if(p.community&&p.community!=='some')items.push('Community · '+({happy:'Welcome',less:'Prefer less',avoid:'Avoid community-heavy'}[p.community]||'Some'));
       const postcode=p.homePostcode||window.OrielCommuteProfile?.read?.()||'';
-      if(postcode)items.push('Commute base · '+(window.OrielCommuteProfile?.areaLabel?.(postcode)||postcode)+' ('+postcode+')');
+      if(postcode){const area=window.OrielCommuteProfile?.areaLabel?.(postcode)||postcode;items.push('Commute base · '+(area===postcode?area:area+' ('+postcode+')'));}
       target.replaceChildren();
       items.forEach(label=>{const chip=document.createElement('span');chip.className='uxProfileChip';chip.textContent='✓ '+label;target.append(chip)});
       panel.hidden=!items.length;
