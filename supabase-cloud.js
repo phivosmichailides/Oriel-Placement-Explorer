@@ -31,7 +31,7 @@
   const cfg=window.ORIEL_SUPABASE_CONFIG||{};
   const configured=typeof cfg.url==='string'&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(cfg.url.trim())&&typeof cfg.publishableKey==='string'&&cfg.publishableKey.trim().length>10;
   let client=null,currentUser=null,syncActive=false,suppress=false,saving=false,conflictBlocked=false,saveTimer=null;
-  let bootUserId='';
+  let bootUserId='',preparingUserId='';
 
   const read=(key)=>{try{return localStorage.getItem(key)}catch{return null}};
   const rawSet=(key,value)=>{if(nativeSet)nativeSet.call(localStorage,key,String(value))};
@@ -181,8 +181,10 @@
     return confirmed;
   };
   const prepareUser=async(user)=>{
-    if(!user||!user.id||!client)return;
+    if(!user||!user.id||!client||user.id===bootUserId||user.id===preparingUserId)return;
+    preparingUserId=user.id;
     currentUser=user;
+    try{
     renderAccount();
     status('Checking your saved workspace…','pending');
     const row=await fetchWorkspace(user.id);
@@ -214,6 +216,7 @@
       await writeWorkspace(user,'This browser’s workspace is now saved to your account.');
     }
     bootUserId=user.id;
+    }finally{if(preparingUserId===user.id)preparingUserId='';}
   };
   const flush=async()=>{
     if(!syncActive||!currentUser||!client||saving||conflictBlocked)return;
@@ -281,7 +284,7 @@
         currentUser=null;syncActive=false;conflictBlocked=false;
         if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
         renderAccount();status('Signed out. This browser’s saved copy remains available.','neutral');
-      }else if(session&&session.user&&session.user.id!==bootUserId){
+      }else if((event==='SIGNED_IN'||event==='USER_UPDATED')&&session&&session.user&&session.user.id!==bootUserId&&session.user.id!==preparingUserId){
         setTimeout(()=>prepareUser(session.user).then(()=>{if(syncActive)flush()}).catch(error=>status('Could not load your cloud workspace. '+(error.message||''),'error')),0);
       }
     });
