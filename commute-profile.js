@@ -16,10 +16,11 @@
   };
   const read=()=>{
     let value='';
+    try{
+      const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
+      if(profile&&typeof profile==='object'&&Object.prototype.hasOwnProperty.call(profile,'homePostcode'))return normalise(profile.homePostcode||'');
+    }catch{}
     try{value=localStorage.getItem(KEY)||''}catch{}
-    if(!value){
-      try{value=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')?.homePostcode||''}catch{}
-    }
     if(!value){
       try{value=state?.prefs?.onboarding?.homePostcode||''}catch{}
     }
