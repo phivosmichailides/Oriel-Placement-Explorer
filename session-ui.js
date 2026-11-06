@@ -188,7 +188,7 @@
    }
    if($('hideAvoid'))$('hideAvoid').checked=!!f.hideAvoid;
    if($('hideShortlisted'))$('hideShortlisted').checked=!!f.hideShortlisted;
-   for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=f[id]===undefined?(id!=='hideOtherSpecialist'):!!f[id];
+   for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=f[id]===undefined?true:!!f[id];
    if(Array.isArray(f.quick)&&typeof quick!=='undefined'){
      quick=new Set(f.quick);
      document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',quick.has(x.dataset.q)));
