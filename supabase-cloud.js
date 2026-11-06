@@ -246,6 +246,10 @@
       await writeWorkspace(user,'This browser’s workspace is now saved to your account.');
     }
     bootUserId=user.id;
+    // An auth change can happen after the current app has already loaded its
+    // old in-memory state. Reload only then, after hydration, to prevent a
+    // stale shortlist or simulator from being written over the new account.
+    if(syncActive){window.location.reload();return;}
     }catch(error){currentUser=null;syncActive=false;renderAccount();throw error;}
     finally{if(preparingUserId===user.id)preparingUserId='';}
   };
