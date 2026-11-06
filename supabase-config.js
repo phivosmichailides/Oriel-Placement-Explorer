@@ -1,7 +1,5 @@
-/* Public browser configuration only.
-   The Supabase publishable/anon key is designed for browser use when RLS is enabled.
-   NEVER put a service_role key, database password, or Google client secret in this file. */
+/* Public Supabase configuration. This is a browser-safe publishable key, not a server secret. */
 window.ORIEL_SUPABASE_CONFIG = {
-  url: "",
-  publishableKey: ""
+  url: "https://rojkpikwqtejjpuizkqn.supabase.co",
+  publishableKey: "sb_publishable_ihUxBF1PKFSAuOlfM6zfhw__ACgs32V"
 };
