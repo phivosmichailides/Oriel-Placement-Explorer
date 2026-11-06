@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106filters1')&&(await page.content()).includes('app.js?v=20261106filters1')&&(await page.content()).includes('programme-preview.js?v=20261106a')&&(await page.content()).includes('locations-bundled.js?v=20261106a')&&(await page.content()).includes('map-basemap.js?v=20261106v3')&&(await page.content()).includes('design-refresh.css?v=20261106readable2')&&(await page.content()).includes('app.js?v=20261106smooth1')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -49,6 +49,17 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(panels,cards,'Not every programme has a location panel');
     const card=page.locator('#results .placement').first();
     const location=card.locator('.uxLocationPanel');
+    await page.waitForFunction(()=>{
+      const first=document.querySelector('#results .placement');
+      const caption=first?.querySelector('.uxLocationCaption')?.textContent||'';
+      return caption.includes('Area connections')&&!!first?.querySelector('.uxCommutePersonalisation');
+    },null,{timeout:15000});
+    const generalCaption=await card.locator('.uxLocationCaption').innerText();
+    const generalHint=await card.locator('.uxCommutePersonalisation').innerText();
+    assert(generalCaption.includes('Area connections'),'No general connections caption');
+    assert(!/Commute not verified/i.test(generalCaption),'Unverified status shown without home postcode');
+    assert(/Add a home postcode/i.test(generalHint),'Missing guidance to add a postcode');
+
     assert(await location.locator('.uxMiniMap').count()>0,'Mini map not present');
     assert(await location.locator('a[href*="google.com/maps"]').count()>=1,'Maps link absent');
     assert(await location.locator('a').count()>=2,'Directions link absent');
@@ -111,6 +122,21 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(geometry.scoreWidth>=140&&geometry.scoreWidth<=190,'Personal Fit not slightly wider than reference');
     assert(geometry.fitRight-geometry.mapRight<26,'Fit row leaves excessive blank right-hand space');
     await page.screenshot({path:output+'/desktop-list.png',fullPage:false});
+    await page.evaluate(()=>{
+      window.OrielCommute.getJourney=async()=>({
+        duration:27,legs:['Walk to station','Train','Walk to site'],
+        transfers:0,walkingMinutes:8,departure:'08:00',
+        sampleDate:'Mon 9 Nov',disrupted:false
+      });
+      window.OrielCommuteProfile.save('E16 1RB',{silent:true});
+    });
+    await page.waitForFunction(()=>{
+      const caption=document.querySelector('#results .placement .uxLocationCaption')?.textContent||'';
+      return /^Convenient · 27 min/.test(caption);
+    },null,{timeout:15000});
+    assert(/Personalised to/.test(await card.locator('.uxCommutePersonalisation').innerText()),
+      'Saving a home postcode did not personalise the selected site');
+
     const browserBasemaps=await page.evaluate(()=>({
       main:document.querySelector('#placementMap')?.dataset.basemap,
       mini:document.querySelector('#results .placement .uxMiniMap')?.dataset.basemap,
