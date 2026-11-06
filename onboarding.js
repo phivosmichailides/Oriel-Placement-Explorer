@@ -162,11 +162,17 @@
         try{renderAll()}catch{}
         setTimeout(()=>{
           try{
-            const managedQuick=['london','hospital','gp','industry','community','split','lowcommunity'];
-            managedQuick.forEach(key=>quick.delete(key));
+            const profileQuickKey='oriel-onboarding-applied-quick-v1';
+            let previousProfileQuick=[];
+            try{previousProfileQuick=JSON.parse(localStorage.getItem(profileQuickKey)||'[]')}catch{}
+            if(Array.isArray(previousProfileQuick))previousProfileQuick.forEach(key=>quick.delete(key));
+            quick.delete('london');
+            const nextProfileQuick=[];
             const environmentFilter={hospital:'hospital',gp:'gp',mixed:'split',industry:'industry',community:'community'}[answers.environment];
-            if(environmentFilter)quick.add(environmentFilter);
-            if(['less','avoid'].includes(answers.community)&&answers.environment!=='community')quick.add('lowcommunity');
+            if(environmentFilter)nextProfileQuick.push(environmentFilter);
+            if(['less','avoid'].includes(answers.community)&&answers.environment!=='community')nextProfileQuick.push('lowcommunity');
+            nextProfileQuick.forEach(key=>quick.add(key));
+            try{localStorage.setItem(profileQuickKey,JSON.stringify(nextProfileQuick))}catch{}
             document.querySelectorAll('.chip[data-q]').forEach(button=>button.classList.toggle('on',quick.has(button.dataset.q)));
             const r=$('region'),sal=$('salary'),hrs=$('hours');
             if(r)r.value=answers.region||'';
