@@ -336,11 +336,9 @@
      const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false});
      // The standard OSM raster endpoint is key-free. CARTO's unkeyed URL
      // may return an HTTP-200 "API KEY REQUIRED" image, not a tile error.
-     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-       maxZoom:19,
-       keepBuffer:2,
-       updateWhenIdle:true,
-       attribution:'&copy; <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+     if(window.OrielBasemap?.addTo)window.OrielBasemap.addTo(map,{mini:true});
+     else L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+       maxZoom:19,attribution:'© OpenStreetMap contributors'
      }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
      const central=p.region==='London'?[51.5074,-.1278]:null;
