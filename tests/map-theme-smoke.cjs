@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')){fresh=true;break;}
+      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106ux4')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -56,6 +56,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const e=document.querySelector('#results .placement .uxMiniMap');
       return e && (e.classList.contains('leaflet-container')||e.textContent.includes('No mapped pin'));
     },null,{timeout:30000});
+    await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
