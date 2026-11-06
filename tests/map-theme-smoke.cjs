@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106ux4')){fresh=true;break;}
+      if((await page.content()).includes('commute-profile.js?v=20261106pcfix')&&(await page.content()).includes('workspace-ux.js?v=20261106tile1')&&(await page.content()).includes('locations-bundled.js?v=20261106a')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -36,6 +36,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     );
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-tile-loaded').length>0,null,{timeout:25000});
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
+    const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
+      url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
+    })));
+    assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
+      'Main map is using unauthorized/keyed or failed tile imagery: '+JSON.stringify(mainTileSources.slice(0,3)));
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
     const cards=await page.locator('#results .placement').count();
     const panels=await page.locator('#results .placement .uxLocationPanel').count();
@@ -57,6 +62,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return e && (e.classList.contains('leaflet-container')||e.textContent.includes('No mapped pin'));
     },null,{timeout:30000});
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
+    await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-tile-loaded').length>0,null,{timeout:30000});
+    const miniTileSources=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
+      url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
+    })));
+    assert(miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
+      'Programme mini map still uses an invalid provider or has no readable imagery: '+JSON.stringify(miniTileSources.slice(0,3)));
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
@@ -69,12 +80,24 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const geometry=await card.evaluate(e=>{
       const r=x=>e.querySelector(x).getBoundingClientRect();
       const a=r('.score'),b=r('.fitBreakdown'),c=r('.uxLocationPanel');
-      return {scoreRight:a.right,whyLeft:b.left,whyRight:b.right,mapLeft:c.left};
+      const f=r('.fit.fitExpanded.uxFitWithLocation');
+      return {scoreWidth:a.width,scoreRight:a.right,whyLeft:b.left,whyRight:b.right,mapLeft:c.left,mapRight:c.right,fitRight:f.right};
     });
     assert(geometry.whyLeft-geometry.scoreRight<35,'Unwanted blank space after Personal Fit');
     assert(geometry.whyLeft>=geometry.scoreRight-3,'Reason panel overlaps Personal Fit');
     assert(geometry.mapLeft>=geometry.whyRight-3,'Map panel overlaps reasons');
+    assert(geometry.scoreWidth>=140&&geometry.scoreWidth<=190,'Personal Fit not slightly wider than reference');
+    assert(geometry.fitRight-geometry.mapRight<26,'Fit row leaves excessive blank right-hand space');
     await page.screenshot({path:output+'/desktop-list.png',fullPage:false});
+    // The full England & Wales view must also retain bundled pins: do not
+    // let a missing external postcode request create a 0/4012 empty map.
+    await page.locator('[data-q="london"]').first().click();
+    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,null,{timeout:12000});
+    assert(await page.locator('#placementMap .leaflet-interactive').count()>40,
+      'England & Wales mode has too few map pins');
+    assert(!/0 of \d+ matching programmes mapped/.test(await page.locator('#mapStatus').innerText()),
+      'England & Wales unexpectedly maps zero programmes');
+    await page.locator('[data-q="london"]').first().click();
 
     const palettes=['forest','copper','mauve','amber','cocoa','mono'];
     const themeStyles=await page.evaluate(palettes=>{
@@ -118,6 +141,6 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     await page.screenshot({path:output+'/desktop-grid.png',fullPage:false});
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
-    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
+    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,mainProvider:'tile.openstreetmap.org',miniProvider:'tile.openstreetmap.org',cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
 })().catch(e=>{console.error('UI REGRESSION:',e.stack||e);process.exit(1)});
