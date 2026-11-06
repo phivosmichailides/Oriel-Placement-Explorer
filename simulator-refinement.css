@@ -328,3 +328,64 @@ html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"]{
 html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
 html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:var(--ink)!important}
 /* All intentional good/poor fit signals remain independent of the decorative theme. */
+
+/* Mauveine / editorial balance, second pass: pink is an accent, not the canvas.
+   Quiet neutral fields and card surfaces give the eye places to rest. */
+html[data-theme="light"][data-palette="mauve"]{
+ --bg:#f7f5f3;--panel:#fffdfa;--soft:#f0eeeb;--line:#ded9dc;
+ --dark:#29232b;--ink:#302b30;--mut:#686168;
+ --ux-accent:#7d536c;--ux-accent-ink:#6c3d59;
+ --ux-accent-soft:#f0e5eb;--ux-accent-border:#d8c1ce;
+ --ux-pick:#88536e;--ux-pick-soft:#f3e8ed;--ux-pick-border:#d9bdcb;
+ --green:#704c64;--blue:#704c64;
+}
+html[data-theme="dark"][data-palette="mauve"]{
+ --bg:#1c1a20;--panel:#29262d;--soft:#363239;--line:#504a53;
+ --dark:#151318;--ink:#f5f1ef;--mut:#d0c5cf;
+ --ux-accent:#d4a4c2;--ux-accent-ink:#f2cfe3;
+ --ux-accent-soft:#4b3948;--ux-accent-border:#8d6a83;
+ --ux-pick:#e1b5ce;--ux-pick-soft:#48343f;--ux-pick-border:#89667a;
+ --green:#dfbfd2;--blue:#dfbfd2;
+}
+html[data-palette="mauve"] .productIntro{
+ background:linear-gradient(130deg,var(--panel),var(--soft))!important;
+ border-color:var(--line)!important;
+}
+html[data-palette="mauve"] .productPrinciples>div,
+html[data-palette="mauve"] .fitColumn.positive,
+html[data-palette="mauve"] .fitColumn.caution,
+html[data-palette="mauve"] .notice,
+html[data-palette="mauve"] .reason,
+html[data-palette="mauve"] .miniFit:not(.warning),
+html[data-palette="mauve"] .score:not([data-fit-tone]){
+ background:var(--soft)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html[data-palette="mauve"] .productPrinciples span,
+html[data-palette="mauve"] .fitLabel,
+html[data-palette="mauve"] .fitColumn.caution .fitLabel,
+html[data-palette="mauve"] .fitPoint,
+html[data-palette="mauve"] .notice b{
+ color:var(--ink)!important;
+}
+/* Pink is deliberately limited to selected elements, small emphasis and action affordances. */
+html[data-palette="mauve"] .chip.on,
+html[data-palette="mauve"] .uxLayoutControls .btn[aria-pressed="true"],
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"]{
+ background:var(--ux-accent-soft)!important;
+ border-color:var(--ux-accent-border)!important;
+ color:var(--ux-accent-ink)!important;
+}
+html[data-theme="light"][data-palette="mauve"] .chip.on,
+html[data-theme="light"][data-palette="mauve"] .uxLayoutControls .btn[aria-pressed="true"]{
+ color:#653c58!important;
+}
+html[data-palette="mauve"] .tab.active{
+ background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important;
+}
+html[data-palette="mauve"] .badge.good{
+ background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+ border-color:var(--ux-accent-border)!important;
+}
+html[data-theme="light"][data-palette="mauve"] .badge.good{color:#70415d!important}
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] b,
+html[data-palette="mauve"] .uxPaletteOption[aria-pressed="true"] small{color:var(--ink)!important}
