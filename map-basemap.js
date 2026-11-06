@@ -31,10 +31,21 @@
     return {layer,kind:'raster'};
   };
   const addTo=(map,{mini=false}={})=>{
+    if(!map||!window.L)return null;
     const holder=map.getContainer();
-    if(!window.L||!map||!holder)return null;
+    if(!holder)return null;
     if(!L.maplibreGL||!window.maplibregl||!window.maplibregl.supported?.()||instances.size>=MAX_GL_MAPS){
       return raster(map);
+    }
+    // Keep a lightweight raster frame underneath the main vector map.
+    // If WebGL temporarily clears during a zoom, the user sees a map
+    // instead of a black flash or a tile boundary grid.
+    if(!mini){
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:19,keepBuffer:3,updateWhenIdle:true,
+        className:'oriel-map-backup',
+        attribution:RASTER_ATTR
+      }).addTo(map);
     }
     let layer,glMap,loaded=false,ended=false,timeout;
     const record={map:null,leaflet:map,layer:null,change:null};
@@ -49,7 +60,18 @@
     try{
       layer=L.maplibreGL({
         style:style(),attribution:ATTRIBUTION,
-        interactive:false,padding:mini?0:0.08
+        interactive:false,
+        // The Leaflet adapter needs overscan: zero padding creates exposed
+        // tile boundaries and flashes during zoom and pan.
+        padding:mini?0.23:0.40,
+        fadeDuration:80,
+        cancelPendingTileRequestsWhileZooming:false,
+        canvasContextAttributes:{
+          alpha:true,
+          antialias:true,
+          preserveDrawingBuffer:!mini,
+          powerPreference:'high-performance'
+        }
       }).addTo(map);
       glMap=layer.getMaplibreMap();
       if(!glMap)throw Error('MapLibre layer did not initialise');
