@@ -11,7 +11,7 @@
   const applyTheme=theme=>{
     root.setAttribute('data-theme',theme);
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.setAttribute('content',theme==='dark'?'#111a16':'#f7f6f2');
+    if(meta)meta.setAttribute('content',theme==='dark'?'#1b171b':'#f7f6f2');
     if(themeButton){
       const next=theme==='dark'?'light':'dark';
       themeButton.setAttribute('aria-label','Switch to '+next+' mode');
