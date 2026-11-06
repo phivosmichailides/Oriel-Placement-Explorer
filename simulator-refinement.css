@@ -550,3 +550,14 @@ html[data-theme="light"][data-palette="mauve"] .btn.primary,
 html[data-theme="light"][data-palette="mauve"] .placement .btn.primary{
   background:#806174!important;color:#fff!important;border-color:#806174!important;
 }
+
+
+/* Methadone Forest keeps its olive light mode; its dark companion is burgundy, not green. */
+html[data-theme="dark"][data-palette="forest"]{
+  --bg:#1b171b;--panel:#29232a;--soft:#372f37;--line:#4c414b;
+  --ink:#f2edf0;--mut:#c8bec6;--dark:#130f13;
+  --ux-accent:#b08b9e;--ux-accent-ink:#e2cdd9;--ux-accent-soft:#42333e;--ux-accent-border:#725968;
+  --ux-pick:#9b6e80;--ux-pick-soft:#3b2d35;--ux-pick-border:#6d4c5a;
+  --green:var(--ux-accent-ink);--blue:var(--ux-accent-ink);
+}
+html[data-theme="dark"][data-palette="forest"] .btn.primary{color:#fff!important}
