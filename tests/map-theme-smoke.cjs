@@ -92,7 +92,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     // The full England & Wales view must also retain bundled pins: do not
     // let a missing external postcode request create a 0/4012 empty map.
     await page.locator('#region').selectOption('');
-    await page.locator('[data-q="london"]').first().click();
+    // Onboarding can already have turned off the London quick chip; do not toggle
+    // it back ON when testing the all-regions state.
+    if(await page.evaluate(()=>quick.has('london'))){
+      await page.locator('[data-q="london"]').first().click();
+    }
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,null,{timeout:12000});
     const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
     const allRegionStatus=await page.locator('#mapStatus').innerText();
