@@ -315,7 +315,7 @@
    return 'Training location '+(index+1)+' · '+site.pc;
  };
  const miniMaps=new Map();
- let miniObserver=null,cardObserver=null;
+ let miniObserver=null,cardObserver=null,commuteObserver=null;
  function cleanupMiniMaps(){
    for(const [holder,map] of miniMaps){if(!holder.closest('#results'))continue;try{map.remove()}catch{}miniMaps.delete(holder);miniObserver?.unobserve(holder)}
  }
@@ -365,6 +365,15 @@
    if(miniObserver)miniObserver.observe(holder);
    else if(holder.getBoundingClientRect().top<window.innerHeight+200)mapVisible(holder);
  }
+ function scheduleCommute(panel){
+   if(!panel?.isConnected||typeof panel._uxRunCommute!=='function')return;
+   const rect=panel.getBoundingClientRect();
+   if(rect.top<window.innerHeight+180&&rect.bottom>-180){panel._uxRunCommute();return;}
+   if(!('IntersectionObserver'in window)){return;}
+   if(!commuteObserver)commuteObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target._uxRunCommute?.()}),{rootMargin:'180px',threshold:.01});
+   commuteObserver.observe(panel);
+ }
+ function enableCommute(panel){scheduleCommute(panel)}
  function locationPanel(p){
    const guides=window.OrielLocationGuide,sites=getSites(p);
    const panel=document.createElement('div');panel.className='uxLocationPanel';panel.dataset.uxSiteIndex='0';
@@ -374,38 +383,105 @@
    const siteTitle=document.createElement('strong');siteTitle.className='uxSiteName';labels.append(siteTitle);
    const count=document.createElement('small');count.className='uxSiteNumber';labels.append(count);
    const headline=document.createElement('div');headline.className='uxLocationSummary';panel.append(headline);
+   const commuteAdvice=document.createElement('div');commuteAdvice.className='uxCommuteAdvice';commuteAdvice.hidden=true;
+   const commuteLabel=document.createElement('strong');commuteAdvice.append(commuteLabel);
+   const commuteSummary=document.createElement('div');commuteSummary.className='uxCommuteSummary';commuteAdvice.append(commuteSummary);
+   const commuteDetails=document.createElement('div');commuteDetails.className='uxCommuteDetails';commuteAdvice.append(commuteDetails);
+   const commuteMeta=document.createElement('small');commuteMeta.className='uxCommuteMeta';commuteAdvice.append(commuteMeta);
+   panel.append(commuteAdvice);
    const map=document.createElement('div');map.className='uxMiniMap';map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';panel.append(map);
    const info=document.createElement('div');info.className='uxLocationInfo';panel.append(info);
    const foot=document.createElement('div');foot.className='uxMapFootnote';panel.append(foot);
    const links=document.createElement('div');links.className='uxMapLinks';
    const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Check rail/Tube route ↗';links.append(route);
    const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open selected site ↗';links.append(maps);panel.append(links);
+   let activeSite=null,activeLocation=null,activeLookup='';
+   const refreshCommute=()=>{
+     const site=activeSite,loc=activeLocation,siteLookup=activeLookup;
+     const origin=window.OrielCommuteProfile?.read?.()||'';
+     if(!origin){
+       commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
+       commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
+       panel.dataset.uxCommuteKey='';panel._uxRunCommute=null;
+       if(loc?.hub&&site?.pc){
+         route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
+         route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
+         route.title='Open a Google Maps public-transport route from this programme postcode to '+loc.hub;
+       }else{
+         route.textContent='Check rail/Tube route ↗';
+         route.href=guides?.sourceUrls?.[loc?.source]||'https://tfl.gov.uk/plan-a-journey/';
+         route.title='Open the relevant public transport journey planner';
+       }
+       return;
+     }
+     if(!site?.pc){
+       commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-unverified';
+       commuteLabel.textContent='Journey not assessed';
+       commuteSummary.textContent='Oriel does not provide a training-site postcode for this location, so a reliable journey time cannot be calculated.';
+       commuteDetails.textContent='No travel time has been guessed.';
+       commuteMeta.textContent='Add or verify the site address with the employer.';
+       route.textContent='Open journey planner ↗';route.href='https://tfl.gov.uk/plan-a-journey/';route.title='Open a public-transport journey planner';
+       panel.dataset.uxCommuteKey='';panel._uxRunCommute=null;
+       return;
+     }
+     const area=window.OrielCommuteProfile?.areaLabel?.(origin)||guides?.describePostcode?.(origin)?.headline||origin;
+     const key=origin+'|'+site.pc;
+     commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
+     commuteLabel.textContent='Checking your commute…';
+     commuteSummary.textContent='From '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc);
+     commuteDetails.textContent='Checking a typical weekday morning public-transport journey.';
+     commuteMeta.textContent='Your map pin remains the training site; only this travel advice uses your starting postcode.';
+     route.textContent='Open home-to-site route ↗';
+     route.href=window.OrielCommute?.mapsUrl?.(origin,site.pc)||'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin+', UK')+'&destination='+encodeURIComponent(site.pc+', UK')+'&travelmode=transit';
+     route.title='Open a public-transport route from '+origin+' to training site '+site.pc;
+     panel.dataset.uxCommuteKey=key;
+     panel._uxRunCommute=async()=>{
+       if(!panel.isConnected||panel.dataset.uxCommuteLoadedKey===key)return;
+       panel.dataset.uxCommuteLoadedKey=key;
+       try{
+         const journey=await window.OrielCommute.getJourney(origin,site.pc);
+         if(panel.dataset.uxCommuteKey!==key)return;
+         const convenient=Number(journey.duration)<=40;
+         commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
+         commuteLabel.textContent=convenient?'Convenient':'Not convenient';
+         commuteSummary.textContent=journey.duration+' min from '+area+' ('+origin+') to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
+         commuteDetails.textContent=(journey.legs||[]).join(' → ')||'The planner returned a journey time but no leg-by-leg description.';
+         const notes=[];
+         notes.push(journey.transfers===0?'No changes':journey.transfers+' '+(journey.transfers===1?'change':'changes'));
+         if(journey.walkingMinutes>0)notes.push(journey.walkingMinutes+' min walking');
+         if(journey.disrupted)notes.push('Disruption flagged in this sample');
+         commuteMeta.textContent=[journey.sampleDate,journey.departure||'08:00'+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
+       }catch{
+         if(panel.dataset.uxCommuteKey!==key)return;
+         commuteAdvice.className='uxCommuteAdvice is-unverified';
+         commuteLabel.textContent='Journey not verified';
+         commuteSummary.textContent='The transport planner did not return a reliable journey time from '+origin+' to '+site.pc+'.';
+         commuteDetails.textContent='No time or convenience rating has been guessed. Use the route link to check the exact journey.';
+         commuteMeta.textContent='Route data unavailable for this postcode pair.';
+       }
+     };
+     scheduleCommute(panel);
+   };
    const refreshSite=()=>{
      const i=Number(panel.dataset.uxSiteIndex)||0;
      const site=sites[i]||{pc:(p.postcodes||[])[i]||'',lat:null,lng:null};
      const scoped={...p,postcodes:[site.pc]};
      const loc=guides?.lookup(scoped,site.lat===null?[]:[site])||{headline:p.region||'Location',relative:'',connections:'Check precise location.',detail:'',source:'tfl'};
+     activeSite=site;activeLocation=loc;
      siteTitle.textContent=siteName(p,site,i,sites.length);
      count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
      headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
      const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
      info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
      foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
-     const siteLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
-     if(loc.hub&&site.pc){
-       route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
-       route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
-       route.title='Open a Google Maps public-transport route from this programme postcode to '+loc.hub;
-     }else{
-       route.textContent='Check rail/Tube route ↗';
-       route.href=guides?.sourceUrls?.[loc.source]||'https://tfl.gov.uk/plan-a-journey/';
-       route.title='Open the relevant public transport journey planner';
-     }
-     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(siteLookup+', UK');
+     activeLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
+     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(activeLookup+', UK');
+     refreshCommute();
      if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
      map.innerHTML='<div class="uxMiniMapSkeleton">Map loading…</div>';
      if(panel.isConnected&&panel.getBoundingClientRect().width>0)requestAnimationFrame(()=>mapVisible(map));
    };
+   panel._uxRefreshCommute=refreshCommute;
    if(sites.length>1){
      const controls=document.createElement('div');controls.className='uxSiteControls';bar.append(controls);
      const addArrow=(text,delta,label)=>{
@@ -420,35 +496,6 @@
    refreshSite();
    return panel;
  }
- function workSchedule(p){
-   const d=document.createElement('details');d.className='uxWorkSchedule';
-   const hours=Number(p.hours),hasHours=Number.isFinite(hours)&&hours>0;
-   const summary=document.createElement('summary');
-   summary.textContent=hasHours?'Working hours · '+hours+'h per week · Daily rota not published':'Working hours · Weekly hours not stated · Daily rota not published';
-   d.append(summary);
-   const inner=document.createElement('div');inner.className='uxWorkDetail';
-   const start=document.createElement('p');
-   start.textContent=hasHours?'Oriel lists '+hours+' contracted hours per week, but the dataset does not state how those hours are distributed across days or the daily start/finish times. Each day below is marked “Not published” rather than assuming a five-day pattern.':'The Oriel dataset does not state contracted weekly hours or a day-by-day rota for this programme.';
-   inner.append(start);
-   const dayRow=document.createElement('div');dayRow.className='uxWorkDays';
-   ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day=>{
-     const box=document.createElement('div');
-     const b=document.createElement('b');b.textContent=day;box.append(b);
-     const value=document.createElement('span');value.textContent='Not published';box.append(value);
-     dayRow.append(box);
-   });
-   inner.append(dayRow);
-   const desc=String(p.desc||'');
-   // This is a description hint, not a fabricated placement shift.
-   const weekdayHint=desc.match(/\b(?:monday|mon)\s*(?:to|-|–|through)\s*(?:friday|fri)\b/i);
-   if(weekdayHint){
-     const p2=document.createElement('p');p2.textContent='Description mentions '+weekdayHint[0]+'. Check whether that is the trainee rota or simply the pharmacy opening schedule.';
-     inner.append(p2);
-   }
-   const note=document.createElement('p');
-   note.textContent='Ask the employer to confirm the trainee rota, daily start and finish times, breaks, weekend expectations and whether hours change between rotation sites. Programme descriptions may mention opening hours that are not necessarily the trainee working pattern.';
-   inner.append(note);d.append(inner);return d;
- }
   function enhanceCard(article){
    if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
    const p=byId().get(article.dataset.id);if(!p)return;
@@ -457,12 +504,12 @@
    article.setAttribute('aria-label','Select programme '+(p.title||p.employer||p.id));
    article.classList.toggle('uxProgramSelected',article.dataset.id===selectedProgrammeId);
    addTakeHome(article,p);
-   if(!article.querySelector('.uxWorkSchedule')){const work=workSchedule(p);const fitParent=article.querySelector('.fit.fitExpanded');if(fitParent)fitParent.after(work);else article.append(work)}
    const fit=article.querySelector('.fit.fitExpanded');
    if(fit){
      fit.classList.add('uxFitWithLocation');
-     fit.append(locationPanel(p));
-     enableMini(fit.querySelector('.uxMiniMap'));
+     const location=locationPanel(p);fit.append(location);
+     enableMini(location.querySelector('.uxMiniMap'));
+     enableCommute(location);
    }
    const more=document.createElement('button');more.type='button';more.className='btn uxDetailButton';more.setAttribute('data-ux-expand','');
    more.setAttribute('aria-expanded','false');more.textContent='See full details, location & pay';
@@ -525,7 +572,7 @@
  document.addEventListener('click',e=>{
    const toggler=e.target.closest('[data-ux-reco-location]');
    if(toggler){const card=toggler.closest('.reco');const code=card?.querySelector('[data-open]')?.getAttribute('data-open');const p=byId().get(code);if(!card||!p)return;
-     let panel=card.querySelector('.uxLocationPanel');if(!panel){panel=locationPanel(p);card.append(panel)}
+     let panel=card.querySelector('.uxLocationPanel');if(!panel){panel=locationPanel(p);card.append(panel);enableCommute(panel)}
      const active=card.classList.toggle('uxRecoOpen');
      toggler.textContent=active?'⌃ Hide location':'⌖ Show location & connections';
      toggler.setAttribute('aria-expanded',String(active));
@@ -545,6 +592,12 @@
    if(expanded&&holder)requestAnimationFrame(()=>{if(miniMaps.has(holder))miniMaps.get(holder).invalidateSize(false);else mapVisible(holder)});
    if(expanded&&!card.querySelector('.desc')){const p=byId().get(card.dataset.id);if(p?.desc){const d=document.createElement('p');d.className='desc';d.textContent=p.desc;card.querySelector('.decision-quick')?.before(d)}}
    if(!expanded&&holder&&miniMaps.has(holder)){try{miniMaps.get(holder).invalidateSize(false)}catch{}}
+ });
+ document.addEventListener('desk:commute-origin-changed',()=>{
+   document.querySelectorAll('.uxLocationPanel').forEach(panel=>{
+     panel._uxRefreshCommute?.();
+     enableCommute(panel);
+   });
  });
  // Observe the three containers since the original app re-renders them after every decision.
  const pruneDetachedMiniMaps=()=>{for(const [holder,map] of miniMaps){if(holder.isConnected)continue;try{map.remove()}catch{}miniMaps.delete(holder);miniObserver?.unobserve(holder)}};
