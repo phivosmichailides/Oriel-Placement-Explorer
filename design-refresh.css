@@ -307,7 +307,7 @@ html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel,
 html .placement .fit.fitExpanded.uxFitWithLocation .fitColumn.caution .fitLabel,
 html[data-theme="dark"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{
   margin:0 0 7px!important;text-align:center!important;
-  font-size:12px!important;line-height:1.45!important;font-weight:850!important;
+  font-size:13px!important;line-height:1.45!important;font-weight:850!important;
   color:var(--fit-heading)!important;letter-spacing:.075em!important;
 }
 html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
@@ -316,7 +316,7 @@ html .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
   min-width:0!important;max-width:100%!important;width:100%!important;
   margin:5px auto 0!important;
   padding:0!important;
-  font-size:14px!important;line-height:1.55!important;font-weight:650!important;
+  font-size:15.2px!important;line-height:1.54!important;font-weight:650!important;
   text-align:left!important;color:var(--fit-ink)!important;
   overflow-wrap:anywhere!important;word-break:normal!important;
 }
@@ -354,7 +354,26 @@ html .uxCommuteDetails,html .uxCommuteMeta{font-size:11px!important}
 html .uxSiteControls .uxSiteArrow{color:var(--ux-accent-ink)!important}
 html .uxSiteControls{background:var(--panel)!important;border-color:var(--line)!important}
 /* A map should be meaningful on first paint, even before remote tiles arrive. */
-html #placementMap{background:linear-gradient(135deg,var(--ux-accent-soft),var(--soft))!important;min-height:340px}
+html #placementMap{
+  background:linear-gradient(135deg,var(--ux-accent-soft),var(--soft))!important;
+  height:335px!important;min-height:335px!important;
+}
+@media(max-width:720px){
+  html #placementMap{height:280px!important;min-height:280px!important}
+}
+html[data-theme="dark"] .uxMapCustom,
+html[data-theme="dark"][data-palette="forest"] .uxMapCustom{
+  background:var(--ux-accent-soft)!important;
+  border-color:var(--ux-accent-border)!important;
+  color:var(--ux-accent-ink)!important;
+}
+html[data-theme="dark"] .themeToggle,
+html[data-theme="dark"] .uxLayoutBtn{
+  background:var(--panel)!important;color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme="dark"] .salary-value{color:var(--ux-accent-ink)!important}
+
 html .map-heading h2{font-size:clamp(20px,1.6vw,25px);font-weight:800!important}
 html .map-caption{font-size:12px!important;line-height:1.6!important;background:var(--panel)!important;color:var(--mut)!important}
 html #sectorMapLegend{background:var(--panel)!important;color:var(--ink)!important;font-size:11.6px!important}
