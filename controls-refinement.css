@@ -1,0 +1,48 @@
+/* Always-accessible filters and result sorting without leaving Explore. */
+#uxExploreToolbar{
+  display:flex;flex-wrap:wrap;align-items:center;
+  gap:9px 11px;
+}
+#uxToolbarFilters{
+  white-space:nowrap;flex:0 0 auto;
+  border-color:var(--ux-accent-border);color:var(--ux-accent-ink);
+}
+.uxResultsSortControl{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12.5px;font-weight:800;color:var(--mut);
+  white-space:nowrap;
+}
+#uxResultsSort{
+  min-width:155px;max-width:200px;padding:8px 11px;
+  border:1px solid var(--line);border-radius:9px;
+  background:var(--panel);color:var(--ink);
+  font:750 12.5px/1.4 "Plus Jakarta Sans",sans-serif;
+}
+#uxResultsSort:focus-visible,#uxToolbarFilters:focus-visible,#uxHideExcludedBtn:focus-visible{
+  outline:2px solid var(--ux-accent);outline-offset:3px;
+}
+#uxHideExcludedBtn[aria-pressed="true"]{
+  border-color:var(--ux-accent-border);color:var(--ux-accent-ink);
+  background:var(--ux-accent-soft);
+}
+#uxExploreToolbar .uxToolbarLead{flex:1 1 190px}
+.uxLocationCaption[data-commute-tone="good"]{
+  border-left:3px solid var(--fit-green-border)!important;
+  padding-left:9px!important;
+}
+.uxLocationCaption[data-commute-tone="bad"]{
+  border-left:3px solid var(--fit-low-border)!important;
+  padding-left:9px!important;
+}
+.uxLocationCaption[data-commute-tone="loading"],
+.uxLocationCaption[data-commute-tone="unknown"]{
+  border-left:3px solid var(--line)!important;padding-left:9px!important;
+}
+@media(max-width:850px){
+  #uxExploreToolbar .uxToolbarLead{flex-basis:100%}
+  #uxResultsSort{min-width:135px}
+}
+@media(max-width:600px){
+  .uxResultsSortControl{flex:1;justify-content:space-between}
+  #uxResultsSort{max-width:none;min-width:0}
+}
