@@ -539,3 +539,14 @@ html .programmeDates{display:grid!important;grid-template-columns:minmax(0,1fr) 
 html .programmeDates .dateStart{justify-self:start}
 html .programmeDates .dateEnd{text-align:right;justify-self:end}
 html .programmeDates .dateBasis{grid-column:1/-1;margin:0;white-space:normal;overflow-wrap:anywhere}
+
+
+/* Primary actions in Mauveine should read as muted wine, not bright pink. */
+html[data-theme="dark"][data-palette="mauve"] .btn.primary,
+html[data-theme="dark"][data-palette="mauve"] .placement .btn.primary{
+  background:#574451!important;color:#f5edf2!important;border-color:#796273!important;
+}
+html[data-theme="light"][data-palette="mauve"] .btn.primary,
+html[data-theme="light"][data-palette="mauve"] .placement .btn.primary{
+  background:#806174!important;color:#fff!important;border-color:#806174!important;
+}
