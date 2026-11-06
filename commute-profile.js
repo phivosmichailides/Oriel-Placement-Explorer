@@ -5,14 +5,16 @@
   const PROFILE_KEY='phivos-onboarding-profile-v1';
   const $=id=>document.getElementById(id);
   const normalise=value=>{
-    const compact=String(value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const raw=String(value||'').trim().replace(/\s+/g,' ');
+    const compact=raw.toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(compact==='GIR0AA')return 'GIR 0AA';
     const match=compact.match(/^([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})$/);
-    return match?match[1]+' '+match[2]:String(value||'').trim().toUpperCase().replace(/\s+/g,' ');
+    return match?match[1]+' '+match[2]:raw;
   };
+  const isPostcode=value=>/^(?:GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s\d[A-Z]{2})$/i.test(normalise(value));
   const isValid=value=>{
-    const pc=normalise(value);
-    return /^(?:GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s\d[A-Z]{2})$/.test(pc);
+    const place=normalise(value);
+    return isPostcode(place)||/^[A-Za-z][A-Za-z0-9 .,'’()&/-]{1,59}$/.test(place);
   };
   const read=()=>{
     let value='';
@@ -28,7 +30,9 @@
     return normalise(value);
   };
   const areaLabel=postcode=>{
-    try{return window.OrielLocationGuide?.describePostcode(postcode)?.headline||postcode}catch{return postcode}
+    const place=normalise(postcode);
+    if(!isPostcode(place))return place;
+    try{return window.OrielLocationGuide?.describePostcode(place)?.headline||place}catch{return place}
   };
   const setStatus=(message,isError=false)=>{
     const status=$('uxHomePostcodeStatus');
@@ -36,7 +40,7 @@
   };
   const save=(value,options={})=>{
     const pc=normalise(value);
-    if(pc&&!isValid(pc))return {ok:false,message:'Enter a complete UK postcode, for example E16 1RB.'};
+    if(pc&&!isValid(pc))return {ok:false,message:'Enter a UK postcode or a recognisable area/station name, e.g. E16 1RB or Canning Town.'};
     try{if(pc)localStorage.setItem(KEY,pc);else localStorage.removeItem(KEY)}catch{return {ok:false,message:'This browser could not save the commute postcode.'}}
     try{
       const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
