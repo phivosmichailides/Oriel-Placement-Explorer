@@ -18,7 +18,9 @@
   };
   const read=()=>{
     let value='';
-    const postcodeInput=$('uxHomePostcode');if(postcodeInput)postcodeInput.value=pc;
+    // Read must never refer to the save() function's local `pc` variable.
+    // An undefined reference here previously crashed every programme location panel,
+    // aborting renderAll() before the main Leaflet map could initialise.
     try{
       const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
       if(profile&&typeof profile==='object'&&Object.prototype.hasOwnProperty.call(profile,'homePostcode'))return normalise(profile.homePostcode||'');
