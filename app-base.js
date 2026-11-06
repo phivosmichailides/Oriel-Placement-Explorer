@@ -77,15 +77,11 @@ async function initMap(){
   // No CARTO: its current public tiles can contain an HTTP-200
   // "API KEY REQUIRED" watermark, which does not trigger tileerror.
   // OpenStreetMap's standard tile service requires no API key.
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,
-    keepBuffer:2,
-    updateWhenIdle:true,
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
-  }).on('tileerror',()=>{
-    if(mapTileFailed)return;
-    mapTileFailed=true;
-    if(status)status.textContent='Map background could not load. Programme pins and results still work.';
+  // Restore a beautifully legible, modern Positron-style map.
+  // Underlying markers/filtering remain on Leaflet; fallback never needs an API key.
+  if(window.OrielBasemap?.addTo)window.OrielBasemap.addTo(placementMap);
+  else L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,attribution:'© OpenStreetMap contributors'
   }).addTo(placementMap);
   drawMap(placements.filter(matches));
   requestAnimationFrame(()=>placementMap?.invalidateSize(false));
