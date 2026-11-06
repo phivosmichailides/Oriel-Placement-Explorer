@@ -689,3 +689,211 @@ html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitPoint
     height:auto!important;
   }
 }
+
+
+/* Readable compact card and map captions — Nov 6 final refinement.
+   Bigger type; no artificially stretched empty pros/cons panels. */
+html[data-layout="list"] .placement{
+  padding:17px 19px!important;
+}
+html[data-layout="list"] .placement .placementTop h3{
+  font-size:clamp(20px,1.55vw,24px)!important;
+  line-height:1.30!important;
+  letter-spacing:-.024em!important;
+  font-weight:850!important;
+}
+html[data-layout="list"] .placement .eyebrow{
+  font-size:12.5px!important;
+  font-weight:800!important;
+}
+html[data-layout="list"] .placement .employer{
+  font-size:15px!important;
+  line-height:1.5!important;
+}
+html[data-layout="list"] .placement .salary{
+  font-size:24px!important;
+}
+html[data-layout="list"] .placement .hourly{
+  font-size:13px!important;
+}
+html[data-layout="list"] .placement .badges{
+  margin:9px 0 10px!important;
+  gap:6px!important;
+}
+html[data-layout="list"] .placement .badges .badge{
+  font-size:12.4px!important;
+  padding:5px 9px!important;
+  font-weight:700!important;
+}
+html[data-layout="list"] .placement .desc{
+  font-size:15px!important;
+  line-height:1.58!important;
+  margin:9px 0!important;
+}
+html[data-layout="list"] .placement .programmeDates{
+  font-size:13.5px!important;
+  padding:10px 12px!important;
+  line-height:1.45!important;
+}
+html[data-layout="list"] .placement .programmeDates .dateBasis{
+  font-size:12.5px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+  grid-template-columns:minmax(165px,180px) minmax(225px,1fr) minmax(275px,37%)!important;
+  gap:12px!important;
+  align-items:start!important;
+  margin:12px 0!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .score{
+  align-self:start!important;
+  height:auto!important;
+  min-height:184px!important;
+  padding:17px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  height:auto!important;max-width:none!important;
+  align-self:start!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn,
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:first-child,
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn:last-child{
+  min-height:0!important;
+  height:auto!important;
+  flex:0 0 auto!important;
+  padding:11px 14px 12px!important;
+  border-radius:13px!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitColumn .fitLabel{
+  font-size:14px!important;
+  line-height:1.4!important;
+  margin:0 0 6px!important;
+  font-weight:850!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  font-size:16.2px!important;
+  line-height:1.43!important;
+  font-weight:650!important;
+  grid-template-columns:12px minmax(0,1fr)!important;
+  gap:9px!important;
+  margin:5px 0!important;
+  overflow-wrap:break-word!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitPoint::before{
+  font-size:20px!important;
+  line-height:1.1!important;
+}
+html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+  align-self:start!important;
+  height:auto!important;
+  min-width:0!important;
+  padding:13px 14px!important;
+  gap:7px!important;
+  border-radius:14px!important;
+}
+html .placement .uxLocationPanel .uxLocationTitle{
+  font-size:12.6px!important;
+}
+html .placement .uxLocationPanel .uxSiteName{
+  font-size:15.5px!important;
+  line-height:1.35!important;
+}
+html .placement .uxLocationPanel .uxSiteNumber{
+  font-size:12.5px!important;
+}
+html .placement .uxLocationPanel .uxLocationSummary{
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+html .placement .uxLocationPanel .uxMiniMap{
+  min-height:185px!important;
+  height:185px!important;
+  margin:3px 0!important;
+  border-radius:11px!important;
+}
+html .placement .uxLocationCaption{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:3!important;
+  line-clamp:3!important;
+  overflow:hidden!important;
+  font-size:15.1px!important;
+  line-height:1.47!important;
+  color:var(--ink)!important;
+  font-weight:650!important;
+  overflow-wrap:break-word;
+}
+html .placement .uxLocationMore{
+  font-size:14.2px!important;
+  line-height:1.48!important;
+  border-top:1px solid var(--line)!important;
+  padding-top:5px!important;
+}
+html .placement .uxLocationMore>summary{
+  display:list-item!important;
+  cursor:pointer!important;
+  font-size:13.4px!important;
+  font-weight:800!important;
+  line-height:1.5!important;
+  color:var(--ux-accent-ink)!important;
+  padding:2px 0!important;
+}
+html .placement .uxLocationMore[open]{
+  padding-bottom:5px!important;
+}
+html .placement .uxLocationMore .uxLocationInfo{
+  font-size:14px!important;
+  line-height:1.48!important;
+  padding:7px 0 3px!important;
+  color:var(--ink)!important;
+}
+html .placement .uxLocationMore .uxMapFootnote{
+  font-size:12.5px!important;
+  line-height:1.4!important;
+}
+html .placement .uxLocationMore .uxCommuteAdvice{
+  font-size:13.2px!important;
+}
+html .placement .uxLocationPanel .uxMapLinks{
+  gap:5px 12px!important;
+}
+html .placement .uxLocationPanel .uxMapLinks a{
+  font-size:13.4px!important;
+  line-height:1.4!important;
+  font-weight:750!important;
+}
+html .placement .uxLocationPanel .uxSiteArrow{
+  min-width:36px!important;
+  min-height:35px!important;
+  font-size:18px!important;
+}
+/* Keep generous columns whenever the full-width card has room. */
+@media(min-width:901px) and (max-width:1080px){
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(155px,180px) minmax(225px,1fr) minmax(275px,37%)!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:3!important;
+  }
+}
+@media(max-width:900px) and (min-width:701px){
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(155px,185px) minmax(0,1fr)!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1/-1!important;
+    width:100%!important;
+  }
+}
+@media(max-width:700px){
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .uxLocationPanel{
+    grid-column:1!important;
+  }
+  html[data-layout="list"] .placement .fit.fitExpanded.uxFitWithLocation .fitPoint{
+    font-size:16px!important;
+  }
+}
