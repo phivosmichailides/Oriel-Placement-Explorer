@@ -256,14 +256,19 @@
    line.title=window.OrielPay.descriptor()+'. Illustrative PAYE, not guaranteed payslip income.';
  }
  const endDate=p=>{
-   if(!p.start)return null;
-   const m=String(p.start).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-   if(!m)return null;
-   const start=new Date(Date.UTC(+m[3],+m[2]-1,+m[1],12));
-   const weeks=Number((p.settings||[]).reduce((sum,x)=>sum+(Number(x[1])||0),0))||52;
-   const end=new Date(start.getTime()+weeks*7*86400000);
+   const raw=String(p?.start||'').trim();
+   if(!raw)return 'Start date not stated';
+   let start=null,m=raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+   if(m)start=new Date(Date.UTC(+m[3],+m[2]-1,+m[1],12));
+   else if((m=raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))start=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12));
+   else {const parsed=new Date(raw);if(!Number.isNaN(parsed.getTime()))start=parsed}
+   if(!start||Number.isNaN(start.getTime()))return 'Start date not stated';
+   const settings=Array.isArray(p.settings)?p.settings:[];
+   const weeks=settings.reduce((sum,x)=>sum+(Number(x?.[1])||0),0);
    const fmt=d=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d);
-   return 'Starts '+fmt(start)+' · Est. finish ~'+fmt(end)+' ('+weeks+'w)';
+   if(!(weeks>0&&weeks<=80))return 'Starts '+fmt(start)+' · Finish date not stated (training duration unavailable)';
+   const end=new Date(start.getTime()+weeks*7*86400000);
+   return 'Starts '+fmt(start)+' · Est. finish ~'+fmt(end)+' ('+weeks+' weeks)';
  };
  function enhanceRecommendations(){
    document.querySelectorAll('#reco .reco').forEach(item=>{
@@ -409,17 +414,12 @@
  function workSchedule(p){
    const d=document.createElement('details');d.className='uxWorkSchedule';
    const hours=Number(p.hours),hasHours=Number.isFinite(hours)&&hours>0;
-   const equivalent=hasHours?hours/5:0;
-   const fmt=n=>{
-     const mins=Math.round(n*60),h=Math.floor(mins/60),m=mins%60;
-     return h+'h'+(m?' '+String(m).padStart(2,'0')+'m':'');
-   };
    const summary=document.createElement('summary');
-   summary.textContent=hasHours?'Working hours · '+hours+'h per week · View daily rota':'Working hours · Not stated · View daily rota';
+   summary.textContent=hasHours?'Working hours · '+hours+'h per week · Daily rota not published':'Working hours · Weekly hours not stated · Daily rota not published';
    d.append(summary);
    const inner=document.createElement('div');inner.className='uxWorkDetail';
    const start=document.createElement('p');
-   start.textContent=hasHours?'Contracted '+hours+' hours/week. A five-day split would average '+fmt(equivalent)+' per day, but actual shift lengths and start/finish times are not provided in the structured Oriel export.':'The employer has not supplied contracted weekly hours in this dataset.';
+   start.textContent=hasHours?'Oriel lists '+hours+' contracted hours per week, but the dataset does not state how those hours are distributed across days or the daily start/finish times. Each day below is marked “Not published” rather than assuming a five-day pattern.':'The Oriel dataset does not state contracted weekly hours or a day-by-day rota for this programme.';
    inner.append(start);
    const dayRow=document.createElement('div');dayRow.className='uxWorkDays';
    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day=>{
@@ -437,7 +437,7 @@
      inner.append(p2);
    }
    const note=document.createElement('p');
-   note.textContent='Individual daily shift times, breaks, weekend coverage and the rota at each rotation site must be confirmed with the employer. This table intentionally does not assume Monday–Friday 9–5.';
+   note.textContent='Ask the employer to confirm the trainee rota, daily start and finish times, breaks, weekend expectations and whether hours change between rotation sites. Programme descriptions may mention opening hours that are not necessarily the trainee working pattern.';
    inner.append(note);d.append(inner);return d;
  }
   function enhanceCard(article){
