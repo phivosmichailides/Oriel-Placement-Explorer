@@ -34,7 +34,7 @@ window.OrielLocationGuide=(()=>{
   ['^E1(?:\\s|$)','Whitechapel / east-central London','Whitechapel offers Elizabeth, District and Hammersmith & City connections, depending on the site.','tfl'],
   ['^E14(?:\\s|$)','Docklands / east London','Canary Wharf, the DLR, Jubilee and Elizabeth line can be useful, depending on the branch.','tfl'],
   ['^E3(?:\\s|$)','Bow / east London','District/Hammersmith & City lines and the DLR are useful corridors; exact nearest station varies.','tfl'],
-  ['^E16(?:\\s|$)','Canning Town / Royal Docks','Jubilee line and DLR provide major connections; check whether the postcode is nearer Custom House.','tfl'],
+  ['^E16(?:\\s|$)','Canning Town / Royal Docks · east London','Jubilee line and DLR are key connections; Stratford and Canary Wharf are useful interchanges, while the exact postcode determines whether Canning Town or Custom House is the more practical starting station.','tfl'],
   ['^E17(?:\\s|$)','Walthamstow / north-east London','Victoria line from Walthamstow Central and Overground services are useful corridors.','tfl'],
   ['^E18(?:\\s|$)','South Woodford / east London','Central line via South Woodford is a useful central-London connection.','tfl'],
   ['^E11(?:\\s|$)','Leytonstone / east London','Central line via Leytonstone is a useful corridor.','tfl'],
@@ -174,6 +174,7 @@ window.OrielLocationGuide=(()=>{
    if(['WD6','AL1','AL2','LU1','LU4'].includes(district))return 'London St Pancras International';
    if(['SG1','SG6','N1','N1C','N2','N3','N7','N10','N11','N12','N15','N17','N20','N22','NW1','NW2','NW3','WC1','WC2','HA5'].includes(district)||district.startsWith('N1')||district.startsWith('NW')||district.startsWith('WC')||district.startsWith('HA'))return 'London King’s Cross';
    if(['SS1','SS16'].includes(district))return 'London Fenchurch Street';
+   if(district==='E16')return null;
    if(['CM1','CM2','CM20','RM1','E1','E1W','E3','E8','E9','E11','E13','E14','E15','E16','E17','E18','E20','SE2','SE18','SE28'].includes(district)||district.startsWith('EC')||district.startsWith('E'))return 'London Liverpool Street';
    if(['SE1','SE5','SE7','SE8','SE9','SE12','SE13','SE14','SE15','SE16','SE17','SE19','SE20','SE21','SE22','SE23','SE26','BR6','DA1','DA2','TN13','SM1','SM5','RH1'].includes(district)||district.startsWith('SE')||district.startsWith('BR')||district.startsWith('DA')||district.startsWith('TN')||district.startsWith('SM')||district.startsWith('RH'))return 'London Bridge';
    return null;
@@ -185,10 +186,21 @@ window.OrielLocationGuide=(()=>{
    const compass=['north','north-east','east','south-east','south','south-west','west','north-west'][Math.round(brg/45)%8];
    return {distanceKm:Math.round(dist),compass,label:dist<3?'Around central London':dist<22?compass+' London':compass+' of central London'};
  }
+ const describePostcode=postcode=>{
+   const pc=String(postcode||'').trim().toUpperCase().replace(/\s+/g,' ');
+   const g=guides.find(x=>regexp(x[0]).test(pc));
+   const outward=(pc.match(/^([A-Z]{1,2}\d[A-Z\d]?)/)||[])[1]||'';
+   return {
+     postcode:pc,
+     headline:g?g[1]:(outward?outward+' area':'Your area'),
+     connections:g?g[2]:'The local transport corridor is not verified for this postcode; use the door-to-door route below.',
+     source:g?g[3]:'tfl'
+   };
+ };
  const sourceUrls={
    tfl:'https://tfl.gov.uk/plan-a-journey/',
    swr:'https://www.southwesternrailway.com/plan-my-journey',
    national:'https://www.nationalrail.co.uk/'
  };
- return {lookup,getDirection,sourceUrls};
+ return {lookup,getDirection,describePostcode,sourceUrls};
 })();
