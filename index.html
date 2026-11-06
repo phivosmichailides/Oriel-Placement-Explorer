@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="desk.css?v=20261015-no-ratings">
 <link rel="stylesheet" href="theme-outcome.css?v=20261105">
 <link rel="stylesheet" href="workspace-themes.css?v=20261106f">
-<link rel="stylesheet" href="simulator-refinement.css?v=20261106m">
+<link rel="stylesheet" href="simulator-refinement.css?v=20261106n">
 </head>
 <body>
 <div class="shell">
@@ -48,11 +48,12 @@
       <div class="secthead"><div><div class="eyebrow">REFINE</div><h2>Your filters</h2></div><div class="uxFilterHeadActions"><button class="textbtn" id="resetBtn">Reset</button><button class="uxIconControl" id="uxCollapseFilters" type="button" title="Hide filters" aria-label="Collapse filter sidebar" aria-expanded="true" aria-controls="uxFilterSidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="17" height="17"><path d="m14 6-6 6 6 6"/><path d="M20 4v16"/></svg></button></div></div>
       <label class="field"><span>Search</span><input id="search" type="search" placeholder="Employer, acronym (UCLH/GSTT), postcode, programme ID…"></label>
       <div class="quick" id="quick"><button class="chip" data-q="london"> London</button><button class="chip" data-q="hospital"> Hospital-led</button><button class="chip" data-q="gp"> GP-heavy</button><button class="chip" data-q="hospitalgp">Hosp+GP</button><button class="chip" data-q="split"> Any split</button><button class="chip" data-q="industry"> Industry</button><button class="chip" data-q="lowcommunity"> Low community</button><button class="chip" data-q="desk"> Desk-ish</button><button class="chip" data-q="cv"> CV boost</button><button class="chip" data-q="hours"> ≤40h</button><button class="chip" data-q="pay"> £30k+</button></div>
+      <div class="uxProfileApplied" id="uxProfileApplied" hidden><div class="eyebrow">FROM YOUR PERSONALISATION</div><div class="uxProfileAppliedChips" id="uxProfileAppliedChips"></div><p>These are your saved quiz answers. Your priorities influence fit scores; region, setting and stated limits are reflected in the filters.</p></div>
       <div class="grid2"><label class="field"><span>Sector</span><select id="sector"><option value="">Any</option></select></label><label class="field"><span>Region</span><select id="region"><option value="">Any</option></select></label></div>
       <div class="uxHomePostcodeFilter">
         <label class="field"><span>Home postcode · commute starting point</span><input id="uxHomePostcode" type="text" placeholder="e.g. E16 1RB" autocomplete="postal-code" maxlength="10"></label>
         <button class="btn" type="button" id="uxSaveHomePostcode">Save starting point</button>
-        <p class="smallnote" id="uxHomePostcodeStatus">Used to assess the journey to each training site, including every site in split programmes. It does not move programme pins or filter results.</p>
+        <p class="smallnote" id="uxHomePostcodeStatus">Used to assess a typical weekday 08:00 journey to every training site, including each site in split programmes. It does not move programme pins or hide results. Saved in this browser; route requests are sent to TfL Journey Planner.</p>
       </div>
       <div class="grid2"><label class="field"><span>Max hours</span><select id="hours"><option value="">Any</option><option>35</option><option>37.5</option><option>40</option><option>42.5</option></select></label><label class="field"><span>Minimum salary</span><select id="salary"><option value="">Any</option><option value="26000">£26k</option><option value="28000">£28k</option><option value="30000">£30k</option><option value="32000">£32k</option><option value="36000">£36k</option></select></label></div>
       <label class="field"><span>Decisions</span><select id="decision"><option value="active">Hide No / Absolutely not</option><option value="all">All decisions</option><option value="shortlist">My shortlist</option><option value="unmarked">Not decided yet</option><option value="excluded">Excluded</option></select></label><label class="field"><span>Sponsorship</span><select id="visa"><option value="">Any / check eligibility</option><option value="yes">Sponsorship offered</option><option value="no">Not offered</option><option value="unknown">Not stated</option></select></label><label class="check"><input type="checkbox" id="hideAvoid"> Hide avoided areas entirely</label><label class="check uxHideCheck"><input type="checkbox" id="hideShortlisted"> Hide already-shortlisted programmes</label><fieldset class="uxSpecialistFilters" aria-label="Specialist setting exclusions"><legend>Specialist settings</legend>
@@ -152,12 +153,13 @@
 <script src="desk-enhancements.js?v=20261106g"></script>
 <script src="location-guides.js?v=20261106j"></script>
 <script src="commute-guide.js?v=20261106a"></script>
+<script src="commute-profile.js?v=20261106a"></script>
 <script src="pay-estimate.js?v=20261105c"></script>
 <script src="specialist-settings.js?v=20261106a"></script>
-<script src="app.js?v=20261106g"></script>
+<script src="app.js?v=20261106h"></script>
 <script src="theme-outcome.js?v=20261106i"></script>
-<script src="workspace-ux.js?v=20261106i"></script>
+<script src="workspace-ux.js?v=20261106j"></script>
 <script src="simulator.js?v=20261106g"></script>
-<script src="session-ui.js?v=20261106h"></script>
+<script src="session-ui.js?v=20261106i"></script>
 </body>
 </html>
