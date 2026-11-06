@@ -256,3 +256,12 @@ html[data-theme="dark"][data-palette="forest"] .uxMapCustom{background:#4e3842;c
 .simItem .simItemActions{grid-column:2/4;grid-row:2;justify-content:flex-end;gap:5px}
 .simItem .simMove{max-width:150px;flex:0 1 140px}
 .simItem .simCopy:hover{background:var(--ux-pick-soft);color:var(--ux-pick);border-color:var(--ux-pick-border)}
+
+/* Dark mode: improve legibility of the forest theme LABEL ONLY.
+   Deliberately do not change the selected palette card's background. */
+html[data-theme="dark"] .uxPaletteOption[data-ux-palette="forest"] b{
+ color:#fff8f1!important;
+}
+html[data-theme="dark"] .uxPaletteOption[data-ux-palette="forest"] small{
+ color:#e3e5da!important;
+}
