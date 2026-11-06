@@ -53,7 +53,20 @@ let placementMap=null,mapLayer=null,geo={},geoBusy=false,mapTileFailed=false;
 const pcKey=p=>p.replace(/\s/g,'').toUpperCase();
 function isExcluded(p){return ['no','never'].includes(mark(p).status)}
 function visaMatches(p){return !$('visa').value||($('visa').value==='yes'?p.visa===true:$('visa').value==='no'?p.visa===false:p.visa===null)}
-function decisionMatches(p){if(window.OrielSpecialist?.filterOut(p))return false;const d=$('decision').value,m=mark(p);if($('hideShortlisted')?.checked&&SHORT.has(m.status))return false;if(d==='orielNoPreference'&&!ORIEL_SNAPSHOT.noPreference.includes(p.id.split('/').pop()))return false;if(d==='active'&&isExcluded(p)||d==='shortlist'&&!SHORT.has(m.status)||d==='unmarked'&&m.status||d==='excluded'&&!isExcluded(p))return false;if($('hideAvoid').checked&&areaPref(p)===-2)return false;return visaMatches(p)}
+function decisionMatches(p){
+  if(window.OrielSpecialist?.filterOut(p))return false;
+  const d=$('decision').value,m=mark(p);
+  if($('hideShortlisted')?.checked&&SHORT.has(m.status))return false;
+  if(d!=='excluded'&&$('hideExcluded')?.checked&&isExcluded(p))return false;
+  if(d==='orielNoPreference'&&!ORIEL_SNAPSHOT.noPreference.includes(p.id.split('/').pop()))return false;
+  if((d==='active'&&isExcluded(p))||(d==='shortlist'&&!SHORT.has(m.status))||(d==='unmarked'&&m.status)||(d==='excluded'&&!isExcluded(p)))return false;
+  if($('hideAvoid')?.checked&&(areaPref(p)===-2||window.OrielAreaRules?.isAvoided(p,state.prefs.avoids)))return false;
+  // A programme with even one site in a far-out town is omitted when the
+  // applicant explicitly chooses the optional inner-London browsing filter.
+  const london=($('region')?.value==='London')||(quick.has('london')&&!$('region')?.value);
+  if(london&&$('hideOuterLondon')?.checked&&window.OrielAreaRules?.isOuterTown(p))return false;
+  return visaMatches(p);
+}
 function ranked(){return placements.filter(p=>SHORT.has(mark(p).status)).sort((x,y)=>(Number(mark(x).priority)>0?Number(mark(x).priority):Infinity)-(Number(mark(y).priority)>0?Number(mark(y).priority):Infinity)||analyse(y).score-analyse(x).score||x.id.localeCompare(y.id))}
 function moveRank(id,direction){const a=ranked(),i=a.findIndex(p=>p.id===id),j=i+(direction==='up'?-1:1);if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];a.forEach((p,n)=>state.marks[p.id]={...mark(p),priority:n+1});save();shortlist()}
 function exportRanked(){const a=ranked();if(!a.length)return toast('Add programmes to your shortlist first.');const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Rank','Programme ID','Programme','Employer','Decision','Salary','Hours','Sponsorship','Note'],...a.map((p,i)=>[i+1,p.id,p.title,p.employer,mark(p).status,p.salary,p.hours,p.visa===null?'Unknown':p.visa?'Yes':'No',mark(p).note])];download('phivos-ranked-shortlist.csv',rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'shortlist_exported'}}));toast('Ranked shortlist exported. Transfer your choices into Oriel.')}
