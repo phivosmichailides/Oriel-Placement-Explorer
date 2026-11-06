@@ -91,10 +91,15 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.screenshot({path:output+'/desktop-list.png',fullPage:false});
     // The full England & Wales view must also retain bundled pins: do not
     // let a missing external postcode request create a 0/4012 empty map.
+    await page.locator('#region').selectOption('');
     await page.locator('[data-q="london"]').first().click();
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,null,{timeout:12000});
-    assert(await page.locator('#placementMap .leaflet-interactive').count()>40,
-      'England & Wales mode has too few map pins');
+    const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
+    const allRegionStatus=await page.locator('#mapStatus').innerText();
+    assert(allRegionPins>100,
+      'England & Wales mode has too few map pins: '+allRegionPins+' ('+allRegionStatus+')');
+    assert(!await page.evaluate(()=>quick.has('london')||document.getElementById('region').value==='London'),
+      'The test did not actually enter England & Wales mode');
     assert(!/0 of \d+ matching programmes mapped/.test(await page.locator('#mapStatus').innerText()),
       'England & Wales unexpectedly maps zero programmes');
     await page.locator('[data-q="london"]').first().click();
@@ -141,6 +146,6 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     await page.screenshot({path:output+'/desktop-grid.png',fullPage:false});
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
-    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,mainProvider:'tile.openstreetmap.org',miniProvider:'tile.openstreetmap.org',cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
+    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,mainProvider:'tile.openstreetmap.org',miniProvider:'tile.openstreetmap.org',allRegionPins,cards,panels,bullets,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
 })().catch(e=>{console.error('UI REGRESSION:',e.stack||e);process.exit(1)});
