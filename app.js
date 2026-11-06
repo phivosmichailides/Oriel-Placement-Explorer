@@ -12,7 +12,7 @@
 
   const loadOnboarding=()=>{
     const onboarding=document.createElement('script');
-    onboarding.src='onboarding.js?v=20261106b';
+    onboarding.src='onboarding.js?v=20261106c';
     onboarding.onload=loadDeadlineDates;
     onboarding.onerror=loadDeadlineDates;
     document.body.appendChild(onboarding);
@@ -35,7 +35,7 @@
   };
 
   const product=document.createElement('script');
-  product.src='app-product.js?v=20261106h';
+  product.src='app-product.js?v=20261106i';
   product.onload=loadGeneric;
   product.onerror=()=>{
     const r=document.getElementById('results');
