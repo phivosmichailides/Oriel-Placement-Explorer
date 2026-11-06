@@ -570,3 +570,17 @@ html[data-palette="mauve"] .placement .badges .badge-gp,
 html[data-palette="mauve"] .placement .badges .badge-community{
   background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important;
 }
+
+
+/* Cohesive select controls: the closed field matches the rounded desk; option colours
+   follow the selected palette wherever the browser exposes option styling. */
+html select:not([multiple]){
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;
+  background-size:5px 5px;background-repeat:no-repeat;
+  padding-right:34px;cursor:pointer;
+}
+html select option{background:var(--panel);color:var(--ink)}
+html select option:checked{background:var(--ux-accent-soft);color:var(--ux-accent-ink)}
+html select:focus-visible{outline:2px solid var(--ux-accent);outline-offset:2px}
