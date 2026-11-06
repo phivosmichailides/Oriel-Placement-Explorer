@@ -231,6 +231,16 @@ html .placement .badge.badge-community,html .placement .badge.badge-industry{
   background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;border-color:var(--ux-accent-border)!important;
 }
 html .placement .badge.badge-sponsorship-warning,html .placement .badge.warn{background:var(--fit-mixed-bg)!important;color:var(--fit-mixed-ink)!important;border-color:var(--fit-mixed-border)!important}
+/* Sector tags are information, not decorative buttons. Preserve distinct meanings in every palette. */
+html[data-theme="light"] .placement .badge.badge-hospital{background:#e9f0fb!important;border-color:#cadcf2!important;color:#315d89!important}
+html[data-theme="light"] .placement .badge.badge-gp{background:#e8f3ed!important;border-color:#c7dfd0!important;color:#31654b!important}
+html[data-theme="light"] .placement .badge.badge-community{background:#f0eaf9!important;border-color:#d9cbea!important;color:#725491!important}
+html[data-theme="light"] .placement .badge.badge-industry{background:#f7eee5!important;border-color:#e9d5c3!important;color:#906442!important}
+html[data-theme="dark"] .placement .badge.badge-hospital{background:#293f56!important;border-color:#527698!important;color:#d4e8ff!important}
+html[data-theme="dark"] .placement .badge.badge-gp{background:#284537!important;border-color:#507e67!important;color:#ccebd7!important}
+html[data-theme="dark"] .placement .badge.badge-community{background:#433450!important;border-color:#765d90!important;color:#e8d8f8!important}
+html[data-theme="dark"] .placement .badge.badge-industry{background:#4e3a2b!important;border-color:#876347!important;color:#f0dfc8!important}
+
 html .placement .desc{color:var(--ink)!important;font-size:13.7px;line-height:1.68;font-weight:500}
 html .placement .decision-quick{gap:9px}
 html .placement .controls{gap:9px}
