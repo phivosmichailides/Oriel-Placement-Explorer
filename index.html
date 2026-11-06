@@ -39,6 +39,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="design-refresh.css?v=20261106readable2">
+<link rel="stylesheet" href="programme-preview.css?v=20261106a">
 </head>
 <body>
 <div class="shell">
@@ -64,7 +65,7 @@
         <p class="smallnote" id="uxHomePostcodeStatus">Used to assess a typical weekday 08:00 journey to every training site, including each site in split programmes. A full postcode is most precise; an area or station gives a broader starting point. Programme pins stay unchanged. Saved in this browser; route requests are sent to TfL.</p>
       </div>
       <div class="grid2"><label class="field"><span>Max hours</span><select id="hours"><option value="">Any</option><option>35</option><option>37.5</option><option>40</option><option>42.5</option></select></label><label class="field"><span>Minimum salary</span><select id="salary"><option value="">Any</option><option value="26000">£26k</option><option value="28000">£28k</option><option value="30000">£30k</option><option value="32000">£32k</option><option value="36000">£36k</option></select></label></div>
-      <label class="field"><span>Decisions</span><select id="decision"><option value="active">Hide No / Absolutely not</option><option value="all">All decisions</option><option value="shortlist">My shortlist</option><option value="unmarked">Not decided yet</option><option value="excluded">Excluded</option></select></label><label class="field"><span>Sponsorship</span><select id="visa"><option value="">Any / check eligibility</option><option value="yes">Sponsorship offered</option><option value="no">Not offered</option><option value="unknown">Not stated</option></select></label><label class="check"><input type="checkbox" id="hideAvoid"> Hide avoided areas entirely</label><label class="check uxHideCheck"><input type="checkbox" id="hideShortlisted"> Hide already-shortlisted programmes</label><fieldset class="uxSpecialistFilters" aria-label="Specialist setting exclusions"><legend>Specialist settings</legend>
+      <label class="field"><span>Decisions</span><select id="decision"><option value="active">Hide No / Absolutely not</option><option value="all">All decisions</option><option value="shortlist">My shortlist</option><option value="unmarked">Not decided yet</option><option value="excluded">Excluded</option></select></label><label class="field"><span>Sponsorship</span><select id="visa"><option value="">Any / check eligibility</option><option value="yes">Sponsorship offered</option><option value="no">Not offered</option><option value="unknown">Not stated</option></select></label><label class="check"><input type="checkbox" id="hideAvoid"> Hide avoided areas entirely (all split sites)</label><label class="check"><input type="checkbox" id="hideOuterLondon" checked> Hide far-out London towns (e.g. Orpington)</label><label class="check"><input type="checkbox" id="hideExcluded" checked> Hide excluded programmes</label><label class="check uxHideCheck"><input type="checkbox" id="hideShortlisted"> Hide already-shortlisted programmes</label><fieldset class="uxSpecialistFilters" aria-label="Specialist setting exclusions"><legend>Specialist settings</legend>
   <p class="uxSpecialistIntro">Filter training environments you want to avoid. Classifications are based on the Oriel programme title, employer and named settings—not every specialist ward in an ordinary hospital.</p>
   <label class="check"><input type="checkbox" id="hideJustice" checked> Hide prison, custody &amp; justice settings</label>
   <label class="check"><input type="checkbox" id="hideMental" checked> Hide mental health &amp; forensic services</label>
@@ -76,11 +77,11 @@
     </aside>
     <div class="workspace"><section class="map-card card"><div class="map-heading"><div><div class="eyebrow">ENGLAND &amp; WALES PROGRAMMES</div><h2>See where you could work</h2></div><button class="btn" id="fitMap">Fit results</button></div><div id="placementMap" aria-label="Interactive placement map"></div><div class="map-caption"><span id="mapStatus" role="status">Loading map locations…</span><span><i class="dot green"></i> Shortlisted <i class="dot blue"></i> Unmarked <i class="dot red"></i> Excluded</span></div><div id="mapSelection"></div></section><div class="uxExploreToolbar" id="uxExploreToolbar" aria-label="Programme browsing tools">
   <div class="uxToolbarLead"><b>Programme results</b><small>Switch to a compact 20-per-page grid to scan faster.</small></div>
-  <div class="uxLayoutControls" role="group" aria-label="Programme card layout">
+  <button class="btn uxCompactBtn" type="button" id="uxToolbarFilters" aria-expanded="true" aria-controls="uxFilterSidebar">☷ Hide filters</button><label class="uxResultsSortControl" for="uxResultsSort">Sort results <select id="uxResultsSort" aria-label="Sort filtered results"><option value="fit">Best fit</option><option value="salary">Highest salary</option><option value="hourly">Best hourly pay</option><option value="hours">Shortest week</option><option value="name">Name A–Z</option></select></label><div class="uxLayoutControls" role="group" aria-label="Programme card layout">
     <button type="button" class="btn uxLayoutBtn" data-ux-layout="list" aria-pressed="true" title="Detailed list view">☰ <span>List</span></button>
     <button type="button" class="btn uxLayoutBtn" data-ux-layout="grid" aria-pressed="false" title="Compact grid view">▦ <span>Grid</span></button>
   </div>
-  <button class="btn uxCompactBtn" type="button" id="uxHideShortlistedBtn" aria-pressed="false">○ Hide shortlisted</button>
+  <button class="btn uxCompactBtn" type="button" id="uxHideExcludedBtn" aria-pressed="true">✓ Hide excluded</button><button class="btn uxCompactBtn" type="button" id="uxHideShortlistedBtn" aria-pressed="false">○ Hide shortlisted</button>
   <button class="btn uxCompactBtn" type="button" data-ux-open-drawer>♥ My shortlist <span data-ux-shortlist-count></span></button>
 </div><div class="results" id="results"><div class="card loading"><div class="spinner"></div>Loading placement data…</div></div><div id="uxExplorePager" class="uxExplorePager" aria-label="Programme result pages"></div></div>
   </div>
@@ -166,6 +167,8 @@
 <script src="commute-guide.js?v=20261106a"></script>
 <script src="commute-profile.js?v=20261106pcfix"></script>
 <script src="pay-estimate.js?v=20261105c"></script>
+<script src="area-rules.js?v=20261106a"></script>
+<script src="programme-preview.js?v=20261106a"></script>
 <script src="specialist-settings.js?v=20261106a"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
 <script src="supabase-config.js?v=20261106a"></script>
@@ -174,7 +177,7 @@
 <script src="app.js?v=20261106smooth1"></script>
 <script src="theme-outcome.js?v=20261106i"></script>
 <script src="workspace-ux.js?v=20261106readable1"></script>
-<script src="simulator.js?v=20261106h"></script>
+<script src="simulator.js?v=20261106preview1"></script>
 <script src="session-ui.js?v=20261106i"></script>
 </body>
 </html>
