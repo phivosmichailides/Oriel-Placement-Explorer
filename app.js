@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261106mapstyle';
+    product.src='app-product.js?v=20261106mapstyle2';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
