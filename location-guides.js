@@ -164,18 +164,18 @@ window.OrielLocationGuide=(()=>{
  };
  const hubFor=(postcode)=>{
    const pc=String(postcode||'').toUpperCase().replace(/\s+/g,'');
+   const district=(pc.match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)/)||[])[1]||'';
    // A practical London terminal for checking the rail/Tube corridor, not a claim
    // that this is the nearest station or the fastest route at every time of day.
-   if(/^SW(?:1|3|6|10|12)/.test(pc)||/^BR1/.test(pc)||/^SE24/.test(pc))return 'London Victoria';
-   if(/^SW(?:11|14|15|18|19|20)/.test(pc)||/^KT/.test(pc)||/^TW/.test(pc)||/^GU/.test(pc))return 'London Waterloo';
-   if(/^W(?:2|3|4|5|7|12|13)/.test(pc)||/^UB/.test(pc)||/^SL/.test(pc)||/^RG/.test(pc))return 'London Paddington';
-   if(/^NW10/.test(pc))return 'London Paddington';
-   if(/^WD(?:17|18|24)/.test(pc))return 'London Euston';
-   if(/^WD6/.test(pc)||/^AL/.test(pc)||/^LU/.test(pc))return 'London St Pancras International';
-   if(/^SG/.test(pc)||/^N/.test(pc)||/^NW/.test(pc)||/^WC/.test(pc)||/^HA/.test(pc))return 'London King’s Cross';
-   if(/^SS(?:1|16)/.test(pc))return 'London Fenchurch Street';
-   if(/^CM/.test(pc)||/^RM/.test(pc)||/^E/.test(pc)||/^EC/.test(pc)||/^SE18/.test(pc))return 'London Liverpool Street';
-   if(/^SE(?:1|5|7|9|12|15|16|17)/.test(pc)||/^BR6/.test(pc)||/^DA/.test(pc)||/^TN/.test(pc)||/^SM/.test(pc)||/^RH/.test(pc))return 'London Bridge';
+   if(['SW1','SW3','SW4','SW5','SW6','SW10','SW12','SW16','SW17','SE24','BR1'].includes(district))return 'London Victoria';
+   if(['SW8','SW9','SW11','SW14','SW15','SW18','SW19','SW20','KT1','KT2','KT3','KT5','KT6','KT9','KT12','TW3','TW7','TW9','TW10','TW13','TW18','GU1','GU2','GU16','GU21'].includes(district))return 'London Waterloo';
+   if(['W2','W3','W4','W5','W7','W12','W13','UB1','UB3','UB7','UB8','SL1','SL2','SL6','RG1','RG2','RG4','NW10'].includes(district))return 'London Paddington';
+   if(['WD17','WD18','WD24'].includes(district))return 'London Euston';
+   if(['WD6','AL1','AL2','LU1','LU4'].includes(district))return 'London St Pancras International';
+   if(['SG1','SG6','N1','N2','N3','N7','N10','N11','N12','N15','N17','N20','N22','NW1','NW2','NW3','WC1','WC2','HA5'].includes(district))return 'London King’s Cross';
+   if(['SS1','SS16'].includes(district))return 'London Fenchurch Street';
+   if(['CM1','CM2','CM20','RM1','E1','E3','E8','E9','E11','E13','E14','E15','E16','E17','E18','E20','SE2','SE18','SE28'].includes(district)||district.startsWith('EC'))return 'London Liverpool Street';
+   if(['SE1','SE5','SE7','SE8','SE9','SE12','SE13','SE14','SE15','SE16','SE17','SE19','SE20','SE21','SE22','SE23','SE26','BR6','DA1','DA2','TN13','SM1','SM5','RH1'].includes(district))return 'London Bridge';
    return null;
  };
  function getDirection(lat,lon,lat0,lon0){
