@@ -31,13 +31,13 @@
     };
     const loadGeneric=()=>{
       const generic=document.createElement('script');
-      generic.src='generic-public.js?v=20261015-no-ratings';
+      generic.src='generic-public.js?v=20261106fastmap';
       generic.onload=loadSectors;
       generic.onerror=loadSectors;
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261106cloud';
+    product.src='app-product.js?v=20261106mapstyle';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
