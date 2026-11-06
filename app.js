@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261106smooth1';
+    product.src='app-product.js?v=20261106filters1';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
