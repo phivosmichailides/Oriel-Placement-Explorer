@@ -6,7 +6,7 @@
   const getProgramme=id=>{
     try{return typeof placements==='undefined'?null:placements.find(p=>String(p.id)===String(id))}catch{return null}
   };
-  const £=n=>Number.isFinite(Number(n))&&Number(n)>0?'£'+Math.round(Number(n)).toLocaleString('en-GB'):'Not stated';
+  const money=n=>Number.isFinite(Number(n))&&Number(n)>0?'£'+Math.round(Number(n)).toLocaleString('en-GB'):'Not stated';
   const el=(tag,cls,txt)=>{
     const node=document.createElement(tag);
     if(cls)node.className=cls;
@@ -46,10 +46,10 @@
     dialog.append(sub);
     const stats=el('div','progPeekGrid');
     const gross=Number(p.salary)||0,est=window.OrielPay?.estimate?.(gross);
-    kv(stats,'Gross · yearly',£(gross));
-    kv(stats,'Gross · monthly',£(gross/12));
-    kv(stats,'Estimated take-home · yearly',est?£(est.annual):'Not available');
-    kv(stats,'Estimated take-home · monthly',est?£(est.monthly):'Not available');
+    kv(stats,'Gross · yearly',money(gross));
+    kv(stats,'Gross · monthly',money(gross/12));
+    kv(stats,'Estimated take-home · yearly',est?money(est.annual):'Not available');
+    kv(stats,'Estimated take-home · monthly',est?money(est.monthly):'Not available');
     kv(stats,'Hours per week',p.hours?Number(p.hours)+' hours':'Not stated');
     kv(stats,'Training region',p.region||'Not stated');
     dialog.append(stats);
