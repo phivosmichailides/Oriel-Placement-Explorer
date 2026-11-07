@@ -12,6 +12,7 @@
     'oriel-desk-home-postcode-v1',
     'oriel-simulator-v1',
     'oriel-simulator-zoom-v1',
+    'oriel-tinder-mode-v1',
     'oriel-desk-theme-v1',
     'oriel-desk-palette-v1',
     'oriel-desk-layout-v1',
