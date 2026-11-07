@@ -76,6 +76,8 @@ node --test tests/catalogue-parser.test.cjs tests/independence.test.cjs tests/sh
 
 The original development history is preserved in Git; ongoing maintenance, technical dependencies and relevant attribution are documented in [third-party notices](THIRD_PARTY_NOTICES.md) and [implementation notes](docs/IMPLEMENTATION_NOTES.md).
 
+For a safe repository rename or future custom domain, see [deployment and URL migration](docs/DEPLOYMENT_AND_RENAME.md).
+
 ## Product direction
 
 Next priorities include improving commute comparisons, distinguishing missing data from negative signals, further explaining score components and conducting structured usability sessions with other applicants. These are future goals, **not features or research outcomes being claimed today**.
