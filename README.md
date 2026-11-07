@@ -18,7 +18,9 @@ I have ADHD, and this kind of high-volume decision becomes much harder when ever
 
 ## What I built
 
-I started with [Acid555’s open-source Oriel Placement Explorer](https://github.com/Acid555/Oriel-Placement-Explorer), which provided a useful starting dataset and explorer. I then rebuilt the active experience around the decision problem I personally needed to solve, using AI-assisted development throughout the process.
+I developed the current Placement Desk through iterative, AI-assisted programming, focusing on the decision problems I encountered during my own Oriel application. The deployed application uses an independently sourced Oriel export, its own interface and ranking logic, and a separate map integration.
+
+Development history: an early version began as a fork of a public explorer. The copied HTML application has now been removed from the live branch. Git's historical commits still preserve the original starting point; third-party libraries and recruitment data have separate usage conditions.
 
 The public experience starts across England & Wales. A short setup lets each applicant choose a region, priorities and practical limits. My own search is London-focused, but personal defaults should not become product limitations.
 
@@ -113,17 +115,21 @@ The long-term goal is simple: a user should be able to open a programme and quic
 
 ## Data and technical notes
 
-**Data independence update (7 November 2026):** The live app now loads the
-maintainer's direct Oriel export from five public files in `data/` rather than
-taking its primary dataset from the inherited `legacy.html`. A compatibility
-fallback remains temporarily to protect applicants' saved selections.
-The identifiers are preserved, and no personal Oriel ranks or tags are published.
+**Independence update (7 November 2026):** The deployed application now
+uses the maintainer's direct Oriel CSV export, split into five public parts in
+`data/`. The embedded legacy explorer and its data-loading fallback have
+been removed from the active branch. Programme identifiers are preserved to
+keep existing notes and rankings connected, and no personal Oriel ranks or
+tags are published with the catalogue. A saved uploaded CSV still takes
+priority over the built-in snapshot.
 
-To prepare a later export yourself, run
+Import a later export with
 `python3 scripts/build_catalogue.py "pharmacy programmes.csv"`.
 See [data provenance and updating instructions](data/README.md).
-This replaces the **data-delivery dependency**, not all inherited application
-code or its associated attribution/licensing considerations.
+Test catalogue integrity with `node --test tests/catalogue-parser.test.cjs`.
+The project's Git history and dependencies must still be reviewed before
+making blanket claims of unrestricted rights or independently authored
+historical code.
 
 
 The current site is a static GitHub Pages app with no build step.
@@ -138,7 +144,7 @@ Active interface files:
 - `research-core.js`, `research.js`
 - `desk.css`
 
-Leaflet 1.9.4 powers the map and OpenStreetMap provides background tiles. The October 2026 project includes a cache of resolved programme postcodes, with additional locations resolved on demand through postcodes.io when a user explores another region.
+Leaflet 1.9.4 supplies programme markers and controls; MapLibre GL JS with OpenFreeMap supplies the key-free vector basemap. The map appearance selector offers automatic, minimal, bright, detailed, dark and fiord styles, with OpenStreetMap raster tiles as a fallback when WebGL is unavailable. Provider and data attribution remains visible on the map. The project includes a cache of resolved programme postcodes, with additional locations resolved on demand through postcodes.io when a user explores another region.
 
 Decisions are stored locally in the browser under the `phivos-desk-v2` key. They are not synced to GitHub or submitted to Oriel. Backup/restore is available before changing devices or clearing browser data. Optional study data uses a separate `oriel-research-v1` key and separate export; it is not included in ordinary desk backups. Radius centres and undo history last only for the current page session.
 
