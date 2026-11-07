@@ -108,11 +108,15 @@
       record.layer=layer;
       instances.add(record);
       holder.dataset.basemap='vector-loading';
+      const mapAppearance=()=>preference==='auto'?(mode()==='dark'?'dark':'positron'):preference;
       glMap.on('load',()=>{
         if(ended)return;
         loaded=true;
         if(timeout)clearTimeout(timeout);
-        holder.dataset.basemap=mode()==='dark'?'vector-dark':'vector-positron';
+        holder.dataset.basemap='vector-'+mapAppearance();
+      });
+      glMap.on('style.load',()=>{
+        if(!ended)holder.dataset.basemap='vector-'+mapAppearance();
       });
       glMap.on('error',event=>{
         const message=String(event.error?.message||event.error||'');
