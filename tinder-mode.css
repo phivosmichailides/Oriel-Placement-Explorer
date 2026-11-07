@@ -67,3 +67,87 @@
  .tdActionLegend{gap:10px}.tdActionLegend span{width:58px}.tdActionLegend span:first-child{width:48px}
 }
 @media(prefers-reduced-motion:reduce){.tdAction,.tdStamp,.tdSwipeCard{transition:none!important}}
+
+
+/* Tinder Mode reactions, activated for BOTH touch swipes and icon clicks.
+   Short, non-blocking feedback; existing data/decisions are untouched. */
+#tinderMode .tdCardDeck::before,
+#tinderMode .tdCardDeck::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:25px;
+  opacity:0;
+  z-index:3;
+  pointer-events:none;
+}
+#tinderMode .tdCardDeck.tdFeedbackYes::before{
+  background:radial-gradient(ellipse at 50% 42%,rgba(75,255,173,.45),rgba(35,184,124,.18) 45%,transparent 78%);
+  animation:tdJoyGlow .62s cubic-bezier(.18,.7,.22,1) both;
+}
+#tinderMode .tdCardDeck.tdFeedbackYes::after{
+  background:linear-gradient(108deg,transparent 15%,rgba(214,255,228,.09) 31%,rgba(217,255,236,.74) 48%,rgba(214,255,228,.09) 64%,transparent 83%);
+  transform:translateX(-85%);
+  animation:tdJoySweep .62s ease-out both;
+}
+#tinderMode .tdCardDeck.tdFeedbackNo::before{
+  background:radial-gradient(ellipse at 50% 38%,rgba(204,35,68,.29),rgba(117,33,59,.16) 46%,rgba(44,35,48,.11) 75%,transparent);
+  animation:tdSorrow .60s ease-out both;
+}
+#tinderMode .tdCardDeck.tdFeedbackNo::after{
+  background:linear-gradient(180deg,transparent 15%,rgba(110,34,54,.15) 100%);
+  animation:tdSorrow .60s ease-out both;
+}
+#tinderMode .tdCardDeck.tdFeedbackSuper::before{
+  background:radial-gradient(ellipse at 50% 35%,rgba(80,177,255,.44),rgba(65,116,223,.2) 48%,transparent 76%);
+  animation:tdJoyGlow .62s ease-out both;
+}
+#tinderMode .tdFeedbackParticles{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  overflow:visible;
+}
+#tinderMode .tdSparkle{
+  position:absolute;
+  color:#70f1ad;
+  font-size:clamp(17px,2.5vw,30px);
+  text-shadow:0 0 12px #70f1adc0,0 0 25px #b9ffe67a;
+  transform:translate3d(0,0,0) scale(.25);
+  opacity:0;
+  animation:tdSpark .57s cubic-bezier(.16,.8,.28,1) both;
+  will-change:transform,opacity;
+}
+#tinderMode .tdFeedbackSuper .tdSparkle{color:#7fcaff;text-shadow:0 0 15px #7fcaffaa}
+#tinderMode .tdSwipeCard.tdLeavingYes{
+  box-shadow:0 14px 55px rgba(30,181,109,.24);
+}
+#tinderMode .tdSwipeCard.tdLeavingNo{
+  box-shadow:0 14px 48px rgba(183,43,70,.13);
+}
+@keyframes tdJoyGlow{
+  0%{opacity:0;transform:scale(.88)}
+  30%{opacity:1;transform:scale(1.01)}
+  72%{opacity:.74;transform:scale(1.04)}
+  100%{opacity:0;transform:scale(1.08)}
+}
+@keyframes tdJoySweep{
+  0%{opacity:0;transform:translateX(-85%)}
+  25%{opacity:.8}
+  75%{opacity:.75}
+  100%{opacity:0;transform:translateX(85%)}
+}
+@keyframes tdSorrow{
+  0%{opacity:0;transform:translateY(-4px)}
+  36%{opacity:1;transform:translateY(0)}
+  100%{opacity:0;transform:translateY(12px)}
+}
+@keyframes tdSpark{
+  0%{opacity:0;transform:translate3d(0,0,0) scale(.2) rotate(-20deg)}
+  26%{opacity:1;transform:translate3d(calc(var(--spark-x) * .3),calc(var(--spark-y) * .3),0) scale(1.05) rotate(10deg)}
+  100%{opacity:0;transform:translate3d(var(--spark-x),var(--spark-y),0) scale(.35) rotate(45deg)}
+}
+@media(prefers-reduced-motion:reduce){
+ #tinderMode .tdCardDeck::before,#tinderMode .tdCardDeck::after,#tinderMode .tdSparkle{animation:none!important}
+}
