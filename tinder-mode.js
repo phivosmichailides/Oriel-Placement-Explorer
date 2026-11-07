@@ -148,6 +148,39 @@
     return card;
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const EXIT_MS=560;
+  const feedback=(status)=>{
+    const deck=document.querySelector('#tinderMode .tdCardDeck');
+    if(!deck)return ()=>{};
+    deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
+    deck.querySelector('.tdFeedbackParticles')?.remove();
+    const kind=status==='yes'?'Yes':status==='no'?'No':'Super';
+    deck.classList.add('tdFeedback'+kind);
+    if(status==='yes'||status==='love'){
+      const layer=document.createElement('div');
+      layer.className='tdFeedbackParticles';
+      layer.setAttribute('aria-hidden','true');
+      // A few CSS-only sparkle particles: light-weight and non-interactive.
+      const spots=[[19,20,-65,-70],[44,14,-20,-80],[77,19,54,-83],[90,45,78,-16],
+        [78,72,75,72],[52,84,-4,75],[21,74,-72,47],[9,44,-80,-12]];
+      spots.forEach(([x,y,dx,dy],i)=>{
+        const p=document.createElement('span');
+        p.className='tdSparkle';
+        p.textContent='✦';
+        p.style.left=x+'%';
+        p.style.top=y+'%';
+        p.style.setProperty('--spark-x',dx+'px');
+        p.style.setProperty('--spark-y',dy+'px');
+        p.style.animationDelay=(i%3*38)+'ms';
+        layer.append(p);
+      });
+      deck.append(layer);
+    }
+    return ()=>{
+      deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
+      deck.querySelector('.tdFeedbackParticles')?.remove();
+    };
+  };
   const commit=(p,status,vector)=>{
     if(animating)return;
     animating=true;
@@ -166,16 +199,25 @@
       saveGame();
       animating=false;
       render();
-      note(status==='love'?'Super liked. Excellent taste.':status==='yes'?'Liked. Keep the good ones coming.':'Passed. Next contestant.');
+      note(status==='love'?'Super liked. Excellent taste.':status==='yes'?'Liked. Keep the good ones coming.':'Like No. Next contestant.');
     };
     if(!card||reduced()){finish();return;}
-    card.classList.add('tdLeaving');
-    card.style.transition='transform .25s cubic-bezier(.3,.8,.2,1),opacity .25s ease';
-    card.style.transform='translate3d('+(vector===0?0:vector*window.innerWidth)+'px,'+(status==='love'?-window.innerHeight*.65:'-18px')+',0) rotate('+(vector*16)+'deg)';
-    card.style.opacity='0';
-    const stamp=card.querySelector(status==='no'?'.tdStampNo':status==='yes'?'.tdStampYes':'.tdStampSuper');
-    stamp?.classList.add('tdStampShow');
-    setTimeout(finish,255);
+    const clearFeedback=feedback(status);
+    card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
+    const distance=Math.max(680,window.innerWidth*.7);
+    const slide=vector*distance;
+    const lift=status==='love'?-Math.max(460,window.innerHeight*.65):-30;
+    const departure=()=>{
+      card.style.transition='transform '+EXIT_MS+'ms cubic-bezier(.25,.72,.22,1),opacity '+EXIT_MS+'ms ease-out,filter '+EXIT_MS+'ms ease-out';
+      card.style.transform='translate3d('+slide+'px,'+lift+'px,0) rotate('+(vector*14)+'deg)';
+      card.style.opacity='0';
+      if(status==='no')card.style.filter='saturate(.45) brightness(.85)';
+      const stamp=card.querySelector(status==='no'?'.tdStampNo':status==='yes'?'.tdStampYes':'.tdStampSuper');
+      stamp?.classList.add('tdStampShow');
+    };
+    // Start the transition from the card's last drag position, avoiding a jump.
+    requestAnimationFrame(departure);
+    setTimeout(()=>{clearFeedback();finish();},EXIT_MS+35);
   };
   const undo=()=>{
     if(animating)return;
@@ -254,12 +296,12 @@
     sim.after(tab);
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
-    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left to pass or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
+    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label><div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
      '<div class="tdBoard"><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
-     '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Reject" aria-label="Reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
-     '<div class="tdActionLegend"><span>Undo</span><span>Pass</span><span>Like</span><span>Super Like</span></div>'+
-     '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Pass · → Like · ↑ Super Like · Backspace Undo</p>'+
+     '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
+     '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
+     '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
      '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel CSV. Training areas are postcode-based approximations. Cheeky pros and cons are suggestions, not verified employer promises.</p></div>';
     $('simulator')?.after(section);
     const region=$('tinderRegion');if(region){
