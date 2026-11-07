@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107fallback2')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107editorial2')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -71,7 +71,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Main map is using unauthorized/keyed or failed tile imagery: '+JSON.stringify(mainTileSources.slice(0,3)));
     const vectorDiagnostic=await page.evaluate(()=>({
       adapterPresent:typeof window.L?.maplibreGL==='function',
-      webglSupported:Boolean(window.maplibregl?.supported?.()),
+      webglSupported:(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}})(),
       basemapStatus:document.getElementById('placementMap')?.dataset.basemap||'unset',
       canvasCount:document.querySelectorAll('#placementMap canvas.maplibregl-canvas').length,
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
@@ -87,6 +87,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     const mapPicker=page.locator('#mapStyle');
     assert(await mapPicker.isVisible(),'Map style picker is missing');
+    assert.equal(await mapPicker.locator('option[value="auto"]').count(),1,'Automatic map option missing');
+    assert.equal(await mapPicker.locator('option[value="editorial"]').count(),1,'Editorial Light map option missing');
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       await mapPicker.selectOption('liberty');
@@ -137,7 +139,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&(holder.dataset.basemap==='vector-positron'||holder.dataset.basemap==='vector-dark'||holder.querySelector('.leaflet-tile-loaded'));
+      return holder&&(holder.dataset.basemap==='vector-editorial'||holder.dataset.basemap==='vector-dark'||holder.querySelector('.leaflet-tile-loaded'));
     },null,{timeout:30000});
     const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
     const miniTileSources=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
@@ -204,20 +206,20 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       mini:document.querySelector('#results .placement .uxMiniMap')?.dataset.basemap,
       maplibreLoaded:!!window.maplibregl,
       pluginLoaded:!!window.L?.maplibreGL,
-      supported:!!window.maplibregl?.supported?.(),
+      supported:(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}})(),
       cssFilter:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter
     }));
     console.log('BASEMAP DIAGNOSTICS:',JSON.stringify(browserBasemaps));
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
-        return state==='vector-positron'||state==='raster-fallback';
+        return state==='vector-editorial'||state==='raster-fallback';
       },null,{timeout:14000});
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
-      assert(finalState==='vector-positron'||finalState==='raster-fallback','WebGL map hung during initialisation');
+      assert(finalState==='vector-editorial'||finalState==='raster-fallback','WebGL map hung during initialisation');
     }
-    assert(['vector-positron','vector-loading','raster-fallback'].includes(browserBasemaps.main),
+    assert(['vector-editorial','vector-loading','raster-fallback'].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
     await card.locator('.uxLocationMore summary').click();
     assert(await card.locator('.uxLocationMore').evaluate(el=>el.open),'Extra location details do not expand');
