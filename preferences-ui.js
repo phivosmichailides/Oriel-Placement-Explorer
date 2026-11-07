@@ -19,6 +19,10 @@
       const label=row.querySelector('b')?.textContent?.trim()||'Preference';
       const group=document.createElement('div');
       group.className='weightScale';
+      const bubble=document.createElement('span');
+      bubble.className='weightSelectionBubble';
+      bubble.setAttribute('aria-hidden','true');
+      group.append(bubble);
       group.setAttribute('role','group');
       group.setAttribute('aria-label',label+': weight from 0 (off) to 5 (strongest)');
       const min=Number(input.min),max=Number(input.max);
@@ -39,7 +43,18 @@
       if(input.nextElementSibling?.tagName==='SPAN')
         input.nextElementSibling.classList.add('weightLegacyValue');
       row.classList.add('weightModern');
+      requestAnimationFrame(()=>placeBubble(row,false));
     }
+  };
+  const placeBubble=(row,animate=true)=>{
+    const scale=row?.querySelector('.weightScale');
+    const bubble=scale?.querySelector('.weightSelectionBubble');
+    const active=scale?.querySelector('.weightStep[aria-pressed="true"]');
+    if(!bubble||!active)return;
+    bubble.style.width=active.offsetWidth+'px';
+    if(!animate)bubble.style.transition='none';
+    bubble.style.transform='translate3d('+active.offsetLeft+'px,0,0)';
+    if(!animate)requestAnimationFrame(()=>bubble.style.removeProperty('transition'));
   };
   host.addEventListener('click',event=>{
     const button=event.target.closest('button.weightStep');
@@ -57,9 +72,11 @@
     row.querySelectorAll('button.weightStep').forEach(step=>{
       step.setAttribute('aria-pressed',String(step===button));
     });
+    placeBubble(row);
   });
   // prefs() regenerates the rows when users revisit Preferences.
   // Observe just the container's direct children to avoid observer loops.
   new MutationObserver(enhance).observe(host,{childList:true});
+  window.addEventListener('resize',()=>host.querySelectorAll('.weightModern').forEach(row=>placeBubble(row,false)),{passive:true});
   enhance();
 })();
