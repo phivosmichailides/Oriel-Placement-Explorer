@@ -251,3 +251,7 @@ html #simToast {
     transition: none !important;
   }
 }
+
+/* Hidden filter confirmation must occupy no space at rest. */
+html .atlasFilterNotice[hidden] { display:none !important; }
+html .atlasFilterNotice:not([hidden]) { display:inline-flex; }
