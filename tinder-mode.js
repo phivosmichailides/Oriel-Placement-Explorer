@@ -27,11 +27,20 @@
   const assessed=p=>{try{return analyse(p)}catch{return{score:50,good:[],bad:[],band:'Not yet assessed'}}};
   const blacklisted=p=>window.OrielGeoBlacklist?.shouldHide?.(p)||false;
   const regionList=()=>[...new Set(getData().map(p=>p.region).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  let poolSignature='',poolData=[];
   const selectedPool=()=>{
-    const region=game.region;
-    return getData()
-      .filter(p=>(region==='all'||p.region===region)&&!blacklisted(p))
-      .sort((a,b)=>assessed(b).score-assessed(a).score||(b.salary||0)-(a.salary||0)||a.id.localeCompare(b.id));
+    const data=getData();
+    const profile=typeof state!=='undefined'?state?.prefs||{}:{};
+    const geo=profile.locationBlacklist||[];
+    const signature=JSON.stringify([game.region,data.length,data[0]?.id,data[data.length-1]?.id,
+      profile.weights,profile.likes,profile.locationAllowed,geo]);
+    if(signature===poolSignature)return poolData;
+    poolSignature=signature;
+    poolData=data.filter(p=>(game.region==='all'||p.region===game.region)&&!blacklisted(p))
+      .map(p=>({p,score:assessed(p).score}))
+      .sort((a,b)=>b.score-a.score||(b.p.salary||0)-(a.p.salary||0)||a.p.id.localeCompare(b.p.id))
+      .map(x=>x.p);
+    return poolData;
   };
   const lookup=id=>getData().find(p=>p.id===id);
   let forced=null,animating=false,initialized=false, activeId='';
