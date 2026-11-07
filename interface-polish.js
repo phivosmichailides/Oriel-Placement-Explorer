@@ -62,7 +62,42 @@
     setTimeout(()=>{
       if(!chip.isConnected)return;
       const title=chip.textContent.trim().replace(/\s+/g,' ').slice(0,40);
-      show((chip.classList.contains('on')?'Selected · ':'Removed · ')+title);
+      if(chip.id==='allRegionsBtn')show('Showing all regions');
+      else show((chip.classList.contains('on')?'Selected · ':'Removed · ')+title);
     },0);
+  });
+  // Main shortlist changes already dispatch desk:action. Give them a short,
+  // theme-aware confirmation; suppress duplicate messages inside Tinder Mode,
+  // where there is already richer green/red card feedback.
+  document.addEventListener('desk:action',event=>{
+    if(document.getElementById('tinderMode')?.classList.contains('active'))return;
+    const action=event.detail?.name;
+    if(action==='shortlist_added'||action==='shortlist_removed'){
+      if(typeof toast==='function')toast(action==='shortlist_added'?'Added to your shortlist':'Removed from your shortlist');
+    }
+  });
+  document.addEventListener('click',event=>{
+    if(!event.isTrusted)return;
+    const remove=event.target.closest('.geoAreaChip button');
+    if(remove&&typeof toast==='function'){
+      // Click handler removes the saved chip synchronously.
+      setTimeout(()=>toast('Excluded location removed'),0);
+    }
+  });
+  // Simulator already reports drag and drop changes in its own status region.
+  // Ensure successful moves receive a small explicit confirmation.
+  document.addEventListener('drop',event=>{
+    const col=event.target.closest?.('#simulator [data-sim-col]');
+    if(!col)return;
+    let id='';
+    try{id=event.dataTransfer?.getData('text/plain')||''}catch{}
+    if(!id)return;
+    setTimeout(()=>{
+      const item=[...document.querySelectorAll('#simulator .simItem')].find(el=>el.dataset.simId===id);
+      const zone=item?.closest('[data-sim-col]')?.dataset.simCol;
+      if(!zone)return;
+      const status=document.getElementById('simToast');
+      if(status)status.textContent='✦ Moved to '+({preferred:'Preference',neutral:'No Preference',unwanted:'Not Wanted'}[zone]||zone);
+    },60);
   });
 })();
