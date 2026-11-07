@@ -78,6 +78,8 @@ The original development history is preserved in Git; ongoing maintenance, techn
 
 For a safe repository rename or future custom domain, see [deployment and URL migration](docs/DEPLOYMENT_AND_RENAME.md).
 
+The full feature and development scope is in the [portfolio and LinkedIn feature inventory](docs/PRODUCT_FEATURE_INVENTORY.md).
+
 ## Product direction
 
 Next priorities include improving commute comparisons, distinguishing missing data from negative signals, further explaining score components and conducting structured usability sessions with other applicants. These are future goals, **not features or research outcomes being claimed today**.
