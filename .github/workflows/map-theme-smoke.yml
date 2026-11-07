@@ -17,7 +17,7 @@ permissions:
 jobs:
   chromium-smoke:
     name: Live site maps, programme panels, themes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
