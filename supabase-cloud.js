@@ -133,7 +133,7 @@
       const button=element('button','btn primary cloudAccountButton','Sign in to save');
       button.type='button';
       button.addEventListener('click',showAuthModal);
-      main.append(button,element('span','cloudAccountHint','Private cloud backup'));
+      main.append(button);
     }
     const state=element('span','cloudAccountStatus');
     state.id='orielCloudStatus';
@@ -143,7 +143,7 @@
     host.append(main);
     if(!configured)status('Add the Supabase project URL and publishable key to activate accounts.','pending');
     else if(currentUser)status('Checking your saved workspace…','pending');
-    else status('Your data stays in this browser until you sign in.','neutral');
+    else status('','neutral');
   };
   const redirectUrl=()=>window.location.origin+window.location.pathname;
   const showAuthModal=()=>{
@@ -323,7 +323,7 @@
       await prepareUser(result.data.session.user);
     }else{
       currentUser=null;renderAccount();
-      status('Sign in when you want to save this workspace across devices.','neutral');
+      status('','neutral');
     }
     // Subscribe only after the initial session has finished hydrating, so the
     // app never starts with a duplicate, still-pending cloud restore.
