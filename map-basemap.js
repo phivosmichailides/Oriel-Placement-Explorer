@@ -28,28 +28,18 @@ const STYLES = Object.freeze({
     const saved=localStorage.getItem(STYLE_KEY)||'auto';
     if(CHOICES.has(saved))preference=saved;
   }catch{};
-  const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
-  const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
-  const OPENFREE_ATTR='<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · '+OSM_ATTR;
+  // MapLibre's Leaflet adapter obtains vector attribution from the style sources.
+  // Do not add it manually as well, or MapTiler and OSM credits appear twice.
   const RASTER_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
   const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference;
   const style=()=>STYLES[activeStyleName()];
-  const styleAttribution=()=>activeStyleName()==='editorial'?MAPTILER_ATTR:OPENFREE_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
       try{
         if(record.leaflet.getContainer().isConnected&&record.map){
           record.map.setStyle(style());
-          // Leaflet owns the attribution control, even when MapLibre changes style.
-          const nextAttribution=styleAttribution();
-          if(record.attribution!==nextAttribution){
-            record.leaflet.attributionControl?.removeAttribution(record.attribution);
-            record.leaflet.attributionControl?.addAttribution(nextAttribution);
-            record.layer.options.attribution=nextAttribution;
-            record.attribution=nextAttribution;
-          }
           record.leaflet.getContainer().dataset.basemap='vector-loading';
         }
       }catch(error){console.warn('Map style could not switch',error)}
@@ -97,9 +87,9 @@ const STYLES = Object.freeze({
     if(!L.maplibreGL||!maplibre||explicitlyUnsupported||instances.size>=MAX_GL_MAPS){
       return raster(map);
     }
-    // Keep a lightweight raster frame underneath the main vector map.
-    // If WebGL temporarily clears during a zoom, the user sees a map
-    // instead of a black flash or a tile boundary grid.
+    // Keep OSM tiles only while the vector style initially loads. Once the
+    // MapLibre canvas is ready, remove those tiles and their attribution:
+    // retaining them can paint the standard map *over* the custom style.
     let retainedUnderlay=null;
     if(!mini){
       retainedUnderlay=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -108,8 +98,13 @@ const STYLES = Object.freeze({
         attribution:RASTER_ATTR
       }).addTo(map);
     }
+    // An explicit pane ensures vector tiles sit above any raster fallback
+    // but below Leaflet programme markers and popups (overlayPane=400).
+    const vectorPane=map.getPane('orielVectorBasemap')||map.createPane('orielVectorBasemap');
+    vectorPane.style.zIndex='250';
+    vectorPane.style.pointerEvents='none';
     let layer,glMap,loaded=false,ended=false,timeout;
-    const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
+    const record={map:null,leaflet:map,layer:null};
     const fail=()=>{
       if(ended||loaded)return;
       ended=true;
@@ -124,7 +119,7 @@ const STYLES = Object.freeze({
     };
     try{
       layer=L.maplibreGL({
-        style:style(),attribution:styleAttribution(),
+        style:style(),pane:'orielVectorBasemap',
         interactive:false,
         // The Leaflet adapter needs overscan: zero padding creates exposed
         // tile boundaries and flashes during zoom and pan.
@@ -149,6 +144,11 @@ const STYLES = Object.freeze({
         if(ended)return;
         loaded=true;
         if(timeout)clearTimeout(timeout);
+        // Do not keep the OSM raster drawn above the custom basemap.
+        if(retainedUnderlay){
+          try{map.removeLayer(retainedUnderlay)}catch{}
+          retainedUnderlay=null;
+        }
         holder.dataset.basemap='vector-'+mapAppearance();
         reportMainRenderer(map,false);
       });
