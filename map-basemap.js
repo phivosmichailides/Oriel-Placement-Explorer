@@ -11,13 +11,16 @@
  * Third party: https://openfreemap.org, © OpenMapTiles © OpenStreetMap.
  */
 (()=>{
-  const STYLES=Object.freeze({
-    positron:'https://tiles.openfreemap.org/styles/positron',
-    bright:'https://tiles.openfreemap.org/styles/bright',
-    liberty:'https://tiles.openfreemap.org/styles/liberty',
-    dark:'https://tiles.openfreemap.org/styles/dark',
-    fiord:'https://tiles.openfreemap.org/styles/fiord'
-  });
+    const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
+
+const STYLES = Object.freeze({
+  editorial: `https://api.maptiler.com/maps/01a1b7cf-4ca7-7662-9861-84b5b44c218c/style.json?key=${MAPTILER_KEY}`,
+  positron: 'https://tiles.openfreemap.org/styles/positron',
+  bright: 'https://tiles.openfreemap.org/styles/bright',
+  liberty: 'https://tiles.openfreemap.org/styles/liberty',
+  dark: 'https://tiles.openfreemap.org/styles/dark',
+  fiord: 'https://tiles.openfreemap.org/styles/fiord'
+});
   const STYLE_KEY='oriel-basemap-style-v1';
   const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
   let preference='auto';
