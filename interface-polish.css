@@ -1,0 +1,253 @@
+/*
+ * Placement Atlas responsive/form polish.
+ * Preserve all existing native <select> values and change listeners.
+ * Chromium 135+/Safari 27+: CSS-only customizable dropdown picker.
+ * Other browsers: existing accessible native dropdowns remain usable.
+ */
+@supports (appearance: base-select) {
+  html select:not([multiple]):not([size]),
+  html select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select !important;
+    -webkit-appearance: base-select !important;
+  }
+  html select:not([multiple]):not([size]) {
+    min-width: 0;
+    max-width: 100%;
+    background-image: none !important;
+    background-color: var(--panel) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 12px !important;
+    color: var(--ink) !important;
+    cursor: pointer;
+    padding: 10px 13px !important;
+    font-size: 13.5px;
+    line-height: 1.35;
+    transition: background-color .17s ease, border-color .17s ease, box-shadow .17s ease;
+  }
+  html select:not([multiple]):not([size])::picker-icon {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    color: var(--mut);
+    transition: transform .18s cubic-bezier(.22,1,.36,1);
+  }
+  html select:not([multiple]):not([size]):open::picker-icon {
+    transform: rotate(180deg);
+  }
+  html select:not([multiple]):not([size]):open {
+    border-color: var(--ux-accent) !important;
+    box-shadow: 0 0 0 3px var(--ux-accent-soft);
+  }
+  html select:not([multiple]):not([size])::picker(select) {
+    box-sizing: border-box;
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border: 1px solid var(--ux-accent-border) !important;
+    border-radius: 16px;
+    padding: 6px;
+    box-shadow: 0 16px 45px rgba(12,22,18,.18), 0 2px 8px rgba(12,22,18,.07);
+    min-width: anchor-size(width);
+    max-width: min(410px, calc(100vw - 24px));
+    max-height: min(440px, 65vh);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ux-accent-border) transparent;
+    opacity: 0;
+    transform: translateY(-5px) scale(.99);
+    transition: opacity .18s ease,
+                transform .22s cubic-bezier(.22,1,.36,1),
+                display .18s allow-discrete,
+                overlay .18s allow-discrete;
+  }
+  html select:not([multiple]):not([size]):open::picker(select) {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  @starting-style {
+    html select:not([multiple]):not([size]):open::picker(select) {
+      opacity: 0;
+      transform: translateY(-6px) scale(.985);
+    }
+  }
+  html select:not([multiple]):not([size]) option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    margin: 2px 0;
+    padding: 9px 10px;
+    border-radius: 10px;
+    color: var(--ink) !important;
+    background: transparent !important;
+    font-size: 13.5px;
+    font-weight: 650;
+    line-height: 1.4;
+    white-space: normal;
+    cursor: pointer;
+  }
+  html select:not([multiple]):not([size]) option:hover,
+  html select:not([multiple]):not([size]) option:focus-visible {
+    background: var(--ux-accent-soft) !important;
+    color: var(--ux-accent-ink) !important;
+  }
+  html select:not([multiple]):not([size]) option:checked {
+    background: var(--ux-accent-soft) !important;
+    color: var(--ux-accent-ink) !important;
+    font-weight: 850;
+  }
+  html select:not([multiple]):not([size]) option::checkmark {
+    color: var(--ux-accent-ink);
+    font-weight: 850;
+    margin-inline-end: 5px;
+  }
+  html select:not([multiple]):not([size]) optgroup {
+    color: var(--mut);
+    font-weight: 750;
+  }
+}
+/* Every saved-action confirmation adopts the active palette.
+   Existing app toast() calls continue to work without changing state. */
+html #toast.toast {
+  z-index: 9995;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(490px, calc(100vw - 30px));
+  min-height: 46px;
+  padding: 12px 16px;
+  background: var(--panel) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--ux-accent-border);
+  border-left: 4px solid var(--ux-accent);
+  border-radius: 15px;
+  box-shadow: 0 16px 42px rgba(14,25,20,.2);
+  font-weight: 750;
+  font-size: 12.5px;
+  letter-spacing: -.005em;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+html #toast.toast::before {
+  content: "✦";
+  color: var(--ux-accent-ink);
+  font-size: 17px;
+  line-height: 1;
+  flex: none;
+}
+html #toast.toast.show {
+  animation: atlasToastRise .26s cubic-bezier(.22,1,.36,1);
+}
+@keyframes atlasToastRise {
+  from { opacity: 0; translate: 0 9px; }
+  to { opacity: 1; translate: 0 0; }
+}
+/* A tiny confirmation strip, rather than another huge panel, when filtering. */
+html .atlasFilterNotice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 11px;
+  border: 1px solid var(--ux-accent-border);
+  border-radius: 999px;
+  background: var(--ux-accent-soft);
+  color: var(--ux-accent-ink);
+  font-size: 11.5px;
+  font-weight: 750;
+  line-height: 1.4;
+  margin: 2px 0 9px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .19s ease, transform .2s cubic-bezier(.22,1,.36,1);
+  pointer-events: none;
+}
+html .atlasFilterNotice.atlasIsVisible {
+  opacity: 1;
+  transform: none;
+}
+html .atlasFilterNotice::before { content: "✓"; font-size: 12px; }
+/* Existing touch/drag actions feel responsive without exaggerated movement. */
+html button:not(:disabled):active {
+  transition-duration: .12s;
+}
+html #explore .quick .chip {
+  transition: background-color .2s, border-color .2s, color .2s,
+              transform .2s cubic-bezier(.22,1,.36,1);
+}
+html #explore .quick .chip:active:not(:disabled) { transform: scale(.965); }
+html .simItem:not(.simDragging) {
+  transition: box-shadow .19s ease, border-color .19s ease,
+              background-color .19s ease, transform .2s cubic-bezier(.22,1,.36,1);
+}
+html .simItem.simDragging { opacity: .55; transform: scale(.975) rotate(-1deg); }
+html .simItem.simHover { border-color: var(--ux-accent) !important; background: var(--ux-accent-soft) !important; }
+html #simToast {
+  border: 1px solid var(--ux-accent-border);
+  background: var(--ux-accent-soft);
+  color: var(--ux-accent-ink);
+  padding: 8px 11px;
+  border-radius: 11px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+}
+/* Narrow desktop/tablet widths: prevent CSS-grid rows from inheriting the
+   huge height of the postcode module and leaving blank neighboring cells.
+   Do NOT modify the full desktop sidebar (>1100px). */
+@media (max-width: 1100px) {
+  html #explore:not(.uxFiltersCollapsed) #uxFilterSidebar {
+    display: block !important;
+    min-width: 0;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+  html #uxFilterSidebar > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  html #uxFilterSidebar > .secthead,
+  html #uxFilterSidebar > .quick,
+  html #uxFilterSidebar > .uxProfileApplied,
+  html #uxFilterSidebar > .notice,
+  html #uxFilterSidebar > .footerbar {
+    width: 100%;
+  }
+  html #uxFilterSidebar > .grid2 {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 12px;
+    margin: 0 0 11px;
+    align-items: start;
+  }
+  html #uxFilterSidebar > .grid2 > .field { margin-bottom: 0; }
+  html #uxFilterSidebar > .uxHomePostcodeFilter {
+    margin: 12px 0 16px;
+    width: 100%;
+    min-width: 0;
+  }
+  html #uxFilterSidebar .uxHomePostcodeFilter > .field,
+  html #uxFilterSidebar .uxHomePostcodeFilter input {
+    width: 100%;
+    min-width: 0;
+  }
+  html #uxFilterSidebar > .field { margin-bottom: 12px; }
+  html #uxFilterSidebar > .check { display: flex; align-items: flex-start; gap: 9px; margin: 9px 0; }
+  html #uxFilterSidebar .uxSpecialistFilters { max-width: 100%; min-width: 0; }
+}
+@media (max-width: 550px) {
+  html #uxFilterSidebar > .grid2 { grid-template-columns: minmax(0,1fr);gap:10px; }
+  html #uxFilterSidebar { padding: 14px; }
+  html #uxFilterSidebar .secthead { gap: 8px; }
+  html .atlasFilterNotice { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html select::picker(select), html #toast.toast.show,
+  html .atlasFilterNotice, html .simItem,
+  html #explore .quick .chip {
+    animation: none !important;
+    transition: none !important;
+  }
+}
