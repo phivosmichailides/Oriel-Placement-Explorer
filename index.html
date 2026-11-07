@@ -46,6 +46,25 @@
 <link rel="stylesheet" href="design-refresh.css?v=20261106commute1">
 <link rel="stylesheet" href="programme-preview.css?v=20261106a">
 <link rel="stylesheet" href="controls-refinement.css?v=20261106a">
+<style>
+/* Keep an open decision menu above the next programme card.
+   The dropdown's own z-index is not sufficient when sibling cards create
+   independent stacking contexts (including animated and expanded cards).
+   This only changes presentation; no ranking or shortlist state is touched. */
+#results > .placement:has(.decisionPicker[open]),
+#mapSelection > .placement:has(.decisionPicker[open]),
+#shortlistList > .rank-row:has(.decisionPicker[open]),
+.uxDrawerItems > .placement:has(.decisionPicker[open]) {
+  position: relative;
+  z-index: 30;
+  overflow: visible;
+}
+#shortlistList .placement:has(.decisionPicker[open]),
+.placement .decisionPicker[open] {
+  position: relative;
+  z-index: 31;
+}
+</style>
 </head>
 <body>
 <div class="shell">
