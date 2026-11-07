@@ -55,6 +55,17 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     })));
     assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
       'Main map is using unauthorized/keyed or failed tile imagery: '+JSON.stringify(mainTileSources.slice(0,3)));
+    const mapPicker=page.locator('#mapStyle');
+    assert(await mapPicker.isVisible(),'Map style picker is missing');
+    await mapPicker.selectOption('liberty');
+    const savedMapStyle=await page.evaluate(()=>({
+      active:window.OrielBasemap?.preference,
+      stored:localStorage.getItem('oriel-basemap-style-v1')
+    }));
+    assert.deepEqual(savedMapStyle,{active:'liberty',stored:'liberty'},'Map style selection was not saved');
+    await mapPicker.selectOption('auto');
+    await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
+
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
     const cards=await page.locator('#results .placement').count();
     const panels=await page.locator('#results .placement .uxLocationPanel').count();
