@@ -30,6 +30,20 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     assert(fresh,'Latest public build not served');
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
+    const catalogue=await page.evaluate(()=>{
+      const all=typeof placements==='undefined'?[]:placements;
+      return {
+        origin:document.documentElement.dataset.catalogue,
+        count:all.length,
+        regions:[...new Set(all.map(p=>p.region))].length,
+        sample:all.some(p=>p.id==='Chelsea&Westminster Hosp+South Southwark PCN (Elm Lodge Practice)/London/SW10 9NH+SE24 9HJ/1575')
+      };
+    });
+    assert.equal(catalogue.origin,'oriel-owner-export-2026','The live site fell back to inherited legacy.html');
+    assert.equal(catalogue.count,4064,'Programme count mismatched the uploaded Oriel export');
+    assert.equal(catalogue.regions,12,'Expected the 12 Oriel England & Wales regions');
+    assert(catalogue.sample,'A known programme ID changed and could detach saved applicant selections');
+
     await page.waitForFunction(
       ()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,
       null,{timeout:70000}
@@ -279,6 +293,6 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(await preview.count()===0,'Escape should close the same-page summary');
 
     assert(!errors.some(e=>/pc is not defined|ReferenceError/.test(e)),'Runtime ReferenceError: '+errors.join(';'));
-    console.log(JSON.stringify({status:'PASS',pins,mapTiles,miniPins,basemap:browserBasemaps,allRegionPins,cards,panels,bullets,readable,geometry,themeStyles:themeStyles.length}));
+    console.log(JSON.stringify({status:'PASS',catalogue,pins,mapTiles,miniPins,basemap:browserBasemaps,allRegionPins,cards,panels,bullets,readable,geometry,themeStyles:themeStyles.length}));
   }finally{await browser.close()}
 })().catch(e=>{console.error('UI REGRESSION:',e.stack||e);process.exit(1)});
