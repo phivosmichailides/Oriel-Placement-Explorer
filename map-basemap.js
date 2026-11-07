@@ -49,12 +49,27 @@
   };
   // Browsers limit concurrent WebGL contexts. Mini-maps load lazily,
   // and after five vector maps use OSM fallback to avoid blank canvases.
+  const reportMainRenderer=(map,isFallback,reason='')=>{
+    if(map.getContainer()?.id!=='placementMap')return;
+    const control=document.getElementById('mapStyle');
+    const note=document.getElementById('mapStyleStatus');
+    if(control){
+      control.disabled=isFallback;
+      control.title=isFallback?'Custom map styles require WebGL. Standard map is active.':'';
+    }
+    if(note){
+      note.hidden=!isFallback;
+      note.textContent=isFallback?'Standard map on this device':'';
+      note.title=reason||'A standard OpenStreetMap background is shown because vector rendering is unavailable.';
+    }
+  };
   const MAX_GL_MAPS=7;
   const raster=map=>{
     const layer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
       maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:RASTER_ATTR
     }).addTo(map);
     map.getContainer().dataset.basemap='raster-fallback';
+    reportMainRenderer(map,true,'WebGL or the map provider is unavailable; the standard map remains interactive.');
     return {layer,kind:'raster'};
   };
   const addTo=(map,{mini=false}={})=>{
@@ -83,7 +98,10 @@
       if(timeout)clearTimeout(timeout);
       instances.delete(record);
       try{map.removeLayer(layer)}catch{}
-      if(retainedUnderlay)holder.dataset.basemap='raster-fallback';
+      if(retainedUnderlay){
+        holder.dataset.basemap='raster-fallback';
+        reportMainRenderer(map,true,'Vector tiles could not load; the standard map remains interactive.');
+      }
       else raster(map);
     };
     try{
@@ -114,6 +132,7 @@
         loaded=true;
         if(timeout)clearTimeout(timeout);
         holder.dataset.basemap='vector-'+mapAppearance();
+        reportMainRenderer(map,false);
       });
       glMap.on('style.load',()=>{
         if(!ended)holder.dataset.basemap='vector-'+mapAppearance();
