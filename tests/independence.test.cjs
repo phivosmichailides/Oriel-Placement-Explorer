@@ -14,6 +14,23 @@ test('live project does not ship a copy of the earlier explorer', () => {
   assert.doesNotMatch(app, /legacy\.html|acid555\/oriel-placement-explorer/i);
 });
 
+test('current deployable assets contain no obsolete explorer branding or data loader', () => {
+  for (const oldFile of ['core.js','ui.js','styles.css','legacy.html']) {
+    assert.equal(fs.existsSync(path.join(root,oldFile)),false,`obsolete file remains: ${oldFile}`);
+  }
+  const html=read('index.html');
+  const paths=new Set(['index.html','app.js','app-base.js','app-product.js',
+    ...Array.from(html.matchAll(/<script[^>]+src="([^"]+)"/g),m=>m[1].split('?')[0])
+      .filter(name=>!/^https?:\/\//.test(name))]);
+  for (const filename of paths) {
+    const content=read(filename);
+    assert.doesNotMatch(content,/Acid555|Asad\s*Q\.?|legacy\.html/i,
+      `Obsolete source attribution in ${filename}`);
+  }
+  assert.match(html,/app\.js\?v=20261107independent1/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261107independent1/);
+});
+
 test('site uses maintainer-supplied catalogue without rewriting stable saved IDs', () => {
   const app = read('app-base.js');
   assert.match(app, /const KEY='phivos-desk-v2'/);
