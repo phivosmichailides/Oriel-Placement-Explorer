@@ -48,7 +48,7 @@
     return poolData;
   };
   const lookup=id=>getData().find(p=>p.id===id);
-  let forced=null,animating=false,initialized=false, activeId='';
+  let forced=null,animating=false,initialized=false, activeId='',returningId='';
   const available=()=>selectedPool();
   const nextProgramme=()=>{
     if(forced){const p=lookup(forced);if(p&&!blacklisted(p))return p;forced=null;}
@@ -225,8 +225,24 @@
     if(!last){note('Nothing to undo yet.');return;}
     const s=prefs();if(s){if(last.prev)s.marks[last.id]=last.prev;else delete s.marks[last.id];save();}
     game.seen=game.seen.filter(x=>x!==last.id);
-    forced=last.id;saveGame();render();
+    forced=last.id;
+    returningId=last.id;
+    const animateReturn=!reduced();
+    animating=animateReturn;
+    saveGame();
+    render();
     note('Undone. Programme restored with its previous decision.');
+    if(animateReturn){
+      // Lock decisions only while the same card descends; animation is purely
+      // decorative and never replays/changes the saved decision.
+      setTimeout(()=>{
+        animating=false;
+        $('tinderCardSlot')?.classList.remove('tdUndoGlowing');
+        const current=nextProgramme();
+        $('tinderUndo').disabled=!game.history.length;
+        for(const id of ['tinderNo','tinderYes','tinderSuper'])$(id).disabled=!current;
+      },860);
+    }
   };
   function bindGesture(card,p){
     let startX=0,startY=0,deltaX=0,tracking=false;
@@ -277,7 +293,28 @@
       done.innerHTML='<span aria-hidden="true">♡</span><h3>That’s everyone in this round.</h3><p>You’ve reviewed every available programme in this region. Switch regions to continue, or undo your last decision.</p>';
       cardSlot.append(done);
     }else{
-      const card=build(p);cardSlot.append(card);
+      const card=build(p);
+      if(p.id===returningId){
+        returningId='';
+        if(!reduced()){
+          card.classList.add('tdUndoReturning');
+          cardSlot.classList.add('tdUndoGlowing');
+          const sparks=document.createElement('span');
+          sparks.className='tdUndoTwinkles';
+          sparks.setAttribute('aria-hidden','true');
+          [[12,17,-20],[82,12,35],[73,42,70],[23,65,-40],[51,81,55],[90,75,20]].forEach(([x,y,angle],i)=>{
+            const spark=document.createElement('i');
+            spark.textContent='✦';
+            spark.style.left=x+'%';
+            spark.style.top=y+'%';
+            spark.style.setProperty('--twist',angle+'deg');
+            spark.style.animationDelay=(170+i*55)+'ms';
+            sparks.append(spark);
+          });
+          card.append(sparks);
+        }
+      }
+      cardSlot.append(card);
       const existing=prefs()?.marks?.[p.id]?.status||'';
       const status=$('tinderExisting');status.textContent=existing?'Current decision: '+({love:'Love',yes:'Strong yes',maybe:'Maybe',backup:'Only if needed',no:'No',never:'Absolutely not'}[existing]||'Unmarked'):'Not yet decided';
       void resolvePlaces(p,p.id);
