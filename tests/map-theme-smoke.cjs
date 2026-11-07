@@ -25,11 +25,16 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107owncsv1')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
+    const footer=await page.locator('.app-footer').innerText();
+    assert.doesNotMatch(footer,/acid555|asad\s*q\.?|original explorer/i,
+      'Public app footer still renders older explorer branding');
+    assert.match(footer,/Oriel Placement Desk/i,'Independent product footer missing');
+
     const catalogue=await page.evaluate(()=>{
       const all=typeof placements==='undefined'?[]:placements;
       return {
