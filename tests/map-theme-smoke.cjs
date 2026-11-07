@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107editorial2')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107editorial3')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -62,13 +62,46 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       ()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,
       null,{timeout:70000}
     );
-    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-tile-loaded').length>0,null,{timeout:25000});
+    // A vector map must actually replace the OSM underlay. The old test
+    // only checked the data-basemap label, allowing an invisible vector canvas
+    // to pass while users still saw OpenStreetMap raster tiles.
+    await page.waitForFunction(()=>{
+      const holder=document.getElementById('placementMap');
+      const state=holder?.dataset.basemap||'';
+      if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
+      return state==='vector-editorial'&&!holder.querySelector('.oriel-map-backup');
+    },null,{timeout:30000});
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
     })));
-    assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
-      'Main map is using unauthorized/keyed or failed tile imagery: '+JSON.stringify(mainTileSources.slice(0,3)));
+    const shownState=await page.locator('#placementMap').getAttribute('data-basemap');
+    if(shownState==='vector-editorial'){
+      assert.equal(mapTiles,0,'Old OSM raster tiles are still visible above Editorial Light');
+      const vectorVisibility=await page.evaluate(()=>{
+        const holder=document.getElementById('placementMap');
+        const pane=holder.querySelector('.leaflet-orielVectorBasemap-pane');
+        const canvas=pane?.querySelector('canvas.maplibregl-canvas');
+        const attrib=holder.querySelector('.leaflet-control-attribution')?.innerText||'';
+        return {
+          panePresent:!!pane,canvasPresent:!!canvas,
+          paneZIndex:pane?getComputedStyle(pane).zIndex:null,
+          canvasWidth:canvas?.width||0,canvasHeight:canvas?.height||0,
+          maptilerCredits:(attrib.match(/MapTiler/g)||[]).length,
+          osmCredits:(attrib.match(/OpenStreetMap contributors/g)||[]).length,
+          attribution:attrib
+        };
+      });
+      console.log('CUSTOM MAP VISUAL DIAGNOSTIC:',JSON.stringify(vectorVisibility));
+      assert(vectorVisibility.panePresent&&vectorVisibility.canvasPresent&&vectorVisibility.canvasWidth>50&&vectorVisibility.canvasHeight>50,
+        'Vector map does not have a visible, sized canvas in the proper Leaflet pane');
+      assert.equal(vectorVisibility.paneZIndex,'250','Vector basemap is not layered above fallback tiles');
+      assert.equal(vectorVisibility.maptilerCredits,1,'MapTiler attribution is missing or duplicated');
+      assert.equal(vectorVisibility.osmCredits,1,'OpenStreetMap attribution is missing or duplicated');
+    }else{
+      assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
+        'Fallback map tiles failed to load: '+JSON.stringify(mainTileSources.slice(0,3)));
+    }
     const vectorDiagnostic=await page.evaluate(()=>({
       adapterPresent:typeof window.L?.maplibreGL==='function',
       webglSupported:(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}})(),
