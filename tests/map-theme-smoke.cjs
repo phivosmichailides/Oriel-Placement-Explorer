@@ -25,7 +25,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107fallback2')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -87,14 +87,21 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     const mapPicker=page.locator('#mapStyle');
     assert(await mapPicker.isVisible(),'Map style picker is missing');
-    await mapPicker.selectOption('liberty');
-    const savedMapStyle=await page.evaluate(()=>({
-      active:window.OrielBasemap?.preference,
-      stored:localStorage.getItem('oriel-basemap-style-v1')
-    }));
-    assert.deepEqual(savedMapStyle,{active:'liberty',stored:'liberty'},'Map style selection was not saved');
-    await mapPicker.selectOption('auto');
-    await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
+    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+      assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
+      await mapPicker.selectOption('liberty');
+      const savedMapStyle=await page.evaluate(()=>({
+        active:window.OrielBasemap?.preference,
+        stored:localStorage.getItem('oriel-basemap-style-v1')
+      }));
+      assert.deepEqual(savedMapStyle,{active:'liberty',stored:'liberty'},'Map style was not saved');
+      await mapPicker.selectOption('auto');
+      await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
+    }else{
+      assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
+      assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
+      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),'raster-fallback');
+    }
 
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
     const cards=await page.locator('#results .placement').count();
