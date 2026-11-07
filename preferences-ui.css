@@ -88,3 +88,33 @@ html[data-theme="dark"] #prefs #weights .weightStep[aria-pressed="true"]:hover{
 @media(prefers-reduced-motion:reduce){
   #prefs #weights .weightStep{transition:none}
 }
+
+/* One soft selection bubble glides between discrete values. */
+#prefs #weights .weightScale{position:relative;isolation:isolate}
+#prefs #weights .weightSelectionBubble{
+  position:absolute;
+  z-index:0;
+  left:0;
+  top:0;
+  height:100%;
+  border-radius:10px;
+  border:1px solid var(--ux-accent);
+  background:var(--ux-accent);
+  box-shadow:0 3px 10px #0002;
+  transform:translate3d(0,0,0);
+  transition:transform .27s cubic-bezier(.22,1,.36,1),width .2s ease;
+  pointer-events:none;
+}
+#prefs #weights .weightStep{
+  position:relative;
+  z-index:1;
+}
+#prefs #weights .weightStep[aria-pressed="true"],
+#prefs #weights .weightStep[aria-pressed="true"]:hover{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #prefs #weights .weightSelectionBubble{transition:none!important}
+}
