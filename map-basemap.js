@@ -1,6 +1,6 @@
 'use strict';
 /*
- * A modern, key-free OpenFreeMap Positron (light) / Dark vector basemap.
+ * A MapTiler Editorial Light (light) / OpenFreeMap Dark vector basemap.
  * The underlying programme markers remain Leaflet layers.
  *
  * We deliberately NEVER use CARTO's current unkeyed raster endpoint:
@@ -8,7 +8,7 @@
  * WebGL, CDN failure, stylesheet failure or a map service outage fallback
  * to OpenStreetMap's standard raster tiles with proper attribution.
  *
- * Third party: https://openfreemap.org, © OpenMapTiles © OpenStreetMap.
+ * Third parties: MapTiler, OpenFreeMap, OpenMapTiles and OpenStreetMap.
  */
 (()=>{
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
@@ -28,16 +28,28 @@ const STYLES = Object.freeze({
     const saved=localStorage.getItem(STYLE_KEY)||'auto';
     if(CHOICES.has(saved))preference=saved;
   }catch{};
-  const ATTRIBUTION='&copy; <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
+  const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
+  const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
+  const OPENFREE_ATTR='<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · '+OSM_ATTR;
   const RASTER_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference];
-    const applyStyle=()=>{
+  const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference;
+  const style=()=>STYLES[activeStyleName()];
+  const styleAttribution=()=>activeStyleName()==='editorial'?MAPTILER_ATTR:OPENFREE_ATTR;
+  const applyStyle=()=>{
     for(const record of instances){
       try{
         if(record.leaflet.getContainer().isConnected&&record.map){
           record.map.setStyle(style());
+          // Leaflet owns the attribution control, even when MapLibre changes style.
+          const nextAttribution=styleAttribution();
+          if(record.attribution!==nextAttribution){
+            record.leaflet.attributionControl?.removeAttribution(record.attribution);
+            record.leaflet.attributionControl?.addAttribution(nextAttribution);
+            record.layer.options.attribution=nextAttribution;
+            record.attribution=nextAttribution;
+          }
           record.leaflet.getContainer().dataset.basemap='vector-loading';
         }
       }catch(error){console.warn('Map style could not switch',error)}
@@ -51,18 +63,18 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
     return true;
   };
   // Browsers limit concurrent WebGL contexts. Mini-maps load lazily,
-  // and after five vector maps use OSM fallback to avoid blank canvases.
+  // and beyond the configured vector-map limit use OSM fallback.
   const reportMainRenderer=(map,isFallback,reason='')=>{
     if(map.getContainer()?.id!=='placementMap')return;
     const control=document.getElementById('mapStyle');
     const note=document.getElementById('mapStyleStatus');
     if(control){
       control.disabled=isFallback;
-      control.title=isFallback?'Custom map styles require WebGL. Standard map is active.':'';
+      control.title=isFallback?(reason||'Vector rendering is unavailable. Standard map is active.'):'';
     }
     if(note){
       note.hidden=!isFallback;
-      note.textContent=isFallback?'Standard map on this device':'';
+      note.textContent=isFallback?'Standard map (fallback)':'';
       note.title=reason||'A standard OpenStreetMap background is shown because vector rendering is unavailable.';
     }
   };
@@ -79,7 +91,10 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
     if(!map||!window.L)return null;
     const holder=map.getContainer();
     if(!holder)return null;
-    if(!L.maplibreGL||!window.maplibregl||!window.maplibregl.supported?.()||instances.size>=MAX_GL_MAPS){
+    // MapLibre GL JS v5 may not expose supported(); absence is not a WebGL failure.
+    const maplibre=window.maplibregl;
+    const explicitlyUnsupported=typeof maplibre?.supported==='function'&&!maplibre.supported();
+    if(!L.maplibreGL||!maplibre||explicitlyUnsupported||instances.size>=MAX_GL_MAPS){
       return raster(map);
     }
     // Keep a lightweight raster frame underneath the main vector map.
@@ -94,7 +109,7 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
       }).addTo(map);
     }
     let layer,glMap,loaded=false,ended=false,timeout;
-    const record={map:null,leaflet:map,layer:null,change:null};
+    const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
     const fail=()=>{
       if(ended||loaded)return;
       ended=true;
@@ -109,7 +124,7 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
     };
     try{
       layer=L.maplibreGL({
-        style:style(),attribution:ATTRIBUTION,
+        style:style(),attribution:styleAttribution(),
         interactive:false,
         // The Leaflet adapter needs overscan: zero padding creates exposed
         // tile boundaries and flashes during zoom and pan.
@@ -129,7 +144,7 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
       record.layer=layer;
       instances.add(record);
       holder.dataset.basemap='vector-loading';
-      const mapAppearance=()=>preference==='auto'?(mode()==='dark'?'dark':'positron'):preference;
+      const mapAppearance=()=>activeStyleName();
       glMap.on('load',()=>{
         if(ended)return;
         loaded=true;
@@ -146,6 +161,7 @@ const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):
         // instead of leaving a blank map. Do not fallback for incidental
         // glyph errors after the basemap has already rendered.
         if(!loaded&&/style|fetch|network|failed|http|request|webgl|context/i.test(message)){
+          console.warn('Vector basemap failed to load:',message);
           fail();
         }
       });
