@@ -1,7 +1,7 @@
 # Third-party software, map data and services
 
 Oriel Placement Desk is an independently maintained decision-support application.
-It is not an official Oriel, NHS England, OpenStreetMap, OpenFreeMap, MapLibre,
+It is not an official Oriel, NHS England, OpenStreetMap, OpenFreeMap, MapTiler, MapLibre,
 Leaflet or Supabase service. References to vendors and data sources below
 acknowledge dependencies; they do not imply endorsement or affiliation.
 
@@ -23,6 +23,10 @@ Oriel placement explorer. Third-party licence terms still apply.
 
 ## Basemap and geospatial data
 
+- **MapTiler** hosts the custom Editorial Light vector-map style used as the
+  default light-mode basemap. Browser API access is restricted by allowed HTTP
+  origins; attribution remains visible when this style is active.
+  https://www.maptiler.com/copyright/
 - **OpenFreeMap** provides key-free hosted vector basemaps. The on-map
   credits identify OpenFreeMap and OpenMapTiles.
   https://openfreemap.org/
