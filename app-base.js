@@ -10,7 +10,57 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{toast(
 function parseCSV(t){if(t.charCodeAt(0)===65279)t=t.slice(1);const R=[];let r=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){r.push(f);f=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;r.push(f);f='';if(r.some(v=>v.trim()))R.push(r);r=[]}else f+=c}if(f||r.length){r.push(f);if(r.some(v=>v.trim()))R.push(r)}return R}
 function normSetting(s){return String(s||'').trim().replace(/^general practice$/i,'General Practice').replace(/^industry\s*$/i,'Industry')}
 function rowsToPlacements(csv){const R=parseCSV(csv);if(R.length<2)throw Error('No placement rows found');const h=R[0].map(x=>x.trim());if(!h.includes('Employer Name')||!h.includes('Programme Title'))throw Error('This does not look like an Oriel preference CSV');return R.slice(1).map((r,i)=>{const o={};h.forEach((k,j)=>o[k]=r[j]??'');const st=[];for(let n=1;n<5;n++){const s=normSetting(o['Setting '+n]),w=Number(o['Length '+n])||0;if(s)st.push([s,w])}const title=String(o['Programme Title']||'').trim();const pcs=(title.match(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/gi)||[]).map(x=>x.toUpperCase().replace(/\s+/g,' '));return{id:String(o['Programme Number']||o.Preference||title||i),employer:String(o['Employer Name']||'').trim(),title,desc:String(o['Programme Description']||'').trim(),region:String(o.Region||'').trim(),area:String(o['Area(Sector)']||'').trim(),type:String(o['Employer Type']||'Other').trim(),salary:money(o.Salary),hours:Number(o['Hours Per Week'])||0,places:Number(o['Places Available'])||0,provider:String(o['Training Provider']||'').trim(),website:String(o['Employer Website']||'').trim(),visa:/^yes$/i.test(String(o['Skilled worker visa']||'').trim())?true:/^no$/i.test(String(o['Skilled worker visa']||'').trim())?false:null,settings:st,postcodes:pcs,orielRank:String(o['Current Assigned Rank']||'').trim(),start:String(o['Start Date']||'').trim()}}).filter(x=>x.title||x.employer)}
-async function loadData(){let saved=null;try{saved=localStorage.getItem(DATAKEY)}catch{}if(saved){try{placements=rowsToPlacements(JSON.parse(saved).csv);return}catch{localStorage.removeItem(DATAKEY)}}const html=await fetch('./legacy.html?v=20261001',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('Could not load legacy dataset');return r.text()});const m=html.match(/<script type="text\/plain" id="baseCsv">([\s\S]*?)<\/script>/i);if(!m)throw Error('Built-in placement dataset not found');placements=rowsToPlacements(m[1])}
+// The canonical 2026 catalogue is a direct Oriel CSV export supplied by the
+// product owner. Public programme data is stored separately from application
+// code, and we retain the original Preference identifiers so cloud decisions
+// and shortlist priorities continue to match after the data-source switch.
+const CATALOGUE_PARTS=Object.freeze([
+  'data/oriel-2026.part-01.txt',
+  'data/oriel-2026.part-02.txt',
+  'data/oriel-2026.part-03.txt',
+  'data/oriel-2026.part-04.txt',
+  'data/oriel-2026.part-05.txt'
+]);
+async function loadData(){
+  let saved=null;
+  try{saved=localStorage.getItem(DATAKEY)}catch{}
+  if(saved){
+    try{placements=rowsToPlacements(JSON.parse(saved).csv);return;}
+    catch(error){
+      console.warn('Invalid applicant-provided CSV; reverting to the included catalogue.',error);
+      try{localStorage.removeItem(DATAKEY)}catch{}
+    }
+  }
+  try{
+    const parts=await Promise.all(CATALOGUE_PARTS.map(async path=>{
+      const response=await fetch('./'+path,{cache:'force-cache'});
+      if(!response.ok)throw Error('Catalogue part missing: '+path+' ('+response.status+')');
+      return response.text();
+    }));
+    const rows=rowsToPlacements(parts.join(''));
+    if(rows.length!==4064)throw Error('Incomplete programme catalogue: '+rows.length+' of 4,064 rows');
+    const ids=new Set(rows.map(p=>p.id));
+    if(ids.size!==rows.length)throw Error('Programme catalogue contains duplicate identifiers');
+    const existingIds=Object.keys(state.marks||{});
+    // A stale catalogue must never make all of an applicant's decisions
+    // disappear. Fall back to the previously deployed dataset if no IDs match.
+    if(existingIds.length>=2&&!existingIds.some(id=>ids.has(id))){
+      throw Error('New catalogue identifiers do not match your saved decisions');
+    }
+    placements=rows;
+    document.documentElement.dataset.catalogue='oriel-owner-export-2026';
+    return;
+  }catch(error){
+    console.warn('Independent Oriel CSV unavailable; loading the previous bundled snapshot.',error);
+  }
+  // Temporary, non-destructive fallback retained while parity is verified.
+  const html=await fetch('./legacy.html?v=20261001',{cache:'force-cache'})
+    .then(r=>{if(!r.ok)throw Error('Fallback placement catalogue unavailable');return r.text()});
+  const m=html.match(/<script type="text\/plain" id="baseCsv">([\s\S]*?)<\/script>/i);
+  if(!m)throw Error('Fallback placement dataset not found');
+  placements=rowsToPlacements(m[1]);
+  document.documentElement.dataset.catalogue='legacy-fallback';
+}
 function text(p){return `${p.title} ${p.employer} ${p.desc} ${p.region} ${p.area} ${p.type} ${p.provider} ${p.settings.map(x=>x[0]).join(' ')}`.toLowerCase()}function weeks(p,s){return p.settings.filter(x=>x[0].toLowerCase().includes(s)).reduce((a,x)=>a+x[1],0)}function has(p,s){return p.settings.some(x=>x[0].toLowerCase().includes(s))||(!p.settings.length&&p.type.toLowerCase().includes(s))}function hourly(p){return p.salary&&p.hours?p.salary/(p.hours*52):0}
 function sector(p){const h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry');if(i>=13)return'Industry';if(h>=26)return'Hospital';if(g>=26)return'General Practice';if(c>=26)return'Community Pharmacy';if(has(p,'hospital')&&h)return'Hospital';if(has(p,'general practice')&&g)return'General Practice';return p.type||'Other'}
 function split(p){return p.settings.length?p.settings.map(x=>`${x[0]} ${x[1]}w`).join(' · '):'Single setting / not specified'}function tokens(s){return String(s||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean)}
