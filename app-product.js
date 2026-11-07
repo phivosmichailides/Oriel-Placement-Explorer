@@ -233,7 +233,7 @@
     const hideLabel=$('hideAvoid').parentElement;for(const n of hideLabel.childNodes)if(n.nodeType===Node.TEXT_NODE)n.textContent=' Hide avoided areas entirely';
     const notice=document.querySelector('.notice');if(notice)notice.innerHTML='<b> London is your default, not a limitation.</b><br>Select any included region and the list, recommendations, statistics and map switch with you. The app resolves that region’s programme postcodes so the interactive pins work there too. Commute, workload and autonomy should still be verified with the employer.';
     const hero=document.querySelector('#foryou .sectionHero p');if(hero)hero.textContent='A starting point, not an automatic final ranking. Recommendations follow the region you are exploring and combine your priorities with programme data, showing both reasons to consider an option and trade-offs worth checking.';
-    const footer=document.querySelector('.app-footer');if(footer)footer.innerHTML='Based on <a href="https://github.com/Acid555/Oriel-Placement-Explorer" target="_blank" rel="noopener">Acid555’s open-source Oriel Placement Explorer</a> · Rebuilt as a personalised England & Wales decision experience using AI-assisted development. Built-in snapshot: October 2026, not live Oriel data. Scores are heuristic suggestions, not verified working conditions.';
+    // The canonical public footer is owned by index.html; do not overwrite it.
 
     const regionEl=$('region');
     regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;refreshScope({locate:!!regionEl.value});});
