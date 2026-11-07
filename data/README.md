@@ -37,11 +37,18 @@ row count has changed. Then update the row-count assertion in
 
 ## Migration status
 
-The app now attempts this independent CSV source first, after any intentionally
-uploaded personal CSV. `legacy.html` remains a **temporary compatibility fallback**
-if the new catalogue cannot be fetched or its identifiers do not match saved
-decisions. The fallback should only be removed after data and ranking-parity
-tests pass on real existing accounts.
+The live app first honours a user-uploaded Oriel CSV (if present), then
+loads these five programme-data files. The copied `legacy.html` is no longer
+part of the active branch, and no live code depends on that original explorer.
+
+The public programme identifiers remain unchanged so existing saved choices,
+notes, shortlist positions and cloud-sync records can still match the catalogue.
+The importer checks the row count, uniqueness of IDs and overlap with saved
+decisions. Automated CSV tests also check quoting and multiline descriptions.
+
+If the built-in catalogue is unavailable, the app displays an error and leaves
+stored decisions intact; it does not silently switch to an inherited dataset.
+Applicants can upload their own Oriel export to continue.
 
 **Provenance:** the programme facts and descriptions originate from the Oriel
 export, not from an original research effort. Downloading a public dataset
