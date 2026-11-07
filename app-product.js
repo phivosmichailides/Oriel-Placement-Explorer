@@ -97,7 +97,7 @@
       const t=`${p.title} ${p.area}`.toLowerCase();
       const avoids=tokens(state.prefs.avoids),likes=tokens(state.prefs.likes);
       const areaMatch=x=>(' '+t.replace(/[^a-z0-9]+/g,' ')+' ').includes(' '+x.replace(/[^a-z0-9]+/g,' ')+' ');
-      if(avoids.some(areaMatch))return-2;
+      if(window.OrielGeoBlacklist?.assess(p).kind==='blocked')return-2;
       if(likes.some(areaMatch))return 2;
       if(selected)return p.region===selected?1:-1;
       return 0;
@@ -170,7 +170,7 @@
 
     reco=()=>{
       const region=activeRegion();
-      const arr=placements.filter(p=>!window.OrielSpecialist?.filterOut(p)&&(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!isExcluded(p)&&(!$('hideShortlisted')?.checked||!SHORT.has(mark(p).status))&&(!$('hideAvoid').checked||(areaPref(p)!==-2&&!window.OrielAreaRules?.isAvoided(p,state.prefs.avoids)))&&(!($('hideOuterLondon')?.checked&&region==='London')||!window.OrielAreaRules?.isOuterTown(p))&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
+      const arr=placements.filter(p=>!window.OrielSpecialist?.filterOut(p)&&(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!window.OrielGeoBlacklist?.shouldHide(p)&&!isExcluded(p)&&(!$('hideShortlisted')?.checked||!SHORT.has(mark(p).status))&&(!($('hideOuterLondon')?.checked&&region==='London')||!window.OrielAreaRules?.isOuterTown(p))&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
       const title=document.querySelector('#foryou .sectionHero h2');
       if(title)title.textContent=`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`;
       $('reco').innerHTML=arr.length?arr.map((x,i)=>`<article class="reco card"><div class="eyebrow">#${i+1} TO LOOK AT · ${x.a.score}/100</div><h3>${esc(x.p.title)}</h3><div class="badges"><span class="badge good"> ${esc(x.a.band)}</span><span class="badge"> ${esc(x.p.region)}</span>${x.p.places?`<span class="badge"> ${x.p.places} ${x.p.places===1?'place':'places'}</span>`:''}<span class="badge ${x.p.salary?'salary-value':''}"> ${x.p.salary?'£'+x.p.salary.toLocaleString():'n/a'}</span><span class="badge"> ${x.p.hours||'?'}h</span></div><div class="miniFit"><b>Why:</b> ${esc(x.a.good.slice(0,3).join(' · ')||'No strong signals yet.')}</div>${x.a.bad.length?`<div class="miniFit warning"><b>Check:</b> ${esc(x.a.bad.slice(0,2).join(' · '))}</div>`:''}<button class="btn" data-open="${esc(x.p.id)}">Open in Explore</button></article>`).join(''):'<div class="card empty">No programmes match these limits. Loosen your salary or hours filters in Explore, or retake setup in Preferences.</div>';
