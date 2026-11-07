@@ -69,6 +69,22 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     })));
     assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
       'Main map is using unauthorized/keyed or failed tile imagery: '+JSON.stringify(mainTileSources.slice(0,3)));
+    const vectorDiagnostic=await page.evaluate(()=>({
+      adapterPresent:typeof window.L?.maplibreGL==='function',
+      webglSupported:Boolean(window.maplibregl?.supported?.()),
+      basemapStatus:document.getElementById('placementMap')?.dataset.basemap||'unset',
+      canvasCount:document.querySelectorAll('#placementMap canvas.maplibregl-canvas').length,
+      rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
+    }));
+    console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify(vectorDiagnostic));
+    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+      await page.waitForFunction(()=>{
+        const value=document.getElementById('placementMap')?.dataset.basemap||'';
+        return value.startsWith('vector-')&&value!=='vector-loading';
+      },null,{timeout:18000}).catch(()=>{
+        throw Error('WebGL and MapLibre are available, but the vector map did not load: '+JSON.stringify(vectorDiagnostic));
+      });
+    }
     const mapPicker=page.locator('#mapStyle');
     assert(await mapPicker.isVisible(),'Map style picker is missing');
     await mapPicker.selectOption('liberty');
