@@ -11,15 +11,42 @@
  * Third party: https://openfreemap.org, © OpenMapTiles © OpenStreetMap.
  */
 (()=>{
-  const STYLES={
-    light:'https://tiles.openfreemap.org/styles/positron',
-    dark:'https://tiles.openfreemap.org/styles/dark'
-  };
+  const STYLES=Object.freeze({
+    positron:'https://tiles.openfreemap.org/styles/positron',
+    bright:'https://tiles.openfreemap.org/styles/bright',
+    liberty:'https://tiles.openfreemap.org/styles/liberty',
+    dark:'https://tiles.openfreemap.org/styles/dark',
+    fiord:'https://tiles.openfreemap.org/styles/fiord'
+  });
+  const STYLE_KEY='oriel-basemap-style-v1';
+  const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
+  let preference='auto';
+  try{
+    const saved=localStorage.getItem(STYLE_KEY)||'auto';
+    if(CHOICES.has(saved))preference=saved;
+  }catch{};
   const ATTRIBUTION='&copy; <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const RASTER_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-  const style=()=>STYLES[mode()];
+  const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'positron'):preference];
+  const applyStyle=()=>{
+    for(const record of instances){
+      try{
+        if(record.leaflet.getContainer().isConnected&&record.map){
+          record.map.setStyle(style());
+          record.leaflet.getContainer().dataset.basemap='vector-loading';
+        }
+      }catch(error){console.warn('Map style could not switch',error)}
+    }
+  };
+  const choose=choice=>{
+    if(!CHOICES.has(choice))return false;
+    preference=choice;
+    try{localStorage.setItem(STYLE_KEY,choice)}catch{}
+    applyStyle();
+    return true;
+  };
   // Browsers limit concurrent WebGL contexts. Mini-maps load lazily,
   // and after five vector maps use OSM fallback to avoid blank canvases.
   const MAX_GL_MAPS=7;
@@ -109,21 +136,18 @@
       return {layer:null,kind:'raster'};
     }
   };
-  // Match the original app's six light/dark palettes without changing
-  // sector pins, shortlist flags, or programme map behaviours.
+  // Basemap changes never change placement pins, sectors, shortlist flags or filters.
+  const selector=document.getElementById('mapStyle');
+  if(selector){
+    selector.value=preference;
+    selector.addEventListener('change',()=>choose(selector.value));
+  }
   let previousMode=mode();
   new MutationObserver(()=>{
     const current=mode();
     if(previousMode===current)return;
     previousMode=current;
-    for(const record of instances){
-      try{
-        if(record.leaflet.getContainer().isConnected&&record.map){
-          record.map.setStyle(style());
-          record.leaflet.getContainer().dataset.basemap=current==='dark'?'vector-dark':'vector-positron';
-        }
-      }catch(error){console.warn('Map style could not switch',error)}
-    }
+    if(preference==='auto')applyStyle();
   }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  window.OrielBasemap={addTo,mode,styles:STYLES};
+  window.OrielBasemap={addTo,mode,styles:STYLES,choose,get preference(){return preference;}};
 })();
