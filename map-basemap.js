@@ -50,7 +50,7 @@ const STYLES = Object.freeze({
             record.layer.options.attributionControl.customAttribution=nextAttribution;
             record.attribution=nextAttribution;
           }
-          record.map.setStyle(style());
+          record.map.setStyle(style(),{diff:false});
           record.leaflet.getContainer().dataset.basemap='vector-loading';
         }
       }catch(error){console.warn('Map style could not switch',error)}
