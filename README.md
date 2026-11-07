@@ -148,6 +148,8 @@ Leaflet 1.9.4 supplies programme markers and controls; MapLibre GL JS with OpenF
 
 Decisions are stored locally in the browser under the `phivos-desk-v2` key. They are not synced to GitHub or submitted to Oriel. Backup/restore is available before changing devices or clearing browser data. Optional study data uses a separate `oriel-research-v1` key and separate export; it is not included in ordinary desk backups. Radius centres and undo history last only for the current page session.
 
+For licensing and service attribution, see [third-party notices](THIRD_PARTY_NOTICES.md).
+
 ## Important limitations
 
 This project covers the **England & Wales programme dataset supplied to the app**. It should not be presented as a complete UK pharmacy training directory.
