@@ -1,0 +1,69 @@
+/* Placement Atlas — deliberate card-swiping mode, independent of Oriel/Tinder. */
+#tinderMode{--td-red:#ee5265;--td-green:#3dbb83;--td-blue:#479eea;--td-orange:#eaa74b;min-width:0}
+.tdModeIntro{padding:24px 26px 19px;border-radius:20px;border:1px solid var(--line);background:var(--panel)}
+.tdModeIntro h2{font-size:clamp(25px,3vw,36px);letter-spacing:-.04em;line-height:1.2;margin:5px 0 9px}
+.tdModeIntro p{color:var(--ink);font-size:14px;line-height:1.6;max-width:750px;margin:0 0 9px}
+.tdModeIntro small{font-size:11px;color:var(--mut);line-height:1.6}
+.tdModeEyebrow{font-size:10px;font-weight:850;color:var(--ux-accent-ink);letter-spacing:.13em}
+.tdNavFlame{display:inline-flex;align-items:center;width:17px;height:20px;color:#f35b76;margin-right:5px}
+.tdNavFlame svg{width:17px;height:20px}
+.tdSettings{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:17px 14px;flex-wrap:wrap}
+.tdSettings label{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:750;color:var(--mut)}
+.tdSettings select{min-height:39px;max-width:310px;border:1px solid var(--line);border-radius:11px;padding:8px 11px;background:var(--panel);color:var(--ink)}
+.tdRoundStats{display:flex;align-items:baseline;gap:10px;font-size:12px}
+.tdRoundStats strong{font-weight:850;color:var(--ux-accent-ink)}.tdRoundStats span{color:var(--mut)}
+.tdBoard{max-width:640px;margin:3px auto 30px;text-align:center}
+.tdCardDeck{position:relative;margin:0 auto;min-height:500px;padding:0 10px 8px;max-width:590px}
+.tdCardSlot{position:relative;min-height:480px}
+.tdSwipeCard{position:relative;isolation:isolate;touch-action:pan-y;user-select:none;text-align:left;cursor:grab;border:1px solid var(--line);background:var(--panel);border-radius:26px;padding:25px;box-shadow:0 16px 50px #00000016;will-change:transform;overflow:hidden}
+.tdSwipeCard:active{cursor:grabbing}.tdSwipeCard:focus-visible{outline:3px solid var(--ux-accent);outline-offset:4px}
+.tdCardTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}
+.tdCardCode{font-size:10px;font-weight:850;letter-spacing:.1em;color:var(--mut)}
+.tdFitScore{border:1px solid var(--ux-accent-border);background:var(--ux-accent-soft);color:var(--ux-accent-ink);font-size:11px;font-weight:850;border-radius:999px;padding:6px 10px;white-space:nowrap}
+.tdProgrammeName{font-size:clamp(19px,2.2vw,25px);font-weight:850;letter-spacing:-.03em;line-height:1.3;overflow-wrap:anywhere;margin:0 0 6px}
+.tdEmployer{font-size:12px;color:var(--mut);font-weight:650;margin:0 0 15px;line-height:1.4}
+.tdMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.tdMetrics>div{padding:12px 10px;background:var(--soft);border:1px solid var(--line);border-radius:12px;display:grid;gap:4px;min-width:0}
+.tdMetrics span{font-size:9px;color:var(--mut);font-weight:850;letter-spacing:.07em}
+.tdMetrics strong{font-size:14px;color:var(--ink);line-height:1.4;overflow-wrap:anywhere}
+.tdSites{padding:13px 14px;border:1px solid var(--ux-accent-border);background:var(--ux-accent-soft);border-radius:14px;margin-bottom:13px}
+.tdSectionLabel{display:block;font-size:10px;font-weight:850;letter-spacing:.06em;color:var(--ux-accent-ink);margin-bottom:6px}
+.tdLocationText{font-size:14px;font-weight:750;line-height:1.5;color:var(--ink)}
+.tdRotations{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}
+.tdRotations span{font-size:10px;font-weight:800;color:var(--ink);border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:6px 9px}
+.tdVerdictColumns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tdVerdict{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--soft);min-width:0}
+.tdVerdict.pro{border-color:color-mix(in srgb,var(--td-green) 33%,var(--line))}
+.tdVerdict.con{border-color:color-mix(in srgb,var(--td-red) 33%,var(--line))}
+.tdVerdict h4{font-size:12px;margin:0 0 9px;font-weight:850;color:var(--ink)}
+.tdVerdict.pro h4:before{content:'♥ ';color:var(--td-green)}
+.tdVerdict.con h4:before{content:'✕ ';color:var(--td-red)}
+.tdVerdict ul{padding-left:16px;margin:0;display:grid;gap:7px}
+.tdVerdict li{font-size:11px;line-height:1.5;color:var(--ink)}
+.tdStamps{pointer-events:none}.tdStamp{position:absolute;z-index:4;top:38px;left:25px;border:4px solid currentColor;color:var(--td-red);font-size:30px;font-weight:900;letter-spacing:.06em;border-radius:8px;padding:5px 10px;transform:rotate(-15deg);opacity:0;transition:opacity .13s}
+.tdStampYes{left:auto;right:25px;color:var(--td-green);transform:rotate(14deg)}
+.tdStampSuper{left:50%;top:30px;transform:translateX(-50%) rotate(-6deg);white-space:nowrap;font-size:23px;color:var(--td-blue)}
+.tdStampShow{opacity:.98}
+.tdActions{display:flex;align-items:center;justify-content:center;gap:16px;margin:15px 0 7px}
+.tdAction{border:2px solid currentColor;background:var(--panel);color:var(--ink);width:66px;height:66px;border-radius:50%;padding:17px;display:inline-grid;place-items:center;cursor:pointer;box-shadow:0 7px 20px #00000010;transition:transform .22s cubic-bezier(.22,1,.36,1),background .2s ease,box-shadow .2s}
+.tdAction svg{width:100%;height:100%}.tdAction-undo{color:var(--td-orange);width:52px;height:52px;padding:13px}
+.tdAction-no{color:var(--td-red)}.tdAction-yes{color:var(--td-green)}.tdAction-super{color:var(--td-blue)}
+.tdAction:hover:not(:disabled){transform:translateY(-4px) scale(1.06);box-shadow:0 10px 24px #0002}
+.tdAction:active:not(:disabled){transform:scale(.94)}.tdAction:disabled{opacity:.4;cursor:not-allowed}
+.tdAction:focus-visible{outline:3px solid var(--ux-accent);outline-offset:5px}
+.tdActionLegend{display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--mut);font-weight:750}
+.tdActionLegend span{width:66px}.tdActionLegend span:first-child{width:52px}
+.tdExisting{font-size:12px;font-weight:750;margin:12px 0 0;color:var(--mut)}
+.tdNotice{font-size:11px;color:var(--mut);margin:8px 0 10px}
+.tdDisclosure{font-size:11px;color:var(--mut);max-width:530px;line-height:1.6;margin:18px auto 0}
+.tdFinished{padding:60px 25px;background:var(--panel);border:1px solid var(--line);border-radius:24px;text-align:center;color:var(--mut)}
+.tdFinished>span{font-size:65px;color:var(--ux-accent)}.tdFinished h3{font-size:23px;color:var(--ink);margin:12px 0 7px}.tdFinished p{font-size:13px;max-width:340px;margin:auto}
+@media(max-width:690px){
+ .tdModeIntro{padding:18px}.tdSettings{padding:13px 5px}.tdSettings label{width:100%}.tdSettings select{flex:1;min-width:0}
+ .tdCardDeck{padding:0 0 6px;min-height:390px}.tdCardSlot{min-height:380px}.tdSwipeCard{padding:17px;border-radius:19px}
+ .tdMetrics strong{font-size:12px}.tdMetrics>div{padding:10px 7px}
+ .tdVerdictColumns{gap:7px}.tdVerdict{padding:11px 8px}.tdVerdict li{font-size:10.5px}
+ .tdActions{gap:10px}.tdAction{width:58px;height:58px;padding:14px}.tdAction-undo{width:48px;height:48px;padding:12px}
+ .tdActionLegend{gap:10px}.tdActionLegend span{width:58px}.tdActionLegend span:first-child{width:48px}
+}
+@media(prefers-reduced-motion:reduce){.tdAction,.tdStamp,.tdSwipeCard{transition:none!important}}
