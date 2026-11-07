@@ -38,8 +38,8 @@ row count has changed. Then update the row-count assertion in
 ## Migration status
 
 The live app first honours a user-uploaded Oriel CSV (if present), then
-loads these five programme-data files. The copied `legacy.html` is no longer
-part of the active branch, and no live code depends on that original explorer.
+loads these five maintained programme-data files. No embedded third-party
+explorer or duplicate built-in placement snapshot is used.
 
 The public programme identifiers remain unchanged so existing saved choices,
 notes, shortlist positions and cloud-sync records can still match the catalogue.
@@ -47,8 +47,7 @@ The importer checks the row count, uniqueness of IDs and overlap with saved
 decisions. Automated CSV tests also check quoting and multiline descriptions.
 
 If the built-in catalogue is unavailable, the app displays an error and leaves
-stored decisions intact; it does not silently switch to an inherited dataset.
-Applicants can upload their own Oriel export to continue.
+stored decisions intact. Applicants can upload their own Oriel export to continue.
 
 **Provenance:** the programme facts and descriptions originate from the Oriel
 export, not from an original research effort. Downloading a public dataset
