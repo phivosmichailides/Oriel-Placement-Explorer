@@ -1,0 +1,63 @@
+/* Placement Atlas site-based location exclusions. Palette-aware; no blue hardcoding. */
+.geoLegacyAvoid{display:none!important}
+.geoBlacklistPane{min-width:0;margin:14px 0 18px}
+.geoSearchLabel{display:block;font-size:12px;font-weight:850;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+.geoSearchLabel span{font-size:10px;font-weight:650;text-transform:none;color:var(--mut);letter-spacing:normal}
+.geoSearchHolder{position:relative;z-index:4}
+.geoInputRow{display:flex;gap:9px;align-items:center}
+.geoInputRow input{min-width:0;flex:1;padding:12px 13px;min-height:43px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:inherit}
+.geoInputRow input:focus{outline:2px solid var(--ux-accent-border);border-color:var(--ux-accent)}
+.geoInputRow button{flex-shrink:0;min-height:43px}
+.geoInputRow button:disabled{opacity:.48;cursor:not-allowed}
+.geoSuggestions{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:50;max-height:270px;overflow:auto;border-radius:15px;border:1px solid var(--line);background:var(--panel);box-shadow:0 16px 40px #0003}
+.geoSuggestions:empty{display:none}
+.geoSuggestion{display:flex;flex-direction:column;gap:3px;align-items:flex-start;width:100%;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:var(--panel);text-align:left;color:var(--ink);cursor:pointer}
+.geoSuggestion:hover,.geoSuggestion:focus-visible{background:var(--ux-accent-soft)}
+.geoSuggestion strong{font-size:13px}.geoSuggestion small{font-size:11px;color:var(--mut)}
+.geoSuggestionEmpty{padding:15px;font-size:12px;color:var(--mut)}
+.geoBlacklistStatus{font-size:11px;color:var(--mut);line-height:1.5;min-height:17px;margin:8px 0 12px}
+.geoChipRow{display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:4px 0 8px}
+.geoAreaChips{display:flex;flex-wrap:wrap;gap:7px;flex:1 1 250px;min-width:0}
+.geoAreaChip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:7px 8px 7px 11px;background:var(--ux-accent-soft);border:1px solid var(--ux-accent-border);border-radius:999px;color:var(--ux-accent-ink);font-weight:750;font-size:12px}
+.geoAreaChip span{overflow-wrap:anywhere}
+.geoAreaChip button{border:0;background:transparent;color:inherit;cursor:pointer;border-radius:50%;font-weight:900;font-size:16px;padding:0 3px}
+.geoAreaChip button:hover{background:var(--panel)}
+.geoViewExcluded{font-size:12px;white-space:normal}
+.geoViewExcluded:disabled,.geoOpenExplore:disabled,.geoOpenForYou:disabled{opacity:.55;cursor:not-allowed}
+.geoViewExcluded [data-geo-count],.geoOpenExplore [data-geo-count],.geoOpenForYou [data-geo-count]{font-weight:650;color:var(--mut);margin-left:4px}
+.geoAccuracyNote{font-size:11px;line-height:1.55;color:var(--mut);margin:8px 0}
+.geoRetry{color:var(--ux-accent-ink);background:none;border:none;font-size:11px;font-weight:700;cursor:pointer;padding:2px 0}
+.geoOpenExplore{display:inline-flex;align-items:center;gap:7px;margin:0 0 12px 0}
+.geoOpenForYou{margin-left:auto}
+body.geoDialogOpen{overflow:hidden}
+.geoOverlay[hidden]{display:none!important}
+.geoOverlay{position:fixed;inset:0;z-index:9800;display:grid;place-items:center;padding:20px;background:#080c0ab3;backdrop-filter:blur(7px)}
+.geoModal{width:min(850px,100%);max-height:min(780px,90vh);overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:23px;background:var(--panel);color:var(--ink);box-shadow:0 30px 100px #0005}
+.geoModalHead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 12px}
+.geoModalHead small{font-size:10px;letter-spacing:.1em;font-weight:850;color:var(--ux-accent-ink)}
+.geoModalHead h2{font-size:24px;line-height:1.2;margin:4px 0 7px}
+.geoModalHead p{font-size:12px;color:var(--mut);margin:0;max-width:600px}
+.geoClose{border:1px solid var(--line);border-radius:50%;min-width:36px;height:36px;background:var(--soft);color:var(--ink);font-size:24px;cursor:pointer}
+.geoModalTools{padding:10px 24px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.geoModalTools select,.geoModalTools input{min-height:37px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;padding:7px 10px;font:inherit;font-size:12px}
+.geoModalTools input{flex:1 1 150px;min-width:100px}.geoModalTools button{font-size:12px}
+#geoModalCount{font-size:11px;color:var(--mut)}
+.geoExcludedList{list-style:none;min-height:80px;overflow-y:auto;margin:0;padding:9px 24px 22px;display:grid;gap:9px;align-content:start}
+.geoExcludedItem{display:flex;gap:12px;padding:14px;border:1px solid var(--line);background:var(--soft);border-radius:13px}
+.geoExcludedNum{color:var(--ux-accent-ink);font:800 12px/1.5 "Plus Jakarta Sans",sans-serif}
+.geoExcludedDetails{min-width:0;display:grid;gap:5px;flex:1}
+.geoExcludedDetails strong{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.geoExcludedDetails small{color:var(--mut);font-size:11px;overflow-wrap:anywhere}
+.geoReason{font-size:12px;color:var(--mut);margin:3px 0 5px;line-height:1.5}
+.geoReasonRed{color:#d64e58!important;font-weight:850}
+html[data-theme="light"] .geoReasonRed{color:#ae273e!important}
+.geoReviewLabel{color:var(--ux-pick)}
+.geoAllow{justify-self:start;font-size:11px;padding:8px 12px}
+.geoEmpty{padding:20px;color:var(--mut);text-align:center}
+@media(max-width:680px){
+ .geoInputRow{flex-wrap:wrap}.geoInputRow input{flex-basis:100%}
+ .geoInputRow button{width:100%}.geoViewExcluded{width:100%}
+ .geoOverlay{padding:9px}.geoModal{max-height:94vh;border-radius:17px}
+ .geoModalHead{padding:17px 16px 11px}.geoModalTools{padding:10px 16px}
+ .geoExcludedList{padding:9px 12px 17px}.geoOpenForYou{margin-left:0}
+}
