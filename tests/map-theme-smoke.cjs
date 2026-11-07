@@ -98,6 +98,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.equal(vectorVisibility.paneZIndex,'250','Vector basemap is not layered above fallback tiles');
       assert.equal(vectorVisibility.maptilerCredits,1,'MapTiler attribution is missing or duplicated');
       assert.equal(vectorVisibility.osmCredits,1,'OpenStreetMap attribution is missing or duplicated');
+      await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
     }else{
       assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
         'Fallback map tiles failed to load: '+JSON.stringify(mainTileSources.slice(0,3)));
@@ -130,8 +131,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         stored:localStorage.getItem('oriel-basemap-style-v1')
       }));
       assert.deepEqual(savedMapStyle,{active:'liberty',stored:'liberty'},'Map style was not saved');
+      // Wait for one transition to finish before starting another. Rapid
+      // back-to-back setStyle calls can cancel each other's tile requests.
+      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-liberty',null,{timeout:30000});
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
+      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial',null,{timeout:30000});
     }else{
       assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
