@@ -17,13 +17,11 @@
     lewisham:['SE13','SE12','SE6','SE4','SE14','SE8'],
     orpington:['BR5','BR6']
   };
+  // Never exclude a programme merely because its employer or title includes a
+  // place name. Older optional filters only use listed training postcodes.
   const matches=(p,word)=>{
-    const text=' '+namedSiteFields(p)+' ';
-    if(!word)return false;
-    if(text.includes(' '+word+' '))return true;
     const prefixes=areaPrefixes[word];
-    if(prefixes&&(p.postcodes||[]).some(pc=>starts(compact(pc),prefixes)))return true;
-    return false;
+    return !!prefixes&&(p.postcodes||[]).some(pc=>starts(compact(pc),prefixes));
   };
   const isAvoided=(p,avoids)=>tokens(avoids).some(term=>matches(p,term));
   // Only optional named outer-town exclusion; leave inner London postcodes
