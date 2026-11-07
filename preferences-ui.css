@@ -1,0 +1,90 @@
+/* Modern discrete preference weights. Same underlying 0–5 values; no new
+   colour tokens: selected states follow every existing palette and theme. */
+#prefs #weights{
+  display:grid;
+  gap:10px;
+  margin-top:16px;
+}
+#prefs #weights .weightGuide{
+  font-size:12px;
+  color:var(--mut);
+  margin:0 0 4px;
+  font-weight:650;
+}
+#prefs #weights .weight.weightModern{
+  display:grid;
+  grid-template-columns:minmax(155px,225px) minmax(0,1fr);
+  align-items:center;
+  gap:14px;
+  margin:0;
+  padding:12px 13px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--soft);
+}
+#prefs #weights .weightModern>b{
+  min-width:0;
+  font-size:13.5px;
+  font-weight:750;
+  color:var(--ink);
+  line-height:1.4;
+}
+#prefs #weights .weightScale{
+  min-width:0;
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+}
+#prefs #weights .weightStep{
+  display:grid;
+  place-items:center;
+  min-width:0;
+  min-height:39px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--mut);
+  font:750 13px/1 "Plus Jakarta Sans",Inter,sans-serif;
+  cursor:pointer;
+  padding:0;
+  transition:background-color .14s,border-color .14s,box-shadow .14s;
+}
+#prefs #weights .weightStep:hover{
+  color:var(--ux-accent-ink);
+  background:var(--ux-accent-soft);
+  border-color:var(--ux-accent-border);
+}
+#prefs #weights .weightStep[aria-pressed="true"],
+#prefs #weights .weightStep[aria-pressed="true"]:hover{
+  background:var(--ux-accent);
+  border-color:var(--ux-accent);
+  color:var(--panel);
+  box-shadow:0 2px 8px #0002;
+}
+html[data-theme="dark"] #prefs #weights .weightStep[aria-pressed="true"],
+html[data-theme="dark"] #prefs #weights .weightStep[aria-pressed="true"]:hover{
+  color:var(--bg);
+}
+#prefs #weights .weightStep:focus-visible{
+  outline:2px solid var(--ux-accent);
+  outline-offset:3px;
+}
+#prefs #weights .weightModern .weightNative,
+#prefs #weights .weightModern .weightLegacyValue{
+  display:none!important;
+}
+@media(max-width:1050px){
+  #prefs #weights .weight.weightModern{
+    grid-template-columns:minmax(0,1fr);
+    gap:9px;
+  }
+}
+@media(max-width:480px){
+  #prefs #weights .weight.weightModern{padding:11px}
+  #prefs #weights .weightScale{gap:4px}
+  #prefs #weights .weightStep{min-height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+  #prefs #weights .weightStep{transition:none}
+}
