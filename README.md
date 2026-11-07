@@ -21,7 +21,7 @@ The catalogue is an **October 2026 Oriel export** supplied directly to the proje
 1. **Explore.** Browse the complete catalogue or narrow it by region, setting, salary, weekly hours, sponsorship and other criteria.
 2. **Personalise.** Complete a short setup and adjust what you value—from hospital/GP exposure to pay, career development and working environment.
 3. **Understand the trade-offs.** Each fit score is accompanied by plain-English supporting signals and limitations to investigate. Scores are heuristics, not verified workplace reviews.
-4. **Use the map.** Inspect training locations, filter by straight-line distance and switch between key-free light, detailed and dark basemap styles.
+4. **Use the map.** Inspect training locations, filter by straight-line distance and switch between the custom MapTiler Editorial Light map and alternative OpenFreeMap light, detailed and dark basemap styles.
 5. **Make your shortlist.** Save, exclude, reorder, compare and export programmes. Keep a restorable backup of your work.
 
 ### Features
@@ -64,7 +64,7 @@ python3 scripts/build_catalogue.py "pharmacy programmes.csv"
 
 ## Technical overview
 
-**Frontend:** vanilla JavaScript, HTML and CSS · **Maps:** Leaflet, MapLibre GL and OpenFreeMap · **Optional accounts/sync:** Supabase · **Hosting:** GitHub Pages · **Dataset preparation:** Python 3.
+**Frontend:** vanilla JavaScript, HTML and CSS · **Maps:** Leaflet, MapLibre GL, MapTiler and OpenFreeMap · **Optional accounts/sync:** Supabase · **Hosting:** GitHub Pages · **Dataset preparation:** Python 3.
 
 No framework build is required to run the static frontend. Programme records are parsed from the owner-provided CSV; applicant decisions are maintained separately from the public catalogue.
 
