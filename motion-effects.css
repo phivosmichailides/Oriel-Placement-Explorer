@@ -1,0 +1,48 @@
+/* Gentle, consistent interface motion. No changes to selected palette colours. */
+@keyframes atlasPanelEnter{
+ from{opacity:0;transform:translateY(7px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes atlasItemEnter{
+ from{opacity:0;transform:translateY(8px)}
+ to{opacity:1;transform:translateY(0)}
+}
+html .panel.active{animation:atlasPanelEnter .23s cubic-bezier(.2,.8,.2,1) both}
+html .tabs.tabMotionReady{position:relative;isolation:isolate}
+html .tabs.tabMotionReady .tab{position:relative;z-index:2;transition:color .19s ease,transform .18s ease,opacity .18s ease}
+html .tabs.tabMotionReady .tab.active{background:transparent!important;box-shadow:none!important;color:var(--ux-accent-ink)!important}
+html .tabs.tabMotionReady .atlasTabIndicator{
+ position:absolute;
+ top:7px;left:0;bottom:7px;
+ width:100px;z-index:1;
+ border-radius:11px;
+ background:var(--panel);
+ border:1px solid var(--line);
+ box-shadow:0 3px 12px #00000012;
+ pointer-events:none;
+ transform:translate3d(0,0,0);
+ transition:transform .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1),background-color .16s ease;
+}
+html .btn,html .chip,html .uxPaletteOption,html .uxLayoutBtn,html .uxIconControl,html .themeToggle,
+html .uxSiteArrow,html .geoAreaChip button,html .decisionPicker summary{
+ transition:transform .19s cubic-bezier(.22,1,.36,1),box-shadow .19s ease,background-color .18s ease,border-color .18s ease,color .18s ease;
+}
+html .btn:active:not(:disabled),html .chip:active:not(:disabled),html .uxPaletteOption:active:not(:disabled),
+html .uxLayoutBtn:active:not(:disabled),html .uxIconControl:active:not(:disabled),
+html .themeToggle:active:not(:disabled),html .decisionPicker summary:active{
+ transform:scale(.975);
+}
+html .uxPaletteOption:hover,html .uxLayoutBtn:hover,html .geoAreaChip button:hover{box-shadow:0 3px 12px #00000011}
+html .decisionChoices,html .geoSuggestions{transform-origin:top left}
+html .decisionPicker[open] .decisionChoices{animation:atlasItemEnter .16s ease both}
+html .geoSuggestions:not(:empty){animation:atlasItemEnter .17s ease both}
+html .toast.show{transition:opacity .2s ease,transform .25s cubic-bezier(.22,1,.36,1)}
+@media (hover:none){html .btn:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){
+ html *,html *::before,html *::after{
+  scroll-behavior:auto!important;
+  animation-duration:.01ms!important;
+  animation-iteration-count:1!important;
+  transition-duration:.01ms!important;
+ }
+}
