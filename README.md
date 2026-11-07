@@ -12,7 +12,7 @@ Open the app, personalise your region and priorities, inspect a recommendation a
 
 The England & Wales Foundation Pharmacy recruitment process gives applicants a very large number of Oriel programmes to consider. The difficult part is not simply accessing the information — it is deciding what deserves attention when thousands of programmes differ across location, salary, working hours, hospital/GP/community exposure, career value and other trade-offs.
 
-The built-in October 2026 England & Wales snapshot contains **4,064 programmes across 12 regions**, including **786 programmes labelled London**.
+The November 2026 app reads a **direct Oriel programme CSV export** supplied by the maintainer: **4,064 programmes across 12 England & Wales regions**, including **786 labelled London**. It is a historical snapshot, not a live Oriel feed.
 
 I have ADHD, and this kind of high-volume decision becomes much harder when every field is presented with equal visual weight and I have to keep too many criteria in my head at once. I wanted a cleaner experience that could progressively reduce the information into a decision I could actually make.
 
@@ -112,6 +112,19 @@ The next stage is deeper personalisation and clearer decision support:
 The long-term goal is simple: a user should be able to open a programme and quickly understand **why it may suit them, what they would be compromising on, and what still needs checking before they rank it**.
 
 ## Data and technical notes
+
+**Data independence update (7 November 2026):** The live app now loads the
+maintainer's direct Oriel export from five public files in `data/` rather than
+taking its primary dataset from the inherited `legacy.html`. A compatibility
+fallback remains temporarily to protect applicants' saved selections.
+The identifiers are preserved, and no personal Oriel ranks or tags are published.
+
+To prepare a later export yourself, run
+`python3 scripts/build_catalogue.py "pharmacy programmes.csv"`.
+See [data provenance and updating instructions](data/README.md).
+This replaces the **data-delivery dependency**, not all inherited application
+code or its associated attribution/licensing considerations.
+
 
 The current site is a static GitHub Pages app with no build step.
 
