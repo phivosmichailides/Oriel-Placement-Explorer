@@ -29,6 +29,7 @@
 .map-style-picker{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);white-space:nowrap}
 .map-style-picker select{min-width:116px;max-width:155px;border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:var(--panel);color:var(--ink);font:inherit}
 @media(max-width:540px){.map-heading-tools{width:100%;justify-content:space-between}.map-style-picker{font-size:11px}}
+.map-style-status{font-size:11px;color:var(--mut);line-height:1.3;max-width:132px}.map-style-picker select:disabled{opacity:.55;cursor:not-allowed}
 </style>
 <link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.css">
@@ -92,6 +93,7 @@
     <option value="fiord">Fiord</option>
   </select>
 </label>
+<span id="mapStyleStatus" class="map-style-status" aria-live="polite" hidden></span>
 <button class="btn" id="fitMap">Fit results</button></div></div><div id="placementMap" aria-label="Interactive placement map"></div><div class="map-caption"><span id="mapStatus" role="status">Loading map locations…</span><span><i class="dot green"></i> Shortlisted <i class="dot blue"></i> Unmarked <i class="dot red"></i> Excluded</span></div><div id="mapSelection"></div></section><div class="uxExploreToolbar" id="uxExploreToolbar" aria-label="Programme browsing tools">
   <div class="uxToolbarLead"><b>Programme results</b><small>Switch to a compact 20-per-page grid to scan faster.</small></div>
   <button class="btn uxCompactBtn" type="button" id="uxToolbarFilters" aria-expanded="true" aria-controls="uxFilterSidebar">☷ Hide filters</button><label class="uxResultsSortControl" for="uxResultsSort">Sort results <select id="uxResultsSort" aria-label="Sort filtered results"><option value="fit">Best fit</option><option value="salary">Highest salary</option><option value="hourly">Best hourly pay</option><option value="hours">Shortest week</option><option value="name">Name A–Z</option></select></label><div class="uxLayoutControls" role="group" aria-label="Programme card layout">
@@ -176,7 +178,7 @@
 <script src="vendor/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
-<script src="map-basemap.js?v=20261107styles1"></script>
+<script src="map-basemap.js?v=20261107fallback2"></script>
 <script src="research-core.js?v=1"></script>
 <script src="research.js?v=20261015-no-ratings"></script>
 <script src="desk-enhancements.js?v=20261106g"></script>
