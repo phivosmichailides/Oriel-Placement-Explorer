@@ -32,8 +32,8 @@ const STYLES = Object.freeze({
   const RASTER_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-  const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'positron'):preference];
-  const applyStyle=()=>{
+const style=()=>STYLES[preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference];
+    const applyStyle=()=>{
     for(const record of instances){
       try{
         if(record.leaflet.getContainer().isConnected&&record.map){
