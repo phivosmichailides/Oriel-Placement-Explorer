@@ -13,14 +13,19 @@
   };
   const getData=()=>typeof placements!=='undefined'&&Array.isArray(placements)?placements:[];
   let game={version:1,seen:[],history:[],region:'London'};
-  try{
-    const v=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(v?.version===1){
-      game.seen=Array.isArray(v.seen)?v.seen.filter(x=>typeof x==='string').slice(-5000):[];
-      game.history=Array.isArray(v.history)?v.history.filter(x=>x&&typeof x.id==='string').slice(-150):[];
-      game.region=typeof v.region==='string'?v.region:'London';
-    }
-  }catch{}
+  const hydrateGame=()=>{
+    // Run again after the cloud workspace has restored, not just on script
+    // evaluation, otherwise old local progress could overwrite cloud data.
+    try{
+      const v=JSON.parse(localStorage.getItem(KEY)||'null');
+      if(v?.version===1){
+        game.seen=Array.isArray(v.seen)?v.seen.filter(x=>typeof x==='string').slice(-5000):[];
+        game.history=Array.isArray(v.history)?v.history.filter(x=>x&&typeof x.id==='string').slice(-150):[];
+        game.region=typeof v.region==='string'?v.region:'London';
+      }
+    }catch{}
+  };
+  hydrateGame();
   const saveGame=()=>{try{localStorage.setItem(KEY,JSON.stringify(game))}catch{note('Local progress storage unavailable. Export a backup.')}};
   const note=msg=>{const el=$('tinderNotice');if(el)el.textContent=msg;};
   const prefs=()=>typeof state!=='undefined'&&state?.marks?state:null;
@@ -241,6 +246,7 @@
   };
   const mount=()=>{
     if($('tinderMode'))return;
+    hydrateGame();
     const nav=document.querySelector('nav.tabs'),sim=nav?.querySelector('[data-tab="simulator"]');
     if(!sim)return;
     const tab=document.createElement('button');tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
