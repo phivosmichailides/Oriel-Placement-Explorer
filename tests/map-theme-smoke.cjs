@@ -15,6 +15,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
   const page=await browser.newPage({viewport:{width:1440,height:960}});
   const errors=[];
   page.on('pageerror',e=>{errors.push(e.message);console.log('RUNTIME ERROR:',e.message)});
+  page.on('requestfailed',r=>{if(/openfreemap|maptiler/i.test(r.url()))console.log('MAP REQUEST FAILED:',r.url(),r.failure()?.errorText)});
+  page.on('response',r=>{if(!r.ok()&&/openfreemap|maptiler/i.test(r.url()))console.log('MAP HTTP ERROR:',r.status(),r.url())});
+  page.on('console',m=>{if(m.type()==='error'&&/style|map|tile|gl|fetch|network/i.test(m.text()))console.log('MAP BROWSER ERROR:',m.text().slice(0,450))});
   try{
     await page.addInitScript(()=>{
       localStorage.setItem('phivos-onboarding-v1','1');
