@@ -28,17 +28,28 @@ const STYLES = Object.freeze({
     const saved=localStorage.getItem(STYLE_KEY)||'auto';
     if(CHOICES.has(saved))preference=saved;
   }catch{};
-  // MapLibre's Leaflet adapter obtains vector attribution from the style sources.
-  // Do not add it manually as well, or MapTiler and OSM credits appear twice.
-  const RASTER_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
+  // The adapter supports a single custom credit per layer. A MapTiler style
+  // can repeat attribution across several sources, so supply one canonical credit.
+  const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
+  const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
+  const OPENFREE_ATTR='<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · '+OSM_ATTR;
+  const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
   const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference;
   const style=()=>STYLES[activeStyleName()];
+  const styleAttribution=()=>activeStyleName()==='editorial'?MAPTILER_ATTR:OPENFREE_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
       try{
         if(record.leaflet.getContainer().isConnected&&record.map){
+          const nextAttribution=styleAttribution();
+          if(record.attribution!==nextAttribution){
+            record.leaflet.attributionControl?.removeAttribution(record.attribution);
+            record.leaflet.attributionControl?.addAttribution(nextAttribution);
+            record.layer.options.attributionControl.customAttribution=nextAttribution;
+            record.attribution=nextAttribution;
+          }
           record.map.setStyle(style());
           record.leaflet.getContainer().dataset.basemap='vector-loading';
         }
@@ -104,7 +115,7 @@ const STYLES = Object.freeze({
     vectorPane.style.zIndex='250';
     vectorPane.style.pointerEvents='none';
     let layer,glMap,loaded=false,ended=false,timeout;
-    const record={map:null,leaflet:map,layer:null};
+    const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
     const fail=()=>{
       if(ended||loaded)return;
       ended=true;
@@ -120,6 +131,7 @@ const STYLES = Object.freeze({
     try{
       layer=L.maplibreGL({
         style:style(),pane:'orielVectorBasemap',
+        attributionControl:{customAttribution:styleAttribution()},
         interactive:false,
         // The Leaflet adapter needs overscan: zero padding creates exposed
         // tile boundaries and flashes during zoom and pan.
