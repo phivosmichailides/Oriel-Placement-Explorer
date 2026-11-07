@@ -10,8 +10,8 @@ test('live project does not ship a copy of the earlier explorer', () => {
   assert.equal(fs.existsSync(path.join(root, 'legacy.html')), false);
   const html = read('index.html');
   const app = read('app-base.js');
-  assert.doesNotMatch(html, /legacy\.html|acid555\/oriel-placement-explorer/i);
-  assert.doesNotMatch(app, /legacy\.html|acid555\/oriel-placement-explorer/i);
+  assert.doesNotMatch(html, /legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i);
+  assert.doesNotMatch(app, /legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i);
 });
 
 test('current deployable assets contain no obsolete explorer branding or data loader', () => {
@@ -24,7 +24,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
       .filter(name=>!/^https?:\/\//.test(name))]);
   for (const filename of paths) {
     const content=read(filename);
-    assert.doesNotMatch(content,/Acid555|Asad\s*Q\.?|legacy\.html/i,
+    assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
   assert.match(html,/app\.js\?v=20261107independent1/);
