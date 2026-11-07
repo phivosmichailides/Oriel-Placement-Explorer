@@ -16,10 +16,8 @@
       const next=theme==='dark'?'light':'dark';
       themeButton.setAttribute('aria-label','Switch to '+next+' mode');
       themeButton.setAttribute('aria-pressed',String(theme==='dark'));
-      const icon=themeButton.querySelector('.themeGlyph');
-      const label=themeButton.querySelector('.themeLabel');
-      if(icon)icon.textContent=theme==='dark'?'☀':'☾';
-      if(label)label.textContent=theme==='dark'?'Light mode':'Dark mode';
+      // The two accessible, icon-only SVG states are selected via CSS.
+      // No visible Light/Dark mode text is needed in the header.
     }
   };
   applyTheme(root.getAttribute('data-theme')==='dark'?'dark':'light');
