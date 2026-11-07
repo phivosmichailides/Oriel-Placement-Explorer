@@ -30,10 +30,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }
     assert(fresh,'Latest public build not served');
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
+    // Verify both the actual runtime script and the final rendered footer.
+    const productScript=await page.waitForFunction(()=>{
+      const script=[...document.scripts].find(el=>el.src.includes('/app-product.js'));
+      return script?.src||null;
+    },null,{timeout:12000});
+    const scriptSrc=await productScript.jsonValue();
+    assert.match(scriptSrc,/app-product\.js\?v=20261107independent1$/,
+      'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
-    assert.doesNotMatch(footer,/acid555|asad\s*q\.?|original explorer/i,
-      'Public app footer still renders older explorer branding');
-    assert.match(footer,/Oriel Placement Desk/i,'Independent product footer missing');
+    assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
+      'Expected independent product footer is not rendered');
+    assert.doesNotMatch(footer,/based on|original explorer|forked from/i,
+      'Obsolete footer attribution was injected at runtime');
 
     const catalogue=await page.evaluate(()=>{
       const all=typeof placements==='undefined'?[]:placements;
