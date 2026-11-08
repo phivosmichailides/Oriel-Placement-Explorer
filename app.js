@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261107independent1';
+    product.src='app-product.js?v=20261108mapcoverage1';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
