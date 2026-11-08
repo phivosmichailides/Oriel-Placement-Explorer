@@ -76,3 +76,8 @@ html[data-theme="light"] .geoReasonRed{color:#ae273e!important}
 .geoBlacklistPane{padding-top:1px}
 .geoAreaChip{background:var(--ux-accent-soft);border-color:var(--ux-accent-border);color:var(--ux-accent-ink)}
 @media(max-width:680px){.geoLikesPane,.geoBlacklistPane{margin-top:12px}.geoLikeChip,.geoAreaChip{max-width:100%}}
+
+.geoPreferredOnly{display:flex;align-items:center;gap:9px;margin:10px 0 9px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font-size:12px;font-weight:750;cursor:pointer}
+.geoPreferredOnly input{width:15px;height:15px;accent-color:var(--ux-accent);flex:0 0 auto}
+.geoPreferredOnly:has(input:disabled){opacity:.52;cursor:not-allowed}
+.geoPreferredOnly span{line-height:1.4}
