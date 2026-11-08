@@ -212,7 +212,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&holder.dataset.basemap?.startsWith('vector-')&&holder.querySelector('.leaflet-image-layer');
+      return holder&&holder.dataset.basemap==='vector-editorial'&&holder.dataset.miniStyle==='editorial'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
