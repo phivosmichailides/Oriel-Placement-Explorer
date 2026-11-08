@@ -41,9 +41,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       if(url.pathname==='/postcodes'&&route.request().method()==='POST'){
         const body=JSON.parse(route.request().postData()||'{}');
         const result=(body.postcodes||[]).map(code=>({query:code,result:String(code).replace(/\s/g,'').toUpperCase()==='TN250LZ'?null:point(code)}));
+        if((body.postcodes||[]).some(code=>String(code).replace(/\s/g,'').toUpperCase()==='TN250LZ'))console.log('MOCK TN25 EXACT POSTCODE REQUESTED');
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result})});
       }else if(url.pathname.startsWith('/outcodes/')){
         const code=decodeURIComponent(url.pathname.split('/').pop());
+        if(code==='TN25')console.log('MOCK TN25 OUTCODE REQUESTED');
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result:point(code)})});
       }else await route.continue();
     });
@@ -325,6 +327,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         uniqueLocationCodes:unique.length,
         unresolvedLocationCodes:unique.filter(code=>!Array.isArray(geo[code])).length,
         unresolvedCodes:unique.filter(code=>!Array.isArray(geo[code])),
+        tn25Debug:(()=>{const p=list.find(p=>String(p.title).includes('TN25OLZ'));return {programme:p&&{id:p.id,title:p.title,postcodes:p.postcodes,outcodes:p.outcodes},exact:geo['TN250LZ'],outcode:geo['@OUTCODE:TN25'],keys:Object.keys(geo).filter(k=>k.includes('TN25'))};})(),
         missingDetails:missing.map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,postcodes:p.postcodes,outcodes:p.outcodes,codes:codes(p)})),
         programmesWithoutLocationCodes:list.filter(p=>!codes(p).length).map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area})),
         partiallyMappedProgrammes:list.filter(p=>codes(p).some(code=>Array.isArray(geo[code]))&&codes(p).some(code=>!Array.isArray(geo[code]))).length
