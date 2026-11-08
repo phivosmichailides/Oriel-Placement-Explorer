@@ -27,8 +27,8 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261108mapcoverage3/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261108mapcoverage3/);
+  assert.match(html,/app\.js\?v=20261108mapcoverage4/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261108mapcoverage4/);
 });
 
 test('site uses maintainer-supplied catalogue without rewriting stable saved IDs', () => {
