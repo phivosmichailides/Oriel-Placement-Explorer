@@ -52,7 +52,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261108mapcoverage5')&&(await page.content()).includes('map-basemap.js?v=20261108mapcoverage2')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261108maptilermini1')&&(await page.content()).includes('app.js?v=20261108mapcoverage5')&&(await page.content()).includes('map-basemap.js?v=20261108maptilermini1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -211,15 +211,34 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&(holder.dataset.basemap==='vector-editorial'||holder.dataset.basemap==='vector-dark'||holder.querySelector('.leaflet-tile-loaded'));
+      return holder&&holder.dataset.basemap?.startsWith('maptiler-raster-')&&holder.querySelector('.leaflet-tile-loaded');
     },null,{timeout:30000});
     const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
     const miniTileSources=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
     })));
-    assert(miniBasemap.startsWith('vector')||
-      (miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100)),
-      'Mini map is blank or uses invalid imagery: '+miniBasemap);
+    assert.equal(miniBasemap,'maptiler-raster-editorial','Programme mini-map is not using the custom Editorial MapTiler style: '+miniBasemap);
+    assert(miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='api.maptiler.com'&&x.url.includes('/01a1b7cf-4ca7-7662-9861-84b5b44c218c/256/')&&x.complete&&x.width>100),
+      'Mini map is not displaying loaded tiles from the custom MapTiler style: '+JSON.stringify(miniTileSources));
+    const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
+    assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
+    const miniTileFilter=await card.locator('.uxMiniMap .leaflet-tile-pane').evaluate(node=>getComputedStyle(node).filter);
+    assert.equal(miniTileFilter,'none','Mini-map tiles are being tinted away from the custom map palette');
+    // Changing the main map style must update the existing mini-map too.
+    await mapPicker.selectOption('bright');
+    await page.waitForFunction(()=>{
+      const holder=document.querySelector('#results .placement .uxMiniMap');
+      const tiles=[...(holder?.querySelectorAll('.leaflet-tile-loaded')||[])];
+      return holder?.dataset.basemap==='maptiler-raster-bright'&&tiles.some(tile=>(tile.currentSrc||tile.src).includes('/bright-v2/'));
+    },null,{timeout:20000});
+    const brightMiniTiles=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(tile=>tile.currentSrc||tile.src));
+    assert(brightMiniTiles.some(url=>url.includes('/bright-v2/')),'Mini-map did not follow the selected Bright style');
+    await mapPicker.selectOption('auto');
+    await page.waitForFunction(()=>{
+      const holder=document.querySelector('#results .placement .uxMiniMap');
+      const tiles=[...(holder?.querySelectorAll('.leaflet-tile-loaded')||[])];
+      return holder?.dataset.basemap==='maptiler-raster-editorial'&&tiles.some(tile=>(tile.currentSrc||tile.src).includes('/01a1b7cf-4ca7-7662-9861-84b5b44c218c/'));
+    },null,{timeout:20000});
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
