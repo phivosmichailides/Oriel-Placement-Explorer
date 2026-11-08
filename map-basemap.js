@@ -193,15 +193,31 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
     holder.dataset.miniStatus='rendered';
   };
   const queueMiniRender=record=>{
-    miniQueue=miniQueue.then(()=>renderMiniRecord(record)).catch(error=>{
+    // Coalesce rapid picker changes. A mini-map only needs the latest style,
+    // not a queued snapshot for every intermediate option the user previews.
+    if(record.queued){
+      record.needsRender=true;
+      return record.promise||miniQueue;
+    }
+    record.queued=true;
+    record.promise=miniQueue.then(async()=>{
+      do{
+        record.needsRender=false;
+        await renderMiniRecord(record);
+      }while(record.needsRender&&record.leaflet.getContainer().isConnected);
+    }).catch(error=>{
       console.warn('Custom mini-map snapshot failed; using standard map fallback',error);
       const map=record.leaflet,holder=map.getContainer();
       if(holder.isConnected)holder.dataset.miniStatus='failed: '+String(error?.message||error);
       miniInstances.delete(record);
       if(record.overlay){try{map.removeLayer(record.overlay)}catch{}record.overlay=null;}
       if(holder.isConnected)raster(map);
+    }).finally(()=>{
+      record.queued=false;
+      if(record.needsRender&&record.leaflet.getContainer().isConnected)queueMiniRender(record);
     });
-    return miniQueue;
+    miniQueue=record.promise.catch(()=>{});
+    return record.promise;
   };
   const addMiniSnapshot=map=>{
     const holder=map.getContainer();
@@ -213,7 +229,7 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
       pane.style.zIndex='250';
       pane.style.pointerEvents='none';
       map.attributionControl?.addAttribution(MAPTILER_ATTR);
-      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR};
+      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR,queued:false,needsRender:false,promise:null};
       miniInstances.add(record);
       holder.dataset.basemap='vector-loading';
       holder.dataset.miniStatus='registered';
