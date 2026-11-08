@@ -40,7 +40,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       };
       if(url.pathname==='/postcodes'&&route.request().method()==='POST'){
         const body=JSON.parse(route.request().postData()||'{}');
-        const result=(body.postcodes||[]).map(code=>({query:code,result:String(code).replace(/\\s/g,'').toUpperCase()==='TN250LZ'?null:point(code)}));
+        const result=(body.postcodes||[]).map(code=>({query:code,result:String(code).replace(/\s/g,'').toUpperCase()==='TN250LZ'?null:point(code)}));
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result})});
       }else if(url.pathname.startsWith('/outcodes/')){
         const code=decodeURIComponent(url.pathname.split('/').pop());
