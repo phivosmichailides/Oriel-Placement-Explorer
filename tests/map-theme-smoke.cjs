@@ -678,7 +678,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await page.locator('#atlasMapFocus .atlasMapFocusStage #placementMap').count(),1,'Expanded map should move the existing map rather than create a duplicate');
     await page.locator('#atlasMapFocusClose').click();
     await page.waitForFunction(()=>!!document.querySelector('.map-card #placementMap'));
-    assert.equal(await page.locator('#atlasMapFocusStage #placementMap').count(),0,'Closing the focus map should restore the original map position');
+    assert.equal(await page.locator('#atlasMapFocus .atlasMapFocusStage #placementMap').count(),0,'Closing the focus map should restore the original map position');
 
     // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
     await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
