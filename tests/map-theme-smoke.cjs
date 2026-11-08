@@ -126,6 +126,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.equal(vectorVisibility.paneZIndex,'250','Vector basemap is not layered above fallback tiles');
       assert.equal(vectorVisibility.maptilerCredits,1,'MapTiler attribution is missing or duplicated');
       assert.equal(vectorVisibility.osmCredits,1,'OpenStreetMap attribution is missing or duplicated');
+      assert.doesNotMatch(vectorVisibility.attribution,/\\bLeaflet\\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
     }else{
       assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
@@ -161,6 +162,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         await page.waitForFunction(name=>document.getElementById('placementMap')?.dataset.basemap==='vector-'+name,styleName,{timeout:30000});
         const attribution=await page.locator('#placementMap .leaflet-control-attribution').innerText();
         assert.match(attribution,/MapTiler/,'MapTiler attribution missing for '+styleName);
+        assert.match(attribution,/OpenStreetMap contributors/,'Required OSM attribution missing for '+styleName);
+        assert.doesNotMatch(attribution,/\\bLeaflet\\b/,'Unnecessary Leaflet prefix returned for '+styleName);
         assert.doesNotMatch(attribution,/OpenFreeMap/,'An old OpenFreeMap style is still being used for '+styleName);
       }
       await mapPicker.selectOption('auto');
@@ -226,6 +229,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
     assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
+    assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
+    assert.doesNotMatch(miniAttribution,/\\bLeaflet\\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
     assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
     assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
