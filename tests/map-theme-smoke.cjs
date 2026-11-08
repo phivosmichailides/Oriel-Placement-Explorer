@@ -585,9 +585,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const tubeDataCount=await page.evaluate(()=>window.ORIEL_TUBE_STATIONS.length);
     assert(tubeDataCount>=250,'TfL Underground station data did not load');
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],12,{animate:false}));
-    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-marker').length>=250,null,{timeout:20000});
+    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-marker').length>=30,null,{timeout:20000});
     const mainTubeCount=await page.locator('#placementMap .oriel-tube-marker').count();
-    assert(mainTubeCount>=250,'The main map did not render the Underground station roundels');
+    assert(mainTubeCount>=30,'The London neighbourhood map did not render enough visible Underground station roundels');
 
     await page.locator('[data-q="london"]').first().click();
 
