@@ -91,10 +91,16 @@
 
     const programmePins=new Map(),pinBases=new WeakMap();
     let selectedProgramme=null,hoveredProgramme=null;
-    const locationCodes=p=>[
-      ...new Set((p.postcodes||[]).map(pcKey)),
-      ...new Set((p.outcodes||[]).map(code=>'@OUTCODE:'+String(code).toUpperCase()))
-    ];
+    const locationCodes=p=>{
+      const exact=(p.postcodes||[]).map(pcKey);
+      const preferred=exact.map(code=>{
+        if(Array.isArray(geo[code]))return code;
+        const outward=(code.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[])[0];
+        const fallback=outward?'@OUTCODE:'+outward:null;
+        return fallback&&Array.isArray(geo[fallback])?fallback:code;
+      });
+      return [...new Set([...preferred,...(p.outcodes||[]).map(code=>'@OUTCODE:'+String(code).toUpperCase())])];
+    };
     const highlightPin=pin=>{
       const base=pinBases.get(pin);if(!base)return;
       const selected=!!selectedProgramme&&base.ids.includes(selectedProgramme);
