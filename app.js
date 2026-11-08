@@ -24,7 +24,7 @@
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261108mapcoverage6';
+      sectors.src='sector-map.js?v=20261108mapcoverage7';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261108mapcoverage9';
+    product.src='app-product.js?v=20261108mapcoverage10';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
