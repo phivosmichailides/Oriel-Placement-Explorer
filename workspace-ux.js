@@ -368,7 +368,7 @@
    if(!window.L)return;
    try{
      holder.replaceChildren();
-     const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false});
+     const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false,zoomSnap:.25,zoomDelta:.5});
      // Reuse the custom MapTiler vector style through one shared renderer.
      // Leaflet still owns the site markers, arrows, attribution and click target.
      const miniBasemap=window.OrielBasemap?.addTo
@@ -377,9 +377,7 @@
          maxZoom:19,attribution:'© OpenStreetMap contributors'
        }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
-     const central=p.region==='London'?[51.5074,-.1278]:null;
-     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng):[];
-     if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng,1.8):[];
      nearbyStations.forEach(station=>{
        const icon=L.divIcon({className:'oriel-tube-marker oriel-tube-mini-marker',html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',iconSize:[15,15],iconAnchor:[7.5,7.5]});
        const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
@@ -390,9 +388,8 @@
      });
      L.circleMarker(sitePoint,{radius:6.2,weight:2,color:'#ffffff',fillColor:'#995c68',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
      const boundsPoints=[sitePoint,...nearbyStations.map(station=>[station.lat,station.lng])];
-     if(central)boundsPoints.push(central);
-     if(central)map.fitBounds(L.latLngBounds(boundsPoints),{padding:[20,20],maxZoom:12,animate:false});
-     else map.setView(sitePoint,12,{animate:false});
+     if(nearbyStations.length)map.fitBounds(L.latLngBounds(boundsPoints),{padding:[18,18],maxZoom:14,animate:false});
+     else map.setView(sitePoint,14,{animate:false});
      const openSelected=()=>{
        const label=siteName(p,selected,index,sites.length);
        const lookup=/^Training location/.test(label)?selected.pc:label+' '+selected.pc;
