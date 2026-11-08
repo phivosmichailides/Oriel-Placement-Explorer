@@ -19,7 +19,6 @@ on:
       - 'tests/shortlist.test.js'
       - 'data/**'
       - '.github/workflows/map-theme-smoke.yml'
-      - '.github/workflows/deployed-smoke.yml'
   pull_request:
     branches: [main]
     paths:
@@ -39,11 +38,11 @@ on:
       - 'tests/shortlist.test.js'
       - 'data/**'
       - '.github/workflows/map-theme-smoke.yml'
-      - '.github/workflows/deployed-smoke.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   chromium-smoke:
@@ -74,6 +73,54 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: oriel-map-theme-visual-checks
+          path: /tmp/oriel-map-theme-smoke/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  deployed-smoke:
+    if: github.event_name == 'push'
+    needs: chromium-smoke
+    name: Verify deployed Placement Atlas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install browser testing dependency
+        run: npm install --no-save playwright@1.56.1
+      - name: Install test browser and dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Wait for this commit's GitHub Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 120); do
+            response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=50")"
+            status="$(printf '%s' "$response" | jq -r --arg sha "$GITHUB_SHA" '.workflow_runs[] | select(.name == "pages build and deployment" and .head_sha == $sha) | .status' | head -n1)"
+            conclusion="$(printf '%s' "$response" | jq -r --arg sha "$GITHUB_SHA" '.workflow_runs[] | select(.name == "pages build and deployment" and .head_sha == $sha) | .conclusion' | head -n1)"
+            if [ "$status" = "completed" ]; then
+              if [ "$conclusion" != "success" ]; then
+                echo "GitHub Pages deployment finished with conclusion: $conclusion"
+                exit 1
+              fi
+              echo "GitHub Pages deployment for $GITHUB_SHA completed successfully."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for GitHub Pages deployment for $GITHUB_SHA."
+          exit 1
+      - name: Verify deployed map, vector renderer, PWA and branding
+        run: node tests/map-theme-smoke.cjs
+        env:
+          TARGET: https://placementatlas.co.uk/
+      - name: Upload deployed screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: placement-atlas-deployed-smoke
           path: /tmp/oriel-map-theme-smoke/
           if-no-files-found: ignore
           retention-days: 7
