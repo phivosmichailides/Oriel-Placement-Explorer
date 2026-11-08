@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-08-v3';
+const CACHE_NAME='placement-atlas-shell-2026-11-08-v4';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'app-base.js?v=20261108atlas3','app-product.js?v=20261108atlas2','generic-public.js?v=20261108atlas2',
@@ -25,7 +25,7 @@ const localURL=value=>new URL(value,ROOT).href;
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE_NAME);
-    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261108atlas2'),localURL('favicon.svg?v=20261108atlas2'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261108atlas1'),...EXTRA_ASSETS.map(localURL)]);
+    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261108atlas2'),localURL('favicon.svg?v=20261108atlas2'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261108atlas2'),...EXTRA_ASSETS.map(localURL)]);
     try{
       const response=await fetch(localURL('index.html'),{cache:'reload'});
       if(response.ok){
