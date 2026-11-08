@@ -85,6 +85,7 @@
         for(let attempt=0;attempt<3;attempt++){
           try{
             const response=await fetch(url,{...options,signal:AbortSignal.timeout(15000)});
+            if(response.status===404)return {status:404,result:null};
             if(!response.ok){
               const retryable=response.status===429||response.status>=500;
               if(retryable&&attempt<2){await delay(500*(attempt+1));continue;}
