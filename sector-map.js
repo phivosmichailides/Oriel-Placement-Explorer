@@ -157,12 +157,11 @@
       const stations=Array.isArray(window.ORIEL_TUBE_STATIONS)?window.ORIEL_TUBE_STATIONS:[];
       stations.forEach(station=>{
         const lines=String(station.lines||'London Underground');
-        const accessible=String(station.accessibility||'Not stated');
         const marker=L.marker([Number(station.lat),Number(station.lng)],{
           icon:tubeIcon,title:station.name,alt:station.name,keyboard:true,riseOnHover:true,zIndexOffset:650
         });
         marker.bindTooltip(safeText(station.name),{direction:'top',offset:[0,-9],opacity:.98});
-        marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+safeText(station.name)+'</b><span>'+safeText(lines)+'</span><small>'+safeText(accessible)+' · Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:250});
+        marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+safeText(station.name)+'</b><span>'+safeText(lines)+'</span><small>Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:250});
         marker.addTo(tubeLayer);
       });
       updateTubeVisibility();
