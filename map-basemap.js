@@ -160,13 +160,21 @@ const STYLES=Object.freeze({
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
     let settled=false;
+    const onReady=()=>finish();
+    const onError=event=>{
+      const status=Number(event?.error?.status||event?.error?.statusCode||event?.status||0);
+      if(status>=400)finish(Error('MapTiler mini-map request failed (HTTP '+status+'): '+String(event?.error?.message||event?.error||'')));
+    };
     const finish=(error)=>{
       if(settled)return;
       settled=true;clearTimeout(timer);
+      target.off?.(event,onReady);
+      target.off?.('error',onError);
       error?reject(error):resolve();
     };
     const timer=setTimeout(()=>finish(Error('Mini-map renderer timed out waiting for '+event)),timeoutMs);
-    target.once(event,()=>finish());
+    target.once(event,onReady);
+    target.on('error',onError);
   });
   const ensureMiniRenderer=async(width,height)=>{
     if(!window.maplibregl?.Map)throw Error('MapLibre is unavailable for mini-map snapshots');
@@ -283,7 +291,11 @@ const STYLES=Object.freeze({
       if(holder.isConnected)holder.dataset.miniStatus='failed: '+String(error?.message||error);
       miniInstances.delete(record);
       if(record.overlay){try{map.removeLayer(record.overlay)}catch{}record.overlay=null;}
-      if(holder.isConnected)raster(map);
+      if(holder.isConnected){
+        const message=String(error?.message||error||'');
+        if(/\\b403\\b|forbidden|unauthori/i.test(message))osmFallback(map,'MapTiler rejected the mini-map request. '+message);
+        else raster(map);
+      }
     }).finally(()=>{
       record.queued=false;
       if(record.needsRender&&record.leaflet.getContainer().isConnected)queueMiniRender(record);
@@ -349,7 +361,7 @@ const STYLES=Object.freeze({
     vectorPane.style.pointerEvents='none';
     let layer,glMap,loaded=false,ready=false,ended=false,timeout;
     const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
-    const fail=(reason='MapTiler vector rendering did not produce a usable map.')=>{
+    const fail=(reason='MapTiler vector rendering did not produce a usable map.',forceOsm=false)=>{
       if(ended||ready)return;
       ended=true;
       if(timeout)clearTimeout(timeout);
@@ -360,7 +372,8 @@ const STYLES=Object.freeze({
         retainedUnderlay=null;
       }
       holder.dataset.basemapReason=reason;
-      raster(map);
+      if(forceOsm)osmFallback(map,reason);
+      else raster(map);
     };
     try{
       layer=L.maplibreGL({
@@ -417,7 +430,7 @@ const STYLES=Object.freeze({
         // blank map. Aborted requests during later style switches are expected.
         if(!ready&&(status>=400||/style|fetch|network|failed|http|request|webgl|context|forbidden|unauthori|not found/i.test(message))){
           console.warn('Vector basemap failed before its first rendered frame:',message,status||'');
-          fail('MapTiler vector request failed'+(status?' (HTTP '+status+')':'')+': '+message);
+          fail('MapTiler vector request failed'+(status?' (HTTP '+status+')':'')+': '+message,status===403);
         }
       });
       timeout=setTimeout(()=>{if(!ready)fail('MapTiler vector tiles did not render before the loading timeout.')},15000);
