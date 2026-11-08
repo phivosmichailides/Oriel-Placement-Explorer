@@ -12,6 +12,8 @@
   const postcodes=()=>typeof placements!=='undefined'&&Array.isArray(placements)?placements:[];
   const prefs=()=>typeof state!=='undefined'&&state?.prefs?state.prefs:null;
   const areas=()=>Array.isArray(prefs()?.locationBlacklist)?prefs().locationBlacklist:[];
+  const likedAreas=()=>Array.isArray(prefs()?.locationLikes)?prefs().locationLikes:[];
+  const legacyLikes=()=>String(prefs()?.likes||'').split(',').map(value=>value.trim()).filter(Boolean);
   const allowed=()=>prefs()?.locationAllowed||{};
   const allPC=()=>[...new Set(postcodes().flatMap(p=>(p.postcodes||[]).map(pcKey).filter(Boolean)))];
   const matchDistrict=(name,site)=>!!name&&clean(site?.district)===clean(name);
@@ -46,8 +48,11 @@
       if(!has(pc)){uncertain.push(pc+' — awaiting postcode verification');continue;}
       const site=adminCache[pc];
       if(!site){uncertain.push(pc+' — postcode unavailable');continue;}
-      for(const area of areas())if(matchArea(area,site)&&!reasons.some(r=>r.area.id===area.id)){
-        reasons.push({area,site:site.postcode||pc});
+      for(const area of areas())if(matchArea(area,site)){
+        if(area.kind==='settlement'){
+          const note=pc+' — possible match to '+area.label+'; the mapped settlement extent is approximate and needs review';
+          if(!uncertain.includes(note))uncertain.push(note);
+        }else if(!reasons.some(r=>r.area.id===area.id))reasons.push({area,site:site.postcode||pc});
       }
     }
     if(codes.length===0)uncertain.push('No training-site postcode supplied');
@@ -58,7 +63,15 @@
       reasons,uncertain
     };
   };
-  const shouldHide=p=>assess(p).kind!=='clear';
+  const shouldHide=p=>assess(p).kind==='blocked';
+  const matchesPreferred=p=>{
+    const preferred=likedAreas();
+    if(!preferred.length)return false;
+    return (p.postcodes||[]).some(raw=>{
+      const site=adminCache[pcKey(raw)];
+      return !!site&&preferred.some(area=>matchArea(area,site));
+    });
+  };
   const getExcluded=()=>postcodes().map(p=>({p,assessment:assess(p)}))
     .filter(x=>x.assessment.kind!=='clear');
   const safeText=(str)=>String(str||'').slice(0,300);
@@ -74,14 +87,15 @@
   const progress=()=>{
     const status=byId('geoBlacklistStatus');
     if(!status)return;
-    const missing=areas().length?allPC().filter(pc=>!has(pc)).length:0;
-    if(!areas().length)status.textContent='Add a location to screen each listed training-site postcode.';
-    else if(scanning)status.textContent='Checking site postcodes · '+scanned+' / '+total+' verified. Unverified programmes stay outside Explore.';
-    else if(missing)status.textContent=missing+' postcodes are not verified. These programmes remain in Needs review; use Retry verification.';
-    else status.textContent='Site verification complete. Split placements with missing site postcodes still require review.';
+    const hasAnyArea=areas().length||likedAreas().length;
+    const missing=hasAnyArea?allPC().filter(pc=>!has(pc)).length:0;
+    if(!areas().length&&!likedAreas().length)status.textContent='Add a preferred or excluded area to match the listed training-site postcodes.';
+    else if(scanning)status.textContent='Checking site postcodes · '+scanned+' / '+total+' verified. Unverified and approximate matches remain visible in Explore and are listed for review.';
+    else if(missing)status.textContent=missing+' postcodes are not verified. Affected programmes remain visible in Explore and appear in Needs review; use Retry verification.';
+    else status.textContent='Site verification complete. Only exact verified postcode or borough matches are excluded; approximate and missing sites remain visible for review.';
   };
   const scan=async()=>{
-    if(scanning||!areas().length||!postcodes().length){progress();return;}
+    if(scanning||(!areas().length&&!likedAreas().length)||!postcodes().length){progress();return;}
     const missing=allPC().filter(pc=>!has(pc));
     if(!missing.length){progress();refresh();return;}
     scanning=true;scanned=0;total=missing.length;scanFailures=0;
@@ -136,13 +150,12 @@
     }
     return uniqueSuggestions(list);
   };
-  let searchTimer=null,searchRequest=0,selected=null,suggestions=[];
-  const searchLocations=async query=>{
-    const input=byId('geoAreaSearch'),list=byId('geoAreaSuggestions');
-    if(!input||!list)return;
-    const num=++searchRequest;
-    list.replaceChildren();suggestions=[];selected=null;
-    byId('geoAddArea').disabled=true;
+  const searchTimers={like:null,exclude:null},searchRequests={like:0,exclude:0},selected={like:null,exclude:null};
+  const searchLocations=async(query,mode='exclude')=>{
+    const like=mode==='like',input=byId(like?'geoLikeSearch':'geoAreaSearch'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions'),add=byId(like?'geoAddLike':'geoAddArea');
+    if(!input||!list||!add)return;
+    const num=++searchRequests[mode];
+    list.replaceChildren();selected[mode]=null;add.disabled=true;
     let raw=query.trim();
     if(raw.length<2)return;
     raw=raw.replace(/,\s*(UK|United Kingdom|England|London)\s*$/i,'').trim();
@@ -151,8 +164,8 @@
       const resp=await fetch('https://api.postcodes.io/places?q='+encodeURIComponent(raw)+'&limit=20',{signal:AbortSignal.timeout(9000)});
       if(resp.ok){const data=await resp.json();result=data.result||[];}
     }catch(error){console.warn('Location suggestions temporarily unavailable',error);}
-    if(num!==searchRequest||input.value.trim()!==query.trim())return;
-    suggestions=suggestionsFromResponse(raw,result);
+    if(num!==searchRequests[mode]||input.value.trim()!==query.trim())return;
+    const suggestions=suggestionsFromResponse(raw,result);
     list.replaceChildren();
     if(!suggestions.length){const empty=document.createElement('div');empty.className='geoSuggestionEmpty';empty.textContent='No matching place found. Try a different area name.';list.append(empty);}
     for(const item of suggestions){
@@ -160,21 +173,20 @@
       const a=document.createElement('strong');a.textContent=item.label;
       const b=document.createElement('small');b.textContent=item.subtitle;
       button.append(a,b);
-      button.onclick=()=>{selected=item;input.value=item.label;list.replaceChildren();byId('geoAddArea').disabled=false;byId('geoBlacklistStatus').textContent='Selected '+item.label+'. Choose “Exclude area” to save it.';};
+      button.onclick=()=>{selected[mode]=item;input.value=item.label;list.replaceChildren();add.disabled=false;const status=byId(like?'geoLikeStatus':'geoBlacklistStatus');if(status)status.textContent='Selected '+item.label+'. Choose “'+(like?'Add area':'Exclude area')+'” to save it.';};
       list.append(button);
     }
   };
-  const saveNewArea=()=>{
-    if(!selected||!prefs())return;
-    if(areas().some(a=>a.id===selected.id)){byId('geoBlacklistStatus').textContent='This area is already excluded.';return;}
-    const entry={...selected,createdAt:new Date().toISOString()};
-    prefs().locationBlacklist=[...areas(),entry];
-    // Past allows do not silently override a newly added location restriction.
-    prefs().locationAllowed={};
-    save();
-    selected=null;
-    byId('geoAreaSearch').value='';byId('geoAddArea').disabled=true;
-    byId('geoAreaSuggestions').replaceChildren();
+  const saveNewArea=(mode='exclude')=>{
+    const like=mode==='like',item=selected[mode];if(!item||!prefs())return;
+    const current=like?likedAreas():areas();
+    if(current.some(a=>a.id===item.id)){const status=byId(like?'geoLikeStatus':'geoBlacklistStatus');if(status)status.textContent='This area is already saved.';return;}
+    const entry={...item,createdAt:new Date().toISOString()};
+    if(like)prefs().locationLikes=[...likedAreas(),entry];
+    else{prefs().locationBlacklist=[...areas(),entry];prefs().locationAllowed={};}
+    save();selected[mode]=null;
+    const input=byId(like?'geoLikeSearch':'geoAreaSearch'),add=byId(like?'geoAddLike':'geoAddArea'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions');
+    if(input)input.value='';if(add)add.disabled=true;if(list)list.replaceChildren();
     progress();refresh();scan();
   };
   const removeArea=id=>{
@@ -182,12 +194,39 @@
     prefs().locationBlacklist=areas().filter(a=>a.id!==id);
     prefs().locationAllowed={};save();progress();refresh();scan();
   };
+  const removeLikeArea=id=>{
+    if(!prefs())return;
+    prefs().locationLikes=likedAreas().filter(a=>a.id!==id);
+    save();refresh();scan();
+  };
+  const removeLegacyLike=label=>{
+    if(!prefs())return;
+    prefs().likes=legacyLikes().filter(value=>clean(value)!==clean(label)).join(', ');
+    save();refresh();
+  };
   const allowProgramme=p=>{
     if(!prefs())return;
     prefs().locationAllowed={...allowed(),[p.id]:activeIds()};
     save();refresh();
   };
+  const renderLikeChips=()=>{
+    const host=byId('geoLikeChips');if(!host)return;
+    host.replaceChildren();
+    for(const area of likedAreas()){
+      const chip=document.createElement('span');chip.className='geoLikeChip';
+      const label=document.createElement('span');label.textContent=area.label;
+      const close=document.createElement('button');close.type='button';close.textContent='×';close.title='Remove '+area.label+' from preferred areas';close.setAttribute('aria-label','Remove '+area.label+' from preferred areas');
+      close.onclick=()=>removeLikeArea(area.id);chip.append(label,close);host.append(chip);
+    }
+    legacyLikes().forEach(value=>{
+      const chip=document.createElement('span');chip.className='geoLikeChip geoLikeChipLegacy';
+      const label=document.createElement('span');label.textContent=value+' · saved preference';
+      const close=document.createElement('button');close.type='button';close.textContent='×';close.title='Remove '+value+' from legacy preferred areas';close.setAttribute('aria-label','Remove '+value+' from preferred areas');
+      close.onclick=()=>removeLegacyLike(value);chip.append(label,close);host.append(chip);
+    });
+  };
   const renderChips=()=>{
+    renderLikeChips();
     const host=byId('geoAreaChips');if(!host)return;
     host.replaceChildren();
     for(const a of areas()){
@@ -246,7 +285,7 @@
         const warn=document.createElement('b');warn.className='geoReviewLabel';warn.textContent='Needs location review';
         reason.append(warn,document.createTextNode(' · '+assessment.uncertain.join(' · ')));
       }
-      const allow=document.createElement('button');allow.type='button';allow.className='btn geoAllow';allow.textContent='Restore to Explore';
+      const allow=document.createElement('button');allow.type='button';allow.className='btn geoAllow';allow.textContent=assessment.kind==='blocked'?'Restore to Explore':'Mark reviewed · keep visible';
       allow.onclick=()=>{
         allowProgramme(p);closeModal();
         if(typeof switchTab==='function')switchTab('explore');
@@ -261,6 +300,7 @@
         if(typeof quick!=='undefined')quick.clear();
         document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
         byId('search').value=p.id;
+        window.OrielSaveFilters?.();
         if(typeof explore==='function')explore();
         window.scrollTo({top:byId('uxExploreToolbar')?.getBoundingClientRect().top+window.scrollY-80||0,behavior:'smooth'});
       };
@@ -269,35 +309,37 @@
     body.append(frag);
   };
   const mount=()=>{
-    const textarea=byId('avoids'),saveBtn=byId('savePrefs');
+    const textarea=byId('avoids'),saveBtn=byId('savePrefs'),legacyLike=byId('likes')?.closest('label');
     if(!textarea||!saveBtn||byId('geoAreaSearch'))return;
-    const original=textarea.closest('label');original?.classList.add('geoLegacyAvoid');
+    const original=textarea.closest('label');original?.classList.add('geoLegacyAvoid');legacyLike?.classList.add('geoLegacyLike');
+    const likesPane=document.createElement('section');likesPane.className='geoLikesPane';
+    likesPane.innerHTML='<label class="geoSearchLabel" for="geoLikeSearch">Areas you like <span>· Permanent preference</span></label>'+
+      '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoLikeSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Find a borough, town or neighbourhood…" aria-label="Search UK locations to prefer"><button class="btn" id="geoAddLike" type="button" disabled>Add area</button></div><div id="geoLikeSuggestions" class="geoSuggestions" role="group" aria-label="Preferred location suggestions"></div></div>'+
+      '<p id="geoLikeStatus" class="geoBlacklistStatus" role="status">Choose an exact suggested area. Preferred areas improve fit scores and ranking; they do not hide other programmes.</p>'+
+      '<div id="geoLikeChips" class="geoLikeChips" aria-label="Saved preferred areas"></div>';
     const pane=document.createElement('section');pane.className='geoBlacklistPane';
-    pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Excluded locations <span>· Permanent site filter</span></label>'+
+    pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Areas you want to exclude <span>· Permanent verified-site filter</span></label>'+
       '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoAreaSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search a UK town, borough or neighbourhood…" aria-label="Search UK locations to exclude"><button class="btn primary" id="geoAddArea" type="button" disabled>Exclude area</button></div><div id="geoAreaSuggestions" class="geoSuggestions" role="group" aria-label="Location suggestions"></div></div>'+
       '<p id="geoBlacklistStatus" class="geoBlacklistStatus" role="status"></p>'+
       '<div class="geoChipRow"><div id="geoAreaChips" class="geoAreaChips" aria-label="Saved excluded areas"></div><button class="btn geoViewExcluded" type="button" data-geo-open>See all excluded programmes <span data-geo-count></span></button></div>'+
-      '<p class="geoAccuracyNote">Matches listed training-site postcodes, not employer names. All split-site postcodes are checked. Missing or unverifiable sites are held for review until allowed manually. Small-place boundaries are approximate.</p>'+
+      '<p class="geoAccuracyNote">Matches listed training-site postcodes, not employer names. All split-site postcodes are checked. Only exact verified postcode or borough matches are excluded. Missing, unverifiable and approximate settlement matches remain visible in Explore and appear in Needs review.</p>'+
       '<button type="button" class="geoRetry" id="geoRetry">↻ Retry postcode verification</button>';
-    original?.after(pane);
-    const input=byId('geoAreaSearch');
-    input?.addEventListener('input',()=>{
-      clearTimeout(searchTimer);byId('geoAreaSuggestions').replaceChildren();selected=null;byId('geoAddArea').disabled=true;
-      searchTimer=setTimeout(()=>searchLocations(input.value),260);
-    });
-    input?.addEventListener('keydown',e=>{
-      if(e.key==='Enter'){const first=byId('geoAreaSuggestions')?.querySelector('button.geoSuggestion');if(first){e.preventDefault();first.click();}}
-      if(e.key==='Escape'){byId('geoAreaSuggestions').replaceChildren();}
-    });
-    byId('geoAddArea').onclick=saveNewArea;
+    legacyLike?.after(likesPane);original?.after(pane);
+    const bindLocationSearch=(mode)=>{
+      const like=mode==='like',input=byId(like?'geoLikeSearch':'geoAreaSearch'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions'),add=byId(like?'geoAddLike':'geoAddArea');
+      input?.addEventListener('input',()=>{clearTimeout(searchTimers[mode]);list.replaceChildren();selected[mode]=null;add.disabled=true;searchTimers[mode]=setTimeout(()=>searchLocations(input.value,mode),260);});
+      input?.addEventListener('keydown',event=>{if(event.key==='Enter'){const first=list.querySelector('button.geoSuggestion');if(first){event.preventDefault();first.click();}}if(event.key==='Escape')list.replaceChildren();});
+      add?.addEventListener('click',()=>saveNewArea(mode));
+    };
+    bindLocationSearch('like');bindLocationSearch('exclude');
     byId('geoRetry').onclick=()=>scan();
     document.addEventListener('click',e=>{
       if(e.target.closest('[data-geo-open]'))openModal();
-      if(!e.target.closest('.geoSearchHolder')&&!e.target.closest('#geoAddArea'))byId('geoAreaSuggestions')?.replaceChildren();
+      if(!e.target.closest('.geoSearchHolder')){byId('geoAreaSuggestions')?.replaceChildren();byId('geoLikeSuggestions')?.replaceChildren();}
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay()?.hidden)closeModal();});
     const modal=document.createElement('div');modal.className='geoOverlay';modal.id='geoBlacklistOverlay';modal.hidden=true;
-    modal.innerHTML='<section class="geoModal" role="dialog" aria-modal="true" aria-labelledby="geoModalTitle"><div class="geoModalHead"><div><small>YOUR LOCATION EXCLUSIONS</small><h2 id="geoModalTitle">Excluded programmes</h2><p>Any listed training site in a blacklisted location excludes the entire programme, regardless of setting or rotation length.</p></div><button id="geoClose" type="button" class="geoClose" aria-label="Close excluded programmes">×</button></div><div class="geoModalTools"><button type="button" id="geoSort" class="btn">Oldest areas first ↑</button><select id="geoShow" aria-label="Filter excluded programmes"><option value="all">Excluded + Needs review</option><option value="blocked">Verified excluded</option><option value="unverified">Needs review</option></select><input type="search" id="geoExcludedSearch" placeholder="Search excluded programmes…" aria-label="Search excluded programmes"><span id="geoModalCount"></span></div><ol id="geoExcludedList" class="geoExcludedList"></ol></section>';
+    modal.innerHTML='<section class="geoModal" role="dialog" aria-modal="true" aria-labelledby="geoModalTitle"><div class="geoModalHead"><div><small>YOUR LOCATION EXCLUSIONS</small><h2 id="geoModalTitle">Excluded &amp; needs review</h2><p>Only exact verified postcode or borough matches are hidden. Unverified and approximate matches remain visible in Explore until reviewed. Any verified matching training site excludes the entire programme.</p></div><button id="geoClose" type="button" class="geoClose" aria-label="Close location review">×</button></div><div class="geoModalTools"><button type="button" id="geoSort" class="btn">Oldest areas first ↑</button><select id="geoShow" aria-label="Filter excluded programmes"><option value="all">Excluded + Needs review</option><option value="blocked">Verified excluded</option><option value="unverified">Needs review</option></select><input type="search" id="geoExcludedSearch" placeholder="Search excluded programmes…" aria-label="Search excluded programmes"><span id="geoModalCount"></span></div><ol id="geoExcludedList" class="geoExcludedList"></ol></section>';
     document.body.append(modal);
     modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
     byId('geoClose').onclick=closeModal;
@@ -317,5 +359,5 @@
   document.addEventListener('desk:after-navigation',()=>{renderChips();renderSummary();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
-  window.OrielGeoBlacklist={assess,shouldHide,getExcluded,matchArea,scan,refresh};
+  window.OrielGeoBlacklist={assess,shouldHide,getExcluded,matchArea,matchesPreferred,scan,refresh};
 })();
