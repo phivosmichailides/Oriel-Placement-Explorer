@@ -244,6 +244,28 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const image=holder?.querySelector('.leaflet-image-layer');
       return holder?.dataset.basemap==='vector-editorial'&&holder?.dataset.miniStyle==='editorial'&&image?.src.startsWith('data:image/png;base64,');
     },null,{timeout:30000});
+    // The same custom-style image must remain untinted in the dark interface.
+    await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+    await sleep(250);
+    const darkMini=await card.locator('.uxMiniMap').evaluate(node=>({
+      basemap:node.dataset.basemap,
+      miniStyle:node.dataset.miniStyle,
+      filter:getComputedStyle(node.querySelector('.leaflet-image-layer')).filter
+    }));
+    assert.deepEqual(darkMini,{basemap:'vector-editorial',miniStyle:'editorial',filter:'none'},
+      'Dark mode changed or tinted the custom MapTiler mini-map');
+    await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
+    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+      'MapTiler returned a 403 response during mini-map style changes: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
+    // The image overlay must not intercept the original mini-map click action.
+    await page.evaluate(()=>{
+      window.__openedMiniMapUrl=null;
+      window.open=(url)=>{window.__openedMiniMapUrl=url;return null;};
+    });
+    await card.locator('.uxMiniMap').click({position:{x:20,y:20}});
+    const openedMiniMapUrl=await page.evaluate(()=>window.__openedMiniMapUrl);
+    assert(openedMiniMapUrl&&openedMiniMapUrl.includes('google.com/maps/search'),
+      'Clicking the mini-map no longer opens the selected training site in Google Maps');
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
