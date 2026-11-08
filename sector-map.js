@@ -129,8 +129,8 @@
       document.head.appendChild(pinStyle);
     }
 
-    const programmePins=new Map(),pinBases=new WeakMap();
-    let selectedProgramme=null,hoveredProgramme=null;
+    const programmePins=new Map(),pinBases=new WeakMap(),programmeCoordinates=new Map();
+    let selectedProgramme=null,hoveredProgramme=null,currentMapList=placements.filter(matches),mapRedrawQueued=false;
 
     // TfL Underground markers are a separate layer, so filtering or redrawing
     // placement pins never removes transport context.
@@ -206,15 +206,23 @@
     window.OrielMapInteractive={
       select(id,pan=false){
         selectedProgramme=id||null;syncMap();
-        if(pan&&selectedProgramme&&programmePins.has(selectedProgramme)&&placementMap){
-          const pin=programmePins.get(selectedProgramme)[0],coord=pin.getLatLng();
-          if(!placementMap.getBounds().contains(coord))placementMap.panTo(coord,{animate:true,duration:.38});
+        if(pan&&selectedProgramme&&placementMap){
+          const pin=programmePins.get(selectedProgramme)?.[0];
+          if(pin){
+            const coord=pin.getLatLng();
+            if(!placementMap.getBounds().contains(coord))placementMap.panTo(coord,{animate:true,duration:.38});
+          }else{
+            const locations=programmeCoordinates.get(selectedProgramme)||[];
+            const visible=placementMap.getBounds();
+            const coord=locations.find(point=>visible.contains(L.latLng(point[0],point[1])))||locations[0];
+            if(coord)placementMap.panTo([coord[0],coord[1]],{animate:true,duration:.38});
+          }
         }
       },
       hover(id,active=true){hoveredProgramme=active?id:null;syncMap()},
       current:()=>selectedProgramme
     };
-    drawMap=requestedList=>{const list=mapScopeMode==='all'?placements:requestedList;refreshPalette();renderLegend();
+    drawMap=requestedList=>{const list=mapScopeMode==='all'?placements:requestedList;currentMapList=list;refreshPalette();renderLegend();
       if(!placementMap)return;
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
@@ -242,7 +250,70 @@
         if(resolvedForProgramme===codes.length)programmesWithAllSites++;
       });
 
+      // Keep exact locations for fitting and programme-to-map navigation,
+      // then merge nearby points into progressively finer screen-space clusters.
+      programmeCoordinates.clear();
       for(const group of groups.values()){
+        group.entries.forEach(p=>{
+          if(!programmeCoordinates.has(p.id))programmeCoordinates.set(p.id,[]);
+          programmeCoordinates.get(p.id).push(group.c);
+        });
+      }
+      window.OrielMapProgrammeLocations=programmeCoordinates;
+      window.OrielMapCurrentBounds=groups.size
+        ?L.latLngBounds([...groups.values()].map(group=>L.latLng(group.c[0],group.c[1])))
+        :null;
+
+      const zoom=placementMap.getZoom();
+      const cellSize=zoom<=7?48:zoom<=8?40:zoom<=9?32:zoom<=10?26:
+        zoom<=11?21:zoom<=12?17:zoom<=13?13:zoom<=14?9:zoom<=15?6:0;
+      const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
+      const displayGroups=[];
+      if(cellSize>0){
+        const buckets=new Map();
+        for(const group of groups.values()){
+          if(visibleBounds&&!visibleBounds.contains(L.latLng(group.c[0],group.c[1])))continue;
+          const pixel=placementMap.project(L.latLng(group.c[0],group.c[1]),zoom);
+          const key=Math.floor(pixel.x/cellSize)+':'+Math.floor(pixel.y/cellSize);
+          if(!buckets.has(key))buckets.set(key,[]);
+          buckets.get(key).push({group,pixel});
+        }
+        for(const bucket of buckets.values()){
+          if(bucket.length===1){
+            const group=bucket[0].group;
+            displayGroups.push({...group,cluster:false,locationCount:1,clusterBounds:null});
+            continue;
+          }
+          const entriesById=new Map(),codes=new Set();
+          let sumX=0,sumY=0,approximate=false;
+          const points=[];
+          bucket.forEach(({group,pixel})=>{
+            sumX+=pixel.x;sumY+=pixel.y;points.push(L.latLng(group.c[0],group.c[1]));
+            group.entries.forEach(entry=>entriesById.set(entry.id,entry));
+            group.codes.forEach(code=>codes.add(code));
+            if(group.approximate)approximate=true;
+          });
+          const centre=placementMap.unproject(L.point(sumX/bucket.length,sumY/bucket.length),zoom);
+          displayGroups.push({
+            c:[centre.lat,centre.lng],
+            entries:[...entriesById.values()],
+            codes,
+            approximate,
+            cluster:true,
+            locationCount:bucket.length,
+            clusterBounds:L.latLngBounds(points)
+          });
+        }
+      }else{
+        for(const group of groups.values()){
+          if(!visibleBounds||visibleBounds.contains(L.latLng(group.c[0],group.c[1])))
+            displayGroups.push({...group,cluster:false,locationCount:1,clusterBounds:null});
+        }
+      }
+      window.OrielMapClusterCount=displayGroups.filter(group=>group.cluster).length;
+      window.OrielMapRenderedMarkerCount=displayGroups.length;
+
+      for(const group of displayGroups){
         const {c,entries}=group;
         const mapSector=groupMapSector(entries);
         const preferred=entries.some(p=>SHORT.has(mark(p).status));
@@ -250,14 +321,16 @@
         const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
         const fillColor=palette[mapSector]||palette.Other;
         const radius=(entries.length>1?4.3:2.9)+(preferred?.55:0);
+        const needsBadge=group.cluster||entries.length>1;
         let pin;
-        if(entries.length>1){
-          const size=entries.length>=100?34:entries.length>=10?29:25;
+        if(needsBadge){
+          const size=group.cluster?(entries.length>=100?38:entries.length>=10?32:28):(entries.length>=100?34:entries.length>=10?29:25);
           const fontSize=entries.length>=100?9:10;
+          const countLabel=entries.length>999?'999+':String(entries.length);
           pin=L.marker(c,{
             icon:L.divIcon({
-              className:'oriel-group-marker',
-              html:'<span class="oriel-group-count" data-programme-count="'+entries.length+'" style="width:'+size+'px;height:'+size+'px;font-size:'+fontSize+'px;--group-fill:'+fillColor+';--group-ring:'+stroke+'">'+entries.length+'</span>',
+              className:'oriel-group-marker'+(group.cluster?' oriel-cluster-marker':''),
+              html:'<span class="oriel-group-count" data-programme-count="'+entries.length+'" data-cluster="'+(group.cluster?'true':'false')+'" style="width:'+size+'px;height:'+size+'px;font-size:'+fontSize+'px;--group-fill:'+fillColor+';--group-ring:'+stroke+'">'+countLabel+'</span>',
               iconSize:[size,size],iconAnchor:[size/2,size/2]
             }),
             keyboard:true,riseOnHover:true
@@ -281,24 +354,35 @@
         });
 
         const sectorSummary=groupSectorSummary(entries);
-        const labels=[...group.codes].map(code=>code.startsWith('@OUTCODE:')?code.slice(9)+' (approx.)':code);
-        const locationSummary=labels.join(', ');
+        const allLabels=[...group.codes].map(code=>code.startsWith('@OUTCODE:')?code.slice(9)+' (approx.)':code);
+        const shownLabels=group.cluster?allLabels.slice(0,4):allLabels;
+        const locationSummary=shownLabels.join(', ')+(allLabels.length>shownLabels.length?' +'+(allLabels.length-shownLabels.length)+' more':'');
         const approximateNote=group.approximate?' · includes approximate postcode-district centre':'';
-        pin.bindTooltip((entries.length>1?entries.length+' programmes':'1 programme')+' · '+sectorSummary+approximateNote+(locationSummary?' · '+locationSummary:''));
+        const markerSummary=group.cluster
+          ?entries.length+' programme'+(entries.length===1?'':'s')+' across '+group.locationCount+' nearby sites'
+          :(entries.length>1?entries.length+' programmes':'1 programme');
+        pin.bindTooltip(markerSummary+' · '+sectorSummary+approximateNote+(locationSummary?' · '+locationSummary:''));
 
         const openPin=()=>{
           $('mapSelection').innerHTML='<div class="map-selection-head"><b>'+entries.length+' programme'+(entries.length===1?'':'s')+' at this location · '+esc(sectorSummary)+'</b><button class="textbtn" id="closeSelection">Close</button></div>'+(group.approximate?'<p class="map-approx-note">This marker uses a postcode-district centre because the source did not provide a full postcode.</p>':'')+sorted([...entries]).map(p=>card(p)).join('');
           $('closeSelection').onclick=()=>$('mapSelection').innerHTML='';
           $('mapSelection').scrollIntoView({behavior:'smooth',block:'nearest'});
         };
-        pin.on('click',openPin);
+        const zoomIntoCluster=()=>{
+          if(group.cluster&&group.clusterBounds?.isValid()){
+            placementMap.fitBounds(group.clusterBounds,{padding:[48,48],maxZoom:Math.min(placementMap.getZoom()+2,14),animate:true,duration:.35});
+          }else openPin();
+        };
+        pin.on('click',group.cluster?zoomIntoCluster:openPin);
         const el=pin.getElement();
         if(el){
           el.setAttribute('tabindex','0');
           el.setAttribute('role','button');
           el.dataset.programmeCount=String(entries.length);
-          el.setAttribute('aria-label','Show '+entries.length+' '+sectorSummary+' programme'+(entries.length===1?'':'s')+(locationSummary?' at '+locationSummary:'')+(group.approximate?' · approximate area':''));
-          el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPin();}});
+          el.setAttribute('aria-label',group.cluster
+            ?'Zoom into '+entries.length+' programmes across '+group.locationCount+' nearby sites'
+            :'Show '+entries.length+' '+sectorSummary+' programme'+(entries.length===1?'':'s')+(locationSummary?' at '+locationSummary:'')+(group.approximate?' · approximate area':''));
+          el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();group.cluster?zoomIntoCluster():openPin();}});
         }
       }
 
@@ -311,9 +395,19 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
+      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'At wider zooms, numbered clusters zoom into nearby sites; individual location pins open every programme there. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
       syncMap();
     };
+    const scheduleMapRedraw=()=>{
+      if(mapRedrawQueued)return;
+      mapRedrawQueued=true;
+      requestAnimationFrame(()=>{
+        mapRedrawQueued=false;
+        try{drawMap(currentMapList)}catch(error){console.warn('Map markers could not be refreshed after navigation',error)}
+      });
+    };
+    placementMap.on('zoomend',scheduleMapRedraw);
+    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw()});
     try{drawMap(placements.filter(matches));}catch{}
     return true;
   };
