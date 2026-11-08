@@ -8,37 +8,39 @@
 (()=>{
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
-const STYLE_IDS=Object.freeze({
-  editorial:'01a1b7cf-4ca7-7662-9861-84b5b44c218c',
-  positron:'base-v4-light',
-  bright:'bright-v2',
-  liberty:'streets-v4',
-  dark:'streets-v4-dark',
-  fiord:'landscape-v4'
+const STYLE_ID='01a1b7cf-4ca7-7662-9861-84b5b44c218c';
+const styleUrl=file=>new URL(file+'?v=20261108editorial2',document.baseURI).toString();
+const STYLES=Object.freeze({
+  'editorial-light':styleUrl('map-styles/editorial-light.json'),
+  'editorial-dark':styleUrl('map-styles/editorial-dark.json')
 });
-const maptilerStyle=id=>`https://api.maptiler.com/maps/${id}/style.json?key=${MAPTILER_KEY}`;
-const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([name,id])=>[name,maptilerStyle(id)])));
-  const STYLE_KEY='oriel-basemap-style-v2';
+  const STYLE_KEY='oriel-basemap-style-v3';
   const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
   let preference='auto';
   try{
-    const saved=localStorage.getItem(STYLE_KEY)||'auto';
-    if(CHOICES.has(saved))preference=saved;
+    const saved=localStorage.getItem(STYLE_KEY)||localStorage.getItem('oriel-basemap-style-v2')||'auto';
+    if(saved==='dark'||saved==='editorial-dark')preference='editorial-dark';
+    else if(saved==='editorial-light'||saved==='editorial'||['positron','bright','liberty','fiord'].includes(saved))preference='editorial-light';
+    else if(saved==='auto')preference='auto';
+    localStorage.setItem(STYLE_KEY,preference);
   }catch{};
   // The adapter supports a single custom credit per layer. A MapTiler style
   // can repeat attribution across several sources, so supply one canonical credit.
   const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
-  const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
   const miniInstances=new Set();
+  const rasterInstances=new Set();
   let miniRenderer=null,miniRendererHost=null,miniRendererStyle=null,miniQueue=Promise.resolve();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-  // Automatic preserves the custom editorial cartography in both app themes.
-  // The explicit Dark option is a separate MapTiler dark map.
-  const activeStyleName=()=>preference==='auto'?'editorial':preference;
+  // Automatic switches between two coordinated versions of the same map design.
+  const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'editorial-dark':'editorial-light'):preference;
   const style=()=>STYLES[activeStyleName()];
-  const rasterTileUrl=()=>`https://api.maptiler.com/maps/${STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
+  // A raster fallback remains available on browsers without WebGL. The light
+  // version uses the owner's hosted Editorial style; the dark fallback uses
+  // MapTiler's native dark streets tiles until a custom raster style is hosted.
+  const RASTER_STYLE_IDS={'editorial-light':STYLE_ID,'editorial-dark':'streets-v4-dark'};
+  const rasterTileUrl=()=>`https://api.maptiler.com/maps/${RASTER_STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
   const styleAttribution=()=>MAPTILER_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
@@ -66,6 +68,13 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
         queueMiniRender(record);
       }catch(error){console.warn('Mini-map style could not switch',error)}
     }
+    for(const record of rasterInstances){
+      try{
+        const holder=record.leaflet.getContainer();
+        if(!holder.isConnected){rasterInstances.delete(record);continue;}
+        record.layer.setUrl(rasterTileUrl());
+      }catch(error){console.warn('Raster fallback style could not switch',error)}
+    }
   };
   const choose=choice=>{
     if(!CHOICES.has(choice))return false;
@@ -74,6 +83,14 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
     applyStyle();
     return true;
   };
+  let lastTheme=mode();
+  const themeObserver=new MutationObserver(()=>{
+    const nextTheme=mode();
+    if(nextTheme===lastTheme)return;
+    lastTheme=nextTheme;
+    if(preference==='auto')applyStyle();
+  });
+  themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   // Browsers limit concurrent WebGL contexts. Mini-maps load lazily,
   // and beyond the configured vector-map limit use OSM fallback.
   const reportMainRenderer=(map,isFallback,reason='')=>{
@@ -86,18 +103,21 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
     }
     if(note){
       note.hidden=!isFallback;
-      note.textContent=isFallback?'Standard map (fallback)':'';
-      note.title=reason||'A standard OpenStreetMap background is shown because vector rendering is unavailable.';
+      note.textContent=isFallback?'MapTiler raster fallback':'';
+      note.title=reason||'MapTiler raster tiles are shown because vector rendering is unavailable.';
     }
   };
   const MAX_GL_MAPS=7;
   const raster=map=>{
-    const layer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:RASTER_ATTR
+    const layer=L.tileLayer(rasterTileUrl(),{
+      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:MAPTILER_ATTR
     }).addTo(map);
+    const record={leaflet:map,layer};
+    rasterInstances.add(record);
+    map.on('unload',()=>rasterInstances.delete(record));
     map.getContainer().dataset.basemap='raster-fallback';
-    reportMainRenderer(map,true,'WebGL or the map provider is unavailable; the standard map remains interactive.');
-    return {layer,kind:'raster'};
+    reportMainRenderer(map,true,'Vector rendering is unavailable; the MapTiler raster map remains interactive.');
+    return {layer,kind:'raster',record};
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
     let settled=false;
