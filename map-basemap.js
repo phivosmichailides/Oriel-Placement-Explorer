@@ -27,6 +27,7 @@ const STYLES=Object.freeze({
   // can repeat attribution across several sources, so supply one canonical credit.
   const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
+  const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
   const miniInstances=new Set();
   const rasterInstances=new Set();
@@ -38,7 +39,7 @@ const STYLES=Object.freeze({
   // A raster fallback remains available on browsers without WebGL. The light
   // version uses the owner's hosted Editorial style; the dark fallback uses
   // MapTiler's native dark streets tiles until a custom raster style is hosted.
-  const RASTER_STYLE_IDS={'editorial-light':STYLE_ID,'editorial-dark':'streets-v4-dark'};
+  const RASTER_STYLE_IDS={'editorial-light':'streets-v4','editorial-dark':'streets-v4-dark'};
   const rasterTileUrl=()=>`https://api.maptiler.com/maps/${RASTER_STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
   const styleAttribution=()=>MAPTILER_ATTR;
   const applyStyle=()=>{
@@ -277,14 +278,15 @@ const STYLES=Object.freeze({
     if(!L.maplibreGL||!maplibre||explicitlyUnsupported||instances.size>=MAX_GL_MAPS){
       return raster(map);
     }
-    // Keep a MapTiler raster copy of the selected Editorial appearance only
-    // while the vector style loads. This avoids a flash of unrelated OSM tiles.
+    // Keep the lightweight OSM underlay only while the Editorial vector style
+    // loads. It is removed as soon as the MapLibre canvas is ready; the actual
+    // fallback, if required, uses MapTiler's standard light/dark raster tiles.
     let retainedUnderlay=null;
     if(!mini){
-      retainedUnderlay=L.tileLayer(rasterTileUrl(),{
+      retainedUnderlay=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
         maxZoom:19,keepBuffer:3,updateWhenIdle:true,
         className:'oriel-map-backup',
-        attribution:MAPTILER_ATTR
+        attribution:RASTER_ATTR
       }).addTo(map);
     }
     // An explicit pane ensures vector tiles sit above any raster fallback
