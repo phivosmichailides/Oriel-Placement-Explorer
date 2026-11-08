@@ -14765,52 +14765,11 @@
       "source": "maptiler_planet_v4",
       "source-layer": "road",
       "filter": [
-        "all",
+        "==",
         [
-          "==",
-          [
-            "geometry-type"
-          ],
-          "LineString"
+          "geometry-type"
         ],
-        [
-          "!=",
-          [
-            "get",
-            "brunnel"
-          ],
-          "tunnel"
-        ],
-        [
-          "any",
-          [
-            "==",
-            [
-              "get",
-              "construction"
-            ],
-            false
-          ],
-          [
-            "!",
-            [
-              "has",
-              "construction"
-            ]
-          ]
-        ],
-        [
-          "match",
-          [
-            "get",
-            "access"
-          ],
-          [
-            "no"
-          ],
-          false,
-          true
-        ]
+        "LineString"
       ],
       "minzoom": 3,
       "layout": {
@@ -14818,7 +14777,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#e9dfd0",
+        "line-color": "#f7f3e9",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -14829,23 +14788,23 @@
             "zoom"
           ],
           3,
-          2.5,
+          1.35,
           5,
-          2.7,
+          1.55,
           7,
-          2.9,
+          1.85,
           9,
-          3.15,
+          2.3,
           11,
-          3.5,
+          2.9,
           13,
-          4.05,
+          3.7,
           15,
-          4.85,
+          4.9,
           17,
-          6.15,
+          6.6,
           19,
-          7.85
+          9.1
         ]
       }
     },
@@ -14855,52 +14814,11 @@
       "source": "maptiler_planet_v4",
       "source-layer": "road",
       "filter": [
-        "all",
+        "==",
         [
-          "==",
-          [
-            "geometry-type"
-          ],
-          "LineString"
+          "geometry-type"
         ],
-        [
-          "!=",
-          [
-            "get",
-            "brunnel"
-          ],
-          "tunnel"
-        ],
-        [
-          "any",
-          [
-            "==",
-            [
-              "get",
-              "construction"
-            ],
-            false
-          ],
-          [
-            "!",
-            [
-              "has",
-              "construction"
-            ]
-          ]
-        ],
-        [
-          "match",
-          [
-            "get",
-            "access"
-          ],
-          [
-            "no"
-          ],
-          false,
-          true
-        ]
+        "LineString"
       ],
       "minzoom": 3,
       "layout": {
@@ -14917,20 +14835,20 @@
           "motorway",
           "#a97855",
           "trunk",
-          "#ad8c68",
+          "#b58c66",
           "primary",
-          "#b8956f",
+          "#b9946d",
           "secondary",
-          "#bea786",
+          "#c1a37e",
           "tertiary",
-          "#c9b89e",
+          "#c7b08e",
           [
             "minor",
             "service",
             "track"
           ],
-          "#d3c6b3",
-          "#d0c3b0"
+          "#d1c0a5",
+          "#d8cbb7"
         ],
         "line-opacity": 1,
         "line-width": [
@@ -14942,23 +14860,23 @@
             "zoom"
           ],
           3,
-          1.15,
+          0.25,
           5,
-          1.35,
+          0.45,
           7,
-          1.55,
+          0.75,
           9,
-          1.8,
+          1.2,
           11,
-          2.15,
+          1.8,
           13,
-          2.7,
+          2.6,
           15,
-          3.5,
+          3.8,
           17,
-          4.8,
+          5.5,
           19,
-          6.5
+          8
         ]
       }
     },
