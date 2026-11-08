@@ -99,6 +99,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
       return state==='vector-editorial'&&!holder.querySelector('.oriel-map-backup');
     },null,{timeout:30000});
+    const editorialStyleForDesign=await page.evaluate(async()=>{
+      const url=window.OrielBasemap?.styles?.editorial;
+      const response=await fetch(url);
+      if(!response.ok)throw Error('Could not inspect hosted Editorial style: HTTP '+response.status);
+      return response.json();
+    });
+    console.log('EDITORIAL_STYLE_JSON:'+JSON.stringify(editorialStyleForDesign));
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
