@@ -209,7 +209,7 @@
    document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent='('+count+')');
  };
  document.addEventListener('desk:action',()=>{updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();});
- window.addEventListener('storage',event=>{if(event.key==='phivos-desk-v2'){updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();}});
+ window.addEventListener('storage',event=>{if(event.key!=='phivos-desk-v2'||!event.newValue)return;try{const latest=JSON.parse(event.newValue);if(latest.marks&&typeof latest.marks==='object')state.marks=latest.marks;updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();}catch{}});
  const renderDrawer=()=>{
    if(!drawerItems)return;
    const query=(drawerSearch?.value||'').toLowerCase().trim();
