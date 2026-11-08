@@ -227,7 +227,7 @@
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
       zoom.innerHTML='<button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>';
-      zoom.addEventListener('click',event=>{const button=event.target.closest('[data-atlas-zoom]');if(!button)return;event.preventDefault();event.stopPropagation();button.dataset.atlasZoom==='in'?placementMap.zoomIn():placementMap.zoomOut();});
+      zoom.addEventListener('click',event=>{const button=event.target.closest('[data-atlas-zoom]');if(!button)return;event.preventDefault();event.stopPropagation();const delta=button.dataset.atlasZoom==='in'?1:-1;const target=Math.max(placementMap.getMinZoom(),Math.min(placementMap.getMaxZoom(),placementMap.getZoom()+delta));placementMap.stop();placementMap.setZoom(target,{animate:true,duration:.18});});
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
       emptyHint.className='atlasMapEmptyHint';emptyHint.id='atlasMapEmptyHint';
