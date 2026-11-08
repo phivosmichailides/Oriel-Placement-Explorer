@@ -223,10 +223,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       adapterPresent:typeof window.L?.maplibreGL==='function',
       webglSupported:(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}})(),
       basemapStatus:document.getElementById('placementMap')?.dataset.basemap||'unset',
+      basemapReason:document.getElementById('placementMap')?.dataset.basemapReason||null,
+      mapStyleStatus:document.getElementById('mapStyleStatus')?.textContent||null,
       canvasCount:document.querySelectorAll('#placementMap canvas.maplibregl-canvas').length,
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
     }));
-    console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify(vectorDiagnostic));
+    console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify({...vectorDiagnostic,mapHttpErrors,consoleErrors:errors}));
     if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
         const value=document.getElementById('placementMap')?.dataset.basemap||'';
