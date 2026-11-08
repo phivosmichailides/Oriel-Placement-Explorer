@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial7')&&(await page.content()).includes('map-basemap.js?v=20261108editorial10')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial8')&&(await page.content()).includes('map-basemap.js?v=20261108editorial10')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -64,7 +64,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage8$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage9$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
@@ -484,7 +484,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const mapScope=page.locator('#mapScope');
     assert.equal(await mapScope.inputValue(),'all','The map should show the complete catalogue by default');
     await mapScope.selectOption('matching');
-    await mapScope.selectOption('all');
+    await page.locator('#locateBtn').click();
+    assert.equal(await mapScope.inputValue(),'all','Locate all sites should switch the map to the complete catalogue');
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
       return window.OrielMapScope==='all'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
