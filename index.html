@@ -26,9 +26,10 @@
 @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.filters{position:static}.controls{grid-template-columns:1fr 1fr 90px 1fr}.controls .btn{width:100%}.recoGrid{grid-template-columns:1fr}}
 @media(max-width:720px){.shell{padding:12px}.top{flex-direction:column}.actions{justify-content:flex-start}.top h1{font-size:24px}.stats{grid-template-columns:repeat(2,1fr)}.placementTop{grid-template-columns:1fr}.salary,.hourly{text-align:left}.fit{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.settings{grid-template-columns:1fr}.weight{grid-template-columns:1fr 1fr 30px}.sectionHero{align-items:flex-start;flex-direction:column}}
 .map-heading-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.map-style-picker{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);white-space:nowrap}
-.map-style-picker select{min-width:116px;max-width:155px;border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:var(--panel);color:var(--ink);font:inherit}
-@media(max-width:540px){.map-heading-tools{width:100%;justify-content:space-between}.map-style-picker{font-size:11px}}
+.map-style-picker,.map-scope-picker{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);white-space:nowrap}
+.map-style-picker select,.map-scope-picker select{min-width:116px;max-width:155px;border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:var(--panel);color:var(--ink);font:inherit}
+.map-scope-picker select{min-width:138px}
+@media(max-width:540px){.map-heading-tools{width:100%;justify-content:space-between;gap:8px}.map-style-picker,.map-scope-picker{font-size:11px}.map-scope-picker select,.map-style-picker select{min-width:0;max-width:150px}}
 .map-style-status{font-size:11px;color:var(--mut);line-height:1.3;max-width:132px}.map-style-picker select:disabled{opacity:.55;cursor:not-allowed}
 </style>
 <link rel="stylesheet" href="vendor/leaflet.css">
@@ -158,6 +159,12 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
     </aside>
     <div class="workspace"><section class="map-card card"><div class="map-heading"><div><div class="eyebrow">ENGLAND &amp; WALES PROGRAMMES</div><h2>See where you could work</h2></div>
 <div class="map-heading-tools">
+<label class="map-scope-picker" for="mapScope">Map shows
+  <select id="mapScope" aria-label="Choose which programmes appear on the map">
+    <option value="matching">Matching results</option>
+    <option value="all">All programmes</option>
+  </select>
+</label>
 <label class="map-style-picker" for="mapStyle">Map style
   <select id="mapStyle" aria-label="Choose map appearance">
     <optgroup label="Your custom map">
