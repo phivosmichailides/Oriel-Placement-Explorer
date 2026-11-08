@@ -59,7 +59,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261107independent1$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage2$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
