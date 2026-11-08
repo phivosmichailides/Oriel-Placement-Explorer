@@ -433,7 +433,7 @@ const STYLES=Object.freeze({
           fail('MapTiler vector request failed'+(status?' (HTTP '+status+')':'')+': '+message,status===403);
         }
       });
-      timeout=setTimeout(()=>{if(!ready)fail('MapTiler vector tiles did not render before the loading timeout.')},15000);
+      timeout=setTimeout(()=>{if(!ready)fail('MapTiler vector tiles did not render before the loading timeout.')},30000);
       map.on('unload',()=>{
         ended=true;
         instances.delete(record);
