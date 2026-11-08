@@ -278,15 +278,14 @@ const STYLES=Object.freeze({
     if(!L.maplibreGL||!maplibre||explicitlyUnsupported||instances.size>=MAX_GL_MAPS){
       return raster(map);
     }
-    // Keep OSM tiles only while the vector style initially loads. Once the
-    // MapLibre canvas is ready, remove those tiles and their attribution:
-    // retaining them can paint the standard map *over* the custom style.
+    // Keep a MapTiler raster copy of the selected Editorial appearance only
+    // while the vector style loads. This avoids a flash of unrelated OSM tiles.
     let retainedUnderlay=null;
     if(!mini){
-      retainedUnderlay=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      retainedUnderlay=L.tileLayer(rasterTileUrl(),{
         maxZoom:19,keepBuffer:3,updateWhenIdle:true,
         className:'oriel-map-backup',
-        attribution:RASTER_ATTR
+        attribution:MAPTILER_ATTR
       }).addTo(map);
     }
     // An explicit pane ensures vector tiles sit above any raster fallback
@@ -303,10 +302,10 @@ const STYLES=Object.freeze({
       instances.delete(record);
       try{map.removeLayer(layer)}catch{}
       if(retainedUnderlay){
-        holder.dataset.basemap='raster-fallback';
-        reportMainRenderer(map,true,'Vector tiles could not load; the standard map remains interactive.');
+        try{map.removeLayer(retainedUnderlay)}catch{}
+        retainedUnderlay=null;
       }
-      else raster(map);
+      raster(map);
     };
     try{
       layer=L.maplibreGL({
