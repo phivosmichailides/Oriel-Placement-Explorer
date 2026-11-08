@@ -61,7 +61,7 @@
       const outcodes=[...new Set(source.flatMap(p=>(p.outcodes||[]).map(x=>String(x).toUpperCase())))];
       const missingPostcodes=postcodes.filter(pc=>!hasGeo(pc));
       const missingOutcodes=outcodes.filter(oc=>!hasGeo('@OUTCODE:'+oc));
-      const total=missingPostcodes.length+missingOutcodes.length;
+      let total=missingPostcodes.length+missingOutcodes.length;
       if(!total){
         drawMap(placements.filter(matches));
         toast('All available postcode and outcode locations are already checked.');
@@ -78,6 +78,12 @@
       const jobs=[];
       for(let i=0;i<missingPostcodes.length;i+=100)jobs.push({type:'postcode',values:missingPostcodes.slice(i,i+100)});
       for(const outcode of missingOutcodes)jobs.push({type:'outcode',value:outcode});
+      const scheduledOutcodes=new Set(missingOutcodes);
+      const queueOutcodeFallback=postcode=>{
+        const outward=(postcode.match(/^[A-Z]{1,2}\\d[A-Z\\d]?/)||[])[0];
+        if(!outward||hasGeo('@OUTCODE:'+outward)||scheduledOutcodes.has(outward))return;
+        scheduledOutcodes.add(outward);jobs.push({type:'outcode',value:outward});total++;
+      };
       const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
       const request=async(url,options={})=>{
@@ -115,9 +121,9 @@
             const point=item.result;
             if(point&&Number.isFinite(Number(point.latitude))&&Number.isFinite(Number(point.longitude))){
               geo[key]=[Number(point.latitude),Number(point.longitude)];located++;
-            }else{geo[key]=null;unmatched++;}
+            }else{geo[key]=null;unmatched++;queueOutcodeFallback(key);}
           });
-          job.values.forEach(key=>{if(!returned.has(key)){geo[key]=null;unmatched++;}});
+          job.values.forEach(key=>{if(!returned.has(key)){geo[key]=null;unmatched++;queueOutcodeFallback(key);}});
         }else{
           const key='@OUTCODE:'+job.value;
           const data=await request('https://api.postcodes.io/outcodes/'+encodeURIComponent(job.value));
