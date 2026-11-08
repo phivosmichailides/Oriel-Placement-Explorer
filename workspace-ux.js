@@ -381,7 +381,7 @@
        const icon=L.divIcon({className:'oriel-tube-marker oriel-tube-mini-marker',html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',iconSize:[15,15],iconAnchor:[7.5,7.5]});
        const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
        marker.bindTooltip(escape(station.name),{direction:'top',offset:[0,-7]});
-       marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+escape(station.name)+'</b><span>'+escape(station.lines||'London Underground')+'</span><small>'+escape(station.accessibility||'Accessibility not stated')+' · Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:220});
+       marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+escape(station.name)+'</b><span>'+escape(station.lines||'London Underground')+'</span><small>Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:220});
        marker.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent)});
        marker.addTo(map);
      });
