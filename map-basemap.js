@@ -8,7 +8,7 @@
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
 const STYLE_ID='01a1b7cf-4ca7-7662-9861-84b5b44c218c';
-const styleUrl=file=>new URL(file+'?v=20261108editorial6',document.baseURI).toString();
+const styleUrl=file=>new URL(file+'?v=20261108editorial7',document.baseURI).toString();
 const STYLES=Object.freeze({
   'editorial-light':styleUrl('map-styles/editorial-light.json'),
   'editorial-dark':styleUrl('map-styles/editorial-dark.json')
@@ -26,7 +26,7 @@ const STYLES=Object.freeze({
   // The adapter supports a single custom credit per layer. A MapTiler style
   // can repeat attribution across several sources, so supply one canonical credit.
   const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
-  const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
+  const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR+' · Contains Ordnance Survey data © Crown copyright and database right (London borough labels, OGL v3.0)';
   const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
   const miniInstances=new Set();
