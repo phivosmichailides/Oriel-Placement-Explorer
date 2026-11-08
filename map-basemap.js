@@ -1,9 +1,8 @@
 'use strict';
 /*
- * The default is the user's custom MapTiler Editorial style in BOTH website
- * themes. Alternative appearances are also MapTiler vector styles, so the
- * map never silently falls back to a different provider when the app is dark.
- * Programme markers and filtering remain independent Leaflet layers.
+ * Two coordinated Editorial style documents are hosted with the application.
+ * Both use MapTiler Planet vector data; Automatic follows the app's light/dark
+ * theme. Programme markers and filtering remain independent Leaflet layers.
  */
 (()=>{
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
@@ -91,8 +90,8 @@ const STYLES=Object.freeze({
     if(preference==='auto')applyStyle();
   });
   themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  // Browsers limit concurrent WebGL contexts. Mini-maps load lazily,
-  // and beyond the configured vector-map limit use OSM fallback.
+  // Browsers limit concurrent WebGL contexts. Mini-maps share one snapshot
+  // renderer; unsupported devices use MapTiler raster tiles as a fallback.
   const reportMainRenderer=(map,isFallback,reason='')=>{
     if(map.getContainer()?.id!=='placementMap')return;
     const control=document.getElementById('mapStyle');
@@ -256,7 +255,7 @@ const STYLES=Object.freeze({
       map.on('unload',()=>miniInstances.delete(record));
       return {kind:'snapshot',provider:'maptiler',render:()=>queueMiniRender(record)};
     }catch(error){
-      console.warn('Custom mini-map setup failed; displaying OpenStreetMap',error);
+      console.warn('Custom mini-map setup failed; displaying MapTiler raster tiles',error);
       return raster(map);
     }
   };
@@ -268,9 +267,9 @@ const STYLES=Object.freeze({
     // Keep the legally required MapTiler and OpenStreetMap credits, but avoid
     // repeating the "Leaflet" label on every map and programme mini-map.
     map.attributionControl?.setPrefix(false);
-    // Mini-maps use the same selected MapTiler style through raster XYZ tiles.
-    // They retain their own Leaflet pins, site navigation and click behaviour,
-    // without consuming scarce browser WebGL contexts.
+    // Mini-maps render snapshots from the same selected Editorial vector style.
+    // Leaflet still owns their site/Tube markers, attribution and click target,
+    // while a single shared MapLibre context avoids WebGL-context exhaustion.
     if(mini)return addMiniSnapshot(map);
     // MapLibre GL JS v5 may not expose supported(); absence is not a WebGL failure.
     const maplibre=window.maplibregl;
