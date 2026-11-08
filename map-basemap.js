@@ -17,7 +17,7 @@ const STYLES = Object.freeze({
   dark: maptilerStyle('streets-v4-dark'),
   fiord: maptilerStyle('landscape-v4')
 });
-  const STYLE_KEY='oriel-basemap-style-v1';
+  const STYLE_KEY='oriel-basemap-style-v2';
   const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
   let preference='auto';
   try{
