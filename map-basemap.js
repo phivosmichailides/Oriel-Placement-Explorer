@@ -151,9 +151,18 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
   };
   const renderMiniRecord=async record=>{
     const map=record.leaflet,holder=map.getContainer();
-    if(!holder.isConnected||!map._loaded)return;
+    if(!holder.isConnected)return;
+    holder.dataset.miniStatus='checking-size';
     const size=map.getSize();
-    if(size.x<80||size.y<60)return;
+    if(size.x<80||size.y<60){
+      holder.dataset.miniStatus='waiting-for-size-'+Math.round(size.x)+'x'+Math.round(size.y);
+      return;
+    }
+    if(!map._loaded){
+      holder.dataset.miniStatus='leaflet-map-not-ready';
+      return;
+    }
+    holder.dataset.miniStatus='rendering';
     const renderer=await ensureMiniRenderer(Math.round(size.x),Math.round(size.y));
     const center=map.getCenter();
     const zoom=Math.max(0,map.getZoom()-1);
@@ -171,11 +180,13 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
     const renderedStyle=activeStyleName();
     holder.dataset.basemap='vector-'+renderedStyle;
     holder.dataset.miniStyle=renderedStyle;
+    holder.dataset.miniStatus='rendered';
   };
   const queueMiniRender=record=>{
     miniQueue=miniQueue.then(()=>renderMiniRecord(record)).catch(error=>{
       console.warn('Custom mini-map snapshot failed; using standard map fallback',error);
       const map=record.leaflet,holder=map.getContainer();
+      if(holder.isConnected)holder.dataset.miniStatus='failed: '+String(error?.message||error);
       miniInstances.delete(record);
       if(record.overlay){try{map.removeLayer(record.overlay)}catch{}record.overlay=null;}
       if(holder.isConnected)raster(map);
@@ -195,6 +206,7 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
       const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR};
       miniInstances.add(record);
       holder.dataset.basemap='vector-loading';
+      holder.dataset.miniStatus='registered';
       map.on('unload',()=>miniInstances.delete(record));
       return {kind:'snapshot',provider:'maptiler',render:()=>queueMiniRender(record)};
     }catch(error){
