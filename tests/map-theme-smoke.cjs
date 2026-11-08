@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial8')&&(await page.content()).includes('map-basemap.js?v=20261108editorial10')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube3')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial9')&&(await page.content()).includes('map-basemap.js?v=20261108editorial11')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -64,7 +64,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage9$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage10$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
@@ -189,6 +189,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
           return {sourceHost:new URL(source?.url||'https://invalid').hostname,
             roads:style.layers.filter(layer=>layer.id.startsWith('Oriel editorial road')).length,
             casingZoomIsTopLevel:Array.isArray(casing?.paint?.['line-width'])&&casing.paint['line-width'][0]==='interpolate'&&casing.paint['line-width'][2]?.[0]==='zoom',
+            surfaceZoomIsTopLevel:Array.isArray(surface?.paint?.['line-width'])&&surface.paint['line-width'][0]==='interpolate'&&surface.paint['line-width'][2]?.[0]==='zoom',
+            roadMinZoom:Math.max(casing?.minzoom??0,surface?.minzoom??0),
+            sprites:(style.sprite||[]).map(sprite=>sprite.id),
+            backgroundColor:style.layers.find(layer=>layer.id==='Background')?.paint?.['background-color'],
             bridgeRoadsIncluded:JSON.stringify(casing?.filter||[]).includes('"tunnel"')&&!JSON.stringify(casing?.filter||[]).includes('"bridge"'),
             boroughSource:style.sources?.oriel_borough_labels?.type,
             boroughData:style.sources?.oriel_borough_labels?.data,
@@ -201,6 +205,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         assert.equal(styleAudit.sourceHost,'api.maptiler.com','The Editorial map is not using MapTiler vector data: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.casingZoomIsTopLevel,true,'Road casing uses an invalid nested zoom expression: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.surfaceZoomIsTopLevel,true,'Road surface uses an invalid nested zoom expression: '+JSON.stringify(styleAudit));
+        assert(styleAudit.roadMinZoom<=3,'Main roads are hidden at the national overview zoom: '+JSON.stringify(styleAudit));
+        assert(!styleAudit.sprites.includes('subway'),'Unused MapTiler subway sprite is still requested despite the custom TfL roundels');
+        assert.equal(styleAudit.backgroundColor,styleName==='editorial-light'?'#f7f3e9':'#1b2520','Light/dark map backgrounds do not match their intended palettes');
         assert.equal(styleAudit.bridgeRoadsIncluded,true,'Road bridges should remain visible above rivers: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.boroughSource,'geojson','Official London borough label source is missing: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.boroughLayer,8.5,'London borough names should appear from London-wide zoom: '+JSON.stringify(styleAudit));
@@ -217,7 +225,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
           assert(boroughsResponse.names.includes(required),'Missing London borough label: '+required);
         }
         assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
-        assert(styleAudit.roadLabelsMinZoom<=13,'Road names are not visible at neighbourhood zoom');
+        assert(styleAudit.roadLabelsMinZoom<=11.5,'Road names are not visible at neighbourhood zoom');
       }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
@@ -319,6 +327,14 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.deepEqual(darkMini,{basemap:'vector-editorial-dark',miniStyle:'editorial-dark',filter:'none'},
       'Dark mode changed or tinted the custom MapTiler mini-map');
     await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
+    await page.waitForFunction(()=>{
+      const main=document.getElementById('placementMap');
+      const holder=document.querySelector('#results .placement .uxMiniMap');
+      return main?.dataset.basemap==='vector-editorial-light'&&
+        holder?.dataset.basemap==='vector-editorial-light'&&
+        holder?.dataset.miniStyle==='editorial-light'&&
+        !!holder?.querySelector('.leaflet-image-layer');
+    },null,{timeout:30000});
     assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 response during mini-map style changes: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // The image overlay must not intercept the original mini-map click action.
@@ -423,8 +439,16 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     // One All-regions action must finish the entire postcode/outcode backlog.
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
-      return status.includes('location codes resolved')&&!status.includes('codes still need locating')&&!status.includes('no postcode/outcode in the source');
+      const stats=window.OrielMapStats;
+      const full=window.OrielMapCurrentBounds;
+      return status.includes('location codes resolved')&&
+        !status.includes('codes still need locating')&&
+        !status.includes('no postcode/outcode in the source')&&
+        stats?.scope==='all'&&stats.programmes===4064&&
+        stats.programmesRepresented===4064&&stats.programmesWithAllSites===4064&&
+        placementMap.getZoom()<=7.5&&full?.isValid?.()&&placementMap.getBounds().contains(full);
     },null,{timeout:90000});
+    await sleep(450);
     const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
     const allRegionStatus=await page.locator('#mapStatus').innerText();
     const locationCoverage=await page.evaluate(()=>{
@@ -454,10 +478,25 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         partiallyMappedProgrammes:list.filter(p=>codes(p).some(code=>Array.isArray(geo[code]))&&codes(p).some(code=>!Array.isArray(geo[code]))).length
       };
     });
+    const allMapView=await page.evaluate(()=>({
+      zoom:placementMap.getZoom(),
+      bounds:placementMap.getBounds().toBBoxString(),
+      dataBounds:window.OrielMapCurrentBounds?.toBBoxString?.()||null,
+      boundsContainAll:!!window.OrielMapCurrentBounds&&placementMap.getBounds().contains(window.OrielMapCurrentBounds),
+      pins:mapLayer.getLayers().length,
+      stats:window.OrielMapStats
+    }));
     console.log('ALL-REGIONS LOCATION COVERAGE:',JSON.stringify(locationCoverage));
+    console.log('ALL-REGIONS MAP VIEW:',JSON.stringify(allMapView));
     console.log('POSTCODE SERVICE MOCK REQUESTS:',geocodeRequests);
-    assert(allRegionPins>100,
-      'England & Wales mode has too few map pins: '+allRegionPins+' ('+allRegionStatus+')');
+    assert(allRegionPins>=15,
+      'England & Wales overview is too aggressively clustered or not fitted: '+allRegionPins+' ('+allRegionStatus+')');
+    assert(allMapView.pins>=15,'The country map has too few visible cluster/location markers: '+JSON.stringify(allMapView));
+    assert.equal(allMapView.stats.programmesRepresented,4064,'Not every programme is represented by a map marker or cluster');
+    assert.equal(allMapView.stats.programmesWithAllSites,4064,'Not every programme has all of its training sites represented');
+    assert(allMapView.stats.uniqueSites>=3000,'The map has lost distinct training locations: '+JSON.stringify(allMapView));
+    assert.equal(allMapView.stats.unresolvedLocationCodes,0,'The map stats still report unresolved location codes');
+    assert(allMapView.boundsContainAll,'The country map viewport does not contain the complete catalogue bounds: '+JSON.stringify(allMapView));
     assert(!await page.evaluate(()=>quick.has('london')||document.getElementById('region').value==='London'),
       'The test did not actually enter England & Wales mode');
     assert.equal(locationCoverage.missingProgrammes,0,'Some matching programmes still have an unmapped site: '+JSON.stringify(locationCoverage));
@@ -465,13 +504,16 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(locationCoverage.programmesWithoutLocationCodes.length,0,'Some programmes have no usable location code: '+JSON.stringify(locationCoverage.programmesWithoutLocationCodes));
     assert(await page.evaluate(()=>Array.isArray(geo['@OUTCODE:TN25'])),'A postcode with no exact match did not fall back to its postcode-district centre');
     assert(geocodeRequests>0,'The all-regions action did not call the location resolver');
-    const allMapView=await page.evaluate(()=>({zoom:placementMap.getZoom(),bounds:placementMap.getBounds().toBBoxString(),pins:mapLayer.getLayers().length}));
-    assert(allMapView.pins>100,'The all-programmes map has too few unique location groups: '+JSON.stringify(allMapView));
-    assert(allMapView.zoom<=7.5,'The all-programmes map did not zoom out to show the full catalogue: '+JSON.stringify(allMapView));
+
     await page.locator('#placementMap').screenshot({path:output+'/map-all-programmes.png'});
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
     await sleep(900);
     await page.locator('#placementMap').screenshot({path:output+'/map-london-boroughs.png'});
+    await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],12.5,{animate:false}));
+    await sleep(1100);
+    await page.locator('#placementMap').screenshot({path:output+'/map-london-neighbourhood.png'});
+    await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
+    await sleep(700);
     // A shared coordinate must show a count and expand to every programme.
     const groupPinCheck=await page.evaluate(()=>{
       const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
