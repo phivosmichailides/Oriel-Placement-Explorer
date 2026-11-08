@@ -61,6 +61,7 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
       try{
         const holder=record.leaflet.getContainer();
         if(!holder.isConnected){miniInstances.delete(record);continue;}
+        record.reset();
         record.layer.setUrl(rasterTileUrl());
         holder.dataset.basemap='maptiler-raster-'+activeStyleName();
       }catch(error){console.warn('Mini-map style could not switch',error)}
@@ -101,6 +102,10 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
   const addMiniRaster=map=>{
     const holder=map.getContainer();
     let layer,record,loaded=false,finished=false,timer=null,errors=0;
+    const armFallback=()=>{
+      if(timer)clearTimeout(timer);
+      timer=setTimeout(fallback,12000);
+    };
     const cleanup=()=>{
       if(timer)clearTimeout(timer);
       if(record)miniInstances.delete(record);
@@ -118,7 +123,10 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
         crossOrigin:true,className:'oriel-maptiler-mini',
         attribution:MAPTILER_ATTR
       }).addTo(map);
-      record={leaflet:map,layer,attribution:MAPTILER_ATTR};
+      record={
+        leaflet:map,layer,attribution:MAPTILER_ATTR,
+        reset:()=>{loaded=false;errors=0;armFallback();}
+      };
       miniInstances.add(record);
       holder.dataset.basemap='maptiler-raster-'+activeStyleName();
       layer.on('tileload',()=>{
@@ -130,7 +138,7 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
         errors++;
         if(!loaded&&errors>=4)fallback();
       });
-      timer=setTimeout(fallback,12000);
+      armFallback();
       map.on('unload',cleanup);
       return {layer,kind:'raster',provider:'maptiler'};
     }catch(error){
