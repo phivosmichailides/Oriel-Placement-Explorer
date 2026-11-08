@@ -191,7 +191,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
           osmCredits:(attrib.match(/OpenStreetMap contributors/g)||[]).length,
           attribution:attrib
         };
-      });
+      },editorialStyleForDesign);
       console.log('CUSTOM MAP VISUAL DIAGNOSTIC:',JSON.stringify(vectorVisibility));
       assert(vectorVisibility.panePresent&&vectorVisibility.canvasPresent&&vectorVisibility.canvasWidth>50&&vectorVisibility.canvasHeight>50,
         'Vector map does not have a visible, sized canvas in the proper Leaflet pane');
