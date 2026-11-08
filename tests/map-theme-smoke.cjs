@@ -120,7 +120,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await page.evaluate(()=>quick.size),0,'Fresh Explore should not apply hidden quick filters by default');
     assert.equal(await page.locator('#mapScope').count(),0,'Map scope should no longer be independently selectable');
     assert.match(await page.locator('#count').innerText(),/4,064 total programmes · 4,064 shown/,'Results should show both the catalogue total and current matching count');
-    assert.match(await page.locator('link[rel="icon"]').getAttribute('href'),/favicon\.svg/,'Placement Atlas favicon is missing');
+    assert.match(await page.locator('link[rel="icon"][type="image/svg+xml"]').getAttribute('href'),/favicon\.svg/,'Placement Atlas favicon is missing');
     assert.equal(catalogue.regions,12,'Expected the 12 Oriel England & Wales regions');
     assert(catalogue.sample,'A known programme ID changed and could detach saved applicant selections');
 
