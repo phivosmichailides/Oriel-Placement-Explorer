@@ -27,7 +27,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       // A previous OpenFreeMap selection must not survive the provider migration.
       localStorage.setItem('oriel-basemap-style-v1','bright');
       localStorage.setItem('phivos-onboarding-profile-v1',JSON.stringify({
-        region:'London',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
+        region:'',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
       }));
     });
     // Mock the postcode service so the regression verifies all batches without
