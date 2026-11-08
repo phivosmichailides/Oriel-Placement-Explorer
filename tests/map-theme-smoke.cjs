@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108minisnapshot1')&&(await page.content()).includes('design-refresh.css?v=20261108minisnapshot1')&&(await page.content()).includes('app.js?v=20261108mapcoverage5')&&(await page.content()).includes('map-basemap.js?v=20261108minisnapshot5')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108minisnapshot1')&&(await page.content()).includes('design-refresh.css?v=20261108minisnapshot1')&&(await page.content()).includes('app.js?v=20261108mapcoverage6')&&(await page.content()).includes('map-basemap.js?v=20261108minisnapshot5')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -64,7 +64,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage5$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage6$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
@@ -97,15 +97,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const holder=document.getElementById('placementMap');
       const state=holder?.dataset.basemap||'';
       if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
-      return state==='vector-editorial'&&!holder.querySelector('.oriel-map-backup');
+      return state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup');
     },null,{timeout:30000});
     const editorialStyleForDesign=await page.evaluate(async()=>{
-      const url=window.OrielBasemap?.styles?.editorial;
+      const url=window.OrielBasemap?.styles?.['editorial-light'];
       const response=await fetch(url);
-      if(!response.ok)throw Error('Could not inspect hosted Editorial style: HTTP '+response.status);
+      if(!response.ok)throw Error('Could not inspect local Editorial Light style: HTTP '+response.status);
       return response.json();
     });
-    console.log('EDITORIAL_STYLE_JSON:'+JSON.stringify(editorialStyleForDesign));
+    const editorialRoadLayers=editorialStyleForDesign.layers.filter(layer=>layer.id.startsWith('Oriel editorial road'));
+    assert.deepEqual(editorialRoadLayers.map(layer=>layer.id).sort(),['Oriel editorial road casing','Oriel editorial road surface'],
+      'Editorial style is missing the designed road network');
+    assert(editorialStyleForDesign.layers.some(layer=>layer.id==='Road labels'&&layer.minzoom<=13),
+      'Editorial road names are not enabled at neighbourhood zoom');
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
@@ -158,30 +162,42 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const mapPicker=page.locator('#mapStyle');
     assert(await mapPicker.isVisible(),'Map style picker is missing');
     assert.equal(await mapPicker.locator('option[value="auto"]').count(),1,'Automatic map option missing');
-    assert.equal(await mapPicker.locator('option[value="editorial"]').count(),1,'Editorial Light map option missing');
+    assert.equal(await mapPicker.locator('option[value="editorial-light"]').count(),1,'Editorial Light map option missing');
+    assert.equal(await mapPicker.locator('option[value="editorial-dark"]').count(),1,'Editorial Dark map option missing');
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
-      const styleProviders=await page.evaluate(()=>Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).hostname])));
-      assert(Object.values(styleProviders).every(host=>host==='api.maptiler.com'),'Every selectable map style must use MapTiler: '+JSON.stringify(styleProviders));
-      for(const styleName of ['positron','bright','liberty','dark','fiord']){
+      const styleOrigins=await page.evaluate(()=>Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin])));
+      assert(Object.values(styleOrigins).every(origin=>origin===location.origin),'Editorial styles should be hosted with the app: '+JSON.stringify(styleOrigins));
+      for(const styleName of ['editorial-light','editorial-dark']){
         await mapPicker.selectOption(styleName);
         await page.waitForFunction(name=>document.getElementById('placementMap')?.dataset.basemap==='vector-'+name,styleName,{timeout:30000});
         const attribution=await page.locator('#placementMap .leaflet-control-attribution').innerText();
         assert.match(attribution,/MapTiler/,'MapTiler attribution missing for '+styleName);
         assert.match(attribution,/OpenStreetMap contributors/,'Required OSM attribution missing for '+styleName);
         assert.doesNotMatch(attribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix returned for '+styleName);
-        assert.doesNotMatch(attribution,/OpenFreeMap/,'An old OpenFreeMap style is still being used for '+styleName);
+        const styleAudit=await page.evaluate(async name=>{
+          const response=await fetch(window.OrielBasemap.styles[name]);
+          const style=await response.json();
+          const source=style.sources?.maptiler_planet_v4;
+          return {sourceHost:new URL(source?.url||'https://invalid').hostname,
+            roads:style.layers.filter(layer=>layer.id.startsWith('Oriel editorial road')).length,
+            subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
+            roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
+        },styleName);
+        assert.equal(styleAudit.sourceHost,'api.maptiler.com','The Editorial map is not using MapTiler vector data: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
+        assert(styleAudit.roadLabelsMinZoom<=13,'Road names are not visible at neighbourhood zoom');
       }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
-      assert.equal(await page.evaluate(()=>localStorage.getItem('oriel-basemap-style-v2')),'auto','The new style preference was not saved under v2');
-      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial',null,{timeout:30000});
+      assert.equal(await page.evaluate(()=>localStorage.getItem('oriel-basemap-style-v3')),'auto','Theme-aware style preference was not saved under v3');
+      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial-light',null,{timeout:30000});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      await sleep(350);
-      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),'vector-editorial',
-        'Automatic switched away from the custom Editorial map in dark interface mode');
+      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial-dark',null,{timeout:30000});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
+      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial-light',null,{timeout:30000});
     }else{
       assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
@@ -222,7 +238,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&holder.dataset.basemap==='vector-editorial'&&holder.dataset.miniStyle==='editorial'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
+      return holder&&holder.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
@@ -231,7 +247,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       src:node.currentSrc||node.src,width:node.naturalWidth,height:node.naturalHeight,complete:node.complete,
       filter:getComputedStyle(node).filter
     }));
-    assert.equal(miniBasemap,'vector-editorial','Programme mini-map is not using the custom Editorial vector style: '+miniBasemap);
+    assert.equal(miniBasemap,'vector-editorial-light','Programme mini-map is not using the custom Editorial vector style: '+miniBasemap);
     assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
@@ -242,19 +258,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // Changing the main map style must re-render the existing mini-map too.
-    await mapPicker.selectOption('bright');
+    await mapPicker.selectOption('editorial-dark');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
       const image=holder?.querySelector('.leaflet-image-layer');
-      return holder?.dataset.basemap==='vector-bright'&&holder?.dataset.miniStyle==='bright'&&image?.src.startsWith('data:image/png;base64,');
+      return holder?.dataset.basemap==='vector-editorial-dark'&&holder?.dataset.miniStyle==='editorial-dark'&&image?.src.startsWith('data:image/png;base64,');
     },null,{timeout:30000});
-    const brightMiniImage=await card.locator('.uxMiniMap .leaflet-image-layer').getAttribute('src');
-    assert.notEqual(brightMiniImage,miniImage.src,'Mini-map image did not change with the selected Bright style');
+    const darkChoiceMiniImage=await card.locator('.uxMiniMap .leaflet-image-layer').getAttribute('src');
+    assert.notEqual(darkChoiceMiniImage,miniImage.src,'Mini-map image did not change with the selected Editorial Dark style');
     await mapPicker.selectOption('auto');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
       const image=holder?.querySelector('.leaflet-image-layer');
-      return holder?.dataset.basemap==='vector-editorial'&&holder?.dataset.miniStyle==='editorial'&&image?.src.startsWith('data:image/png;base64,');
+      return holder?.dataset.basemap==='vector-editorial-light'&&holder?.dataset.miniStyle==='editorial-light'&&image?.src.startsWith('data:image/png;base64,');
     },null,{timeout:30000});
     // The same custom-style image must remain untinted in the dark interface.
     await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
@@ -264,7 +280,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       miniStyle:node.dataset.miniStyle,
       filter:getComputedStyle(node.querySelector('.leaflet-image-layer')).filter
     }));
-    assert.deepEqual(darkMini,{basemap:'vector-editorial',miniStyle:'editorial',filter:'none'},
+    assert.deepEqual(darkMini,{basemap:'vector-editorial-dark',miniStyle:'editorial-dark',filter:'none'},
       'Dark mode changed or tinted the custom MapTiler mini-map');
     await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
     assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
@@ -280,6 +296,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Clicking the mini-map no longer opens the selected training site in Google Maps');
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
+    const miniTubeMarkers=await card.locator('.uxMiniMap .oriel-tube-mini-marker').count();
+    assert(miniTubeMarkers>=1,'London programme mini-map does not show nearby Underground stations');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
     const readable=await card.evaluate(el=>{
       const font=sel=>parseFloat(getComputedStyle(el.querySelector(sel)).fontSize);
@@ -343,13 +361,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
-        return state==='vector-editorial'||state==='raster-fallback';
+        return state==='vector-editorial-light'||state==='raster-fallback';
       },null,{timeout:14000});
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
-      assert(finalState==='vector-editorial'||finalState==='raster-fallback','WebGL map hung during initialisation');
+      assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback','WebGL map hung during initialisation');
     }
-    assert(['vector-editorial','vector-loading','raster-fallback'].includes(browserBasemaps.main),
+    assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback'].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
     await card.locator('.uxLocationMore summary').click();
     assert(await card.locator('.uxLocationMore').evaluate(el=>el.open),'Extra location details do not expand');
