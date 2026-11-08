@@ -4,7 +4,8 @@ const assert=require('node:assert/strict');
 const http=require('http'),fs=require('fs'),path=require('path');
 const root=process.cwd();
 const server=http.createServer((req,res)=>{
-  const relative=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/+/,'')||'index.html';
+  const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+  const relative=(pathname.startsWith('/')?pathname.slice(1):pathname)||'index.html';
   const filename=path.join(root,relative);
   try{
     const ext=path.extname(filename).toLowerCase();
