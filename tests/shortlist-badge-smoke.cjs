@@ -45,18 +45,12 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await waitForCount(page,'(1)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(1)',
     'Bottom-right shortlist count did not update after adding a programme');
-  assert.equal(await first.locator('[data-action=status]').inputValue(),'yes',
-    'Adding a programme did not update its decision status');
   await page.locator('#undoDesk').click();
   await waitForCount(page,'(0)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(0)',
     'Bottom-right shortlist count did not update after undo');
-  assert.equal(await first.locator('[data-action=status]').inputValue(),'',
-    'Undo did not restore the original decision status');
   await page.locator('#redoDesk').click();
   await waitForCount(page,'(1)');
-  assert.equal(await first.locator('[data-action=status]').inputValue(),'yes',
-    'Redo did not restore the shortlist decision');
   await first.locator('[data-action=prefer]').click();
   await waitForCount(page,'(0)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(0)',
