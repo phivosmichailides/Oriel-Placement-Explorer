@@ -240,6 +240,7 @@
     installMapControls();
     drawMap=requestedList=>{const list=Array.isArray(requestedList)?requestedList:placements.filter(matches);currentMapList=list;refreshPalette();renderLegend();
       if(!placementMap)return;
+      placementMap.closePopup();
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
       programmePins.clear();hoveredProgramme=null;
