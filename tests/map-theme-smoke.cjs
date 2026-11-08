@@ -140,12 +140,17 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.doesNotMatch(vectorVisibility.attribution,/\bLeaflet\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
     }else{
-      const badFallbackTiles=mainTileSources.filter(x=>{
-        try{const url=new URL(x.url);return !(url.hostname==='api.maptiler.com'&&(url.pathname.includes('/maps/streets-v4/')||url.pathname.includes('/maps/streets-v4-dark/'))&&x.complete&&x.width>100&&x.height>100)}
-        catch{return true}
+      const fallbackAudit=mainTileSources.map(tile=>{
+        let url;try{url=new URL(tile.url)}catch{}
+        const path=url?.pathname||'';
+        const validStyle=path.startsWith('/maps/streets-v4/256/')||path.startsWith('/maps/streets-v4-dark/256/');
+        const numericTiles=path.split('/').slice(-3).every(part=>/^\\d+(?:\\.png)?$/.test(part));
+        return {...tile,hostOK:url?.hostname==='api.maptiler.com',pathOK:validStyle&&numericTiles&&path.endsWith('.png'),
+          imageOK:tile.complete&&tile.width>100&&tile.height>100};
       });
-      assert(mainTileSources.length>0&&badFallbackTiles.length===0,
-        'MapTiler raster fallback tiles failed to load: '+JSON.stringify({count:mainTileSources.length,bad:badFallbackTiles,all:mainTileSources}));
+      const badFallbackTiles=fallbackAudit.filter(tile=>!tile.hostOK||!tile.pathOK||!tile.imageOK);
+      assert(fallbackAudit.length>0&&badFallbackTiles.length===0,
+        'MapTiler raster fallback tiles failed validation: '+JSON.stringify({count:fallbackAudit.length,bad:badFallbackTiles,all:fallbackAudit}));
     }
     const vectorDiagnostic=await page.evaluate(()=>({
       adapterPresent:typeof window.L?.maplibreGL==='function',
