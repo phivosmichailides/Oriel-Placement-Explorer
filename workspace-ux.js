@@ -382,7 +382,7 @@
        const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
        marker.bindTooltip(escape(station.name),{direction:'top',offset:[0,-7]});
        marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+escape(station.name)+'</b><span>'+escape(station.lines||'London Underground')+'</span><small>'+escape(station.accessibility||'Accessibility not stated')+' · Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:220});
-       marker.on('click',event=>L.DomEvent.stopPropagation(event));
+       marker.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent)});
        marker.addTo(map);
      });
      L.circleMarker(sitePoint,{radius:6.2,weight:2,color:'#ffffff',fillColor:'#995c68',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
