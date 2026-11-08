@@ -289,6 +289,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         missingCount:missing.length,
         uniquePostcodes:unique.length,
         unresolvedPostcodes:unique.filter(pc=>!geo[pc]).length,
+        programmesWithoutPostcodes:list.filter(p=>!p.postcodes.length).map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area,desc:p.desc?.slice(0,180)})),
+        programmesWithPartiallyResolvedSites:list.filter(p=>p.postcodes.some(pc=>geo[pc])&&p.postcodes.some(pc=>!geo[pc])).length,
         missing:missing.map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area,postcodes:p.postcodes})).slice(0,100)
       };
     });
