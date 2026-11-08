@@ -205,10 +205,14 @@
  const drawer=$('uxDrawer'),backdrop=$('uxDrawerBackdrop'),drawerItems=$('uxDrawerItems'),drawerSearch=$('uxDrawerSearch');
  let drawerOpener=null;
  const updateCounts=()=>{
-   const count=getRanks().length;
+   // Count canonical shortlist statuses directly, independent of the current
+   // view or whether the floating drawer is expanded.
+   const count=getData().reduce((total,p)=>total+(isShortlisted(p)?1:0),0);
    document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent='('+count+')');
  };
  document.addEventListener('desk:action',()=>{updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();});
+ document.addEventListener('desk:state-saved',updateCounts);
+ window.addEventListener('focus',updateCounts);
  window.addEventListener('storage',event=>{if(event.key!=='phivos-desk-v2'||!event.newValue)return;try{const latest=JSON.parse(event.newValue);if(latest.marks&&typeof latest.marks==='object')state.marks=latest.marks;updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();}catch{}});
  const renderDrawer=()=>{
    if(!drawerItems)return;
