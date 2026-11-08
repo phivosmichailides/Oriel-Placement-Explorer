@@ -22,25 +22,14 @@
     const defaults={...palette};
     const refreshPalette=()=>{for(const key of Object.keys(palette)){const colour=state.prefs.mapColours?.[key];palette[key]=/^#[0-9a-f]{6}$/i.test(colour||'')?colour:defaults[key];}};
     refreshPalette();
-    const mapScopeControl=document.getElementById('mapScope');
-    // The map is a geography explorer, not a mirror of the filtered list.
-    // Start with the complete catalogue; users can opt into matching results.
-    let mapScopeMode='all';
-    try{if(localStorage.getItem('oriel-map-scope-v2')==='matching')mapScopeMode='matching'}catch{}
-    if(mapScopeControl)mapScopeControl.value=mapScopeMode;
+    const mapScopeMode='matching';
     window.OrielMapScope=mapScopeMode;
     const updateMapScopeHeading=()=>{
-      const region=document.getElementById('region')?.value?.trim()||
-        (document.querySelector('[data-q="london"]')?.classList.contains('on')?'London':'');
+      const count=Array.isArray(window.OrielFilteredProgrammes)?window.OrielFilteredProgrammes.length:placements.filter(matches).length;
       const heading=document.querySelector('.map-heading h2');
       const eyebrow=document.querySelector('.map-heading .eyebrow');
-      if(mapScopeMode==='all'){
-        if(heading)heading.textContent='Explore all programme locations across England & Wales';
-        if(eyebrow)eyebrow.textContent=placements.length.toLocaleString()+' PROGRAMMES · ALL REGIONS';
-      }else{
-        if(heading)heading.textContent=region?'See where you could work in '+region:'See where you could work across England & Wales';
-        if(eyebrow)eyebrow.textContent=region?region.toUpperCase()+' PROGRAMMES':'ENGLAND & WALES PROGRAMMES';
-      }
+      if(heading)heading.textContent=count===placements.length?'Explore all programme locations across England & Wales':`Explore ${count.toLocaleString()} matching programme locations`;
+      if(eyebrow)eyebrow.textContent=`${placements.length.toLocaleString()} TOTAL · ${count.toLocaleString()} MATCHING`;
     };
     updateMapScopeHeading();
     const fitScopePins=()=>{
@@ -50,7 +39,7 @@
       const points=mapLayer.getLayers().map(layer=>layer.getLatLng()).filter(point=>Number.isFinite(point.lat)&&Number.isFinite(point.lng));
       const target=bounds|| (points.length?L.latLngBounds(points):null);
       if(!target?.isValid?.())return false;
-      placementMap.fitBounds(target,{padding:[42,42],maxZoom:mapScopeMode==='all'?7:11,animate:false});
+      placementMap.fitBounds(target,{padding:[42,42],maxZoom:11,animate:false});
       return true;
     };
     window.OrielFitMapToScope=fitScopePins;
@@ -105,22 +94,6 @@
     '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
     '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
-    const setMapScope=mode=>{
-      mapScopeMode=mode==='matching'?'matching':'all';
-      window.OrielMapScope=mapScopeMode;
-      if(mapScopeControl)mapScopeControl.value=mapScopeMode;
-      try{localStorage.setItem('oriel-map-scope-v2',mapScopeMode)}catch{}
-      updateMapScopeHeading();
-      drawMap(placements.filter(matches));
-      setTimeout(fitScopePins,80);
-    };
-    mapScopeControl?.addEventListener('change',()=>{
-      setMapScope(mapScopeControl.value);
-      if(mapScopeMode==='all')document.getElementById('locateBtn')?.click();
-    });
-    // Locate all sites means the complete catalogue, even if the user had
-    // previously switched the map to Matching results.
-    document.getElementById('locateBtn')?.addEventListener('click',()=>setMapScope('all'),{capture:true});
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
@@ -232,7 +205,40 @@
       hover(id,active=true){hoveredProgramme=active?id:null;syncMap()},
       current:()=>selectedProgramme
     };
-    drawMap=requestedList=>{const list=mapScopeMode==='all'?placements:requestedList;currentMapList=list;refreshPalette();renderLegend();
+    const updateFocusCount=()=>{const count=window.OrielMapStats?.programmes??currentMapList.length;const label=document.getElementById('atlasMapFocusCount');if(label)label.textContent=`${count.toLocaleString()} of ${placements.length.toLocaleString()} programmes shown`;};
+    const installMapControls=()=>{
+      const mapContainer=placementMap.getContainer();
+      if(!mapContainer||document.getElementById('atlasMapZoom'))return;
+      mapContainer.style.position='relative';
+      const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
+      zoom.innerHTML='<button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>';
+      zoom.addEventListener('click',event=>{const button=event.target.closest('[data-atlas-zoom]');if(!button)return;event.preventDefault();event.stopPropagation();button.dataset.atlasZoom==='in'?placementMap.zoomIn():placementMap.zoomOut();});
+      mapContainer.append(zoom);
+      const expand=document.createElement('button');expand.type='button';expand.className='atlasMapExpand';expand.id='atlasMapExpand';expand.setAttribute('aria-label','Open expanded map');expand.title='Open expanded map';
+      expand.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4"/><path d="M9 9 4 4m11 5 5-5M9 15l-5 5m11-5 5 5"/></svg>';
+      mapContainer.append(expand);
+      const dialog=document.createElement('div');dialog.className='atlasMapFocus';dialog.id='atlasMapFocus';dialog.hidden=true;
+      dialog.innerHTML='<section class="atlasMapFocusPanel" role="dialog" aria-modal="true" aria-labelledby="atlasMapFocusTitle"><header class="atlasMapFocusHead"><div><small>PLACEMENT ATLAS · MAP EXPLORER</small><strong id="atlasMapFocusTitle">Programme locations</strong><span id="atlasMapFocusCount"></span></div><button type="button" class="atlasMapFocusClose" id="atlasMapFocusClose">Close map <span aria-hidden="true">×</span></button></header><div class="atlasMapFocusStage"></div></section>';
+      document.body.append(dialog);
+      const stage=dialog.querySelector('.atlasMapFocusStage'),closeButton=dialog.querySelector('#atlasMapFocusClose');
+      const placeholder=document.createComment('Placement Atlas map position');
+      mapContainer.parentNode?.insertBefore(placeholder,mapContainer);
+      const closeFocus=()=>{
+        if(dialog.hidden)return;
+        placeholder.parentNode?.insertBefore(mapContainer,placeholder.nextSibling);
+        dialog.hidden=true;document.body.classList.remove('atlasMapFocusOpen');
+        requestAnimationFrame(()=>{placementMap.invalidateSize(false);expand.focus();});
+      };
+      const openFocus=()=>{
+        dialog.hidden=false;document.body.classList.add('atlasMapFocusOpen');stage.append(mapContainer);updateFocusCount();
+        requestAnimationFrame(()=>{placementMap.invalidateSize(false);setTimeout(()=>placementMap.invalidateSize(false),160);closeButton.focus();});
+      };
+      expand.addEventListener('click',openFocus);closeButton.addEventListener('click',closeFocus);
+      dialog.addEventListener('click',event=>{if(event.target===dialog)closeFocus();});
+      document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!dialog.hidden)closeFocus();});
+    };
+    installMapControls();
+    drawMap=requestedList=>{const list=Array.isArray(requestedList)?requestedList:placements.filter(matches);currentMapList=list;refreshPalette();renderLegend();
       if(!placementMap)return;
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
@@ -377,9 +383,19 @@
         pin.bindTooltip(markerSummary+' · '+sectorSummary+approximateNote+(locationSummary?' · '+locationSummary:''));
 
         const openPin=()=>{
-          $('mapSelection').innerHTML='<div class="map-selection-head"><b>'+entries.length+' programme'+(entries.length===1?'':'s')+' at this location · '+esc(sectorSummary)+'</b><button class="textbtn" id="closeSelection">Close</button></div>'+(group.approximate?'<p class="map-approx-note">This marker uses a postcode-district centre because the source did not provide a full postcode.</p>':'')+sorted([...entries]).map(p=>card(p)).join('');
-          $('closeSelection').onclick=()=>$('mapSelection').innerHTML='';
-          $('mapSelection').scrollIntoView({behavior:'smooth',block:'nearest'});
+          selectedProgramme=entries[0]?.id||null;syncMap();
+          $('mapSelection').innerHTML='';
+          const shown=sorted([...entries]).slice(0,8);
+          const rows=shown.map(p=>{
+            const salary=Number(p.salary)>0?'£'+Number(p.salary).toLocaleString('en-GB'):'Salary not stated';
+            const hours=Number(p.hours)>0?Number(p.hours)+' h/week':'Hours not stated';
+            const place=[p.region,(p.postcodes||[]).join(' · ')||p.area].filter(Boolean).join(' · ');
+            return '<article class="atlasPopupProgramme"><div class="atlasPopupCopy"><b>'+safeText(p.title||p.employer)+'</b><small>'+safeText(p.employer||'')+'</small><span>'+salary+' · '+hours+'</span><small>'+safeText(place)+'</small></div><button type="button" class="atlasPopupOpen" data-open="'+safeText(p.id)+'">Open</button></article>';
+          }).join('');
+          const more=entries.length>shown.length?'<p class="atlasPopupMore">Showing '+shown.length+' of '+entries.length+' programmes at this location. Refine your filters to narrow the list.</p>':'';
+          const approx=group.approximate?'<p class="map-approx-note">This marker includes an approximate postcode-district centre because a full postcode was not available.</p>':'';
+          const content='<div class="atlasPopupContent"><div class="atlasPopupHead"><b>'+entries.length+' programme'+(entries.length===1?'':'s')+' at this location</b><small>'+safeText(sectorSummary)+'</small></div>'+approx+'<div class="atlasPopupList">'+rows+'</div>'+more+'</div>';
+          L.popup({className:'atlasProgrammePopup',maxWidth:420,minWidth:270,autoPan:true,autoPanPadding:[24,24],closeButton:true}).setLatLng(c).setContent(content).openOn(placementMap);
         };
         const zoomIntoCluster=()=>{
           if(group.cluster&&group.clusterBounds?.isValid()){
@@ -409,9 +425,9 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'At wider zooms, numbered clusters zoom into nearby sites; individual location pins open every programme there. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
+      $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
       window.OrielMapStats={
-        scope:mapScopeMode,
+        scope:'matching',
         programmes:list.length,
         programmesRepresented:programmePins.size,
         programmesWithAnySite,
@@ -425,6 +441,7 @@
         unresolvedLocationCodes:unresolved,
         bounds:window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds.toBBoxString():null
       };
+      updateFocusCount();
       syncMap();
     };
     const scheduleMapRedraw=()=>{
@@ -435,6 +452,7 @@
         try{drawMap(currentMapList)}catch(error){console.warn('Map markers could not be refreshed after navigation',error)}
       });
     };
+    placementMap.on('popupclose',()=>{selectedProgramme=null;syncMap();});
     placementMap.on('zoomend',scheduleMapRedraw);
     placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw()});
     try{drawMap(placements.filter(matches));}catch{}
