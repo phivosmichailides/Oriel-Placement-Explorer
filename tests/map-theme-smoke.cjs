@@ -22,6 +22,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
   try{
     await page.addInitScript(()=>{
       localStorage.setItem('phivos-onboarding-v1','1');
+      // A previous OpenFreeMap selection must not survive the provider migration.
+      localStorage.setItem('oriel-basemap-style-v1','bright');
       localStorage.setItem('phivos-onboarding-profile-v1',JSON.stringify({
         region:'London',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
       }));
@@ -148,6 +150,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await mapPicker.locator('option[value="editorial"]').count(),1,'Editorial Light map option missing');
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
+      assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
       const styleProviders=await page.evaluate(()=>Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).hostname])));
       assert(Object.values(styleProviders).every(host=>host==='api.maptiler.com'),'Every selectable map style must use MapTiler: '+JSON.stringify(styleProviders));
       for(const styleName of ['positron','bright','liberty','dark','fiord']){
@@ -159,6 +162,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
+      assert.equal(await page.evaluate(()=>localStorage.getItem('oriel-basemap-style-v2')),'auto','The new style preference was not saved under v2');
       await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial',null,{timeout:30000});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       await sleep(350);
