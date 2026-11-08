@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-08-v7';
+const CACHE_NAME='placement-atlas-shell-2026-11-08-v8';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'app-base.js?v=20261108atlas3','app-product.js?v=20261108atlas2','generic-public.js?v=20261108atlas2',
@@ -13,7 +13,7 @@ const EXTRA_ASSETS=[
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
   'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
   'simulator.js?v=20261106preview1','motion-effects.js?v=20261107a',
-  'session-ui.js?v=20261108filters2','interface-polish.js?v=20261107responsive2',
+  'session-ui.js?v=20261108filters3','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
   'data/london-borough-labels.geojson','data/tube-stations.json',
@@ -25,7 +25,7 @@ const localURL=value=>new URL(value,ROOT).href;
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE_NAME);
-    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261108atlas2'),localURL('favicon.svg?v=20261108atlas2'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261108atlas5'),...EXTRA_ASSETS.map(localURL)]);
+    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261108atlas2'),localURL('favicon.svg?v=20261108atlas2'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261108atlas6'),...EXTRA_ASSETS.map(localURL)]);
     // Do not activate a new worker unless the current app shell was
     // successfully fetched. This preserves the previous working offline app
     // if an update is attempted during a connection failure.

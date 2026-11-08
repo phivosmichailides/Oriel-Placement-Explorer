@@ -204,7 +204,12 @@
    if($('hideShortlisted'))$('hideShortlisted').checked=!!f.hideShortlisted;
    for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=f[id]===undefined?true:!!f[id];
    if(Array.isArray(f.quick)&&typeof quick!=='undefined'){
-     quick=new Set(f.quick);
+     // Persistent app state is authoritative when it exists. The session
+     // snapshot can lag behind a chip click because capture-phase snapshots
+     // run before the chip's own click handler.
+     const canonicalQuick=!window.__placementDeskWasFresh&&typeof state!=='undefined'&&Array.isArray(state?.filters?.quick)
+       ?state.filters.quick:f.quick;
+     quick=new Set(canonicalQuick);
      document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',quick.has(x.dataset.q)));
    }
    try{explore()}catch{}
@@ -216,7 +221,7 @@
    const y=Math.max(0,Math.min(Number(saved.positions?.[tab])||0,100000));
    setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
      window.scrollTo({top:y,behavior:'instant'});
-     restoreInProgress=false;updateFloating();syncFloating();
+     restoreInProgress=false;snapshot(false);updateFloating();syncFloating();
    })),160);
  }
  let tries=0;
