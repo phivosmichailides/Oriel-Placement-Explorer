@@ -28349,36 +28349,26 @@
         "text-halo-width": 1.4
       },
       "filter": [
-        "any",
+        "!",
         [
-          "<=",
+          "in",
           [
-            "zoom"
-          ],
-          9
-        ],
-        [
-          "!",
-          [
-            "in",
+            "coalesce",
             [
-              "coalesce",
-              [
-                "get",
-                "name:en"
-              ],
-              [
-                "get",
-                "name"
-              ]
+              "get",
+              "name:en"
             ],
             [
-              "literal",
-              [
-                "London",
-                "Westminster",
-                "City of London"
-              ]
+              "get",
+              "name"
+            ]
+          ],
+          [
+            "literal",
+            [
+              "London",
+              "Westminster",
+              "City of London"
             ]
           ]
         ]
