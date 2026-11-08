@@ -160,13 +160,17 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <div class="map-heading-tools">
 <label class="map-style-picker" for="mapStyle">Map style
   <select id="mapStyle" aria-label="Choose map appearance">
-    <option value="auto">Automatic</option>
-    <option value="editorial">Editorial Light ✨</option>
-    <option value="positron">Minimal</option>
-    <option value="bright">Bright</option>
-    <option value="liberty">Detailed</option>
-    <option value="dark">Dark</option>
-    <option value="fiord">Terrain</option>
+    <optgroup label="Your custom map">
+      <option value="auto">Automatic · Editorial</option>
+      <option value="editorial">Editorial Light ✨</option>
+    </optgroup>
+    <optgroup label="MapTiler alternatives">
+      <option value="positron">Minimal</option>
+      <option value="bright">Bright</option>
+      <option value="liberty">Detailed · Streets</option>
+      <option value="dark">Dark · Streets</option>
+      <option value="fiord">Terrain</option>
+    </optgroup>
   </select>
 </label>
 <span id="mapStyleStatus" class="map-style-status" aria-live="polite" hidden></span>
