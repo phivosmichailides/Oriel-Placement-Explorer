@@ -51,13 +51,36 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result:point(code)})});
       }else await route.continue();
     });
+    const requiredAssets=[
+      'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261108atlas1',
+      'tube-stations.js?v=20261108tfl2','design-refresh.css?v=20261108editorial2',
+      'app.js?v=20261108atlas3','sector-map.js?v=20261108atlas2',
+      'map-basemap.js?v=20261108atlas4','generic-public.js?v=20261108atlas3',
+      'map-focus.css?v=20261108atlas3','session-ui.js?v=20261108filters3',
+      'pwa.js?v=20261108atlas9'
+    ];
+    await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
     let fresh=false;
-    for(let retry=0;retry<60;retry++){
-      await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas3')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas4')&&(await page.content()).includes('generic-public.js?v=20261108atlas3')&&(await page.content()).includes('map-focus.css?v=20261108atlas3')&&(await page.content()).includes('session-ui.js?v=20261108filters3')&&(await page.content()).includes('pwa.js?v=20261108atlas9')){fresh=true;break;}
-      await sleep(5000);
+    try{
+      // app.js loads product/public/map scripts asynchronously after cloud bootstrap.
+      // Poll the same document until those scripts actually appear; do not reload
+      // repeatedly before the dynamic boot sequence has a chance to finish.
+      await page.waitForFunction(required=>{
+        const html=document.documentElement.outerHTML;
+        return required.every(asset=>html.includes(asset));
+      },requiredAssets,{timeout:90000});
+      fresh=true;
+    }catch(error){
+      const bootState=await page.evaluate(()=>({
+        readyState:document.readyState,
+        online:navigator.onLine,
+        cloudBootstrapped:window.__orielCloudBootstrapped===true,
+        scripts:[...document.scripts].map(script=>script.getAttribute('src')).filter(Boolean),
+        pageErrors:window.__placementAtlasPageErrors||[]
+      }));
+      throw new Error('Placement Atlas dynamic boot did not finish at '+page.url()+': '+JSON.stringify(bootState)+'; '+error.message);
     }
-    assert(fresh,'Latest build not served at '+page.url()+'; current scripts: '+JSON.stringify(await page.locator('script').evaluateAll(scripts=>scripts.map(script=>script.getAttribute('src')).filter(Boolean))));
+    assert(fresh,'Latest Placement Atlas build did not finish loading');
     await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261108atlas9');},null,{timeout:30000});
     const pwaAudit=await page.evaluate(async()=>{
       const manifestLink=document.querySelector('link[rel="manifest"]');
