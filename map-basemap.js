@@ -244,6 +244,10 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
     if(!map||!window.L)return null;
     const holder=map.getContainer();
     if(!holder)return null;
+    // Leaflet's library-name prefix is optional, not data attribution.
+    // Keep the legally required MapTiler and OpenStreetMap credits, but avoid
+    // repeating the "Leaflet" label on every map and programme mini-map.
+    map.attributionControl?.setPrefix(false);
     // Mini-maps use the same selected MapTiler style through raster XYZ tiles.
     // They retain their own Leaflet pins, site navigation and click behaviour,
     // without consuming scarce browser WebGL contexts.
