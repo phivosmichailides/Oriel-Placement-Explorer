@@ -50,7 +50,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261108mapcoverage3')&&(await page.content()).includes('map-basemap.js?v=20261108mapcoverage2')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261108mapcoverage3')&&(await page.content()).includes('map-basemap.js?v=20261108mapcoverage3')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -61,7 +61,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage2$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage3$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
