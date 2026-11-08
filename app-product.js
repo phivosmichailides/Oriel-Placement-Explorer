@@ -50,8 +50,10 @@
     // Resolve every missing location code for the current scope in one run.
     // Full postcodes use the bulk endpoint (100 per request); outcodes use
     // postcode.io's district centroid and are labelled approximate on the map.
+    let resolveScopeAgain=false;
     const resolveScopePins=async()=>{
-      if(geoBusy||typeof geo==='undefined')return;
+      if(geoBusy){resolveScopeAgain=true;return;}
+      if(typeof geo==='undefined')return;
       const region=activeRegion();
       const source=region?scopePlacements():placements.filter(matches);
       const hasGeo=key=>Object.prototype.hasOwnProperty.call(geo,key);
@@ -159,6 +161,7 @@
       }finally{
         geoBusy=false;
         if(locateButton){locateButton.disabled=false;locateButton.textContent=originalLabel;locateButton.removeAttribute('aria-busy');}
+        if(resolveScopeAgain){resolveScopeAgain=false;setTimeout(()=>resolveScopePins(),0);}
       }
     };
     areaPref=p=>{
