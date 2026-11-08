@@ -325,6 +325,17 @@
    });
    return sites;
  };
+ const distanceKm=(aLat,aLng,bLat,bLng)=>{
+   const rad=value=>value*Math.PI/180, dLat=rad(bLat-aLat),dLng=rad(bLng-aLng);
+   const h=Math.sin(dLat/2)**2+Math.cos(rad(aLat))*Math.cos(rad(bLat))*Math.sin(dLng/2)**2;
+   return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+ };
+ const nearbyTubeStations=(lat,lng,maxKm=2.2)=>{
+   const stations=Array.isArray(window.ORIEL_TUBE_STATIONS)?window.ORIEL_TUBE_STATIONS:[];
+   return stations.map(station=>({...station,distanceKm:distanceKm(lat,lng,Number(station.lat),Number(station.lng))}))
+     .filter(station=>Number.isFinite(station.distanceKm)&&station.distanceKm<=maxKm)
+     .sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,3);
+ };
  const siteName=(p,site,index,count)=>{
    const title=String(p.title||''),p0=title.search(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
    const prefix=(p0>=0?title.slice(0,p0):title).replace(/[\/+\s]+$/,'');
@@ -364,9 +375,20 @@
        }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
      const central=p.region==='London'?[51.5074,-.1278]:null;
+     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng):[];
      if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     nearbyStations.forEach(station=>{
+       const icon=L.divIcon({className:'oriel-tube-marker oriel-tube-mini-marker',html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',iconSize:[15,15],iconAnchor:[7.5,7.5]});
+       const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
+       marker.bindTooltip(escape(station.name),{direction:'top',offset:[0,-7]});
+       marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+escape(station.name)+'</b><span>'+escape(station.lines||'London Underground')+'</span><small>'+escape(station.accessibility||'Accessibility not stated')+' · Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:220});
+       marker.on('click',event=>L.DomEvent.stopPropagation(event));
+       marker.addTo(map);
+     });
      L.circleMarker(sitePoint,{radius:6.2,weight:2,color:'#ffffff',fillColor:'#995c68',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
-     if(central)map.fitBounds(L.latLngBounds([central,sitePoint]),{padding:[20,20],maxZoom:12,animate:false});
+     const boundsPoints=[sitePoint,...nearbyStations.map(station=>[station.lat,station.lng])];
+     if(central)boundsPoints.push(central);
+     if(central)map.fitBounds(L.latLngBounds(boundsPoints),{padding:[20,20],maxZoom:12,animate:false});
      else map.setView(sitePoint,12,{animate:false});
      const openSelected=()=>{
        const label=siteName(p,selected,index,sites.length);
@@ -390,6 +412,13 @@
      });
    }catch(e){holder.textContent='Map unavailable — use the route link'}
  }
+ document.addEventListener('desk:tube-stations-ready',()=>{
+   for(const [holder,map] of [...miniMaps.entries()]){
+     try{map.remove()}catch{}
+     miniMaps.delete(holder);
+     if(holder.isConnected)mapVisible(holder);
+   }
+ });
  function enableMini(holder){
    if(!holder)return;
    if(!miniObserver&&'IntersectionObserver'in window){
