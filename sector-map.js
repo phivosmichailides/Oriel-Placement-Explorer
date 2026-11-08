@@ -23,10 +23,26 @@
     const refreshPalette=()=>{for(const key of Object.keys(palette)){const colour=state.prefs.mapColours?.[key];palette[key]=/^#[0-9a-f]{6}$/i.test(colour||'')?colour:defaults[key];}};
     refreshPalette();
     const mapScopeControl=document.getElementById('mapScope');
-    let mapScopeMode='matching';
-    try{if(localStorage.getItem('oriel-map-scope-v1')==='all')mapScopeMode='all'}catch{}
+    // The map is a geography explorer, not a mirror of the filtered list.
+    // Start with the complete catalogue; users can opt into matching results.
+    let mapScopeMode='all';
+    try{if(localStorage.getItem('oriel-map-scope-v2')==='matching')mapScopeMode='matching'}catch{}
     if(mapScopeControl)mapScopeControl.value=mapScopeMode;
     window.OrielMapScope=mapScopeMode;
+    const updateMapScopeHeading=()=>{
+      const region=document.getElementById('region')?.value?.trim()||
+        (document.querySelector('[data-q="london"]')?.classList.contains('on')?'London':'');
+      const heading=document.querySelector('.map-heading h2');
+      const eyebrow=document.querySelector('.map-heading .eyebrow');
+      if(mapScopeMode==='all'){
+        if(heading)heading.textContent='Explore all programme locations across England & Wales';
+        if(eyebrow)eyebrow.textContent=placements.length.toLocaleString()+' PROGRAMMES · ALL REGIONS';
+      }else{
+        if(heading)heading.textContent=region?'See where you could work in '+region:'See where you could work across England & Wales';
+        if(eyebrow)eyebrow.textContent=region?region.toUpperCase()+' PROGRAMMES':'ENGLAND & WALES PROGRAMMES';
+      }
+    };
+    updateMapScopeHeading();
     const label={
       Hospital:'Hospital',
       'General Practice':'GP',
@@ -81,7 +97,8 @@
     mapScopeControl?.addEventListener('change',()=>{
       mapScopeMode=mapScopeControl.value==='all'?'all':'matching';
       window.OrielMapScope=mapScopeMode;
-      try{localStorage.setItem('oriel-map-scope-v1',mapScopeMode)}catch{}
+      try{localStorage.setItem('oriel-map-scope-v2',mapScopeMode)}catch{}
+      updateMapScopeHeading();
       drawMap(placements.filter(matches));
       if(mapScopeMode==='all')document.getElementById('locateBtn')?.click();
     });
