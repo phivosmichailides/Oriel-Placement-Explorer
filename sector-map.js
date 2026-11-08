@@ -73,7 +73,10 @@
       ['Industry','Industry'],
       ['Mixed','Mixed / split'],
       ['Other','Other']
-    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
+    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+
+    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground station</span>'+
+    '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
+    '<span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
     mapScopeControl?.addEventListener('change',()=>{
       mapScopeMode=mapScopeControl.value==='all'?'all':'matching';
@@ -97,12 +100,49 @@
     if(!document.getElementById('oriel-group-pin-style')){
       const pinStyle=document.createElement('style');
       pinStyle.id='oriel-group-pin-style';
-      pinStyle.textContent='.oriel-group-marker{background:transparent;border:0}.oriel-group-count{display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--group-ring,#fff);border-radius:50%;background:var(--group-fill,#9076a6);color:#fff;font:800 10px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 7px rgba(20,25,30,.32);transition:transform .16s ease,box-shadow .16s ease;user-select:none}.oriel-group-marker:focus-visible .oriel-group-count{outline:3px solid #f5d68a;outline-offset:2px}.map-approx-note{display:block;margin:6px 0 10px;color:var(--mut);font-size:12px}';
+      pinStyle.textContent='.oriel-group-marker{background:transparent;border:0}.oriel-group-count{display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--group-ring,#fff);border-radius:50%;background:var(--group-fill,#9076a6);color:#fff;font:800 10px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 7px rgba(20,25,30,.32);transition:transform .16s ease,box-shadow .16s ease;user-select:none}.oriel-group-marker:focus-visible .oriel-group-count{outline:3px solid #f5d68a;outline-offset:2px}.map-approx-note{display:block;margin:6px 0 10px;color:var(--mut);font-size:12px}.oriel-tube-marker{background:transparent;border:0}.oriel-tube-roundel{position:relative;display:block;width:19px;height:19px;box-sizing:border-box;border:3px solid #d7193f;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(20,25,30,.42)}.oriel-tube-roundel:after{content:"";position:absolute;left:-3px;right:-3px;top:4px;height:6px;background:#003b70;border-top:1px solid #fff;border-bottom:1px solid #fff;box-sizing:border-box}.oriel-tube-marker:focus-visible .oriel-tube-roundel{outline:3px solid #e8c783;outline-offset:2px}.oriel-tube-legend{display:inline-flex;align-items:center;gap:6px;color:var(--ink)}.oriel-tube-legend-mark{position:relative;display:inline-block;width:15px;height:15px;box-sizing:border-box;border:2.5px solid #d7193f;border-radius:50%;background:#fff}.oriel-tube-legend-mark:after{content:"";position:absolute;left:-2px;right:-2px;top:3px;height:5px;background:#003b70;border-top:1px solid #fff;border-bottom:1px solid #fff}.oriel-tube-attribution{font-size:10px;color:var(--mut)}.oriel-tube-popup-content{min-width:150px;line-height:1.45}.oriel-tube-popup-content b{display:block;font-size:13px;margin-bottom:3px}.oriel-tube-popup-content small{display:block;color:var(--mut);margin-top:5px}.oriel-tube-popup .leaflet-popup-content-wrapper{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px}.oriel-tube-popup .leaflet-popup-tip{background:var(--panel)}';
       document.head.appendChild(pinStyle);
     }
 
     const programmePins=new Map(),pinBases=new WeakMap();
     let selectedProgramme=null,hoveredProgramme=null;
+
+    // TfL Underground markers are a separate layer, so filtering or redrawing
+    // placement pins never removes transport context.
+    const tubeLayer=L.layerGroup();
+    const tubeIcon=L.divIcon({
+      className:'oriel-tube-marker',
+      html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',
+      iconSize:[19,19],iconAnchor:[9.5,9.5]
+    });
+    const safeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const updateTubeVisibility=()=>{
+      if(!placementMap)return;
+      const visible=placementMap.getZoom()>=11.25;
+      if(visible&&!placementMap.hasLayer(tubeLayer))tubeLayer.addTo(placementMap);
+      else if(!visible&&placementMap.hasLayer(tubeLayer))placementMap.removeLayer(tubeLayer);
+    };
+    const renderTubeStations=()=>{
+      if(!placementMap)return;
+      tubeLayer.clearLayers();
+      const stations=Array.isArray(window.ORIEL_TUBE_STATIONS)?window.ORIEL_TUBE_STATIONS:[];
+      stations.forEach(station=>{
+        const lines=String(station.lines||'London Underground');
+        const accessible=String(station.accessibility||'Not stated');
+        const marker=L.marker([Number(station.lat),Number(station.lng)],{
+          icon:tubeIcon,title:station.name,alt:station.name,keyboard:true,riseOnHover:true,zIndexOffset:650
+        });
+        marker.bindTooltip(safeText(station.name),{direction:'top',offset:[0,-9],opacity:.98});
+        marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+safeText(station.name)+'</b><span>'+safeText(lines)+'</span><small>'+safeText(accessible)+' · Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:250});
+        marker.addTo(tubeLayer);
+      });
+      updateTubeVisibility();
+    };
+    placementMap.on('zoomend',updateTubeVisibility);
+    document.addEventListener('desk:tube-stations-ready',renderTubeStations);
+    if(Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length)renderTubeStations();
+    else window.ORIEL_TUBE_STATIONS_READY?.then(renderTubeStations).catch(()=>{});
+
     const locationCodes=p=>{
       const exact=(p.postcodes||[]).map(pcKey);
       const preferred=exact.map(code=>{
@@ -246,7 +286,7 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations.';
+      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
       syncMap();
     };
     try{drawMap(placements.filter(matches));}catch{}
