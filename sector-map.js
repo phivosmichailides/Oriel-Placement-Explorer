@@ -45,9 +45,11 @@
     updateMapScopeHeading();
     const fitScopePins=()=>{
       if(!placementMap||!mapLayer)return;
+      const bounds=window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds:null;
       const points=mapLayer.getLayers().map(layer=>layer.getLatLng()).filter(point=>Number.isFinite(point.lat)&&Number.isFinite(point.lng));
-      if(points.length)placementMap.fitBounds(L.latLngBounds(points),{
-        padding:[30,30],maxZoom:mapScopeMode==='all'?7:11,animate:false
+      if(bounds)placementMap.fitBounds(bounds,{padding:[55,55],maxZoom:mapScopeMode==='all'?7:11,animate:false});
+      else if(points.length)placementMap.fitBounds(L.latLngBounds(points),{
+        padding:[55,55],maxZoom:mapScopeMode==='all'?7:11,animate:false
       });
     };
     const label={
@@ -99,7 +101,7 @@
     ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+
     '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground station</span>'+
     '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
-    '<span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
+    '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
     mapScopeControl?.addEventListener('change',()=>{
       mapScopeMode=mapScopeControl.value==='all'?'all':'matching';
@@ -389,7 +391,8 @@
       const unresolved=allCodes.size-resolvedCodes.size;
       const summary=[
         programmesWithAllSites.toLocaleString()+' of '+list.length.toLocaleString()+' programmes have all listed sites mapped',
-        groups.size.toLocaleString()+' unique pin locations',
+        groups.size.toLocaleString()+' unique sites',
+        displayGroups.length.toLocaleString()+' visible map markers'+(window.OrielMapClusterCount?' · '+window.OrielMapClusterCount.toLocaleString()+' clusters':''),
         resolvedCodes.size.toLocaleString()+' of '+allCodes.size.toLocaleString()+' location codes resolved'
       ];
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
