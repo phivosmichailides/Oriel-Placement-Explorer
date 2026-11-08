@@ -1,8 +1,8 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-08-v2';
+const CACHE_NAME='placement-atlas-shell-2026-11-08-v3';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'app-base.js?v=20261108atlas2','app-product.js?v=20261108atlas2','generic-public.js?v=20261108atlas2',
+  'app-base.js?v=20261108atlas3','app-product.js?v=20261108atlas2','generic-public.js?v=20261108atlas2',
   'sector-map.js?v=20261108atlas2','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261106g',
   'map-basemap.js?v=20261108atlas2','workspace-ux.js?v=20261108atlas1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
@@ -13,7 +13,7 @@ const EXTRA_ASSETS=[
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
   'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
   'simulator.js?v=20261106preview1','motion-effects.js?v=20261107a',
-  'session-ui.js?v=20261106filters1','interface-polish.js?v=20261107responsive2',
+  'session-ui.js?v=20261108filters2','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
   'data/london-borough-labels.geojson','data/tube-stations.json',
