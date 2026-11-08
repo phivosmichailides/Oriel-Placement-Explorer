@@ -103,20 +103,59 @@ const STYLES=Object.freeze({
     }
     if(note){
       note.hidden=!isFallback;
-      note.textContent=isFallback?'MapTiler raster fallback':'';
+      note.textContent=isFallback?(String(reason||'').toLowerCase().includes('openstreetmap')?'OpenStreetMap fallback':'MapTiler raster fallback'):'';
       note.title=reason||'MapTiler raster tiles are shown because vector rendering is unavailable.';
     }
   };
   const MAX_GL_MAPS=7;
-  const raster=map=>{
-    const layer=L.tileLayer(rasterTileUrl(),{
-      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:MAPTILER_ATTR
+  const OSM_TILE_URL='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const osmFallback=(map,reason='MapTiler tiles are unavailable.')=>{
+    const previous=map._orielBasemapRecord;
+    if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
+    map.attributionControl?.removeAttribution(MAPTILER_ATTR);
+    map.attributionControl?.removeAttribution(RASTER_ATTR);
+    const layer=L.tileLayer(OSM_TILE_URL,{
+      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
-    const record={leaflet:map,layer};
+    const record={leaflet:map,layer,provider:'osm'};
+    map._orielBasemapRecord=record;
+    const holder=map.getContainer();
+    holder.dataset.basemap='osm-fallback';
+    holder.dataset.basemapReason=reason;
+    if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='osm-fallback';
+    reportMainRenderer(map,true,'OpenStreetMap fallback: '+reason+' Programme pins remain interactive.');
+    layer.on('tileerror',()=>{holder.dataset.mapTileStatus='tile-error';});
+    map.on('unload',()=>{if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;});
+    return {layer,kind:'osm',record};
+  };
+  const raster=map=>{
+    const previous=map._orielBasemapRecord;
+    if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
+    const layer=L.tileLayer(rasterTileUrl(),{
+      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
+    }).addTo(map);
+    const record={leaflet:map,layer,provider:'maptiler'};
+    map._orielBasemapRecord=record;
     rasterInstances.add(record);
-    map.on('unload',()=>rasterInstances.delete(record));
-    map.getContainer().dataset.basemap='raster-fallback';
-    reportMainRenderer(map,true,'Vector rendering is unavailable; the MapTiler raster map remains interactive.');
+    let loadedTiles=0,errorTiles=0,switched=false,timer;
+    const useOpenStreetMap=reason=>{
+      if(switched||loadedTiles>0||!map.getContainer().isConnected)return;
+      switched=true;
+      if(timer)clearTimeout(timer);
+      rasterInstances.delete(record);
+      try{map.removeLayer(layer)}catch{}
+      osmFallback(map,reason);
+    };
+    layer.on('tileload',()=>{loadedTiles++;if(timer)clearTimeout(timer);});
+    layer.on('tileerror',()=>{errorTiles++;if(loadedTiles===0&&errorTiles>=2)useOpenStreetMap('MapTiler raster tiles were rejected or unavailable.');});
+    map.on('unload',()=>{if(timer)clearTimeout(timer);rasterInstances.delete(record);});
+    timer=setTimeout(()=>{
+      if(loadedTiles===0)useOpenStreetMap(errorTiles?'MapTiler raster tiles returned errors.':'MapTiler raster tiles did not arrive before the loading timeout.');
+    },7000);
+    const holder=map.getContainer();
+    holder.dataset.basemap='raster-fallback';
+    if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='raster-fallback';
+    reportMainRenderer(map,true,'Vector rendering is unavailable; the MapTiler raster map is being tried as a fallback.');
     return {layer,kind:'raster',record};
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
@@ -179,6 +218,15 @@ const STYLES=Object.freeze({
     }
     return miniRenderer;
   };
+  const watchMiniSize=record=>{
+    const holder=record.leaflet.getContainer();
+    if(record.sizeObserver||!window.ResizeObserver||!holder.isConnected)return;
+    record.sizeObserver=new ResizeObserver(()=>{
+      const size=record.leaflet.getSize();
+      if(size.x>=80&&size.y>=60){record.sizeObserver?.disconnect();record.sizeObserver=null;queueMiniRender(record);}
+    });
+    record.sizeObserver.observe(holder);
+  };
   const renderMiniRecord=async record=>{
     const map=record.leaflet,holder=map.getContainer();
     if(!holder.isConnected)return;
@@ -186,10 +234,12 @@ const STYLES=Object.freeze({
     const size=map.getSize();
     if(size.x<80||size.y<60){
       holder.dataset.miniStatus='waiting-for-size-'+Math.round(size.x)+'x'+Math.round(size.y);
+      watchMiniSize(record);
       return;
     }
     if(!map._loaded){
       holder.dataset.miniStatus='leaflet-map-not-ready';
+      if(!record.waitingForLoad){record.waitingForLoad=true;map.once('load',()=>{record.waitingForLoad=false;queueMiniRender(record);});}
       return;
     }
     holder.dataset.miniStatus='rendering';
@@ -201,6 +251,8 @@ const STYLES=Object.freeze({
     renderer.triggerRepaint();
     await idle;
     if(!holder.isConnected)return;
+    const vectorFeatures=renderer.queryRenderedFeatures().some(feature=>feature.source==='maptiler_planet_v4');
+    if(!vectorFeatures)throw Error('MapTiler returned no visible vector features for this mini-map.');
     const image=renderer.getCanvas().toDataURL('image/png');
     const bounds=map.getBounds();
     if(record.overlay){try{map.removeLayer(record.overlay)}catch{}}
@@ -249,11 +301,12 @@ const STYLES=Object.freeze({
       pane.style.zIndex='250';
       pane.style.pointerEvents='none';
       map.attributionControl?.addAttribution(MAPTILER_ATTR);
-      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR,queued:false,needsRender:false,promise:null};
+      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR,queued:false,needsRender:false,promise:null,sizeObserver:null,waitingForLoad:false};
       miniInstances.add(record);
       holder.dataset.basemap='vector-loading';
       holder.dataset.miniStatus='registered';
-      map.on('unload',()=>miniInstances.delete(record));
+      map.on('resize',()=>queueMiniRender(record));
+      map.on('unload',()=>{record.sizeObserver?.disconnect();miniInstances.delete(record)});
       return {kind:'snapshot',provider:'maptiler',render:()=>queueMiniRender(record)};
     }catch(error){
       console.warn('Custom mini-map setup failed; displaying MapTiler raster tiles',error);
@@ -296,7 +349,7 @@ const STYLES=Object.freeze({
     vectorPane.style.pointerEvents='none';
     let layer,glMap,loaded=false,ready=false,ended=false,timeout;
     const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
-    const fail=()=>{
+    const fail=(reason='MapTiler vector rendering did not produce a usable map.')=>{
       if(ended||ready)return;
       ended=true;
       if(timeout)clearTimeout(timeout);
@@ -306,6 +359,7 @@ const STYLES=Object.freeze({
         try{map.removeLayer(retainedUnderlay)}catch{}
         retainedUnderlay=null;
       }
+      holder.dataset.basemapReason=reason;
       raster(map);
     };
     try{
@@ -341,6 +395,9 @@ const STYLES=Object.freeze({
       // main map never exposes a blank cream canvas while vector tiles arrive.
       glMap.on('idle',()=>{
         if(ended||!loaded)return;
+        let visibleVectorFeatures=0;
+        try{visibleVectorFeatures=glMap.queryRenderedFeatures().filter(feature=>feature.source==='maptiler_planet_v4').length}catch{}
+        if(!visibleVectorFeatures){fail('MapTiler loaded its style but returned no visible street/place features.');return;}
         ready=true;
         if(timeout)clearTimeout(timeout);
         if(retainedUnderlay){
@@ -355,14 +412,15 @@ const STYLES=Object.freeze({
       });
       glMap.on('error',event=>{
         const message=String(event.error?.message||event.error||'');
+        const status=Number(event.error?.status||event.error?.statusCode||event.status||0);
         // An initial style/tile failure should fall back rather than leave a
         // blank map. Aborted requests during later style switches are expected.
-        if(!ready&&/style|fetch|network|failed|http|request|webgl|context/i.test(message)){
-          console.warn('Vector basemap failed before its first rendered frame:',message);
-          fail();
+        if(!ready&&(status>=400||/style|fetch|network|failed|http|request|webgl|context|forbidden|unauthori|not found/i.test(message))){
+          console.warn('Vector basemap failed before its first rendered frame:',message,status||'');
+          fail('MapTiler vector request failed'+(status?' (HTTP '+status+')':'')+': '+message);
         }
       });
-      timeout=setTimeout(()=>{if(!ready)fail()},18000);
+      timeout=setTimeout(()=>{if(!ready)fail('MapTiler vector tiles did not render before the loading timeout.')},15000);
       map.on('unload',()=>{
         ended=true;
         instances.delete(record);
