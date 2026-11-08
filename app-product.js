@@ -333,7 +333,15 @@
     regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;refreshScope({locate:true});});
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>{if(quick.has('london'))regionEl.value='';setTimeout(()=>refreshScope({locate:true}),0);});
     $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;refreshScope({locate:true});});
-    if($('locateBtn'))$('locateBtn').onclick=resolveScopePins;
+    if($('locateBtn'))$('locateBtn').onclick=()=>{
+      // "Locate all sites" always means the complete catalogue, not only the
+      // currently filtered list. Switch the map scope first when necessary.
+      if(window.OrielMapScope!=='all'){
+        const control=$('mapScope');
+        if(control){control.value='all';control.dispatchEvent(new Event('change',{bubbles:true}));return;}
+      }
+      resolveScopePins();
+    };
     $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;if($('hideShortlisted')){$('hideShortlisted').checked=false;$('hideShortlisted').dispatchEvent(new Event('change',{bubbles:true}))}$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:true});};
 
     ['salary','hours'].forEach(id=>$(id).addEventListener('change',reco));
