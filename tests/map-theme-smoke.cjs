@@ -63,23 +63,26 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const manifestLink=document.querySelector('link[rel="manifest"]');
       const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
       if(!manifestLink||!faviconLink)throw Error('Manifest or SVG favicon link is missing');
-      const manifestResponse=await fetch(manifestLink.href);
-      if(!manifestResponse.ok)throw Error('Manifest returned HTTP '+manifestResponse.status);
-      const manifest=await manifestResponse.json();
-      const icons=await Promise.all(manifest.icons.map(async icon=>{
-        const response=await fetch(new URL(icon.src,manifestLink.href));
-        const blob=await response.blob();
-        return {sizes:icon.sizes,ok:response.ok,type:blob.type,bytes:blob.size};
-      }));
-      const faviconResponse=await fetch(faviconLink.href);
-      const favicon=await faviconResponse.text();
       const registration=await navigator.serviceWorker.getRegistration();
-      return {title:document.title,manifestName:manifest.name,shortName:manifest.short_name,display:manifest.display,
-        icons,faviconOk:faviconResponse.ok,faviconCross:favicon.includes('M22.4 4.8'),
-        swScope:registration?.scope||null,swState:registration?.active?.state||null,swScriptURL:registration?.active?.scriptURL||null,
+      return {title:document.title,manifestHref:manifestLink.href,faviconHref:faviconLink.href,
+        swScope:registration?.scope||null,swState:registration?.active?.state||null,
+        swScriptURL:registration?.active?.scriptURL||null,
         installButtonVisible:!!document.getElementById('installAppBtn')&&!document.getElementById('installAppBtn').hidden,
         expectedScope:new URL('./',location.href).href};
     });
+    const manifestResponse=await page.request.get(pwaAudit.manifestHref,{headers:{'cache-control':'no-cache'}});
+    assert(manifestResponse.ok(),'Manifest returned HTTP '+manifestResponse.status());
+    const manifest=await manifestResponse.json();
+    const icons=await Promise.all(manifest.icons.map(async icon=>{
+      const response=await page.request.get(new URL(icon.src,pwaAudit.manifestHref).toString(),{headers:{'cache-control':'no-cache'}});
+      const body=await response.body();
+      const contentType=response.headers()['content-type']||'';
+      return {sizes:icon.sizes,ok:response.ok(),type:contentType.split(';')[0],bytes:body.length};
+    }));
+    const faviconResponse=await page.request.get(pwaAudit.faviconHref,{headers:{'cache-control':'no-cache'}});
+    const favicon=await faviconResponse.text();
+    Object.assign(pwaAudit,{manifestName:manifest.name,shortName:manifest.short_name,display:manifest.display,
+      icons,faviconOk:faviconResponse.ok(),faviconCross:favicon.includes('M22.4 4.8')});
     assert.equal(pwaAudit.title,'Placement Atlas','Browser tab title is not branded Placement Atlas');
     assert.equal(pwaAudit.manifestName,'Placement Atlas','PWA app name is not Placement Atlas');
     assert.equal(pwaAudit.shortName,'Placement Atlas','PWA short name is not Placement Atlas');
@@ -90,19 +93,18 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
     assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261108atlas3'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
-    const pwaUpdateAudit=await page.evaluate(async()=>{
-      const [pwaResponse,swResponse]=await Promise.all([
-        fetch('pwa.js?v=20261108atlas3',{cache:'no-store'}),
-        fetch('sw.js?v=20261108atlas3',{cache:'no-store'})
-      ]);
-      const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
+    const [pwaResponse,swResponse]=await Promise.all([
+      page.request.get(new URL('pwa.js?v=20261108atlas3',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('sw.js?v=20261108atlas3',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+    ]);
+    const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
+    const pwaUpdateAudit={
       return {pwaStatus:pwaResponse.status,swStatus:swResponse.status,
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
         versionedCache:swSource.includes('placement-atlas-shell-2026-11-08-v5'),
         cachedPwaAsset:swSource.includes("pwa.js?v=20261108atlas3")};
-    });
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
