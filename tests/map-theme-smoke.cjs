@@ -53,10 +53,41 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas1')&&(await page.content()).includes('sector-map.js?v=20261108atlas1')&&(await page.content()).includes('map-basemap.js?v=20261108atlas1')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas2')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas2')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active;},null,{timeout:30000});
+    const pwaAudit=await page.evaluate(async()=>{
+      const manifestLink=document.querySelector('link[rel="manifest"]');
+      const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
+      if(!manifestLink||!faviconLink)throw Error('Manifest or SVG favicon link is missing');
+      const manifestResponse=await fetch(manifestLink.href);
+      if(!manifestResponse.ok)throw Error('Manifest returned HTTP '+manifestResponse.status);
+      const manifest=await manifestResponse.json();
+      const icons=await Promise.all(manifest.icons.map(async icon=>{
+        const response=await fetch(new URL(icon.src,manifestLink.href));
+        const blob=await response.blob();
+        return {sizes:icon.sizes,ok:response.ok,type:blob.type,bytes:blob.size};
+      }));
+      const faviconResponse=await fetch(faviconLink.href);
+      const favicon=await faviconResponse.text();
+      const registration=await navigator.serviceWorker.getRegistration();
+      return {title:document.title,manifestName:manifest.name,shortName:manifest.short_name,display:manifest.display,
+        icons,faviconOk:faviconResponse.ok,faviconCross:favicon.includes('M22.4 4.8'),
+        swScope:registration?.scope||null,swState:registration?.active?.state||null,
+        expectedScope:new URL('./',location.href).href};
+    });
+    assert.equal(pwaAudit.title,'Placement Atlas','Browser tab title is not branded Placement Atlas');
+    assert.equal(pwaAudit.manifestName,'Placement Atlas','PWA app name is not Placement Atlas');
+    assert.equal(pwaAudit.shortName,'Placement Atlas','PWA short name is not Placement Atlas');
+    assert.equal(pwaAudit.display,'standalone','PWA is not configured for standalone app display');
+    assert(pwaAudit.faviconOk&&pwaAudit.faviconCross,'Tab favicon is not the matching pharmacy cross');
+    assert(pwaAudit.icons.length>=2&&pwaAudit.icons.every(icon=>icon.ok&&icon.type==='image/png'&&icon.bytes>500),
+      'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
+    assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
+    assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
+    console.log('PWA/BRANDING AUDIT:',JSON.stringify(pwaAudit));
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
     // Verify both the actual runtime script and the final rendered footer.
     const productScript=await page.waitForFunction(()=>{
@@ -118,6 +149,26 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Editorial road names are not enabled at neighbourhood zoom');
     assert.equal(editorialStyleForDesign.layers.filter(layer=>layer.type==='fill-extrusion').length,0,
       'Editorial Light should not render 3D building extrusions');
+    const designCoverage=await page.evaluate(async()=>{
+      const darkResponse=await fetch(window.OrielBasemap.styles['editorial-dark']);
+      const boroughResponse=await fetch(new URL('data/london-borough-labels.geojson',location.href));
+      if(!darkResponse.ok||!boroughResponse.ok)throw Error('Could not load dark map style or London borough labels');
+      const dark=await darkResponse.json(),boroughs=await boroughResponse.json();
+      const airportSummary=style=>Object.fromEntries(['Airport zone','Aeroway','Airport labels'].map(id=>[id,style.layers.find(layer=>layer.id===id)?.minzoom??null]));
+      return {darkAirportMinZoom:airportSummary(dark),lightAirportMinZoom:airportSummary(editorialStyleForDesign),
+        boroughCount:boroughs.features?.length||0,
+        boroughNames:(boroughs.features||[]).map(feature=>feature.properties?.name).sort(),
+        boroughLayer:editorialStyleForDesign.layers.find(layer=>layer.id==='Oriel London borough labels')};
+    });
+    for(const [theme,levels] of Object.entries({light:designCoverage.lightAirportMinZoom,dark:designCoverage.darkAirportMinZoom})){
+      assert(levels['Airport zone']>=11&&levels.Aeroway>=12&&levels['Airport labels']>=12,
+        theme+' map shows distracting airport POIs too early: '+JSON.stringify(levels));
+    }
+    assert.equal(designCoverage.boroughCount,33,'London borough label data must include all 32 boroughs and the City of London');
+    for(const borough of ['Barnet','Camden','Haringey','Hammersmith and Fulham','Islington','Kensington and Chelsea','Newham','Westminster','City of London']){
+      assert(designCoverage.boroughNames.includes(borough),'Missing London borough label: '+borough);
+    }
+    assert.equal(designCoverage.boroughLayer?.source,'oriel_borough_labels','The full London borough label layer is not attached to the map style');
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
@@ -584,11 +635,26 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
 
     // The custom controls must zoom the existing map and move that same map
     // instance into a spacious, reversible focus window.
+    const zoomAudit=await page.evaluate(()=>{
+      const map=document.getElementById('placementMap'),control=document.getElementById('atlasMapZoom');
+      const m=map.getBoundingClientRect(),c=control.getBoundingClientRect();
+      return {defaultControls:map.querySelectorAll('.leaflet-control-zoom').length,customVisible:!!control&&c.width>50&&c.height>25,
+        centerOffset:Math.abs((c.left+c.width/2)-(m.left+m.width/2)),bottomGap:m.bottom-c.bottom};
+    });
+    assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
+    assert(zoomAudit.customVisible&&zoomAudit.centerOffset<=4&&zoomAudit.bottomGap>=8&&zoomAudit.bottomGap<=28,
+      'Rounded Placement Atlas zoom control is not centred at the bottom of the map: '+JSON.stringify(zoomAudit));
     const startingZoom=await page.evaluate(()=>placementMap.getZoom());
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
     await page.waitForFunction(z=>placementMap.getZoom()>z,startingZoom);
     await page.locator('#atlasMapZoom [data-atlas-zoom="out"]').click();
     await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<0.01,startingZoom);
+    await page.evaluate(()=>placementMap.setView([0,0],15,{animate:false}));
+    await page.waitForFunction(()=>{const hint=document.getElementById('atlasMapEmptyHint');return !!hint&&!hint.hidden;},null,{timeout:12000});
+    assert.match(await page.locator('#atlasMapEmptyHint').innerText(),/No programme sites in this view/,
+      'An empty close-up map should explain that there are no programme sites in the current viewport');
+    await page.locator('#atlasMapEmptyHint [data-atlas-fit-view]').click();
+    await page.waitForFunction(()=>document.getElementById('atlasMapEmptyHint')?.hidden===true,null,{timeout:12000});
     await page.locator('#atlasMapExpand').click();
     await page.waitForFunction(()=>!document.getElementById('atlasMapFocus')?.hidden);
     assert.equal(await page.locator('#atlasMapFocusStage #placementMap').count(),1,'Expanded map should move the existing map rather than create a duplicate');

@@ -206,6 +206,21 @@
       current:()=>selectedProgramme
     };
     const updateFocusCount=()=>{const count=window.OrielMapStats?.programmes??currentMapList.length;const label=document.getElementById('atlasMapFocusCount');if(label)label.textContent=`${count.toLocaleString()} of ${placements.length.toLocaleString()} programmes shown`;};
+    const updateViewportHint=()=>{
+      const hint=document.getElementById('atlasMapEmptyHint');
+      if(!hint||!placementMap||!mapLayer)return;
+      const noMatches=currentMapList.length===0;
+      const bounds=placementMap.getBounds();
+      const hasVisiblePin=mapLayer.getLayers().some(layer=>{
+        const point=layer.getLatLng?.();
+        return !!point&&bounds.contains(point);
+      });
+      const copy=hint.querySelector('[data-atlas-empty-copy]');
+      const fit=hint.querySelector('[data-atlas-fit-view]');
+      if(copy)copy.textContent=noMatches?'No programmes match the current filters.':'No programme sites in this view.';
+      if(fit)fit.hidden=noMatches||!window.OrielMapCurrentBounds?.isValid?.();
+      hint.hidden=!noMatches&&hasVisiblePin;
+    };
     const installMapControls=()=>{
       const mapContainer=placementMap.getContainer();
       if(!mapContainer||document.getElementById('atlasMapZoom'))return;
@@ -214,6 +229,12 @@
       zoom.innerHTML='<button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>';
       zoom.addEventListener('click',event=>{const button=event.target.closest('[data-atlas-zoom]');if(!button)return;event.preventDefault();event.stopPropagation();button.dataset.atlasZoom==='in'?placementMap.zoomIn():placementMap.zoomOut();});
       mapContainer.append(zoom);
+      const emptyHint=document.createElement('div');
+      emptyHint.className='atlasMapEmptyHint';emptyHint.id='atlasMapEmptyHint';
+      emptyHint.setAttribute('role','status');emptyHint.setAttribute('aria-live','polite');emptyHint.hidden=true;
+      emptyHint.innerHTML='<span data-atlas-empty-copy>No programme sites in this view.</span><button type="button" data-atlas-fit-view>Fit all results</button>';
+      emptyHint.querySelector('[data-atlas-fit-view]').addEventListener('click',()=>fitScopePins());
+      mapContainer.append(emptyHint);
       const expand=document.createElement('button');expand.type='button';expand.className='atlasMapExpand';expand.id='atlasMapExpand';expand.setAttribute('aria-label','Open expanded map');expand.title='Open expanded map';
       expand.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4"/><path d="M9 9 4 4m11 5 5-5M9 15l-5 5m11-5 5 5"/></svg>';
       mapContainer.append(expand);
@@ -444,6 +465,7 @@
       };
       updateFocusCount();
       syncMap();
+      updateViewportHint();
     };
     const scheduleMapRedraw=()=>{
       if(mapRedrawQueued)return;
@@ -454,8 +476,8 @@
       });
     };
     placementMap.on('popupclose',()=>{selectedProgramme=null;syncMap();});
-    placementMap.on('zoomend',scheduleMapRedraw);
-    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw()});
+    placementMap.on('zoomend',()=>{scheduleMapRedraw();updateViewportHint();});
+    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw();updateViewportHint();});
     try{drawMap(placements.filter(matches));}catch{}
     // Fit the complete catalogue on first paint as well as after geocoding.
     // This prevents the default London view from hiding the rest of the map.

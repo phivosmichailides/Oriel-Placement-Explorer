@@ -5,6 +5,10 @@
 .atlasMapZoom button:hover{background:var(--ux-accent-soft);transform:scale(1.04)}
 .atlasMapZoom button:focus-visible,.atlasMapExpand:focus-visible,.atlasMapFocusClose:focus-visible{outline:3px solid var(--ux-accent);outline-offset:2px}
 .atlasMapZoom>span{width:1px;height:21px;background:var(--line)}
+.atlasMapEmptyHint{position:absolute;z-index:1090;top:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;max-width:calc(100% - 28px);padding:7px 9px 7px 13px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:11px;font-weight:650;line-height:1.3;text-align:center}
+.atlasMapEmptyHint[hidden]{display:none!important}
+.atlasMapEmptyHint button{flex:0 0 auto;padding:6px 10px;border:1px solid var(--ux-accent-border);border-radius:999px;background:var(--ux-accent-soft);color:var(--ux-accent-ink);font-size:10px;font-weight:850;cursor:pointer;white-space:nowrap}
+.atlasMapEmptyHint button:hover{filter:brightness(.97)}
 .atlasMapExpand{position:absolute;right:16px;bottom:16px;z-index:1100;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.17);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
 .atlasMapExpand:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.22)}
 .atlasMapExpand svg{width:19px;height:19px}
@@ -40,6 +44,8 @@ body.atlasMapFocusOpen .atlasMapExpand{display:none}
 .atlasPopupOpen:hover{filter:brightness(.97)}
 .atlasPopupMore,.map-approx-note{font-size:10px;line-height:1.45;color:var(--mut);margin:8px 0 0}
 @media(max-width:680px){
+ .atlasMapEmptyHint{top:10px;gap:7px;padding:6px 7px 6px 10px;font-size:10px}
+ .atlasMapEmptyHint button{padding:6px 8px}
  .atlasMapFocus{padding:7px}
  .atlasMapFocusPanel{width:100%;height:calc(100dvh - 14px);min-height:0;border-radius:18px}
  .atlasMapFocusHead{padding:12px 13px}

@@ -323,13 +323,13 @@
       "type": "fill",
       "source": "maptiler_planet_v4",
       "source-layer": "aviation",
-      "minzoom": 7,
+      "minzoom": 11.5,
       "layout": {
         "visibility": "visible"
       },
       "paint": {
         "fill-color": "#e7e7e1",
-        "fill-opacity": 1
+        "fill-opacity": 0.42
       },
       "filter": [
         "==",
@@ -1316,7 +1316,7 @@
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": "#bfdbe0",
+        "fill-color": "#d0dfdd",
         "fill-opacity": 1
       },
       "filter": [
@@ -1359,7 +1359,7 @@
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": "#c8e0e2",
+        "fill-color": "#d0dfdd",
         "fill-opacity": 1
       },
       "filter": [
@@ -9860,7 +9860,7 @@
       "type": "line",
       "source": "maptiler_planet_v4",
       "source-layer": "aviation_line",
-      "minzoom": 8,
+      "minzoom": 12.5,
       "layout": {
         "visibility": "visible"
       },
@@ -27201,7 +27201,7 @@
       "type": "symbol",
       "source": "maptiler_planet_v4",
       "source-layer": "poi_station",
-      "minzoom": 6,
+      "minzoom": 13,
       "maxzoom": 16,
       "layout": {
         "icon-allow-overlap": false,

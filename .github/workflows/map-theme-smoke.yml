@@ -7,9 +7,12 @@ on:
       - '*.js'
       - '*.css'
       - 'favicon.svg'
+      - 'manifest.webmanifest'
+      - 'icons/**'
       - 'map-styles/**'
       - 'locations.json'
       - 'tests/map-theme-smoke.cjs'
+      - 'tests/browser-smoke.cjs'
       - 'tests/catalogue-parser.test.cjs'
       - 'tests/independence.test.cjs'
       - 'tests/research.test.js'
@@ -23,9 +26,12 @@ on:
       - '*.js'
       - '*.css'
       - 'favicon.svg'
+      - 'manifest.webmanifest'
+      - 'icons/**'
       - 'map-styles/**'
       - 'locations.json'
       - 'tests/map-theme-smoke.cjs'
+      - 'tests/browser-smoke.cjs'
       - 'tests/catalogue-parser.test.cjs'
       - 'tests/independence.test.cjs'
       - 'tests/research.test.js'
@@ -53,6 +59,8 @@ jobs:
         run: npm install --no-save playwright@1.56.1
       - name: Install test browser and dependencies
         run: npx playwright install --with-deps chromium
+      - name: Validate shortlist, undo/redo, backup and responsive workspace
+        run: node tests/browser-smoke.cjs
       - name: Serve pull request build
         if: github.event_name == 'pull_request'
         run: python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/placement-atlas-http.log 2>&1 &
