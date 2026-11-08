@@ -1,4 +1,4 @@
-# Oriel Placement Desk
+# Placement Atlas
 
 **Explore more clearly. Compare what matters. Rank with confidence.**
 

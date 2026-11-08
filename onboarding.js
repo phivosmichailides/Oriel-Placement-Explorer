@@ -73,7 +73,7 @@
       answers.priorities=Array.isArray(answers.priorities)?answers.priorities:[];
       let step=-1;
       const overlay=document.createElement('div');overlay.className='onboardOverlay';overlay.setAttribute('role','presentation');
-      const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise your Placement Desk');overlay.appendChild(card);document.body.appendChild(overlay);
+      const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise Placement Atlas');overlay.appendChild(card);document.body.appendChild(overlay);
       const close=()=>{document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_skipped'}}));overlay.remove();previousFocus?.focus();try{sessionStorage.setItem(SESSION_SKIP,'1')}catch{}};
       overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
       overlay.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...card.querySelectorAll('button,select,input')].filter(x=>!x.disabled);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
@@ -185,7 +185,7 @@
             document.querySelector('[data-tab="foryou"]')?.click();
           }catch{}
         },0);
-        overlay.remove();document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Desk is personalised ');
+        overlay.remove();document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
       };
 
       render();card.querySelector('button')?.focus();

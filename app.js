@@ -41,7 +41,7 @@
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
-      if(r)r.innerHTML='<div class="errorBox"><b>Could not load the Placement Desk.</b><br>Refresh the page and try again.</div>';
+      if(r)r.innerHTML='<div class="errorBox"><b>Could not load Placement Atlas.</b><br>Refresh the page and try again.</div>';
       activateCloud();
     };
     document.body.appendChild(product);

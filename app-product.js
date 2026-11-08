@@ -356,6 +356,6 @@
     },250);
   };
 
-  base.onerror=()=>{const r=document.getElementById('results');if(r)r.innerHTML='<div class="errorBox"><b>Could not load the Placement Desk logic.</b><br>Refresh the page. If this persists, open the legacy explorer from Preferences.</div>';};
+  base.onerror=()=>{const r=document.getElementById('results');if(r)r.innerHTML='<div class="errorBox"><b>Could not load Placement Atlas.</b><br>Refresh the page. If this persists, open the legacy explorer from Preferences.</div>';};
   document.body.appendChild(base);
 })();
