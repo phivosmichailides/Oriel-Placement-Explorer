@@ -1,7 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id), esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='phivos-desk-v2', DATAKEY='phivos-desk-csv-v2';
-const DEFAULT={weights:{money:5,hospital:5,gp:5,lifestyle:4,location:4,progression:5,independence:4,communityPenalty:4},likes:'',avoids:'',locationLikes:[],locationBlacklist:[],locationAllowed:{}};
+const DEFAULT={weights:{money:5,hospital:5,gp:5,lifestyle:4,location:4,progression:5,independence:4,communityPenalty:4},likes:'',avoids:'',locationLikes:[],locationBlacklist:[],locationAllowed:{},preferredAreasOnly:false};
 const FILTER_DEFAULTS={search:'',sector:'',region:'',hours:'',salary:'',sort:'fit',decision:'all',visa:'',hideAvoid:false,hideOuterLondon:false,hideExcluded:false,hideShortlisted:false,hideJustice:false,hideMental:false,hideOtherSpecialist:false,specialistView:'all',quick:[]};
 const FILTER_QUICK_KEYS=new Set(['london','hospital','gp','industry','community','hospitalgp','split','lowcommunity','desk','cv','hours','pay']);
 const STATUSES=[['','Unmarked'],['love',' Love'],['yes',' Strong yes'],['maybe',' Maybe'],['backup',' Only if needed'],['no',' No'],['never',' Absolutely not']];
