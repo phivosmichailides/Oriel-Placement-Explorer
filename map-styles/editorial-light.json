@@ -14818,7 +14818,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#eee6d8",
+        "line-color": "#e9dfd0",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -14836,27 +14836,27 @@
               "class"
             ],
             "motorway",
-            2.1,
+            1.9500000000000002,
             [
               "trunk",
               "primary"
             ],
-            1.9000000000000001,
+            1.8,
             [
               "secondary"
             ],
-            1.6300000000000001,
+            1.4500000000000002,
             [
               "tertiary"
             ],
-            1.4300000000000002,
+            1.2200000000000002,
             [
               "minor",
               "service",
               "track"
             ],
-            1.4300000000000002,
-            1.4300000000000002
+            1.1500000000000001,
+            1.1500000000000001
           ],
           7,
           [
@@ -14866,27 +14866,27 @@
               "class"
             ],
             "motorway",
-            2.5,
+            2.55,
             [
               "trunk",
               "primary"
             ],
-            2.3,
+            2.35,
             [
               "secondary"
             ],
-            2.0300000000000002,
+            1.9500000000000002,
             [
               "tertiary"
             ],
-            1.73,
+            1.6,
             [
               "minor",
               "service",
               "track"
             ],
-            1.51,
-            1.51
+            1.32,
+            1.26
           ],
           9,
           [
@@ -14896,27 +14896,27 @@
               "class"
             ],
             "motorway",
-            3.1,
+            3.3000000000000003,
             [
               "trunk",
               "primary"
             ],
-            2.85,
+            3,
             [
               "secondary"
             ],
-            2.5,
+            2.55,
             [
               "tertiary"
             ],
-            2.13,
+            2.1,
             [
               "minor",
               "service",
               "track"
             ],
-            1.73,
-            1.53
+            1.6500000000000001,
+            1.35
           ],
           11,
           [
@@ -14926,27 +14926,27 @@
               "class"
             ],
             "motorway",
-            3.95,
+            4.1,
             [
               "trunk",
               "primary"
             ],
-            3.6,
+            3.75,
             [
               "secondary"
             ],
-            3.1,
+            3.2,
             [
               "tertiary"
             ],
-            2.6,
+            2.6500000000000004,
             [
               "minor",
               "service",
               "track"
             ],
-            2.0700000000000003,
-            1.6
+            2,
+            1.4500000000000002
           ],
           13,
           [
@@ -14956,27 +14956,27 @@
               "class"
             ],
             "motorway",
-            5.25,
+            5.300000000000001,
             [
               "trunk",
               "primary"
             ],
-            4.7,
+            4.9,
             [
               "secondary"
             ],
-            4.050000000000001,
+            4.1,
             [
               "tertiary"
             ],
-            3.3,
+            3.3000000000000003,
             [
               "minor",
               "service",
               "track"
             ],
-            2.5,
-            1.8
+            2.45,
+            1.6
           ],
           15,
           [
@@ -14986,27 +14986,27 @@
               "class"
             ],
             "motorway",
-            6.85,
+            7.1,
             [
               "trunk",
               "primary"
             ],
-            6.15,
+            6.5,
             [
               "secondary"
             ],
-            5.25,
+            5.4,
             [
               "tertiary"
             ],
-            4.2,
+            4.300000000000001,
             [
               "minor",
               "service",
               "track"
             ],
-            3.1500000000000004,
-            2.1500000000000004
+            3.1,
+            2
           ],
           17,
           [
@@ -15016,27 +15016,27 @@
               "class"
             ],
             "motorway",
-            10.35,
+            10.6,
             [
               "trunk",
               "primary"
             ],
-            9.15,
+            9.6,
             [
               "secondary"
             ],
-            7.75,
+            7.9,
             [
               "tertiary"
             ],
-            6.15,
+            6.199999999999999,
             [
               "minor",
               "service",
               "track"
             ],
-            4.45,
-            2.55
+            4.5,
+            2.4000000000000004
           ],
           19,
           [
@@ -15046,27 +15046,27 @@
               "class"
             ],
             "motorway",
-            18.35,
+            18.6,
             [
               "trunk",
               "primary"
             ],
-            16.35,
+            16.6,
             [
               "secondary"
             ],
-            13.85,
+            14.1,
             [
               "tertiary"
             ],
-            10.85,
+            10.9,
             [
               "minor",
               "service",
               "track"
             ],
-            7.550000000000001,
-            3.75
+            7.6,
+            3.6
           ]
         ]
       }
@@ -15142,22 +15142,22 @@
             "class"
           ],
           "motorway",
-          "#b58e6b",
+          "#a97855",
           "trunk",
-          "#b99a78",
+          "#ad8c68",
           "primary",
-          "#c3a986",
+          "#b8956f",
           "secondary",
-          "#cdb99e",
+          "#bea786",
           "tertiary",
-          "#d7c9b5",
+          "#c9b89e",
           [
             "minor",
             "service",
             "track"
           ],
-          "#e0d6c8",
-          "#d8cebf"
+          "#d3c6b3",
+          "#d0c3b0"
         ],
         "line-opacity": 1,
         "line-width": [
@@ -15176,17 +15176,27 @@
               "class"
             ],
             "motorway",
-            0.75,
+            0.85,
             [
               "trunk",
               "primary"
             ],
-            0.55,
+            0.7,
             [
               "secondary"
             ],
-            0.28,
-            0.08
+            0.35,
+            [
+              "tertiary"
+            ],
+            0.12,
+            [
+              "minor",
+              "service",
+              "track"
+            ],
+            0.05,
+            0.05
           ],
           7,
           [
@@ -15196,20 +15206,26 @@
               "class"
             ],
             "motorway",
-            1.15,
+            1.45,
             [
               "trunk",
               "primary"
             ],
-            0.95,
+            1.25,
             [
               "secondary"
             ],
-            0.68,
+            0.85,
             [
               "tertiary"
             ],
-            0.38,
+            0.5,
+            [
+              "minor",
+              "service",
+              "track"
+            ],
+            0.22,
             0.16
           ],
           9,
@@ -15220,27 +15236,27 @@
               "class"
             ],
             "motorway",
-            1.75,
+            2.2,
             [
               "trunk",
               "primary"
             ],
-            1.5,
+            1.9,
             [
               "secondary"
             ],
-            1.15,
+            1.45,
             [
               "tertiary"
             ],
-            0.78,
+            1,
             [
               "minor",
               "service",
               "track"
             ],
-            0.38,
-            0.18
+            0.55,
+            0.25
           ],
           11,
           [
@@ -15250,27 +15266,27 @@
               "class"
             ],
             "motorway",
-            2.6,
+            3,
             [
               "trunk",
               "primary"
             ],
-            2.25,
+            2.65,
             [
               "secondary"
             ],
-            1.75,
+            2.1,
             [
               "tertiary"
             ],
-            1.25,
+            1.55,
             [
               "minor",
               "service",
               "track"
             ],
-            0.72,
-            0.25
+            0.9,
+            0.35
           ],
           13,
           [
@@ -15280,27 +15296,27 @@
               "class"
             ],
             "motorway",
-            3.9,
+            4.2,
             [
               "trunk",
               "primary"
             ],
-            3.35,
+            3.8,
             [
               "secondary"
             ],
-            2.7,
+            3,
             [
               "tertiary"
             ],
-            1.95,
+            2.2,
             [
               "minor",
               "service",
               "track"
             ],
-            1.15,
-            0.45
+            1.35,
+            0.5
           ],
           15,
           [
@@ -15310,27 +15326,27 @@
               "class"
             ],
             "motorway",
-            5.5,
+            6,
             [
               "trunk",
               "primary"
             ],
-            4.8,
+            5.4,
             [
               "secondary"
             ],
-            3.9,
+            4.3,
             [
               "tertiary"
             ],
-            2.85,
+            3.2,
             [
               "minor",
               "service",
               "track"
             ],
-            1.8,
-            0.8
+            2,
+            0.9
           ],
           17,
           [
@@ -15340,27 +15356,27 @@
               "class"
             ],
             "motorway",
-            9,
+            9.5,
             [
               "trunk",
               "primary"
             ],
-            7.8,
+            8.5,
             [
               "secondary"
             ],
-            6.4,
+            6.8,
             [
               "tertiary"
             ],
-            4.8,
+            5.1,
             [
               "minor",
               "service",
               "track"
             ],
-            3.1,
-            1.2
+            3.4,
+            1.3
           ],
           19,
           [
@@ -15370,27 +15386,27 @@
               "class"
             ],
             "motorway",
-            17,
+            17.5,
             [
               "trunk",
               "primary"
             ],
-            15,
+            15.5,
             [
               "secondary"
             ],
-            12.5,
+            13,
             [
               "tertiary"
             ],
-            9.5,
+            9.8,
             [
               "minor",
               "service",
               "track"
             ],
-            6.2,
-            2.4
+            6.5,
+            2.5
           ]
         ]
       }
@@ -24798,7 +24814,7 @@
       },
       "paint": {
         "icon-opacity": 1,
-        "text-color": "#626e64",
+        "text-color": "#6f6254",
         "text-halo-blur": 0.25,
         "text-halo-color": "#f7f3e9",
         "text-halo-width": 1.25,
