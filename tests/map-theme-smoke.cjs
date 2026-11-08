@@ -14,10 +14,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
   const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   const page=await browser.newPage({viewport:{width:1440,height:960}});
   const errors=[];
+  const mapHttpErrors=[];
   let geocodeRequests=0;
   page.on('pageerror',e=>{errors.push(e.message);console.log('RUNTIME ERROR:',e.message)});
   page.on('requestfailed',r=>{if(/openfreemap|maptiler/i.test(r.url()))console.log('MAP REQUEST FAILED:',r.url(),r.failure()?.errorText)});
-  page.on('response',r=>{if(!r.ok()&&/openfreemap|maptiler/i.test(r.url()))console.log('MAP HTTP ERROR:',r.status(),r.url())});
+  page.on('response',r=>{if(!r.ok()&&/openfreemap|maptiler/i.test(r.url())){mapHttpErrors.push({status:r.status(),url:r.url()});console.log('MAP HTTP ERROR:',r.status(),r.url())}});
   page.on('console',m=>{if(m.type()==='error'&&/style|map|tile|gl|fetch|network/i.test(m.text()))console.log('MAP BROWSER ERROR:',m.text().slice(0,450))});
   try{
     await page.addInitScript(()=>{
@@ -52,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261108maptilermini1')&&(await page.content()).includes('app.js?v=20261108mapcoverage5')&&(await page.content()).includes('map-basemap.js?v=20261108maptilermini1')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108minisnapshot1')&&(await page.content()).includes('design-refresh.css?v=20261108minisnapshot1')&&(await page.content()).includes('app.js?v=20261108mapcoverage5')&&(await page.content()).includes('map-basemap.js?v=20261108minisnapshot1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -211,34 +212,36 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&holder.dataset.basemap?.startsWith('maptiler-raster-')&&holder.querySelector('.leaflet-tile-loaded');
+      return holder&&holder.dataset.basemap?.startsWith('vector-')&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
-    const miniTileSources=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
-      url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
-    })));
-    assert.equal(miniBasemap,'maptiler-raster-editorial','Programme mini-map is not using the custom Editorial MapTiler style: '+miniBasemap);
-    assert(miniTileSources.length>0&&miniTileSources.every(x=>new URL(x.url).hostname==='api.maptiler.com'&&x.url.includes('/01a1b7cf-4ca7-7662-9861-84b5b44c218c/256/')&&x.complete&&x.width>100),
-      'Mini map is not displaying loaded tiles from the custom MapTiler style: '+JSON.stringify(miniTileSources));
+    const miniImage=await card.locator('.uxMiniMap .leaflet-image-layer').evaluate(node=>({
+      src:node.currentSrc||node.src,width:node.naturalWidth,height:node.naturalHeight,complete:node.complete,
+      filter:getComputedStyle(node).filter
+    }));
+    assert.equal(miniBasemap,'vector-editorial','Programme mini-map is not using the custom Editorial vector style: '+miniBasemap);
+    assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+      'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
     assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
-    const miniTileFilter=await card.locator('.uxMiniMap .leaflet-tile-pane').evaluate(node=>getComputedStyle(node).filter);
-    assert.equal(miniTileFilter,'none','Mini-map tiles are being tinted away from the custom map palette');
-    // Changing the main map style must update the existing mini-map too.
+    assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
+    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+      'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
+    // Changing the main map style must re-render the existing mini-map too.
     await mapPicker.selectOption('bright');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      const tiles=[...(holder?.querySelectorAll('.leaflet-tile-loaded')||[])];
-      return holder?.dataset.basemap==='maptiler-raster-bright'&&tiles.some(tile=>(tile.currentSrc||tile.src).includes('/bright-v2/'));
-    },null,{timeout:20000});
-    const brightMiniTiles=await card.locator('.uxMiniMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(tile=>tile.currentSrc||tile.src));
-    assert(brightMiniTiles.some(url=>url.includes('/bright-v2/')),'Mini-map did not follow the selected Bright style');
+      const image=holder?.querySelector('.leaflet-image-layer');
+      return holder?.dataset.basemap==='vector-bright'&&holder?.dataset.miniStyle==='bright'&&image?.src.startsWith('data:image/png;base64,');
+    },null,{timeout:30000});
+    const brightMiniImage=await card.locator('.uxMiniMap .leaflet-image-layer').getAttribute('src');
+    assert.notEqual(brightMiniImage,miniImage.src,'Mini-map image did not change with the selected Bright style');
     await mapPicker.selectOption('auto');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      const tiles=[...(holder?.querySelectorAll('.leaflet-tile-loaded')||[])];
-      return holder?.dataset.basemap==='maptiler-raster-editorial'&&tiles.some(tile=>(tile.currentSrc||tile.src).includes('/01a1b7cf-4ca7-7662-9861-84b5b44c218c/'));
-    },null,{timeout:20000});
+      const image=holder?.querySelector('.leaflet-image-layer');
+      return holder?.dataset.basemap==='vector-editorial'&&holder?.dataset.miniStyle==='editorial'&&image?.src.startsWith('data:image/png;base64,');
+    },null,{timeout:30000});
     const miniPins=await card.locator('.uxMiniMap .leaflet-interactive').count();
     assert(miniPins>0,'Programme mini map has no interactive site marker');
     const bullets=await page.locator('#results .placement .fitColumn .fitPoint').count();
