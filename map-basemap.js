@@ -1,25 +1,21 @@
 'use strict';
 /*
- * A MapTiler Editorial Light (light) / OpenFreeMap Dark vector basemap.
- * The underlying programme markers remain Leaflet layers.
- *
- * We deliberately NEVER use CARTO's current unkeyed raster endpoint:
- * it responds with a decorative "API KEY REQUIRED" bitmap and HTTP 200.
- * WebGL, CDN failure, stylesheet failure or a map service outage fallback
- * to OpenStreetMap's standard raster tiles with proper attribution.
- *
- * Third parties: MapTiler, OpenFreeMap, OpenMapTiles and OpenStreetMap.
+ * The default is the user's custom MapTiler Editorial style in BOTH website
+ * themes. Alternative appearances are also MapTiler vector styles, so the
+ * map never silently falls back to a different provider when the app is dark.
+ * Programme markers and filtering remain independent Leaflet layers.
  */
 (()=>{
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
+const maptilerStyle=id=>`https://api.maptiler.com/maps/${id}/style.json?key=${MAPTILER_KEY}`;
 const STYLES = Object.freeze({
-  editorial: `https://api.maptiler.com/maps/01a1b7cf-4ca7-7662-9861-84b5b44c218c/style.json?key=${MAPTILER_KEY}`,
-  positron: 'https://tiles.openfreemap.org/styles/positron',
-  bright: 'https://tiles.openfreemap.org/styles/bright',
-  liberty: 'https://tiles.openfreemap.org/styles/liberty',
-  dark: 'https://tiles.openfreemap.org/styles/dark',
-  fiord: 'https://tiles.openfreemap.org/styles/fiord'
+  editorial: maptilerStyle('01a1b7cf-4ca7-7662-9861-84b5b44c218c'),
+  positron: maptilerStyle('base-v4-light'),
+  bright: maptilerStyle('bright-v2'),
+  liberty: maptilerStyle('streets-v4'),
+  dark: maptilerStyle('streets-v4-dark'),
+  fiord: maptilerStyle('landscape-v4')
 });
   const STYLE_KEY='oriel-basemap-style-v1';
   const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
@@ -32,13 +28,14 @@ const STYLES = Object.freeze({
   // can repeat attribution across several sources, so supply one canonical credit.
   const OSM_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>';
   const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
-  const OPENFREE_ATTR='<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · '+OSM_ATTR;
   const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-  const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'dark':'editorial'):preference;
+  // Automatic preserves the custom editorial cartography in both light and
+  // dark app themes. The explicit Dark option is a separate MapTiler dark map.
+  const activeStyleName=()=>preference==='auto'?'editorial':preference;
   const style=()=>STYLES[activeStyleName()];
-  const styleAttribution=()=>activeStyleName()==='editorial'?MAPTILER_ATTR:OPENFREE_ATTR;
+  const styleAttribution=()=>MAPTILER_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
       try{
@@ -196,12 +193,5 @@ const STYLES = Object.freeze({
     selector.value=preference;
     selector.addEventListener('change',()=>choose(selector.value));
   }
-  let previousMode=mode();
-  new MutationObserver(()=>{
-    const current=mode();
-    if(previousMode===current)return;
-    previousMode=current;
-    if(preference==='auto')applyStyle();
-  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   window.OrielBasemap={addTo,mode,styles:STYLES,choose,get preference(){return preference;}};
 })();
