@@ -62,7 +62,7 @@
       const hasGeo=key=>{
         if(validPoint(geo[key]))return true;
         if(String(key).startsWith('@OUTCODE:'))return false;
-        const outward=(String(key).match(/^[A-Z]{1,2}\\d[A-Z\\d]?/i)||[])[0];
+        const outward=(String(key).match(/^[A-Z]{1,2}\d[A-Z\d]?/i)||[])[0];
         return !!outward&&validPoint(geo['@OUTCODE:'+outward.toUpperCase()]);
       };
       const postcodes=[...new Set(source.flatMap(p=>(p.postcodes||[]).map(pcKey)))];
