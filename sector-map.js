@@ -105,15 +105,22 @@
     '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
     '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
-    mapScopeControl?.addEventListener('change',()=>{
-      mapScopeMode=mapScopeControl.value==='all'?'all':'matching';
+    const setMapScope=mode=>{
+      mapScopeMode=mode==='matching'?'matching':'all';
       window.OrielMapScope=mapScopeMode;
+      if(mapScopeControl)mapScopeControl.value=mapScopeMode;
       try{localStorage.setItem('oriel-map-scope-v2',mapScopeMode)}catch{}
       updateMapScopeHeading();
       drawMap(placements.filter(matches));
       setTimeout(fitScopePins,80);
+    };
+    mapScopeControl?.addEventListener('change',()=>{
+      setMapScope(mapScopeControl.value);
       if(mapScopeMode==='all')document.getElementById('locateBtn')?.click();
     });
+    // Locate all sites means the complete catalogue, even if the user had
+    // previously switched the map to Matching results.
+    document.getElementById('locateBtn')?.addEventListener('click',()=>setMapScope('all'));
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
