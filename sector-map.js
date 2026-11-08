@@ -120,7 +120,7 @@
     });
     // Locate all sites means the complete catalogue, even if the user had
     // previously switched the map to Matching results.
-    document.getElementById('locateBtn')?.addEventListener('click',()=>setMapScope('all'));
+    document.getElementById('locateBtn')?.addEventListener('click',()=>setMapScope('all'),{capture:true});
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
