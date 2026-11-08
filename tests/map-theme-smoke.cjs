@@ -317,7 +317,16 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const allRegionStatus=await page.locator('#mapStatus').innerText();
     const locationCoverage=await page.evaluate(()=>{
       const list=placements.filter(matches);
-      const codes=p=>[...(p.postcodes||[]).map(pcKey),...(p.outcodes||[]).map(oc=>'@OUTCODE:'+String(oc).toUpperCase())];
+      const codes=p=>{
+        const exact=(p.postcodes||[]).map(pcKey);
+        const preferred=exact.map(code=>{
+          if(Array.isArray(geo[code]))return code;
+          const outward=(code.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[])[0];
+          const fallback=outward?'@OUTCODE:'+outward:null;
+          return fallback&&Array.isArray(geo[fallback])?fallback:code;
+        });
+        return [...new Set([...preferred,...(p.outcodes||[]).map(oc=>'@OUTCODE:'+String(oc).toUpperCase())])];
+      };
       const unique=[...new Set(list.flatMap(codes))];
       const missing=list.filter(p=>!codes(p).length||codes(p).some(code=>!Array.isArray(geo[code])));
       return {
