@@ -269,16 +269,22 @@
     };
 
     const fitCurrentMap=()=>{
+      if(typeof window.OrielFitMapToScope==='function'){
+        window.OrielFitMapToScope();
+        return;
+      }
       if(!mapLayer||!placementMap)return;
       const bounds=window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds:null;
       const pts=mapLayer.getLayers().map(l=>l.getLatLng());
-      if(bounds)placementMap.fitBounds(bounds,{
-        padding:[55,55],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
-      });
-      else if(pts.length)placementMap.fitBounds(L.latLngBounds(pts),{
-        padding:[55,55],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
-      });
+      const target=bounds||(pts.length?L.latLngBounds(pts):null);
+      if(target?.isValid?.()){
+        placementMap.invalidateSize(false);
+        placementMap.fitBounds(target,{
+          padding:[42,42],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
+        });
+      }
     };
+    window.OrielFitCurrentMap=fitCurrentMap;
 
     const updateMapHeading=()=>{
       const region=activeRegion();
