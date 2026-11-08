@@ -140,8 +140,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.doesNotMatch(vectorVisibility.attribution,/\bLeaflet\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
     }else{
-      assert(mainTileSources.every(x=>{const url=new URL(x.url);return url.hostname==='api.maptiler.com'&&(url.pathname.includes('/maps/streets-v4/')||url.pathname.includes('/maps/streets-v4-dark/'))&&x.complete&&x.width>100}),
-        'MapTiler raster fallback tiles failed to load: '+JSON.stringify(mainTileSources.slice(0,3)));
+      const badFallbackTiles=mainTileSources.filter(x=>{
+        try{const url=new URL(x.url);return !(url.hostname==='api.maptiler.com'&&(url.pathname.includes('/maps/streets-v4/')||url.pathname.includes('/maps/streets-v4-dark/'))&&x.complete&&x.width>100&&x.height>100)}
+        catch{return true}
+      });
+      assert(mainTileSources.length>0&&badFallbackTiles.length===0,
+        'MapTiler raster fallback tiles failed to load: '+JSON.stringify({count:mainTileSources.length,bad:badFallbackTiles,all:mainTileSources}));
     }
     const vectorDiagnostic=await page.evaluate(()=>({
       adapterPresent:typeof window.L?.maplibreGL==='function',
@@ -180,13 +184,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
           const response=await fetch(window.OrielBasemap.styles[name]);
           const style=await response.json();
           const source=style.sources?.maptiler_planet_v4;
+          const casing=style.layers.find(layer=>layer.id==='Oriel editorial road casing');
+          const surface=style.layers.find(layer=>layer.id==='Oriel editorial road surface');
           return {sourceHost:new URL(source?.url||'https://invalid').hostname,
             roads:style.layers.filter(layer=>layer.id.startsWith('Oriel editorial road')).length,
+            casingZoomIsTopLevel:Array.isArray(casing?.paint?.['line-width'])&&casing.paint['line-width'][0]==='interpolate'&&casing.paint['line-width'][2]?.[0]==='zoom',
+            bridgeRoadsIncluded:JSON.stringify(casing?.filter||[]).includes('"tunnel"')&&!JSON.stringify(casing?.filter||[]).includes('"bridge"'),
             subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
             roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
         },styleName);
         assert.equal(styleAudit.sourceHost,'api.maptiler.com','The Editorial map is not using MapTiler vector data: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.casingZoomIsTopLevel,true,'Road casing uses an invalid nested zoom expression: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.bridgeRoadsIncluded,true,'Road bridges should remain visible above rivers: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
         assert(styleAudit.roadLabelsMinZoom<=13,'Road names are not visible at neighbourhood zoom');
       }
