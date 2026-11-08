@@ -89,7 +89,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
-    assert.match(pwaAudit.swScriptURL,/\\/sw\\.js\\?v=20261108atlas3$/,'Browser is still controlled by an outdated Placement Atlas service worker.');
+    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261108atlas3'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
     const pwaUpdateAudit=await page.evaluate(async()=>{
       const [pwaResponse,swResponse]=await Promise.all([
         fetch('pwa.js?v=20261108atlas3',{cache:'no-store'}),
