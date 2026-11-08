@@ -1,0 +1,54 @@
+/* Placement Atlas map controls, focus view and programme previews. */
+#placementMap{position:relative}
+.atlasMapZoom{position:absolute;z-index:1100;left:50%;bottom:17px;transform:translateX(-50%);display:flex;align-items:center;gap:0;padding:3px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.atlasMapZoom button{display:grid;place-items:center;width:42px;height:36px;border:0;border-radius:10px;background:transparent;color:var(--ink);font:600 23px/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;cursor:pointer;transition:background .16s ease,transform .16s ease}
+.atlasMapZoom button:hover{background:var(--ux-accent-soft);transform:scale(1.04)}
+.atlasMapZoom button:focus-visible,.atlasMapExpand:focus-visible,.atlasMapFocusClose:focus-visible{outline:3px solid var(--ux-accent);outline-offset:2px}
+.atlasMapZoom>span{width:1px;height:21px;background:var(--line)}
+.atlasMapExpand{position:absolute;right:16px;bottom:16px;z-index:1100;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.17);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.atlasMapExpand:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.atlasMapExpand svg{width:19px;height:19px}
+body.atlasMapFocusOpen{overflow:hidden}
+body.atlasMapFocusOpen .atlasMapExpand{display:none}
+.atlasMapFocus[hidden]{display:none!important}
+.atlasMapFocus{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:clamp(9px,2.2vw,30px);background:rgba(12,17,14,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.atlasMapFocusPanel{width:min(1500px,100%);height:min(920px,calc(100dvh - 48px));min-height:380px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:24px;background:var(--panel);color:var(--ink);box-shadow:0 32px 100px rgba(0,0,0,.35);animation:atlasMapPanelIn .2s ease-out}
+@keyframes atlasMapPanelIn{from{opacity:0;transform:translateY(9px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.atlasMapFocusHead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.atlasMapFocusHead>div{display:grid;gap:3px;min-width:0}
+.atlasMapFocusHead small{font-size:9px;letter-spacing:.14em;font-weight:850;color:var(--mut)}
+.atlasMapFocusHead strong{font-size:17px;letter-spacing:-.025em}
+.atlasMapFocusHead span{font-size:11px;color:var(--mut)}
+.atlasMapFocusClose{display:flex;align-items:center;gap:12px;flex:0 0 auto;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft);color:var(--ink);font-size:12px;font-weight:750;cursor:pointer}
+.atlasMapFocusClose span{font-size:18px;line-height:1}
+.atlasMapFocusStage{flex:1;min-height:0;padding:12px;background:var(--soft)}
+.atlasMapFocusStage #placementMap{width:100%;height:100%!important;min-height:0!important;border-radius:16px;overflow:hidden}
+.atlasProgrammePopup .leaflet-popup-content-wrapper{border:1px solid var(--line);border-radius:17px;background:var(--panel);color:var(--ink);box-shadow:0 14px 44px rgba(0,0,0,.22)}
+.atlasProgrammePopup .leaflet-popup-tip{background:var(--panel)}
+.atlasProgrammePopup .leaflet-popup-content{width:min(340px,calc(100vw - 72px))!important;max-height:min(62vh,430px);overflow:auto;margin:12px}
+.atlasPopupContent{min-width:0}
+.atlasPopupHead{display:grid;gap:3px;padding:1px 0 9px;border-bottom:1px solid var(--line)}
+.atlasPopupHead b{font-size:13px;line-height:1.35}
+.atlasPopupHead small{font-size:10px;color:var(--mut)}
+.atlasPopupList{display:grid;gap:0;padding-top:4px}
+.atlasPopupProgramme{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 0;border-bottom:1px solid var(--line)}
+.atlasPopupCopy{display:grid;gap:3px;min-width:0}
+.atlasPopupCopy b{font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.atlasPopupCopy small{font-size:10px;line-height:1.35;color:var(--mut);overflow-wrap:anywhere}
+.atlasPopupCopy span{font-size:10px;font-weight:750;color:var(--ink)}
+.atlasPopupOpen{flex:0 0 auto;padding:7px 9px;border:1px solid var(--ux-accent-border);border-radius:9px;background:var(--ux-accent-soft);color:var(--ux-accent-ink);font-size:10px;font-weight:850;cursor:pointer}
+.atlasPopupOpen:hover{filter:brightness(.97)}
+.atlasPopupMore,.map-approx-note{font-size:10px;line-height:1.45;color:var(--mut);margin:8px 0 0}
+@media(max-width:680px){
+ .atlasMapFocus{padding:7px}
+ .atlasMapFocusPanel{width:100%;height:calc(100dvh - 14px);min-height:0;border-radius:18px}
+ .atlasMapFocusHead{padding:12px 13px}
+ .atlasMapFocusHead strong{font-size:15px}
+ .atlasMapFocusClose{padding:8px 10px;font-size:11px}
+ .atlasMapFocusStage{padding:6px}
+ .atlasMapFocusStage #placementMap{border-radius:13px}
+ .atlasMapZoom{bottom:13px}
+ .atlasMapZoom button{width:39px;height:35px}
+ .atlasMapExpand{right:12px;bottom:12px;width:39px;height:39px}
+ .atlasProgrammePopup .leaflet-popup-content{width:min(300px,calc(100vw - 62px))!important;margin:10px}
+}
