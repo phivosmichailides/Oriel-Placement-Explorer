@@ -279,6 +279,20 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,null,{timeout:12000});
     const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
     const allRegionStatus=await page.locator('#mapStatus').innerText();
+    const locationCoverage=await page.evaluate(()=>{
+      const list=placements.filter(matches);
+      const missing=list.filter(p=>!p.postcodes.some(pc=>geo[pcKey(pc)]));
+      const unique=[...new Set(list.flatMap(p=>p.postcodes))];
+      return {
+        matching:list.length,
+        mapped:list.length-missing.length,
+        missingCount:missing.length,
+        uniquePostcodes:unique.length,
+        unresolvedPostcodes:unique.filter(pc=>!geo[pc]).length,
+        missing:missing.map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area,postcodes:p.postcodes})).slice(0,100)
+      };
+    });
+    console.log('ALL-REGIONS LOCATION COVERAGE:',JSON.stringify(locationCoverage));
     assert(allRegionPins>100,
       'England & Wales mode has too few map pins: '+allRegionPins+' ('+allRegionStatus+')');
     assert(!await page.evaluate(()=>quick.has('london')||document.getElementById('region').value==='London'),
