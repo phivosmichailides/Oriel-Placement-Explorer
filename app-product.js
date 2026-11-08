@@ -47,51 +47,120 @@
     };
     const scopeName=()=>activeRegion()||'England & Wales';
 
-    // Locate a small, focused batch, never 3,900+ postcodes automatically.
-    // Bundled coordinates paint immediately; new pins appear progressively.
+    // Resolve every missing location code for the current scope in one run.
+    // Full postcodes use the bulk endpoint (100 per request); outcodes use
+    // postcode.io's district centroid and are labelled approximate on the map.
     const resolveScopePins=async()=>{
       if(geoBusy||typeof geo==='undefined')return;
       const region=activeRegion();
       const source=region?scopePlacements():placements.filter(matches);
-      const missing=[...new Set(source.flatMap(p=>p.postcodes.map(pcKey)))].filter(pc=>!geo[pc]);
-      if(!missing.length){drawMap(placements.filter(matches));return;}
-      const limit=240;
-      const pcs=missing.slice(0,limit);
+      const hasGeo=key=>Object.prototype.hasOwnProperty.call(geo,key);
+      const postcodes=[...new Set(source.flatMap(p=>(p.postcodes||[]).map(pcKey)))];
+      const outcodes=[...new Set(source.flatMap(p=>(p.outcodes||[]).map(x=>String(x).toUpperCase())))];
+      const missingPostcodes=postcodes.filter(pc=>!hasGeo(pc));
+      const missingOutcodes=outcodes.filter(oc=>!hasGeo('@OUTCODE:'+oc));
+      const total=missingPostcodes.length+missingOutcodes.length;
+      if(!total){
+        drawMap(placements.filter(matches));
+        toast('All available postcode and outcode locations are already checked.');
+        return;
+      }
+
       geoBusy=true;
       const locateButton=$('locateBtn');
-      if(locateButton)locateButton.disabled=true;
-      let completed=0,located=0;
+      const originalLabel=locateButton?.textContent||'Locate all sites';
+      if(locateButton){locateButton.disabled=true;locateButton.textContent='Locating…';locateButton.setAttribute('aria-busy','true');}
+      const status=$('mapStatus');
+      let completed=0,located=0,unmatched=0,next=0,nextRenderAt=400;
+      const failed=[];
+      const jobs=[];
+      for(let i=0;i<missingPostcodes.length;i+=100)jobs.push({type:'postcode',values:missingPostcodes.slice(i,i+100)});
+      for(const outcode of missingOutcodes)jobs.push({type:'outcode',value:outcode});
+      const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+      const request=async(url,options={})=>{
+        let lastError;
+        for(let attempt=0;attempt<3;attempt++){
+          try{
+            const response=await fetch(url,{...options,signal:AbortSignal.timeout(15000)});
+            if(!response.ok){
+              const retryable=response.status===429||response.status>=500;
+              if(retryable&&attempt<2){await delay(500*(attempt+1));continue;}
+              throw Error('Location service returned '+response.status);
+            }
+            return await response.json();
+          }catch(error){
+            lastError=error;
+            if(attempt<2)await delay(450*(attempt+1));
+          }
+        }
+        throw lastError||Error('Location lookup failed');
+      };
+
+      const processJob=async job=>{
+        if(job.type==='postcode'){
+          const data=await request('https://api.postcodes.io/postcodes',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({postcodes:job.values})
+          });
+          const returned=new Set();
+          (Array.isArray(data.result)?data.result:[]).forEach(item=>{
+            const key=pcKey(item.query||'');
+            if(!key)return;
+            returned.add(key);
+            const point=item.result;
+            if(point&&Number.isFinite(Number(point.latitude))&&Number.isFinite(Number(point.longitude))){
+              geo[key]=[Number(point.latitude),Number(point.longitude)];located++;
+            }else{geo[key]=null;unmatched++;}
+          });
+          job.values.forEach(key=>{if(!returned.has(key)){geo[key]=null;unmatched++;}});
+        }else{
+          const key='@OUTCODE:'+job.value;
+          const data=await request('https://api.postcodes.io/outcodes/'+encodeURIComponent(job.value));
+          const point=data.result;
+          if(point&&Number.isFinite(Number(point.latitude))&&Number.isFinite(Number(point.longitude))){
+            geo[key]=[Number(point.latitude),Number(point.longitude)];located++;
+          }else{geo[key]=null;unmatched++;}
+        }
+      };
+
+      const worker=async()=>{
+        while(next<jobs.length){
+          const job=jobs[next++];
+          try{await processJob(job);}
+          catch(error){
+            const keys=job.type==='postcode'?job.values:['@OUTCODE:'+job.value];
+            failed.push(...keys);
+            console.warn('Location batch could not be resolved',error);
+          }
+          completed+=job.type==='postcode'?job.values.length:1;
+          if(status)status.textContent='Locating all training sites · '+completed.toLocaleString()+' of '+total.toLocaleString()+' location codes checked';
+          if(completed>=nextRenderAt||completed===total){
+            drawMap(placements.filter(matches));
+            try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
+            nextRenderAt+=400;
+          }
+        }
+      };
+
       try{
-        const batches=[];
-        for(let i=0;i<pcs.length;i+=80)batches.push(pcs.slice(i,i+80));
-        // At most three postcode.io calls in parallel, and only when needed.
-        await Promise.all(batches.map(async batch=>{
-          const r=await fetch('https://api.postcodes.io/postcodes',{
-            method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({postcodes:batch}),signal:AbortSignal.timeout(11000)
-          });
-          if(!r.ok)throw Error('postcode service unavailable');
-          const j=await r.json();
-          (j.result||[]).forEach(x=>{
-            if(x.result){geo[pcKey(x.query)]=[x.result.latitude,x.result.longitude];located++;}
-          });
-          completed+=batch.length;
-          $('mapStatus').textContent=`Adding map pins · ${completed} of ${pcs.length} checked`;
-        }));
+        await Promise.all(Array.from({length:Math.min(4,jobs.length)},worker));
         try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
         drawMap(placements.filter(matches));
         document.dispatchEvent(new CustomEvent('desk:locations-updated'));
-        const remaining=Math.max(0,missing.length-pcs.length);
-        toast(remaining?`Added ${located} locations. Use Locate missing for the next batch.`:`Added ${located} map locations.`);
-      }catch{
-        drawMap(placements.filter(matches));
-        $('mapStatus').textContent='Some locations could not be added. Existing pins are available; retry Locate missing.';
+        if(failed.length)toast(located.toLocaleString()+' locations added; '+failed.length.toLocaleString()+' codes need a retry.');
+        else if(unmatched)toast(located.toLocaleString()+' locations added; '+unmatched.toLocaleString()+' invalid codes could not be matched.');
+        else toast('All '+(postcodes.length+outcodes.length).toLocaleString()+' location codes are mapped.');
+      }catch(error){
+        console.error('Location resolution failed',error);
+        if(status)status.textContent='Location lookup was interrupted. Existing map pins are still available; retry Locate all sites.';
+        toast('Location lookup was interrupted. You can retry without losing completed locations.');
       }finally{
         geoBusy=false;
-        if(locateButton)locateButton.disabled=false;
+        if(locateButton){locateButton.disabled=false;locateButton.textContent=originalLabel;locateButton.removeAttribute('aria-busy');}
       }
     };
-
     areaPref=p=>{
       const selected=state.prefs.onboarding?.region||'';
       const t=`${p.title} ${p.area}`.toLowerCase();
@@ -194,14 +263,13 @@
 
     const refreshScope=async({locate=false}={})=>{
       stats();explore();reco();
+      const region=activeRegion();
       const mapTitle=document.querySelector('.map-heading h2');
-      if(mapTitle)mapTitle.textContent=activeRegion()?`See where you could work in ${activeRegion()}`:'See where you could work across England & Wales';
+      if(mapTitle)mapTitle.textContent=region?'See where you could work in '+region:'See where you could work across England & Wales';
       const mapEyebrow=document.querySelector('.map-heading .eyebrow');
-      if(mapEyebrow)mapEyebrow.textContent=activeRegion()?`${activeRegion().toUpperCase()} PROGRAMMES`:'ENGLAND & WALES PROGRAMMES';
-      if(locate&&activeRegion()){
-        try{await resolveScopePins()}catch{}
-        setTimeout(fitCurrentMap,100);
-      }else setTimeout(fitCurrentMap,100);
+      if(mapEyebrow)mapEyebrow.textContent=region?region.toUpperCase()+' PROGRAMMES':'ENGLAND & WALES PROGRAMMES';
+      if(locate){try{await resolveScopePins()}catch{}}
+      setTimeout(fitCurrentMap,100);
     };
 
     const injectProductIntro=()=>{
@@ -236,15 +304,24 @@
     // The canonical public footer is owned by index.html; do not overwrite it.
 
     const regionEl=$('region');
-    regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;refreshScope({locate:!!regionEl.value});});
-    document.querySelector('[data-q="london"]')?.addEventListener('click',()=>{if(quick.has('london'))regionEl.value='';setTimeout(()=>refreshScope({locate:false}),0);});
-    $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;refreshScope({locate:false});});
+    regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;refreshScope({locate:true});});
+    document.querySelector('[data-q="london"]')?.addEventListener('click',()=>{if(quick.has('london'))regionEl.value='';setTimeout(()=>refreshScope({locate:true}),0);});
+    $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;refreshScope({locate:true});});
     if($('locateBtn'))$('locateBtn').onclick=resolveScopePins;
-    $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;if($('hideShortlisted')){$('hideShortlisted').checked=false;$('hideShortlisted').dispatchEvent(new Event('change',{bubbles:true}))}$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:false});};
+    $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;if($('hideShortlisted')){$('hideShortlisted').checked=false;$('hideShortlisted').dispatchEvent(new Event('change',{bubbles:true}))}$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:true});};
 
     ['salary','hours'].forEach(id=>$(id).addEventListener('change',reco));
     injectProductIntro();injectContextStrip();
     try{renderAll();setTimeout(()=>placementMap?.invalidateSize(),0);}catch{}
+    // Fill the active scope automatically once data, map and grouped pins are ready.
+    let autoLocateChecks=0;
+    const autoLocateTimer=setInterval(()=>{
+      autoLocateChecks++;
+      if(placements.length&&placementMap&&window.__sectorPinsInstalled&&!geoBusy){
+        clearInterval(autoLocateTimer);
+        resolveScopePins();
+      }else if(autoLocateChecks>80)clearInterval(autoLocateTimer);
+    },250);
   };
 
   base.onerror=()=>{const r=document.getElementById('results');if(r)r.innerHTML='<div class="errorBox"><b>Could not load the Placement Desk logic.</b><br>Refresh the page. If this persists, open the legacy explorer from Preferences.</div>';};
