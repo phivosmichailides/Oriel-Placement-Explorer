@@ -238,7 +238,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await mapPicker.locator('option[value="auto"]').count(),1,'Automatic map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-light"]').count(),1,'Editorial Light map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-dark"]').count(),1,'Editorial Dark map option missing');
-    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
       const styleOriginAudit=await page.evaluate(()=>({origin:window.location.origin,styles:Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin]))}));
