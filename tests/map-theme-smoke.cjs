@@ -151,7 +151,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Editorial road names are not enabled at neighbourhood zoom');
     assert.equal(editorialStyleForDesign.layers.filter(layer=>layer.type==='fill-extrusion').length,0,
       'Editorial Light should not render 3D building extrusions');
-    const designCoverage=await page.evaluate(async()=>{
+    const designCoverage=await page.evaluate(async editorialStyleForDesign=>{
       const darkResponse=await fetch(window.OrielBasemap.styles['editorial-dark']);
       const boroughResponse=await fetch(new URL('data/london-borough-labels.geojson',location.href));
       if(!darkResponse.ok||!boroughResponse.ok)throw Error('Could not load dark map style or London borough labels');
