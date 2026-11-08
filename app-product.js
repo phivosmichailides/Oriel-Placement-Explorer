@@ -270,9 +270,13 @@
 
     const fitCurrentMap=()=>{
       if(!mapLayer||!placementMap)return;
+      const bounds=window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds:null;
       const pts=mapLayer.getLayers().map(l=>l.getLatLng());
-      if(pts.length)placementMap.fitBounds(L.latLngBounds(pts),{
-        padding:[30,30],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
+      if(bounds)placementMap.fitBounds(bounds,{
+        padding:[55,55],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
+      });
+      else if(pts.length)placementMap.fitBounds(L.latLngBounds(pts),{
+        padding:[55,55],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
       });
     };
 
