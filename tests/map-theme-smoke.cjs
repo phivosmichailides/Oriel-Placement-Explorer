@@ -86,7 +86,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const manifestLink=document.querySelector('link[rel="manifest"]');
       const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
       if(!manifestLink||!faviconLink)throw Error('Manifest or SVG favicon link is missing');
-      const registration=await navigator.serviceWorker.getRegistration();
+      const registration=await navigator.serviceWorker.ready;
       return {title:document.title,manifestHref:manifestLink.href,faviconHref:faviconLink.href,
         swScope:registration?.scope||null,swState:registration?.active?.state||null,
         swScriptURL:registration?.active?.scriptURL||null,
