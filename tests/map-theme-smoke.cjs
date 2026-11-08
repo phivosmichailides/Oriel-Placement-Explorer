@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube3')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial10')&&(await page.content()).includes('sector-map.js?v=20261108mapcoverage8')&&(await page.content()).includes('map-basemap.js?v=20261108editorial9')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas1')&&(await page.content()).includes('sector-map.js?v=20261108atlas1')&&(await page.content()).includes('map-basemap.js?v=20261108atlas1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -64,10 +64,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage10$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108atlas1$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
-    assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
+    assert.match(footer,/^Placement Atlas · Pharmacy Foundation Programme catalogue:/,
       'Expected independent product footer is not rendered');
     assert.doesNotMatch(footer,/based on|original explorer|forked from/i,
       'Obsolete footer attribution was injected at runtime');
@@ -83,6 +83,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     });
     assert.equal(catalogue.origin,'oriel-owner-export-2026','The live site fell back to inherited legacy.html');
     assert.equal(catalogue.count,4064,'Programme count mismatched the uploaded Oriel export');
+    assert.equal(await page.locator('#decision').inputValue(),'all','Fresh Explore should start with all decision states included');
+    assert.equal(await page.locator('#region').inputValue(),'','Fresh Explore should not apply a region filter by default');
+    assert.equal(await page.evaluate(()=>quick.size),0,'Fresh Explore should not apply hidden quick filters by default');
+    assert.equal(await page.locator('#mapScope').count(),0,'Map scope should no longer be independently selectable');
+    assert.match(await page.locator('#count').innerText(),/4,064 total programmes · 4,064 shown/,'Results should show both the catalogue total and current matching count');
+    assert.match(await page.locator('link[rel="icon"]').getAttribute('href'),/favicon\.svg/,'Placement Atlas favicon is missing');
     assert.equal(catalogue.regions,12,'Expected the 12 Oriel England & Wales regions');
     assert(catalogue.sample,'A known programme ID changed and could detach saved applicant selections');
 
@@ -110,6 +116,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Editorial style is missing the designed road network');
     assert(editorialStyleForDesign.layers.some(layer=>layer.id==='Road labels'&&layer.minzoom<=13),
       'Editorial road names are not enabled at neighbourhood zoom');
+    assert.equal(editorialStyleForDesign.layers.filter(layer=>layer.type==='fill-extrusion').length,0,
+      'Editorial Light should not render 3D building extrusions');
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
@@ -205,7 +213,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
             boroughCityFilter:style.layers.find(layer=>layer.id==='City labels')?.filter,
             boroughCityDuplicatesRemoved:['London','Westminster','City of London'].every(name=>JSON.stringify(style.layers.find(layer=>layer.id==='City labels')?.filter||[]).includes(name)),
             subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
-            roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
+            roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom,
+             fillExtrusionLayers:style.layers.filter(layer=>layer.type==='fill-extrusion').map(layer=>layer.id)};
         },styleName);
         assert.equal(styleAudit.sourceHost,'api.maptiler.com','The Editorial map is not using MapTiler vector data: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
@@ -231,6 +240,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         }
         assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
         assert(styleAudit.roadLabelsMinZoom<=11.5,'Road names are not visible at neighbourhood zoom');
+         assert.deepEqual(styleAudit.fillExtrusionLayers,[],'Editorial style still contains unnecessary 3D building layers');
       }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
@@ -449,7 +459,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return status.includes('location codes resolved')&&
         !status.includes('codes still need locating')&&
         !status.includes('no postcode/outcode in the source')&&
-        stats?.scope==='all'&&stats.programmes===4064&&
+        stats?.scope==='matching'&&stats.programmes===4064&&
         stats.programmesRepresented===4064&&stats.programmesWithAllSites===4064&&
         placementMap.getZoom()<=7.5&&full?.isValid?.()&&placementMap.getBounds().contains(full);
     },null,{timeout:90000});
@@ -519,10 +529,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.locator('#placementMap').screenshot({path:output+'/map-london-neighbourhood.png'});
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
     await sleep(700);
-    // Exercise shared-location grouping in Matching results mode so the
-    // synthetic fixtures are not intentionally overridden by the All programmes scope.
-    await page.locator('#mapScope').selectOption('matching');
-    await page.waitForFunction(()=>window.OrielMapScope==='matching');
+    // Exercise shared-location grouping. The map now always uses the same
+    // filtered dataset as Explore, including synthetic test fixtures.
     const groupPinCheck=await page.evaluate(()=>{
       const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
       if(!sample)return null;
@@ -532,13 +540,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const marker=document.querySelector('#placementMap .oriel-group-marker');
       const count=Number(marker?.dataset.programmeCount||marker?.querySelector('.oriel-group-count')?.dataset.programmeCount||0);
       marker?.click();
-      const expanded=document.querySelectorAll('#mapSelection .placement').length;
+      const expanded=document.querySelectorAll('.atlasProgrammePopup .atlasPopupProgramme').length;
+      const hasOpenAction=!!document.querySelector('.atlasProgrammePopup [data-open]');
       drawMap(placements.filter(matches));
-      return {count,expanded};
+      return {count,expanded,hasOpenAction};
     });
-    assert.deepEqual(groupPinCheck,{count:3,expanded:3},'Shared-location pins do not expand to every programme');
-    await page.locator('#mapScope').selectOption('all');
-    await page.waitForFunction(()=>window.OrielMapScope==='all');
+    assert.deepEqual(groupPinCheck,{count:3,expanded:3,hasOpenAction:true},'Shared-location pins do not open a programme preview for every programme');
 
     // Reproduce a persisted failed postcode lookup: null must be retried and
     // its outcode centroid must be used instead of silently marking it done.
@@ -547,14 +554,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       delete geo['@OUTCODE:TN25'];
       try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
     });
-    const mapScope=page.locator('#mapScope');
-    assert.equal(await mapScope.inputValue(),'all','The map should show the complete catalogue by default');
-    await mapScope.selectOption('matching');
     await page.locator('#locateBtn').click();
-    assert.equal(await mapScope.inputValue(),'all','Locate all sites should switch the map to the complete catalogue');
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
-      return window.OrielMapScope==='all'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
+      return window.OrielMapScope==='matching'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
     },null,{timeout:90000});
     const allCatalogueCoverage=await page.evaluate(()=>{
       const codes=p=>{
@@ -575,9 +578,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(allCatalogueCoverage.count,4064,'All-programmes map scope must use the complete catalogue');
     assert.equal(allCatalogueCoverage.missing,0,'All-programmes map scope still has unmapped sites: '+JSON.stringify(allCatalogueCoverage));
     assert.match(allCatalogueCoverage.status,/4,064 of 4,064 programmes have all listed sites mapped/,'All-catalogue map status does not report complete coverage');
-    assert.match(allCatalogueCoverage.title,/entire programme catalogue/,'All-catalogue map does not explain that filters are bypassed');
+    assert.match(allCatalogueCoverage.title,/current filters.*full catalogue is shown/,'Map does not explain that the complete catalogue is shown when no filters are active');
     assert(Array.isArray(allCatalogueCoverage.fallback),'A persisted null postcode was not retried and resolved via its outcode');
-    await mapScope.selectOption('matching');
     await page.waitForFunction(()=>window.OrielMapScope==='matching'&&document.getElementById('mapStatus')?.title.includes('current filters'));
 
     // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
@@ -616,10 +618,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await sidebarButton.getAttribute('aria-expanded'),sidebarFirst,
       'Sidebar could not be reopened from the results toolbar');
     await page.locator('#uxHideExcludedBtn').click();
-    assert(!(await page.locator('#hideExcluded').isChecked()),
-      'Show excluded toolbar toggle did not update the canonical filter');
+    assert(await page.locator('#hideExcluded').isChecked(),'Hide excluded could not be enabled');
     await page.locator('#uxHideExcludedBtn').click();
-    assert(await page.locator('#hideExcluded').isChecked(),'Hide excluded could not be reenabled');
+    assert(!(await page.locator('#hideExcluded').isChecked()),'Hide excluded could not be disabled');
     await page.locator('#uxResultsSort').selectOption('salary');
     await page.waitForTimeout(500);
     assert.equal(await page.locator('#sort').inputValue(),'salary',
