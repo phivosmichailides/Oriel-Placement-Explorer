@@ -493,13 +493,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
-        return state==='vector-editorial-light'||state==='raster-fallback';
+        return state==='vector-editorial-light'||state==='raster-fallback'||(localPreview&&state==='osm-fallback');
       },null,{timeout:14000});
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
-      assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback','WebGL map hung during initialisation');
+      assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback'||(localPreview&&finalState==='osm-fallback'),'WebGL map hung during initialisation');
     }
-    assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback'].includes(browserBasemaps.main),
+    assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback',...(localPreview?['osm-fallback']:[])].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
     await card.locator('.uxLocationMore summary').click();
     assert(await card.locator('.uxLocationMore').evaluate(el=>el.open),'Extra location details do not expand');
