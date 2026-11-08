@@ -49,7 +49,7 @@ test('maps use independent third-party map libraries and retain data credits', (
   assert.match(basemap, /streets-v4-dark/);
   assert.match(basemap, /OpenStreetMap contributors/);
   assert.doesNotMatch(basemap, /openfreemap\.org\/styles/);
-  assert.match(basemap, /oriel-basemap-style-v1/);
+  assert.match(basemap, /oriel-basemap-style-v2/);
 });
 
 test('public files document historical provenance, not a fictional authorship claim', () => {
