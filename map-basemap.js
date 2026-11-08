@@ -122,12 +122,22 @@ const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([na
         overflow:'hidden'
       });
       document.body.appendChild(miniRendererHost);
+      // Start at the already-loaded main-map view so MapTiler's style,
+      // sprites and overlapping vector tiles can be reused from browser cache.
+      const mainRecord=[...instances].find(record=>record.leaflet.getContainer()?.id==='placementMap'&&record.map);
+      const mainCenter=mainRecord?.map.getCenter();
+      const initialCenter=mainCenter?[mainCenter.lng,mainCenter.lat]:[-.1278,51.5074];
+      const initialZoom=mainRecord&&Number.isFinite(mainRecord.map.getZoom())?mainRecord.map.getZoom():10;
       miniRenderer=new window.maplibregl.Map({
         container:miniRendererHost,
         style:style(),
-        center:[0,0],zoom:1,
+        center:initialCenter,zoom:initialZoom,
         interactive:false,
         attributionControl:false,
+        fadeDuration:0,
+        refreshExpiredTiles:false,
+        maxTileCacheSize:48,
+        maxTileCacheZoomLevels:2,
         canvasContextAttributes:{
           alpha:true,antialias:false,preserveDrawingBuffer:true,
           powerPreference:'low-power'
