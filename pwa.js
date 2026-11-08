@@ -42,15 +42,49 @@
   window.addEventListener('online',syncConnection);
   window.addEventListener('offline',syncConnection);
   syncConnection();
+
   if('serviceWorker'in navigator&&/^https?:$/.test(location.protocol)){
+    let pendingControllerRefresh=false,refreshStarted=false;
+    const userIsEditing=()=>{
+      const active=document.activeElement;
+      return !!active?.matches?.('input:not([type="button"]):not([type="submit"]):not([type="file"]),textarea,select,[contenteditable="true"]');
+    };
+    const refreshAfterControllerChange=()=>{
+      if(!pendingControllerRefresh||refreshStarted||document.hidden||userIsEditing())return;
+      pendingControllerRefresh=false;
+      refreshStarted=true;
+      window.location.reload();
+    };
+    // skipWaiting() + clients.claim() activates the new shell immediately.
+    // Reload the old document as soon as that new worker takes control, but
+    // never interrupt someone who is actively editing a field.
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(!navigator.serviceWorker.controller)return;
+      pendingControllerRefresh=true;
+      toast('Placement Atlas has updated. Refreshing…');
+      refreshAfterControllerChange();
+    });
+    document.addEventListener('focusout',()=>Promise.resolve().then(refreshAfterControllerChange),true);
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden)refreshAfterControllerChange();
+    });
+
+    const checkForUpdate=registration=>{
+      if(navigator.onLine!==false)registration.update().catch(()=>{});
+    };
     window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./sw.js',{scope:'./'})
+      navigator.serviceWorker.register('./sw.js?v=20261108atlas3',{scope:'./',updateViaCache:'none'})
         .then(registration=>{
-          registration.update().catch(()=>{});
+          checkForUpdate(registration);
+          window.addEventListener('online',()=>checkForUpdate(registration));
+          document.addEventListener('visibilitychange',()=>{
+            if(!document.hidden)checkForUpdate(registration);
+          });
           registration.addEventListener('updatefound',()=>{
             const worker=registration.installing;
             if(worker)worker.addEventListener('statechange',()=>{
-              if(worker.state==='installed'&&navigator.serviceWorker.controller)toast('A Placement Atlas update is ready. Refresh when convenient.');
+              if(worker.state==='installed'&&navigator.serviceWorker.controller)
+                toast('A Placement Atlas update is ready.');
             });
           });
         })
