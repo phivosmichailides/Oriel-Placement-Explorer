@@ -1,4 +1,4 @@
-name: Oriel placement map and theme smoke
+name: Placement Atlas map and theme smoke
 on:
   push:
     branches: [main]
@@ -6,6 +6,22 @@ on:
       - 'index.html'
       - '*.js'
       - '*.css'
+      - 'locations.json'
+      - 'tests/map-theme-smoke.cjs'
+      - 'tests/catalogue-parser.test.cjs'
+      - 'tests/independence.test.cjs'
+      - 'tests/research.test.js'
+      - 'tests/shortlist.test.js'
+      - 'data/**'
+      - '.github/workflows/map-theme-smoke.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'favicon.svg'
+      - 'map-styles/**'
       - 'locations.json'
       - 'tests/map-theme-smoke.cjs'
       - 'tests/catalogue-parser.test.cjs'
@@ -35,10 +51,13 @@ jobs:
         run: npm install --no-save playwright@1.56.1
       - name: Install test browser and dependencies
         run: npx playwright install --with-deps chromium
+      - name: Serve pull request build
+        if: github.event_name == 'pull_request'
+        run: python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/placement-atlas-http.log 2>&1 &
       - name: Validate deployed UI
         run: node tests/map-theme-smoke.cjs
         env:
-          TARGET: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          TARGET: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:8000/' || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v6
