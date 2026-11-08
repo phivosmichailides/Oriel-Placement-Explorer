@@ -40,7 +40,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       };
       if(url.pathname==='/postcodes'&&route.request().method()==='POST'){
         const body=JSON.parse(route.request().postData()||'{}');
-        const result=(body.postcodes||[]).map(code=>({query:code,result:point(code)}));
+        const result=(body.postcodes||[]).map(code=>({query:code,result:String(code).replace(/\\s/g,'').toUpperCase()==='TN250LZ'?null:point(code)}));
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result})});
       }else if(url.pathname.startsWith('/outcodes/')){
         const code=decodeURIComponent(url.pathname.split('/').pop());
@@ -337,6 +337,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(locationCoverage.missingProgrammes,0,'Some matching programmes still have an unmapped site: '+JSON.stringify(locationCoverage));
     assert.equal(locationCoverage.unresolvedLocationCodes,0,'Some postcode/outcode codes remain unresolved: '+JSON.stringify(locationCoverage));
     assert.equal(locationCoverage.programmesWithoutLocationCodes.length,0,'Some programmes have no usable location code: '+JSON.stringify(locationCoverage.programmesWithoutLocationCodes));
+    assert(await page.evaluate(()=>Array.isArray(geo['@OUTCODE:TN25'])),'A postcode with no exact match did not fall back to its postcode-district centre');
     assert(geocodeRequests>0,'The all-regions action did not call the location resolver');
     // A shared coordinate must show a count and expand to every programme.
     const groupPinCheck=await page.evaluate(()=>{
