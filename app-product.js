@@ -80,7 +80,7 @@
       for(const outcode of missingOutcodes)jobs.push({type:'outcode',value:outcode});
       const scheduledOutcodes=new Set(missingOutcodes);
       const queueOutcodeFallback=postcode=>{
-        const outward=(postcode.match(/^[A-Z]{1,2}\\d[A-Z\\d]?/)||[])[0];
+        const outward=(postcode.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[])[0];
         if(!outward||hasGeo('@OUTCODE:'+outward)||scheduledOutcodes.has(outward))return;
         scheduledOutcodes.add(outward);jobs.push({type:'outcode',value:outward});total++;
       };
