@@ -1472,59 +1472,7 @@
         ]
       ]
     },
-    {
-      "id": "Ferry line",
-      "type": "line",
-      "source": "maptiler_planet_v4",
-      "source-layer": "ferry",
-      "minzoom": 6,
-      "layout": {
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "#8dbec7",
-        "line-dasharray": [
-          2,
-          2
-        ],
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          6,
-          0.8,
-          12,
-          1
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1
-          ],
-          [
-            "zoom"
-          ],
-          10,
-          0.8,
-          14,
-          1.1
-        ]
-      },
-      "filter": [
-        "==",
-        [
-          "geometry-type"
-        ],
-        "LineString"
-      ]
-    },
-    {
+        {
       "id": "Cycleway tunnel outline",
       "type": "line",
       "source": "maptiler_planet_v4",
