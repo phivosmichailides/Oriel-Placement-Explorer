@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube3')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial9')&&(await page.content()).includes('sector-map.js?v=20261108mapcoverage7')&&(await page.content()).includes('map-basemap.js?v=20261108editorial11')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube3')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial9')&&(await page.content()).includes('sector-map.js?v=20261108mapcoverage7')&&(await page.content()).includes('map-basemap.js?v=20261108editorial11')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -514,7 +514,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.locator('#placementMap').screenshot({path:output+'/map-london-neighbourhood.png'});
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
     await sleep(700);
-    // A shared coordinate must show a count and expand to every programme.
+    // Exercise shared-location grouping in Matching results mode so the
+    // synthetic fixtures are not intentionally overridden by the All programmes scope.
+    await page.locator('#mapScope').selectOption('matching');
+    await page.waitForFunction(()=>window.OrielMapScope==='matching');
     const groupPinCheck=await page.evaluate(()=>{
       const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
       if(!sample)return null;
@@ -529,6 +532,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return {count,expanded};
     });
     assert.deepEqual(groupPinCheck,{count:3,expanded:3},'Shared-location pins do not expand to every programme');
+    await page.locator('#mapScope').selectOption('all');
+    await page.waitForFunction(()=>window.OrielMapScope==='all');
 
     // Reproduce a persisted failed postcode lookup: null must be retried and
     // its outcode centroid must be used instead of silently marking it done.
