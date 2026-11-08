@@ -324,6 +324,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         missingProgrammes:missing.length,
         uniqueLocationCodes:unique.length,
         unresolvedLocationCodes:unique.filter(code=>!Array.isArray(geo[code])).length,
+        unresolvedCodes:unique.filter(code=>!Array.isArray(geo[code])),
+        missingDetails:missing.map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,postcodes:p.postcodes,outcodes:p.outcodes,codes:codes(p)})),
         programmesWithoutLocationCodes:list.filter(p=>!codes(p).length).map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area})),
         partiallyMappedProgrammes:list.filter(p=>codes(p).some(code=>Array.isArray(geo[code]))&&codes(p).some(code=>!Array.isArray(geo[code]))).length
       };
