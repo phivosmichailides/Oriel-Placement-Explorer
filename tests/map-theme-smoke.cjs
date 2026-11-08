@@ -140,8 +140,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.doesNotMatch(vectorVisibility.attribution,/\bLeaflet\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
     }else{
-      assert(mainTileSources.every(x=>new URL(x.url).hostname==='tile.openstreetmap.org'&&x.complete&&x.width>100),
-        'Fallback map tiles failed to load: '+JSON.stringify(mainTileSources.slice(0,3)));
+      assert(mainTileSources.every(x=>{const url=new URL(x.url);return url.hostname==='api.maptiler.com'&&(url.pathname.includes('/maps/streets-v4/')||url.pathname.includes('/maps/streets-v4-dark/'))&&x.complete&&x.width>100}),
+        'MapTiler raster fallback tiles failed to load: '+JSON.stringify(mainTileSources.slice(0,3)));
     }
     const vectorDiagnostic=await page.evaluate(()=>({
       adapterPresent:typeof window.L?.maplibreGL==='function',
