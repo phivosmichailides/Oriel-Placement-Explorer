@@ -24,7 +24,7 @@
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261108mapcoverage4';
+      sectors.src='sector-map.js?v=20261108mapcoverage5';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
