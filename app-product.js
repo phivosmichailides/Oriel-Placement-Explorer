@@ -276,19 +276,20 @@
       const region=activeRegion();
       const title=document.querySelector('.map-heading h2');
       const eyebrow=document.querySelector('.map-heading .eyebrow');
-      if(title)title.textContent=region?`See where you could work in ${region}`:'See where you could work across England & Wales';
-      if(eyebrow)eyebrow.textContent=region?`${region.toUpperCase()} PROGRAMMES`:'ENGLAND & WALES PROGRAMMES';
+      if(window.OrielMapScope==='all'){
+        if(title)title.textContent='Explore all programme locations across England & Wales';
+        if(eyebrow)eyebrow.textContent=placements.length.toLocaleString()+' PROGRAMMES · ALL REGIONS';
+      }else{
+        if(title)title.textContent=region?`See where you could work in ${region}`:'See where you could work across England & Wales';
+        if(eyebrow)eyebrow.textContent=region?`${region.toUpperCase()} PROGRAMMES`:'ENGLAND & WALES PROGRAMMES';
+      }
     };
     const baseExplore=explore;
     explore=()=>{baseExplore();updateMapHeading();};
 
     const refreshScope=async({locate=false}={})=>{
       stats();explore();reco();
-      const region=activeRegion();
-      const mapTitle=document.querySelector('.map-heading h2');
-      if(mapTitle)mapTitle.textContent=region?'See where you could work in '+region:'See where you could work across England & Wales';
-      const mapEyebrow=document.querySelector('.map-heading .eyebrow');
-      if(mapEyebrow)mapEyebrow.textContent=region?region.toUpperCase()+' PROGRAMMES':'ENGLAND & WALES PROGRAMMES';
+      updateMapHeading();
       if(locate){try{await resolveScopePins()}catch{}}
       setTimeout(fitCurrentMap,100);
     };
