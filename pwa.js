@@ -14,7 +14,7 @@
   let deferredPrompt=null;
   if(button){
     if(standalone())button.hidden=true;
-    else if(ios||safariDesktop)button.hidden=false;
+    else{button.hidden=false;button.title='Install Placement Atlas on this device';}
     window.addEventListener('beforeinstallprompt',event=>{
       event.preventDefault();deferredPrompt=event;button.hidden=false;
       const label=button.querySelector('span');if(label)label.textContent='Install app';
@@ -33,7 +33,8 @@
       }
       if(ios)toast('To install: tap Share in Safari, then choose Add to Home Screen.');
       else if(safariDesktop)toast('In Safari, choose File → Add to Dock to install Placement Atlas.');
-      else toast('Open your browser menu and choose Install Placement Atlas or Create shortcut.');
+      else if(/Firefox/i.test(navigator.userAgent))toast('For app-style installation, open Placement Atlas in Chrome or Edge. On mobile Safari, use Share → Add to Home Screen.');
+      else toast('Open your browser menu and choose Install Placement Atlas or Add to Home Screen.');
     });
     window.addEventListener('appinstalled',()=>{button.hidden=true;toast('Placement Atlas has been installed.');});
   }
