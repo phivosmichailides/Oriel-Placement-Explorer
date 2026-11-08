@@ -293,7 +293,7 @@ const STYLES=Object.freeze({
       if(record.overlay){try{map.removeLayer(record.overlay)}catch{}record.overlay=null;}
       if(holder.isConnected){
         const message=String(error?.message||error||'');
-        if(/\\b403\\b|forbidden|unauthori/i.test(message))osmFallback(map,'MapTiler rejected the mini-map request. '+message);
+        if(/\b403\b|forbidden|unauthori/i.test(message))osmFallback(map,'MapTiler rejected the mini-map request. '+message);
         else raster(map);
       }
     }).finally(()=>{
