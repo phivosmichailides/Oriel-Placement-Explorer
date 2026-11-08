@@ -19,6 +19,7 @@ on:
       - 'tests/shortlist.test.js'
       - 'data/**'
       - '.github/workflows/map-theme-smoke.yml'
+      - '.github/workflows/deployed-smoke.yml'
   pull_request:
     branches: [main]
     paths:
@@ -38,6 +39,7 @@ on:
       - 'tests/shortlist.test.js'
       - 'data/**'
       - '.github/workflows/map-theme-smoke.yml'
+      - '.github/workflows/deployed-smoke.yml'
   workflow_dispatch:
 
 permissions:
@@ -45,7 +47,7 @@ permissions:
 
 jobs:
   chromium-smoke:
-    name: Live site maps, programme panels, themes
+    name: Checkout UI maps, programme panels, themes
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -61,13 +63,12 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Validate live shortlist count and undo/redo
         run: node tests/shortlist-badge-smoke.cjs
-      - name: Serve pull request build
-        if: github.event_name == 'pull_request'
+      - name: Serve current checkout for browser tests
         run: python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/placement-atlas-http.log 2>&1 &
       - name: Validate deployed UI
         run: node tests/map-theme-smoke.cjs
         env:
-          TARGET: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:8000/' || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+          TARGET: http://127.0.0.1:8000/
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v6

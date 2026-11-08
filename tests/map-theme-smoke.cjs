@@ -52,12 +52,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       }else await route.continue();
     });
     let fresh=false;
-    for(let retry=0;retry<18;retry++){
+    for(let retry=0;retry<36;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
       if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas2')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas2')&&(await page.content()).includes('generic-public.js?v=20261108atlas2')&&(await page.content()).includes('pwa.js?v=20261108atlas3')){fresh=true;break;}
       await sleep(5000);
     }
-    assert(fresh,'Latest public build not served');
+    assert(fresh,'Latest build not served at '+page.url()+'; current scripts: '+JSON.stringify(await page.locator('script').evaluateAll(scripts=>scripts.map(script=>script.getAttribute('src')).filter(Boolean))));
     await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261108atlas3');},null,{timeout:30000});
     const pwaAudit=await page.evaluate(async()=>{
       const manifestLink=document.querySelector('link[rel="manifest"]');
