@@ -186,10 +186,11 @@
    const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
-   const total=options.length,pages=Math.max(1,Math.ceil(total/20));
+   const total=options.length,catalogueTotal=getData().length,pages=Math.max(1,Math.ceil(total/20));
+   window.OrielFilteredProgrammes=options;
    page=Math.min(Math.max(1,page),pages);
    const shown=options.slice((page-1)*20,page*20);
-   $('count').textContent=total.toLocaleString('en-GB')+' matching programmes';
+   $('count').textContent=catalogueTotal.toLocaleString('en-GB')+' total programmes · '+total.toLocaleString('en-GB')+' shown';
    cleanupMiniMaps();
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
    pager(shown.length,total);
@@ -205,8 +206,10 @@
  let drawerOpener=null;
  const updateCounts=()=>{
    const count=getRanks().length;
-   document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent=count?'('+count+')':'(0)');
+   document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent='('+count+')');
  };
+ document.addEventListener('desk:action',()=>{updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();});
+ window.addEventListener('storage',event=>{if(event.key==='phivos-desk-v2'){updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();}});
  const renderDrawer=()=>{
    if(!drawerItems)return;
    const query=(drawerSearch?.value||'').toLowerCase().trim();
@@ -241,7 +244,7 @@
    drawerOpener=e?.currentTarget||document.activeElement;
    drawer.classList.add('uxOpen');drawer.setAttribute('aria-hidden','false');drawer.inert=false;
    backdrop.hidden=false;root.classList.add('uxDrawerOpen');
-   renderDrawer();$('uxDrawerClose')?.focus();
+   updateCounts();renderDrawer();$('uxDrawerClose')?.focus();
  };
  const closeDrawer=()=>{
    if(!drawer||!backdrop)return;
