@@ -1,10 +1,10 @@
 /* Placement Atlas map controls, focus view and programme previews. */
 #placementMap{position:relative}
-.atlasMapZoom{position:absolute;z-index:1100;left:50%;bottom:17px;transform:translateX(-50%);display:flex;align-items:center;gap:0;padding:3px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.atlasMapZoom button{display:grid;place-items:center;width:42px;height:36px;border:0;border-radius:10px;background:transparent;color:var(--ink);font:600 23px/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;cursor:pointer;transition:background .16s ease,transform .16s ease}
+.atlasMapZoom{position:absolute;z-index:1100;right:16px;bottom:70px;left:auto;transform:none;display:flex;flex-direction:column;align-items:center;gap:0;padding:4px;border:1px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.atlasMapZoom button{display:grid;place-items:center;width:36px;height:35px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:650 22px/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;cursor:pointer;transition:background .16s ease,transform .16s ease}
 .atlasMapZoom button:hover{background:var(--ux-accent-soft);transform:scale(1.04)}
 .atlasMapZoom button:focus-visible,.atlasMapExpand:focus-visible,.atlasMapFocusClose:focus-visible{outline:3px solid var(--ux-accent);outline-offset:2px}
-.atlasMapZoom>span{width:1px;height:21px;background:var(--line)}
+.atlasMapZoom>span{width:18px;height:1px;background:var(--line)}
 .atlasMapEmptyHint{position:absolute;z-index:1090;top:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;max-width:calc(100% - 28px);padding:7px 9px 7px 13px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);box-shadow:0 7px 24px rgba(0,0,0,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:11px;font-weight:650;line-height:1.3;text-align:center}
 .atlasMapEmptyHint[hidden]{display:none!important}
 .atlasMapEmptyHint button{flex:0 0 auto;padding:6px 10px;border:1px solid var(--ux-accent-border);border-radius:999px;background:var(--ux-accent-soft);color:var(--ux-accent-ink);font-size:10px;font-weight:850;cursor:pointer;white-space:nowrap}
@@ -53,8 +53,8 @@ body.atlasMapFocusOpen .atlasMapExpand{display:none}
  .atlasMapFocusClose{padding:8px 10px;font-size:11px}
  .atlasMapFocusStage{padding:6px}
  .atlasMapFocusStage #placementMap{border-radius:13px}
- .atlasMapZoom{bottom:13px}
- .atlasMapZoom button{width:39px;height:35px}
+ .atlasMapZoom{right:12px;bottom:62px}
+ .atlasMapZoom button{width:33px;height:33px}
  .atlasMapExpand{right:12px;bottom:12px;width:39px;height:39px}
  .atlasProgrammePopup .leaflet-popup-content{width:min(300px,calc(100vw - 62px))!important;margin:10px}
 }

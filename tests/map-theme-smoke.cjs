@@ -54,11 +54,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<60;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas2')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas2')&&(await page.content()).includes('generic-public.js?v=20261108atlas2')&&(await page.content()).includes('pwa.js?v=20261108atlas4')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas2')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas2')&&(await page.content()).includes('generic-public.js?v=20261108atlas2')&&(await page.content()).includes('map-focus.css?v=20261108atlas3')&&(await page.content()).includes('pwa.js?v=20261108atlas5')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest build not served at '+page.url()+'; current scripts: '+JSON.stringify(await page.locator('script').evaluateAll(scripts=>scripts.map(script=>script.getAttribute('src')).filter(Boolean))));
-    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261108atlas4');},null,{timeout:30000});
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261108atlas5');},null,{timeout:30000});
     const pwaAudit=await page.evaluate(async()=>{
       const manifestLink=document.querySelector('link[rel="manifest"]');
       const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
@@ -92,10 +92,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
-    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261108atlas4'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
+    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261108atlas5'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
     const [pwaResponse,swResponse]=await Promise.all([
-      page.request.get(new URL('pwa.js?v=20261108atlas4',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('sw.js?v=20261108atlas4',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('pwa.js?v=20261108atlas5',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('sw.js?v=20261108atlas5',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
     const pwaUpdateAudit={
@@ -103,8 +103,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-08-v6'),
-        cachedPwaAsset:swSource.includes("pwa.js?v=20261108atlas4")};
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-08-v7'),
+        cachedPwaAsset:swSource.includes("pwa.js?v=20261108atlas5")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
@@ -678,13 +678,14 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     // instance into a spacious, reversible focus window.
     const zoomAudit=await page.evaluate(()=>{
       const map=document.getElementById('placementMap'),control=document.getElementById('atlasMapZoom');
-      const m=map.getBoundingClientRect(),c=control.getBoundingClientRect();
-      return {defaultControls:map.querySelectorAll('.leaflet-control-zoom').length,customVisible:!!control&&c.width>50&&c.height>25,
-        centerOffset:Math.abs((c.left+c.width/2)-(m.left+m.width/2)),bottomGap:m.bottom-c.bottom};
+      const m=map.getBoundingClientRect(),c=control.getBoundingClientRect(),e=document.getElementById('atlasMapExpand').getBoundingClientRect();
+      const style=getComputedStyle(control);
+      return {defaultControls:map.querySelectorAll('.leaflet-control-zoom').length,customVisible:!!control&&c.width>=38&&c.height>=70,
+        flexDirection:style.flexDirection,rightOffset:Math.abs(c.right-e.right),expandGap:e.top-c.bottom,width:c.width,height:c.height};
     });
     assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
-    assert(zoomAudit.customVisible&&zoomAudit.centerOffset<=4&&zoomAudit.bottomGap>=8&&zoomAudit.bottomGap<=28,
-      'Rounded Placement Atlas zoom control is not centred at the bottom of the map: '+JSON.stringify(zoomAudit));
+    assert(zoomAudit.customVisible&&zoomAudit.flexDirection==='column'&&zoomAudit.rightOffset<=4&&zoomAudit.expandGap>=6&&zoomAudit.expandGap<=18,
+      'Rounded Placement Atlas zoom control should sit vertically above fullscreen at the lower-right edge: '+JSON.stringify(zoomAudit));
     const startingZoom=await page.evaluate(()=>placementMap.getZoom());
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
     await page.waitForFunction(z=>placementMap.getZoom()>z,startingZoom);
