@@ -9,6 +9,11 @@
     "maptiler_planet_v4": {
       "url": "https://api.maptiler.com/tiles/v4/tiles.json?key=JDEneNwTjuuyOGnlUckz",
       "type": "vector"
+    },
+    "oriel_borough_labels": {
+      "type": "geojson",
+      "data": "../data/london-borough-labels.geojson?v=20261108borough1",
+      "attribution": "Contains Ordnance Survey data © Crown copyright and database right · Open Government Licence v3.0"
     }
   },
   "layers": [
@@ -28342,6 +28347,100 @@
         "text-halo-blur": 0.2,
         "text-halo-color": "#f7f3e9",
         "text-halo-width": 1.25
+      },
+      "filter": [
+        "any",
+        [
+          "<=",
+          [
+            "zoom"
+          ],
+          9
+        ],
+        [
+          "!",
+          [
+            "in",
+            [
+              "coalesce",
+              [
+                "get",
+                "name:en"
+              ],
+              [
+                "get",
+                "name"
+              ]
+            ],
+            [
+              "literal",
+              [
+                "London",
+                "Westminster",
+                "City of London"
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Oriel London borough labels",
+      "type": "symbol",
+      "source": "oriel_borough_labels",
+      "minzoom": 8.5,
+      "maxzoom": 14.5,
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": [
+          "get",
+          "name"
+        ],
+        "text-font": [
+          "Roboto Condensed Medium",
+          "Noto Sans Regular"
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8.5,
+          9.5,
+          10,
+          10.5,
+          12,
+          11.5,
+          14,
+          12.5
+        ],
+        "text-letter-spacing": 0.035,
+        "text-max-width": 8,
+        "text-line-height": 1.1,
+        "text-justify": "center",
+        "text-variable-anchor": [
+          "center",
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "text-radial-offset": 0.35,
+        "text-padding": 3,
+        "text-allow-overlap": false,
+        "text-ignore-placement": false,
+        "text-optional": false,
+        "text-pitch-alignment": "viewport",
+        "text-rotation-alignment": "viewport"
+      },
+      "paint": {
+        "text-color": "#687267",
+        "text-halo-color": "#f7f3e9",
+        "text-halo-width": 1.7,
+        "text-halo-blur": 0.2
       }
     },
     {
@@ -28350,7 +28449,7 @@
       "source": "maptiler_planet_v4",
       "source-layer": "city_label",
       "minzoom": 3,
-      "maxzoom": 16,
+      "maxzoom": 9,
       "layout": {
         "icon-allow-overlap": false,
         "icon-image": "circle",
