@@ -14,7 +14,7 @@
   .onboardFields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.onboardField{display:block}.onboardField span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#69716c;margin:0 0 6px 2px}.onboardField select{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px}
   .onboardField input{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px;color:#29332d}.onboardHomeBase{margin:15px 0 4px;padding:14px 15px;border:1px solid #dce7df;background:#f7faf7;border-radius:16px}.onboardHomeBase>p{font-size:11px;line-height:1.5;color:#647169;margin:8px 2px 0}.onboardHomeBase .onboardError{margin-top:5px}
   .onboardActions{display:flex;align-items:center;gap:8px;margin-top:22px}.onboardActions .spacer{flex:1}.onboardFine{font-size:11px;color:#7a817d;margin-top:9px}.onboardError{font-size:12px;color:#9a3e3e;margin-top:9px;min-height:17px}.onboardFinal{padding:10px 0 3px}.onboardSummary{display:flex;flex-wrap:wrap;gap:7px;margin:17px 0}.onboardSummary span{background:#eff5f1;border:1px solid #dce8df;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;color:#46554c}
-  .personaliseAgain{margin-top:13px}.phivosSignature{margin-top:14px;font-family:"Snell Roundhand","Segoe Script","Brush Script MT",cursive;font-size:24px;letter-spacing:.02em;color:#52655b}.phivosSignature .heart{font-family:Georgia,serif;font-size:14px;vertical-align:4px;margin-left:3px;color:#8eaa99}
+  .personaliseAgain{margin-top:13px}.phivosSignature{margin-top:14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,sans-serif;font-size:10px;line-height:1.5;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--mut)}.phivosSignature i{width:4px;height:4px;border-radius:50%;background:var(--ux-accent);display:inline-block}
   @keyframes obFade{from{opacity:0}to{opacity:1}}
   @media(max-width:600px){.onboardCard{padding:21px 17px;border-radius:22px}.onboardCard h2{font-size:27px}.onboardChoices,.onboardFields{grid-template-columns:1fr}.onboardChoice.wide{grid-column:auto}.onboardActions{flex-wrap:wrap}.onboardActions .spacer{display:none}.onboardActions .btn{flex:1}.onboardActions .textbtn{flex-basis:100%;order:3}}
   `;
@@ -29,7 +29,7 @@
     const style=document.createElement('style');style.textContent=css;document.head.appendChild(style);
 
     const footer=document.querySelector('.app-footer');
-    if(footer&&!footer.querySelector('.phivosSignature'))footer.insertAdjacentHTML('beforeend','<div class="phivosSignature">made by Phivos <span class="heart"></span></div>');
+    if(footer&&!footer.querySelector('.phivosSignature'))footer.insertAdjacentHTML('beforeend','<div class="phivosSignature"><span>Designed &amp; built by Phivos Michailides</span><i aria-hidden="true"></i><span>London, UK</span></div>');
 
     const prefsCard=document.querySelector('#prefs .settingsCard');
     if(prefsCard&&!document.getElementById('personaliseAgain')){
