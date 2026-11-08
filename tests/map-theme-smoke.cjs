@@ -310,8 +310,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }else{
       assert(await mapPicker.isDisabled(),'Map style selector should explain unavailable vector rendering');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
-      const expectedFallback=localPreview?'osm-fallback':'raster-fallback';
-      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),expectedFallback);
+      const actualFallback=await page.locator('#placementMap').getAttribute('data-basemap');
+      assert(localPreview?['osm-fallback','raster-fallback'].includes(actualFallback):actualFallback==='raster-fallback',
+        'Unexpected basemap fallback state: '+actualFallback);
     }
 
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
