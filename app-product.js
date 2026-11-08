@@ -55,8 +55,16 @@
       if(geoBusy){resolveScopeAgain=true;return;}
       if(typeof geo==='undefined')return;
       const region=activeRegion();
-      const source=region?scopePlacements():placements;
-      const hasGeo=key=>Object.prototype.hasOwnProperty.call(geo,key);
+      const source=window.OrielMapScope==='all'?placements:(region?scopePlacements():placements);
+      const validPoint=value=>Array.isArray(value)&&value.length>=2&&Number.isFinite(Number(value[0]))&&Number.isFinite(Number(value[1]));
+      // A cached null is a failed lookup, not a resolved location. A valid
+      // postcode-district centroid is also a usable fallback for that postcode.
+      const hasGeo=key=>{
+        if(validPoint(geo[key]))return true;
+        if(String(key).startsWith('@OUTCODE:'))return false;
+        const outward=(String(key).match(/^[A-Z]{1,2}\\d[A-Z\\d]?/i)||[])[0];
+        return !!outward&&validPoint(geo['@OUTCODE:'+outward.toUpperCase()]);
+      };
       const postcodes=[...new Set(source.flatMap(p=>(p.postcodes||[]).map(pcKey)))];
       const outcodes=[...new Set(source.flatMap(p=>(p.outcodes||[]).map(x=>String(x).toUpperCase())))];
       const missingPostcodes=postcodes.filter(pc=>!hasGeo(pc));
@@ -73,7 +81,7 @@
       const originalLabel=locateButton?.textContent||'Locate all sites';
       if(locateButton){locateButton.disabled=true;locateButton.textContent='Locating…';locateButton.setAttribute('aria-busy','true');}
       const status=$('mapStatus');
-      let completed=0,located=0,unmatched=0,next=0,nextRenderAt=400;
+      let completed=0,located=0,next=0,nextRenderAt=400;
       const failed=[];
       const jobs=[];
       for(let i=0;i<missingPostcodes.length;i+=100)jobs.push({type:'postcode',values:missingPostcodes.slice(i,i+100)});
@@ -121,16 +129,16 @@
             const point=item.result;
             if(point&&Number.isFinite(Number(point.latitude))&&Number.isFinite(Number(point.longitude))){
               geo[key]=[Number(point.latitude),Number(point.longitude)];located++;
-            }else{geo[key]=null;unmatched++;queueOutcodeFallback(key);}
+            }else{geo[key]=null;queueOutcodeFallback(key);}
           });
-          job.values.forEach(key=>{if(!returned.has(key)){geo[key]=null;unmatched++;queueOutcodeFallback(key);}});
+          job.values.forEach(key=>{if(!returned.has(key)){geo[key]=null;queueOutcodeFallback(key);}});
         }else{
           const key='@OUTCODE:'+job.value;
           const data=await request('https://api.postcodes.io/outcodes/'+encodeURIComponent(job.value));
           const point=data.result;
           if(point&&Number.isFinite(Number(point.latitude))&&Number.isFinite(Number(point.longitude))){
             geo[key]=[Number(point.latitude),Number(point.longitude)];located++;
-          }else{geo[key]=null;unmatched++;}
+          }else{geo[key]=null;}
         }
       };
 
@@ -158,9 +166,12 @@
         try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
         drawMap(placements.filter(matches));
         document.dispatchEvent(new CustomEvent('desk:locations-updated'));
-        if(failed.length)toast(located.toLocaleString()+' locations added; '+failed.length.toLocaleString()+' codes need a retry.');
-        else if(unmatched)toast(located.toLocaleString()+' locations added; '+unmatched.toLocaleString()+' invalid codes could not be matched.');
-        else toast('All '+(postcodes.length+outcodes.length).toLocaleString()+' location codes are mapped.');
+        const unresolvedPostcodes=postcodes.filter(pc=>!hasGeo(pc));
+        const unresolvedOutcodes=outcodes.filter(oc=>!validPoint(geo['@OUTCODE:'+oc]));
+        const unresolvedCount=new Set([...unresolvedPostcodes,...unresolvedOutcodes.map(oc=>'@OUTCODE:'+oc)]).size;
+        if(failed.length)toast(located.toLocaleString()+' locations added; '+failed.length.toLocaleString()+' lookup requests need a retry.');
+        else if(unresolvedCount)toast(located.toLocaleString()+' locations added; '+unresolvedCount.toLocaleString()+' location codes remain unresolved.');
+        else toast('All '+(postcodes.length+outcodes.length).toLocaleString()+' location codes have usable map positions.');
       }catch(error){
         console.error('Location resolution failed',error);
         if(status)status.textContent='Location lookup was interrupted. Existing map pins are still available; retry Locate all sites.';
