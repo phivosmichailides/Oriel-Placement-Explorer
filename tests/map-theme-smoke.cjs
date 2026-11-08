@@ -135,7 +135,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const holder=document.getElementById('placementMap');
       const state=holder?.dataset.basemap||'';
       if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
-      return (localPreview&&state==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded'))||
+      return (['localhost','127.0.0.1','::1'].includes(location.hostname)&&state==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded'))||
          (state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup'));
     },null,{timeout:30000});
     const editorialStyleForDesign=await page.evaluate(async()=>{
@@ -348,7 +348,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return localPreview
+      return ['localhost','127.0.0.1','::1'].includes(location.hostname)
         ?holder?.dataset.basemap==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded')
         :holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
@@ -364,7 +364,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
     else assert(await card.locator('.uxMiniMap .leaflet-tile-loaded').count()>0,'Local-preview mini map has no visible base-map tiles');
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
-    assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
+    if(!localPreview)assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
     assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
     assert.doesNotMatch(miniAttribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
     assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
