@@ -626,7 +626,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.locator('#locateBtn').click();
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
-      return window.OrielMapScope==='matching'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
+      return window.OrielMapScope==='matching'&&status.includes('location codes resolved')&&!status.includes('codes still need locating')&&(Array.isArray(geo['TN250LZ'])||Array.isArray(geo['@OUTCODE:TN25']));
     },null,{timeout:90000});
     const allCatalogueCoverage=await page.evaluate(()=>{
       const codes=p=>{
