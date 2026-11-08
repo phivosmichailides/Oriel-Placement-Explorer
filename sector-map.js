@@ -22,6 +22,11 @@
     const defaults={...palette};
     const refreshPalette=()=>{for(const key of Object.keys(palette)){const colour=state.prefs.mapColours?.[key];palette[key]=/^#[0-9a-f]{6}$/i.test(colour||'')?colour:defaults[key];}};
     refreshPalette();
+    const mapScopeControl=document.getElementById('mapScope');
+    let mapScopeMode='matching';
+    try{if(localStorage.getItem('oriel-map-scope-v1')==='all')mapScopeMode='all'}catch{}
+    if(mapScopeControl)mapScopeControl.value=mapScopeMode;
+    window.OrielMapScope=mapScopeMode;
     const label={
       Hospital:'Hospital',
       'General Practice':'GP',
@@ -70,6 +75,13 @@
       ['Other','Other']
     ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+'<span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
+    mapScopeControl?.addEventListener('change',()=>{
+      mapScopeMode=mapScopeControl.value==='all'?'all':'matching';
+      window.OrielMapScope=mapScopeMode;
+      try{localStorage.setItem('oriel-map-scope-v1',mapScopeMode)}catch{}
+      drawMap(placements.filter(matches));
+      if(mapScopeMode==='all')document.getElementById('locateBtn')?.click();
+    });
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
@@ -137,7 +149,7 @@
       hover(id,active=true){hoveredProgramme=active?id:null;syncMap()},
       current:()=>selectedProgramme
     };
-    drawMap=list=>{refreshPalette();renderLegend();
+    drawMap=requestedList=>{const list=mapScopeMode==='all'?placements:requestedList;refreshPalette();renderLegend();
       if(!placementMap)return;
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
@@ -234,7 +246,7 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title='A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations.';
+      $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations.';
       syncMap();
     };
     try{drawMap(placements.filter(matches));}catch{}
