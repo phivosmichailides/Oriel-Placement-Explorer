@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial5')&&(await page.content()).includes('map-basemap.js?v=20261108editorial9')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial5')&&(await page.content()).includes('map-basemap.js?v=20261108editorial10')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -194,6 +194,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
             boroughData:style.sources?.oriel_borough_labels?.data,
             boroughLayer:style.layers.find(layer=>layer.id==='Oriel London borough labels')?.minzoom,
             boroughCityFilter:style.layers.find(layer=>layer.id==='City labels')?.filter,
+            boroughCityDuplicatesRemoved:['London','Westminster','City of London'].every(name=>JSON.stringify(style.layers.find(layer=>layer.id==='City labels')?.filter||[]).includes(name)),
             subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
             roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
         },styleName);
@@ -203,6 +204,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         assert.equal(styleAudit.bridgeRoadsIncluded,true,'Road bridges should remain visible above rivers: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.boroughSource,'geojson','Official London borough label source is missing: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.boroughLayer,8.5,'London borough names should appear from London-wide zoom: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.boroughCityDuplicatesRemoved,true,'Inner London city labels would duplicate the borough names: '+JSON.stringify(styleAudit));
         const boroughsResponse=await page.evaluate(async name=>{
           const style=await (await fetch(window.OrielBasemap.styles[name])).json();
           const source=style.sources.oriel_borough_labels;
