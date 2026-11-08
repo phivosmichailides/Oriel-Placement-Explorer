@@ -2,7 +2,7 @@
 (()=>{
   const hadSaved=(()=>{try{return !!localStorage.getItem('phivos-desk-v2')}catch{return false}})();
   const base=document.createElement('script');
-  base.src='app-base.js?v=20261108mapcoverage1';
+  base.src='app-base.js?v=20261108atlas1';
   base.onload=()=>{
     const decisions=[['','○','Unmarked'],['love','♡','Love'],['yes','✓','Strong yes'],['maybe','◐','Maybe'],['backup','◇','Only if needed'],['no','−','No'],['never','×','Absolutely not']];
     const decisionPicker=status=>{
@@ -55,7 +55,7 @@
       if(geoBusy){resolveScopeAgain=true;return;}
       if(typeof geo==='undefined')return;
       const region=activeRegion();
-      const source=window.OrielMapScope==='all'?placements:(region?scopePlacements():placements);
+      const source=placements;
       const validPoint=value=>Array.isArray(value)&&value.length>=2&&Number.isFinite(Number(value[0]))&&Number.isFinite(Number(value[1]));
       // A cached null is a failed lookup, not a resolved location. A valid
       // postcode-district centroid is also a usable fallback for that postcode.
@@ -190,6 +190,7 @@
       const avoids=tokens(state.prefs.avoids),likes=tokens(state.prefs.likes);
       const areaMatch=x=>(' '+t.replace(/[^a-z0-9]+/g,' ')+' ').includes(' '+x.replace(/[^a-z0-9]+/g,' ')+' ');
       if(window.OrielGeoBlacklist?.assess(p).kind==='blocked')return-2;
+      if(window.OrielGeoBlacklist?.matchesPreferred?.(p))return 2;
       if(likes.some(areaMatch))return 2;
       if(selected)return p.region===selected?1:-1;
       return 0;
@@ -280,23 +281,19 @@
       if(target?.isValid?.()){
         placementMap.invalidateSize(false);
         placementMap.fitBounds(target,{
-          padding:[42,42],maxZoom:window.OrielMapScope==='all'?7:11,animate:false
+          padding:[42,42],maxZoom:11,animate:false
         });
       }
     };
     window.OrielFitCurrentMap=fitCurrentMap;
 
     const updateMapHeading=()=>{
-      const region=activeRegion();
+      const count=Array.isArray(window.OrielFilteredProgrammes)?window.OrielFilteredProgrammes.length:placements.filter(matches).length;
+      const total=placements.length;
       const title=document.querySelector('.map-heading h2');
       const eyebrow=document.querySelector('.map-heading .eyebrow');
-      if(window.OrielMapScope==='all'){
-        if(title)title.textContent='Explore all programme locations across England & Wales';
-        if(eyebrow)eyebrow.textContent=placements.length.toLocaleString()+' PROGRAMMES · ALL REGIONS';
-      }else{
-        if(title)title.textContent=region?`See where you could work in ${region}`:'See where you could work across England & Wales';
-        if(eyebrow)eyebrow.textContent=region?`${region.toUpperCase()} PROGRAMMES`:'ENGLAND & WALES PROGRAMMES';
-      }
+      if(title)title.textContent=count===total?'Explore all programme locations across England & Wales':`Explore ${count.toLocaleString()} matching programme locations`;
+      if(eyebrow)eyebrow.textContent=`${total.toLocaleString()} TOTAL · ${count.toLocaleString()} MATCHING`;
     };
     const baseExplore=explore;
     explore=()=>{baseExplore();updateMapHeading();};
@@ -333,26 +330,17 @@
     $('search').placeholder='Employer, region, postcode, programme ID…';
     $('quick').innerHTML='<button class="chip" id="allRegionsBtn"> All regions</button><button class="chip" data-q="london"> London</button><button class="chip" data-q="hospital"> Hospital-led</button><button class="chip" data-q="gp"> GP-heavy</button><button class="chip" data-q="hospitalgp">Hosp+GP</button><button class="chip" data-q="split"> Any split</button><button class="chip" data-q="industry"> Industry</button><button class="chip" data-q="community"> Community</button><button class="chip" data-q="lowcommunity"> Low community</button><button class="chip" data-q="desk"> Desk-ish</button><button class="chip" data-q="cv"> CV boost</button><button class="chip" data-q="hours"> ≤40h</button><button class="chip" data-q="pay"> £30k+</button>';
     document.querySelector('[data-q="london"]')?.classList.toggle('on',quick.has('london'));
-    $('hideAvoid').checked=false;
     const hideLabel=$('hideAvoid').parentElement;for(const n of hideLabel.childNodes)if(n.nodeType===Node.TEXT_NODE)n.textContent=' Hide avoided areas entirely';
-    const notice=document.querySelector('.notice');if(notice)notice.innerHTML='<b> London is your default, not a limitation.</b><br>Select any included region and the list, recommendations, statistics and map switch with you. The app resolves that region’s programme postcodes so the interactive pins work there too. Commute, workload and autonomy should still be verified with the employer.';
+    const notice=document.querySelector('.notice');if(notice)notice.innerHTML='<b>Start with the complete catalogue.</b><br>Filters narrow the programme list and map together. Your permanent preferences influence fit scores, while only verified location exclusions remove a programme. Check working conditions with the employer.';
     const hero=document.querySelector('#foryou .sectionHero p');if(hero)hero.textContent='A starting point, not an automatic final ranking. Recommendations follow the region you are exploring and combine your priorities with programme data, showing both reasons to consider an option and trade-offs worth checking.';
     // The canonical public footer is owned by index.html; do not overwrite it.
 
     const regionEl=$('region');
-    regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;refreshScope({locate:true});});
+    regionEl.addEventListener('change',()=>{if(regionEl.value){quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');}pageLimit=40;persistFilters();refreshScope({locate:false});});
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>{if(quick.has('london'))regionEl.value='';setTimeout(()=>refreshScope({locate:true}),0);});
-    $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;refreshScope({locate:true});});
-    if($('locateBtn'))$('locateBtn').onclick=()=>{
-      // "Locate all sites" always means the complete catalogue, not only the
-      // currently filtered list. Switch the map scope first when necessary.
-      if(window.OrielMapScope!=='all'){
-        const control=$('mapScope');
-        if(control){control.value='all';control.dispatchEvent(new Event('change',{bubbles:true}));return;}
-      }
-      resolveScopePins();
-    };
-    $('resetBtn').onclick=()=>{$('decision').value='active';$('visa').value='';$('hideAvoid').checked=false;if($('hideShortlisted')){$('hideShortlisted').checked=false;$('hideShortlisted').dispatchEvent(new Event('change',{bubbles:true}))}$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set(['london']);document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.toggle('on',x.dataset.q==='london'));refreshScope({locate:true});};
+    $('allRegionsBtn')?.addEventListener('click',()=>{regionEl.value='';quick.delete('london');document.querySelector('[data-q="london"]')?.classList.remove('on');pageLimit=40;persistFilters();refreshScope({locate:false});});
+    if($('locateBtn'))$('locateBtn').onclick=()=>resolveScopePins();
+    $('resetBtn').onclick=()=>{$('decision').value='all';$('visa').value='';$('hideAvoid').checked=false;$('hideOuterLondon').checked=false;$('hideExcluded').checked=false;$('hideShortlisted').checked=false;$('hideJustice').checked=false;$('hideMental').checked=false;$('hideOtherSpecialist').checked=false;$('specialistView').value='all';$('search').value='';$('sector').value='';$('region').value='';$('hours').value='';$('salary').value='';$('sort').value='fit';pageLimit=40;quick=new Set();document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));persistFilters();refreshScope({locate:false});};
 
     ['salary','hours'].forEach(id=>$(id).addEventListener('change',reco));
     injectProductIntro();injectContextStrip();
