@@ -27,8 +27,8 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261107independent1/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261107independent1/);
+  assert.match(html,/app\.js\?v=20261108mapcoverage2/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261108mapcoverage2/);
 });
 
 test('site uses maintainer-supplied catalogue without rewriting stable saved IDs', () => {
@@ -45,8 +45,10 @@ test('maps use independent third-party map libraries and retain data credits', (
   const basemap = read('map-basemap.js');
   assert.match(html, /id="mapStyle"/);
   assert.match(html, /src="map-basemap\.js/);
-  assert.match(basemap, /tiles\.openfreemap\.org\/styles\//);
+  assert.match(basemap, /api\.maptiler\.com\/maps\//);
+  assert.match(basemap, /streets-v4-dark/);
   assert.match(basemap, /OpenStreetMap contributors/);
+  assert.doesNotMatch(basemap, /openfreemap\.org\/styles/);
   assert.match(basemap, /oriel-basemap-style-v1/);
 });
 
