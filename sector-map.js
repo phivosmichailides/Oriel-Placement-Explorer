@@ -2,7 +2,7 @@
 (()=>{
   const ready=()=>{
     try{
-      return typeof drawMap==='function' && typeof sector==='function' && typeof pcKey==='function' && typeof mark==='function' && typeof isExcluded==='function' && typeof SHORT!=='undefined' && typeof placements!=='undefined' && typeof matches==='function' && typeof L!=='undefined' && typeof mapLayer!=='undefined';
+      return typeof drawMap==='function' && typeof sector==='function' && typeof pcKey==='function' && typeof mark==='function' && typeof isExcluded==='function' && typeof SHORT!=='undefined' && typeof placements!=='undefined' && typeof matches==='function' && typeof L!=='undefined' && typeof mapLayer!=='undefined' && !!mapLayer && typeof placementMap!=='undefined' && !!placementMap;
     }catch{return false;}
   };
 
