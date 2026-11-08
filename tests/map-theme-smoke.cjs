@@ -99,7 +99,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     ]);
     const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
     const pwaUpdateAudit={
-      return {pwaStatus:pwaResponse.status,swStatus:swResponse.status,
+      pwaStatus:pwaResponse.status(),swStatus:swResponse.status(),
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
