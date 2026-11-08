@@ -303,11 +303,13 @@
         :null;
 
       const zoom=placementMap.getZoom();
-      // Keep national-scale clusters geographically informative. The former
-      // 48px cells collapsed the entire England & Wales catalogue into only
-      // a handful of pins; tighter cells preserve more visible regional detail.
-      const cellSize=zoom<=7?24:zoom<=8?28:zoom<=9?30:zoom<=10?24:
-        zoom<=11?20:zoom<=12?16:zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
+      // Use broader clusters at national scale so dense coverage does not
+      // become a regular-looking carpet of tiny numbered cells. Tighten the
+      // screen-space radius progressively as the user zooms into regions,
+      // boroughs and neighbourhoods; individual sites appear at street level.
+      const cellSize=zoom<=5?42:zoom<=6?36:zoom<=7?30:zoom<=8?28:
+        zoom<=9?26:zoom<=10?24:zoom<=11?20:zoom<=12?16:
+        zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
       const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
       const displayGroups=[];
       if(cellSize>0){
