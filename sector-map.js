@@ -43,6 +43,13 @@
       }
     };
     updateMapScopeHeading();
+    const fitScopePins=()=>{
+      if(!placementMap||!mapLayer)return;
+      const points=mapLayer.getLayers().map(layer=>layer.getLatLng()).filter(point=>Number.isFinite(point.lat)&&Number.isFinite(point.lng));
+      if(points.length)placementMap.fitBounds(L.latLngBounds(points),{
+        padding:[30,30],maxZoom:mapScopeMode==='all'?7:11,animate:false
+      });
+    };
     const label={
       Hospital:'Hospital',
       'General Practice':'GP',
@@ -100,6 +107,7 @@
       try{localStorage.setItem('oriel-map-scope-v2',mapScopeMode)}catch{}
       updateMapScopeHeading();
       drawMap(placements.filter(matches));
+      setTimeout(fitScopePins,80);
       if(mapScopeMode==='all')document.getElementById('locateBtn')?.click();
     });
     const mapCaption=document.querySelector('.map-caption');
