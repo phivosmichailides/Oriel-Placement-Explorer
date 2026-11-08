@@ -311,7 +311,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert(await mapPicker.isDisabled(),'Map style selector should explain unavailable vector rendering');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
       const actualFallback=await page.locator('#placementMap').getAttribute('data-basemap');
-      assert(localPreview?['osm-fallback','raster-fallback'].includes(actualFallback):actualFallback==='raster-fallback',
+      assert(localPreview?actualFallback==='osm-fallback':actualFallback==='raster-fallback',
         'Unexpected basemap fallback state: '+actualFallback);
     }
 
@@ -350,7 +350,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
       return ['localhost','127.0.0.1','::1'].includes(location.hostname)
-        ?['osm-fallback','raster-fallback'].includes(holder?.dataset.basemap)&&holder.querySelector('.leaflet-tile-loaded')
+        ?holder?.dataset.basemap==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded')
         :holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
@@ -361,11 +361,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return {src:node?.currentSrc||node?.src||'',width:node?.naturalWidth||0,height:node?.naturalHeight||0,complete:!!node?.complete,
         filter:node?getComputedStyle(node).filter:null};
     });
-    assert(localPreview?['osm-fallback','raster-fallback'].includes(miniBasemap):miniBasemap==='vector-editorial-light',
+    assert(localPreview?miniBasemap==='osm-fallback':miniBasemap==='vector-editorial-light',
       'Programme mini-map did not render its expected basemap: '+miniBasemap);
     if(!localPreview)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
-    else assert((miniImage.src.startsWith('https://tile.openstreetmap.org/')||miniImage.src.startsWith('https://api.maptiler.com/maps/streets-v4/'))&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+    else assert(miniImage.src.startsWith('https://tile.openstreetmap.org/')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Local-preview mini map has no visible fallback tile image: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
     if(!localPreview)assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
