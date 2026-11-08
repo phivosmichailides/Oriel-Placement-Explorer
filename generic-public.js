@@ -41,9 +41,9 @@
     }
 
     // Public identity: authored by Phivos, but designed for any applicant.
-    document.title='Oriel Placement Desk';
+    document.title='Placement Atlas';
     const title=document.querySelector('header.top h1');
-    if(title)title.textContent='Oriel Placement Desk';
+    if(title)title.textContent='Placement Atlas';
     const topEyebrow=document.querySelector('header.top .brand .eyebrow');
     if(topEyebrow)topEyebrow.textContent='ORIEL 2027/28 · PERSONALISED';
     const topSub=document.querySelector('header.top .brand p');

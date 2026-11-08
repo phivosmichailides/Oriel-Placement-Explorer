@@ -29,6 +29,9 @@ test('current deployable assets contain no obsolete explorer branding or data lo
   }
   assert.match(html,/app\.js\?v=20261108atlas2/);
   assert.match(read('app.js'),/app-product\.js\?v=20261108atlas2/);
+  assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas2/);
+  assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
+  assert.doesNotMatch(read('generic-public.js'),/Oriel Placement Desk/);
 });
 
 test('site uses maintainer-supplied catalogue without rewriting stable saved IDs', () => {

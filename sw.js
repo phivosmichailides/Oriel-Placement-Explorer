@@ -2,7 +2,7 @@
 const CACHE_NAME='placement-atlas-shell-2026-11-08-v2';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'app-base.js?v=20261108atlas2','app-product.js?v=20261108atlas2','generic-public.js?v=20261106fastmap',
+  'app-base.js?v=20261108atlas2','app-product.js?v=20261108atlas2','generic-public.js?v=20261108atlas2',
   'sector-map.js?v=20261108atlas2','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261106g',
   'map-basemap.js?v=20261108atlas2','workspace-ux.js?v=20261108atlas1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
