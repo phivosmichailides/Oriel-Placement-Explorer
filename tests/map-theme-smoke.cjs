@@ -582,6 +582,20 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(Array.isArray(allCatalogueCoverage.fallback),'A persisted null postcode was not retried and resolved via its outcode');
     await page.waitForFunction(()=>window.OrielMapScope==='matching'&&document.getElementById('mapStatus')?.title.includes('current filters'));
 
+    // The custom controls must zoom the existing map and move that same map
+    // instance into a spacious, reversible focus window.
+    const startingZoom=await page.evaluate(()=>placementMap.getZoom());
+    await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
+    await page.waitForFunction(z=>placementMap.getZoom()>z,startingZoom);
+    await page.locator('#atlasMapZoom [data-atlas-zoom="out"]').click();
+    await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<0.01,startingZoom);
+    await page.locator('#atlasMapExpand').click();
+    await page.waitForFunction(()=>!document.getElementById('atlasMapFocus')?.hidden);
+    assert.equal(await page.locator('#atlasMapFocusStage #placementMap').count(),1,'Expanded map should move the existing map rather than create a duplicate');
+    await page.locator('#atlasMapFocusClose').click();
+    await page.waitForFunction(()=>!!document.querySelector('.map-card #placementMap'));
+    assert.equal(await page.locator('#atlasMapFocusStage #placementMap').count(),0,'Closing the focus map should restore the original map position');
+
     // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
     await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
     const tubeDataCount=await page.evaluate(()=>window.ORIEL_TUBE_STATIONS.length);
@@ -592,6 +606,40 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(mainTubeCount>=1,'The London neighbourhood map did not render a visible Underground station roundel');
 
     await page.locator('[data-q="london"]').first().click();
+    await page.waitForFunction(()=>{
+      const expected=placements.filter(matches).length;
+      const status=document.getElementById('count')?.textContent||'';
+      return window.OrielMapStats?.programmes===expected&&status.includes(expected.toLocaleString('en-GB')+' shown');
+    });
+    const filteredView=await page.evaluate(()=>({matching:placements.filter(matches).length,map:window.OrielMapStats?.programmes,count:document.getElementById('count')?.textContent||'',quick:[...quick]}));
+    assert(filteredView.matching<4064,'The London quick filter did not narrow the catalogue');
+    assert.equal(filteredView.map,filteredView.matching,'Map markers are not using the same filtered programme set as the results list');
+    assert.match(filteredView.count,/4,064 total programmes · \\d+ shown/,'Filtered result count should retain the original catalogue total');
+    assert(filteredView.quick.includes('london'),'The London quick filter did not remain active');
+    const savedFilter=await page.evaluate(()=>JSON.parse(localStorage.getItem('phivos-desk-v2')||'{}').filters);
+    assert(savedFilter?.quick?.includes('london'),'Temporary filters were not saved to the local workspace cache');
+    await page.reload();
+    await page.waitForFunction(()=>window.OrielMapStats&&window.OrielMapStats.programmes===placements.filter(matches).length,null,{timeout:30000});
+    assert(await page.evaluate(()=>quick.has('london')),'Saved quick filters were not restored after refresh');
+    assert.equal(await page.evaluate(()=>window.OrielMapStats.programmes),filteredView.matching,'The filtered map changed after refreshing the page');
+    await page.locator('[data-q="london"]').first().click();
+    await page.waitForFunction(()=>window.OrielMapStats?.programmes===4064,null,{timeout:30000});
+
+    // Unknown site data and approximate matches must stay visible for review;
+    // only exact verified postcode or borough matches may be excluded.
+    const reviewRule=await page.evaluate(()=>{
+      const previous=state.prefs.locationBlacklist;
+      state.prefs.locationBlacklist=[{id:'test-review-area',kind:'district',district:'Imaginary Borough',label:'Imaginary Borough'}];
+      const testProgramme={id:'__unverified-location-test',title:'Unknown training site',postcodes:['ZZ99 9ZZ'],outcodes:[]};
+      const assessment=OrielGeoBlacklist.assess(testProgramme);
+      const hidden=OrielGeoBlacklist.shouldHide(testProgramme);
+      state.prefs.locationBlacklist=previous;save();
+      const likes=document.querySelector('.geoLikesPane'),exclusions=document.querySelector('.geoBlacklistPane');
+      return {kind:assessment.kind,hidden,likesBeforeExclusions:!!likes&&!!exclusions&&!!(likes.compareDocumentPosition(exclusions)&Node.DOCUMENT_POSITION_FOLLOWING),likeSearch:!!document.getElementById('geoLikeSearch')};
+    });
+    assert.equal(reviewRule.kind,'unverified','A missing postcode should be classified as needing review');
+    assert.equal(reviewRule.hidden,false,'A programme needing review must remain visible in Explore and on the map');
+    assert(reviewRule.likesBeforeExclusions&&reviewRule.likeSearch,'Preferred areas should appear above the excluded-locations selector');
 
     // Visibility rules inspect every training-site postcode, not merely
     // the first site name; these are synthetic fixtures, never user edits.
