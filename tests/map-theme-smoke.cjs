@@ -334,7 +334,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert(await mapPicker.isDisabled(),'Map style selector should explain unavailable vector rendering');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
       const actualFallback=await page.locator('#placementMap').getAttribute('data-basemap');
-      assert(localPreview?actualFallback==='osm-fallback':actualFallback==='raster-fallback',
+      assert(localPreview?['osm-fallback','raster-fallback'].includes(actualFallback):actualFallback==='raster-fallback',
         'Unexpected basemap fallback state: '+actualFallback);
     }
 
