@@ -8,7 +8,7 @@
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
 const STYLE_ID='01a1b7cf-4ca7-7662-9861-84b5b44c218c';
-const styleUrl=file=>new URL(file+'?v=20261108editorial3',document.baseURI).toString();
+const styleUrl=file=>new URL(file+'?v=20261108editorial4',document.baseURI).toString();
 const STYLES=Object.freeze({
   'editorial-light':styleUrl('map-styles/editorial-light.json'),
   'editorial-dark':styleUrl('map-styles/editorial-dark.json')
