@@ -365,3 +365,20 @@ html[data-layout="grid"] #reco .reco p{font-size:11px}
 @media(max-width:1180px){html[data-layout="grid"] #reco{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:850px){html[data-layout="grid"] #reco{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:610px){html[data-layout="grid"] #reco{grid-template-columns:1fr}}
+
+/* Distinct TfL Underground roundels: visible on the main map and location mini-maps. */
+.oriel-tube-marker{background:transparent;border:0}
+.oriel-tube-roundel{position:relative;display:block;width:19px;height:19px;box-sizing:border-box;border:3px solid #d7193f;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(20,25,30,.42)}
+.oriel-tube-roundel:after{content:"";position:absolute;left:-3px;right:-3px;top:4px;height:6px;background:#003b70;border-top:1px solid #fff;border-bottom:1px solid #fff;box-sizing:border-box}
+.oriel-tube-mini-marker .oriel-tube-roundel{width:15px;height:15px;border-width:2.5px}
+.oriel-tube-mini-marker .oriel-tube-roundel:after{left:-2.5px;right:-2.5px;top:3px;height:5px}
+.oriel-tube-marker:focus-visible .oriel-tube-roundel{outline:3px solid #e8c783;outline-offset:2px}
+.oriel-tube-legend{display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+.oriel-tube-legend-mark{position:relative;display:inline-block;width:15px;height:15px;box-sizing:border-box;border:2.5px solid #d7193f;border-radius:50%;background:#fff}
+.oriel-tube-legend-mark:after{content:"";position:absolute;left:-2px;right:-2px;top:3px;height:5px;background:#003b70;border-top:1px solid #fff;border-bottom:1px solid #fff}
+.oriel-tube-attribution{font-size:10px;color:var(--mut)}
+.oriel-tube-popup-content{min-width:150px;line-height:1.45}
+.oriel-tube-popup-content b{display:block;font-size:13px;margin-bottom:3px}
+.oriel-tube-popup-content small{display:block;color:var(--mut);margin-top:5px}
+.oriel-tube-popup .leaflet-popup-content-wrapper{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px}
+.oriel-tube-popup .leaflet-popup-tip{background:var(--panel)}
