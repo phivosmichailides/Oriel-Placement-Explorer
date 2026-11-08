@@ -224,6 +224,7 @@
     const last=game.history.pop();
     if(!last){note('Nothing to undo yet.');return;}
     const s=prefs();if(s){if(last.prev)s.marks[last.id]=last.prev;else delete s.marks[last.id];save();}
+    document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'tinder_undo'}}));
     game.seen=game.seen.filter(x=>x!==last.id);
     forced=last.id;
     returningId=last.id;
