@@ -80,21 +80,42 @@
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
     document.addEventListener('desk:palette',()=>{renderLegend();settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});
 
-    // Bi-directional programme-to-pin focus, independent of shortlist state.
+    // Numbered pins make shared programme locations visible and clickable.
+    // One numbered marker opens every programme that shares those coordinates.
+    if(!document.getElementById('oriel-group-pin-style')){
+      const pinStyle=document.createElement('style');
+      pinStyle.id='oriel-group-pin-style';
+      pinStyle.textContent='.oriel-group-marker{background:transparent;border:0}.oriel-group-count{display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--group-ring,#fff);border-radius:50%;background:var(--group-fill,#9076a6);color:#fff;font:800 10px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 7px rgba(20,25,30,.32);transition:transform .16s ease,box-shadow .16s ease;user-select:none}.oriel-group-marker:focus-visible .oriel-group-count{outline:3px solid #f5d68a;outline-offset:2px}.map-approx-note{display:block;margin:6px 0 10px;color:var(--mut);font-size:12px}';
+      document.head.appendChild(pinStyle);
+    }
+
     const programmePins=new Map(),pinBases=new WeakMap();
     let selectedProgramme=null,hoveredProgramme=null;
+    const locationCodes=p=>[
+      ...new Set((p.postcodes||[]).map(pcKey)),
+      ...new Set((p.outcodes||[]).map(code=>'@OUTCODE:'+String(code).toUpperCase()))
+    ];
     const highlightPin=pin=>{
       const base=pinBases.get(pin);if(!base)return;
       const selected=!!selectedProgramme&&base.ids.includes(selectedProgramme);
       const hovered=!!hoveredProgramme&&base.ids.includes(hoveredProgramme);
       const active=selected||hovered;
-      pin.setRadius(active?base.radius*(selected?1.8:1.52):base.radius);
-      pin.setStyle({
-        color:selected?'#fff2cf':hovered?'#eee0ce':base.color,
-        weight:selected?4:hovered?3.3:base.weight,
-        fillOpacity:active?1:base.fillOpacity,
-        opacity:1
-      });
+      if(typeof pin.setRadius==='function'){
+        pin.setRadius(active?base.radius*(selected?1.8:1.52):base.radius);
+        pin.setStyle({
+          color:selected?'#fff2cf':hovered?'#eee0ce':base.color,
+          weight:selected?4:hovered?3.3:base.weight,
+          fillOpacity:active?1:base.fillOpacity,
+          opacity:1
+        });
+      }else{
+        const badge=pin.getElement()?.querySelector('.oriel-group-count');
+        if(badge){
+          badge.style.transform=active?'scale(1.2)':'scale(1)';
+          badge.style.borderColor=selected?'#fff2cf':hovered?'#eee0ce':base.color;
+          badge.style.boxShadow=active?'0 0 0 3px rgba(255,225,166,.35),0 2px 8px rgba(20,25,30,.35)':'0 2px 7px rgba(20,25,30,.32)';
+        }
+      }
       const el=pin.getElement();
       if(el)el.style.filter=active?'drop-shadow(0px 0px 5px rgba(255,225,166,.95))':'';
     };
@@ -115,38 +136,57 @@
       $('mapSelection').innerHTML='';
       mapLayer.clearLayers();
       programmePins.clear();hoveredProgramme=null;
-      const groups=new Map();
-      let located=0;
+      const groups=new Map(),allCodes=new Set(),resolvedCodes=new Set();
+      let programmesWithAnySite=0,programmesWithAllSites=0,programmesWithoutCode=0;
 
       list.forEach(p=>{
-        let found=false;
-        new Set(p.postcodes.map(pcKey)).forEach(pc=>{
-          const c=geo[pc];
-          if(!c)return;
-          found=true;
-          const k=c.join(',');
-          if(!groups.has(k))groups.set(k,{c,entries:[]});
-          groups.get(k).entries.push(p);
+        const codes=locationCodes(p);
+        if(!codes.length){programmesWithoutCode++;return;}
+        codes.forEach(code=>allCodes.add(code));
+        let resolvedForProgramme=0;
+        codes.forEach(code=>{
+          const c=geo[code];
+          if(!Array.isArray(c)||c.length<2)return;
+          resolvedForProgramme++;resolvedCodes.add(code);
+          const k=c[0]+','+c[1];
+          if(!groups.has(k))groups.set(k,{c,entries:[],codes:new Set(),approximate:false});
+          const group=groups.get(k);
+          group.codes.add(code);
+          if(code.startsWith('@OUTCODE:'))group.approximate=true;
+          if(!group.entries.some(existing=>existing.id===p.id))group.entries.push(p);
         });
-        if(found)located++;
+        if(resolvedForProgramme>0)programmesWithAnySite++;
+        if(resolvedForProgramme===codes.length)programmesWithAllSites++;
       });
 
-      for(const {c,entries} of groups.values()){
+      for(const group of groups.values()){
+        const {c,entries}=group;
         const mapSector=groupMapSector(entries);
         const preferred=entries.some(p=>SHORT.has(mark(p).status));
         const excluded=entries.every(isExcluded);
         const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
+        const fillColor=palette[mapSector]||palette.Other;
         const radius=(entries.length>1?4.3:2.9)+(preferred?.55:0);
-        const pin=L.circleMarker(c,{
-          radius,
-          color:stroke,
-          weight:preferred?2.7:excluded?2.4:1.6,
-          fillColor:palette[mapSector]||palette.Other,
-          fillOpacity:excluded?.38:.94,
-          opacity:excluded?.9:1
-        }).addTo(mapLayer);
+        let pin;
+        if(entries.length>1){
+          const size=entries.length>=100?34:entries.length>=10?29:25;
+          const fontSize=entries.length>=100?9:10;
+          pin=L.marker(c,{
+            icon:L.divIcon({
+              className:'oriel-group-marker',
+              html:'<span class="oriel-group-count" data-programme-count="'+entries.length+'" style="width:'+size+'px;height:'+size+'px;font-size:'+fontSize+'px;--group-fill:'+fillColor+';--group-ring:'+stroke+'">'+entries.length+'</span>',
+              iconSize:[size,size],iconAnchor:[size/2,size/2]
+            }),
+            keyboard:true,riseOnHover:true
+          }).addTo(mapLayer);
+        }else{
+          pin=L.circleMarker(c,{
+            radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,
+            fillColor,fillOpacity:excluded?.38:.94,opacity:excluded?.9:1
+          }).addTo(mapLayer);
+        }
 
-        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94});
+        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94,fillColor});
         for(const p of entries){if(!programmePins.has(p.id))programmePins.set(p.id,[]);programmePins.get(p.id).push(pin)}
         pin.on('mouseover',()=>{
           hoveredProgramme=entries[0]?.id||null;syncMap();
@@ -158,11 +198,13 @@
         });
 
         const sectorSummary=groupSectorSummary(entries);
-        const postcodes=[...new Set(entries.flatMap(p=>p.postcodes))].join(', ');
-        pin.bindTooltip(`${entries.length} programme${entries.length===1?'':'s'} · ${sectorSummary}${postcodes?' · '+postcodes:''}`);
+        const labels=[...group.codes].map(code=>code.startsWith('@OUTCODE:')?code.slice(9)+' (approx.)':code);
+        const locationSummary=labels.join(', ');
+        const approximateNote=group.approximate?' · includes approximate postcode-district centre':'';
+        pin.bindTooltip((entries.length>1?entries.length+' programmes':'1 programme')+' · '+sectorSummary+approximateNote+(locationSummary?' · '+locationSummary:''));
 
         const openPin=()=>{
-          $('mapSelection').innerHTML=`<div class="map-selection-head"><b>${entries.length} programme${entries.length===1?'':'s'} at this location · ${esc(sectorSummary)}</b><button class="textbtn" id="closeSelection">Close</button></div>`+sorted([...entries]).map(p=>card(p)).join('');
+          $('mapSelection').innerHTML='<div class="map-selection-head"><b>'+entries.length+' programme'+(entries.length===1?'':'s')+' at this location · '+esc(sectorSummary)+'</b><button class="textbtn" id="closeSelection">Close</button></div>'+(group.approximate?'<p class="map-approx-note">This marker uses a postcode-district centre because the source did not provide a full postcode.</p>':'')+sorted([...entries]).map(p=>card(p)).join('');
           $('closeSelection').onclick=()=>$('mapSelection').innerHTML='';
           $('mapSelection').scrollIntoView({behavior:'smooth',block:'nearest'});
         };
@@ -171,15 +213,24 @@
         if(el){
           el.setAttribute('tabindex','0');
           el.setAttribute('role','button');
-          el.setAttribute('aria-label',`Show ${entries.length} ${sectorSummary} programme${entries.length===1?'':'s'}${postcodes?' at '+postcodes:''}`);
+          el.dataset.programmeCount=String(entries.length);
+          el.setAttribute('aria-label','Show '+entries.length+' '+sectorSummary+' programme'+(entries.length===1?'':'s')+(locationSummary?' at '+locationSummary:'')+(group.approximate?' · approximate area':''));
           el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPin();}});
         }
       }
 
+      const unresolved=allCodes.size-resolvedCodes.size;
+      const summary=[
+        programmesWithAllSites.toLocaleString()+' of '+list.length.toLocaleString()+' programmes have all listed sites mapped',
+        groups.size.toLocaleString()+' unique pin locations',
+        resolvedCodes.size.toLocaleString()+' of '+allCodes.size.toLocaleString()+' location codes resolved'
+      ];
+      if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
+      if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
+      $('mapStatus').textContent=summary.join(' · ');
+      $('mapStatus').title='A programme can appear at multiple training sites. Numbered pins group multiple programmes at the same map point; click one to open every programme there. Outcode-only markers are approximate area locations.';
       syncMap();
-      if(!mapTileFailed)$('mapStatus').textContent=`${located} of ${list.length} matching programmes mapped · ${groups.size} locations${located<list.length?' · Unlocated programmes remain in the list':''}`;
     };
-
     try{drawMap(placements.filter(matches));}catch{}
     return true;
   };
