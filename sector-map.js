@@ -313,37 +313,72 @@
       const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
       const displayGroups=[];
       if(cellSize>0){
-        const buckets=new Map();
-        for(const group of groups.values()){
-          if(visibleBounds&&!visibleBounds.contains(L.latLng(group.c[0],group.c[1])))continue;
+        // Use a spatial hash only to find nearby candidate clusters. Cluster
+        // centres are weighted geographic centroids, not fixed grid-cell
+        // centres; this avoids the visible lattice of circles at country scale.
+        const spatialIndex=new Map(),clusters=[];
+        const cellKey=(x,y)=>Math.floor(x/cellSize)+':'+Math.floor(y/cellSize);
+        const indexCluster=cluster=>{
+          cluster.cell=cellKey(cluster.sumX/cluster.items.length,cluster.sumY/cluster.items.length);
+          if(!spatialIndex.has(cluster.cell))spatialIndex.set(cluster.cell,[]);
+          spatialIndex.get(cluster.cell).push(cluster);
+        };
+        const unindexCluster=cluster=>{
+          const bucket=spatialIndex.get(cluster.cell);
+          if(!bucket)return;
+          const index=bucket.indexOf(cluster);
+          if(index>=0)bucket.splice(index,1);
+          if(!bucket.length)spatialIndex.delete(cluster.cell);
+        };
+        const radiusSquared=cellSize*cellSize;
+        const ordered=[...groups.values()]
+          .filter(group=>!visibleBounds||visibleBounds.contains(L.latLng(group.c[0],group.c[1])))
+          .sort((a,b)=>b.entries.length-a.entries.length||a.c[0]-b.c[0]||a.c[1]-b.c[1]);
+        for(const group of ordered){
           const pixel=placementMap.project(L.latLng(group.c[0],group.c[1]),zoom);
-          const key=Math.floor(pixel.x/cellSize)+':'+Math.floor(pixel.y/cellSize);
-          if(!buckets.has(key))buckets.set(key,[]);
-          buckets.get(key).push({group,pixel});
+          const gx=Math.floor(pixel.x/cellSize),gy=Math.floor(pixel.y/cellSize);
+          let nearest=null,nearestDistance=radiusSquared;
+          for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
+            const candidates=spatialIndex.get((gx+dx)+':'+(gy+dy))||[];
+            for(const candidate of candidates){
+              const cx=candidate.sumX/candidate.items.length,cy=candidate.sumY/candidate.items.length;
+              const distance=(pixel.x-cx)**2+(pixel.y-cy)**2;
+              if(distance<=nearestDistance){nearest=candidate;nearestDistance=distance;}
+            }
+          }
+          if(nearest){
+            unindexCluster(nearest);
+            nearest.items.push({group,pixel});
+            nearest.sumX+=pixel.x;nearest.sumY+=pixel.y;
+            indexCluster(nearest);
+          }else{
+            const cluster={items:[{group,pixel}],sumX:pixel.x,sumY:pixel.y,cell:''};
+            clusters.push(cluster);indexCluster(cluster);
+          }
         }
-        for(const bucket of buckets.values()){
-          if(bucket.length===1){
-            const group=bucket[0].group;
+        for(const cluster of clusters){
+          const items=cluster.items;
+          if(items.length===1){
+            const group=items[0].group;
             displayGroups.push({...group,cluster:false,locationCount:1,clusterBounds:null});
             continue;
           }
-          const entriesById=new Map(),codes=new Set();
-          let sumX=0,sumY=0,approximate=false;
-          const points=[];
-          bucket.forEach(({group,pixel})=>{
-            sumX+=pixel.x;sumY+=pixel.y;points.push(L.latLng(group.c[0],group.c[1]));
+          const entriesById=new Map(),codes=new Set(),points=[];
+          let approximate=false;
+          for(const {group} of items){
+            points.push(L.latLng(group.c[0],group.c[1]));
             group.entries.forEach(entry=>entriesById.set(entry.id,entry));
             group.codes.forEach(code=>codes.add(code));
             if(group.approximate)approximate=true;
-          });
-          const centre=placementMap.unproject(L.point(sumX/bucket.length,sumY/bucket.length),zoom);
+          }
+          const centre=placementMap.unproject(L.point(cluster.sumX/items.length,cluster.sumY/items.length),zoom);
           displayGroups.push({
             c:[centre.lat,centre.lng],
             entries:[...entriesById.values()],
             codes,
             approximate,
             cluster:true,
-            locationCount:bucket.length,
+            locationCount:items.length,
             clusterBounds:L.latLngBounds(points)
           });
         }
