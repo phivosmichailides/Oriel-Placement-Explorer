@@ -355,12 +355,13 @@
    try{
      holder.replaceChildren();
      const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false});
-     // The standard OSM raster endpoint is key-free. CARTO's unkeyed URL
-     // may return an HTTP-200 "API KEY REQUIRED" image, not a tile error.
-     if(window.OrielBasemap?.addTo)window.OrielBasemap.addTo(map,{mini:true});
-     else L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-       maxZoom:19,attribution:'© OpenStreetMap contributors'
-     }).addTo(map);
+     // Reuse the custom MapTiler vector style through one shared renderer.
+     // Leaflet still owns the site markers, arrows, attribution and click target.
+     const miniBasemap=window.OrielBasemap?.addTo
+       ?window.OrielBasemap.addTo(map,{mini:true})
+       :L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+         maxZoom:19,attribution:'© OpenStreetMap contributors'
+       }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
      const central=p.region==='London'?[51.5074,-.1278]:null;
      if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
@@ -382,7 +383,11 @@
        openSelected();
      });
      miniMaps.set(holder,map);
-     requestAnimationFrame(()=>{if(holder.isConnected)map.invalidateSize(false)});
+     requestAnimationFrame(()=>{
+       if(!holder.isConnected)return;
+       map.invalidateSize(false);
+       miniBasemap?.render?.();
+     });
    }catch(e){holder.textContent='Map unavailable — use the route link'}
  }
  function enableMini(holder){
