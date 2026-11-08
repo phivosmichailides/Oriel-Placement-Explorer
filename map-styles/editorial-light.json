@@ -14812,7 +14812,7 @@
           true
         ]
       ],
-      "minzoom": 5,
+      "minzoom": 3,
       "layout": {
         "line-cap": "round",
         "line-join": "round"
@@ -14827,6 +14827,32 @@
           ],
           [
             "zoom"
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            2.5,
+            [
+              "trunk",
+              "primary"
+            ],
+            2.35,
+            "secondary",
+            2.15,
+            "tertiary",
+            1.95,
+            [
+              "minor",
+              "service",
+              "track"
+            ],
+            1.85,
+            1.75
           ],
           5,
           [
@@ -15124,7 +15150,7 @@
           true
         ]
       ],
-      "minzoom": 5,
+      "minzoom": 3,
       "layout": {
         "line-cap": "round",
         "line-join": "round"
@@ -15162,6 +15188,32 @@
           ],
           [
             "zoom"
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            0.65,
+            [
+              "trunk",
+              "primary"
+            ],
+            0.55,
+            "secondary",
+            0.38,
+            "tertiary",
+            0.25,
+            [
+              "minor",
+              "service",
+              "track"
+            ],
+            0.12,
+            0.08
           ],
           5,
           [
@@ -24758,7 +24810,7 @@
       "type": "symbol",
       "source": "maptiler_planet_v4",
       "source-layer": "road_label",
-      "minzoom": 12.5,
+      "minzoom": 11.5,
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": [
@@ -29331,10 +29383,6 @@
     {
       "id": "default",
       "url": "https://api.maptiler.com/sprites/general/sprite"
-    },
-    {
-      "id": "subway",
-      "url": "https://api.maptiler.com/sprites/subway/sprite"
     },
     {
       "id": "transportation",
