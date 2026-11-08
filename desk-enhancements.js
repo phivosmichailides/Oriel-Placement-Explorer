@@ -26,8 +26,8 @@
       cursor+=delta;restoring=true;state=clone(history[cursor]);saveBase();restoring=false;lastEdit='';
       const profile=state.prefs.onboarding;
       try{if(profile){localStorage.setItem('phivos-onboarding-profile-v1',JSON.stringify(profile));localStorage.setItem('phivos-onboarding-v1','1')}else{localStorage.removeItem('phivos-onboarding-profile-v1');localStorage.removeItem('phivos-onboarding-v1')}}catch{}
-      if(oldProfile!==JSON.stringify(profile)){$('region').value=profile?.region||'';$('salary').value=profile?.salary||'';$('hours').value=profile?.hours||'';quick.delete('london');}
-      document.body.classList.toggle('deskPersonalised',!!profile);renderAll();document.dispatchEvent(new CustomEvent('desk:palette'));updateHistory();
+      applySavedFilters();
+      document.body.classList.toggle('deskPersonalised',!!profile);renderAll();document.dispatchEvent(new CustomEvent('desk:palette'));document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:delta<0?'history_undo':'history_redo'}}));updateHistory();
       $('historyStatus').textContent=delta<0?'Change undone.':'Change restored.';
     }
     $('undoDesk').onclick=()=>travel(-1);$('redoDesk').onclick=()=>travel(1);
