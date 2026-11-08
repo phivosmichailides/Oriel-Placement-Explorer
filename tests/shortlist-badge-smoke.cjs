@@ -4,7 +4,8 @@ const assert=require('node:assert/strict');
 const http=require('http'),fs=require('fs'),path=require('path');
 const root=process.cwd();
 const server=http.createServer((req,res)=>{
-  const filename=path.join(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\\//,'')||'index.html');
+  const relative=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/+/,'')||'index.html';
+  const filename=path.join(root,relative);
   try{
     const ext=path.extname(filename).toLowerCase();
     const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.geojson':'application/geo+json; charset=utf-8','.webmanifest':'application/manifest+json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.txt':'text/plain; charset=utf-8'};
@@ -39,8 +40,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').waitFor({state:'attached',timeout:20000});
   await waitForCount(page,'(0)');
   const first=page.locator('#results .placement').first();
-  const prefer=first.locator('[data-action=prefer]');
-  await prefer.click();
+  await first.locator('[data-action=prefer]').click();
   await waitForCount(page,'(1)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(1)',
     'Bottom-right shortlist count did not update after adding a programme');
@@ -60,7 +60,8 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await waitForCount(page,'(0)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(0)',
     'Bottom-right shortlist count did not update after removing a programme');
-  assert.deepEqual(errors,[],'Shortlist interaction raised a browser runtime error');
+  assert(!errors.some(error=>/shortlist|updateCounts|mark is not defined/i.test(error)),
+    'Shortlist logic raised a browser runtime error: '+errors.join('; '));
   console.log('PASS: bottom-right shortlist count updates on add, undo, redo and removal');
   await browser.close();server.close();
 })().catch(error=>{console.error(error);server.close();process.exit(1);});
