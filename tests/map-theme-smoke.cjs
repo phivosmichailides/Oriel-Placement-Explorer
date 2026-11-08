@@ -614,7 +614,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const filteredView=await page.evaluate(()=>({matching:placements.filter(matches).length,map:window.OrielMapStats?.programmes,count:document.getElementById('count')?.textContent||'',quick:[...quick]}));
     assert(filteredView.matching<4064,'The London quick filter did not narrow the catalogue');
     assert.equal(filteredView.map,filteredView.matching,'Map markers are not using the same filtered programme set as the results list');
-    assert.match(filteredView.count,/4,064 total programmes · \\d+ shown/,'Filtered result count should retain the original catalogue total');
+    assert.match(filteredView.count,/4,064 total programmes · \d+ shown/,'Filtered result count should retain the original catalogue total');
     assert(filteredView.quick.includes('london'),'The London quick filter did not remain active');
     const savedFilter=await page.evaluate(()=>JSON.parse(localStorage.getItem('phivos-desk-v2')||'{}').filters);
     assert(savedFilter?.quick?.includes('london'),'Temporary filters were not saved to the local workspace cache');
@@ -635,11 +635,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const hidden=OrielGeoBlacklist.shouldHide(testProgramme);
       state.prefs.locationBlacklist=previous;save();
       const likes=document.querySelector('.geoLikesPane'),exclusions=document.querySelector('.geoBlacklistPane');
-      return {kind:assessment.kind,hidden,likesBeforeExclusions:!!likes&&!!exclusions&&!!(likes.compareDocumentPosition(exclusions)&Node.DOCUMENT_POSITION_FOLLOWING),likeSearch:!!document.getElementById('geoLikeSearch')};
+      return {kind:assessment.kind,hidden,likesBeforeExclusions:!!likes&&!!exclusions&&!!(likes.compareDocumentPosition(exclusions)&Node.DOCUMENT_POSITION_FOLLOWING),likeSearch:!!document.getElementById('geoLikeSearch'),preferredToggle:!!document.getElementById('geoPreferredOnly'),preferredToggleDisabled:!!document.getElementById('geoPreferredOnly')?.disabled};
     });
     assert.equal(reviewRule.kind,'unverified','A missing postcode should be classified as needing review');
     assert.equal(reviewRule.hidden,false,'A programme needing review must remain visible in Explore and on the map');
-    assert(reviewRule.likesBeforeExclusions&&reviewRule.likeSearch,'Preferred areas should appear above the excluded-locations selector');
+    assert(reviewRule.likesBeforeExclusions&&reviewRule.likeSearch&&reviewRule.preferredToggle&&reviewRule.preferredToggleDisabled,'Preferred areas should appear above exclusions with a focus filter that activates after an area is selected');
 
     // Visibility rules inspect every training-site postcode, not merely
     // the first site name; these are synthetic fixtures, never user edits.
