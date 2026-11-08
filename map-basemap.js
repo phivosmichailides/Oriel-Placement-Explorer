@@ -294,10 +294,10 @@ const STYLES=Object.freeze({
     const vectorPane=map.getPane('orielVectorBasemap')||map.createPane('orielVectorBasemap');
     vectorPane.style.zIndex='250';
     vectorPane.style.pointerEvents='none';
-    let layer,glMap,loaded=false,ended=false,timeout;
+    let layer,glMap,loaded=false,ready=false,ended=false,timeout;
     const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
     const fail=()=>{
-      if(ended||loaded)return;
+      if(ended||ready)return;
       ended=true;
       if(timeout)clearTimeout(timeout);
       instances.delete(record);
@@ -335,8 +335,14 @@ const STYLES=Object.freeze({
       glMap.on('load',()=>{
         if(ended)return;
         loaded=true;
+      });
+      // The style's "load" event can precede the first fully rendered frame.
+      // Keep the neutral OSM underlay until MapLibre is genuinely idle, so the
+      // main map never exposes a blank cream canvas while vector tiles arrive.
+      glMap.on('idle',()=>{
+        if(ended||!loaded)return;
+        ready=true;
         if(timeout)clearTimeout(timeout);
-        // Do not keep the OSM raster drawn above the custom basemap.
         if(retainedUnderlay){
           try{map.removeLayer(retainedUnderlay)}catch{}
           retainedUnderlay=null;
@@ -345,19 +351,18 @@ const STYLES=Object.freeze({
         reportMainRenderer(map,false);
       });
       glMap.on('style.load',()=>{
-        if(!ended)holder.dataset.basemap='vector-'+mapAppearance();
+        if(!ended)holder.dataset.basemap='vector-loading';
       });
       glMap.on('error',event=>{
         const message=String(event.error?.message||event.error||'');
-        // Failure to fetch a style/tiles: show a working raster fallback
-        // instead of leaving a blank map. Do not fallback for incidental
-        // glyph errors after the basemap has already rendered.
-        if(!loaded&&/style|fetch|network|failed|http|request|webgl|context/i.test(message)){
-          console.warn('Vector basemap failed to load:',message);
+        // An initial style/tile failure should fall back rather than leave a
+        // blank map. Aborted requests during later style switches are expected.
+        if(!ready&&/style|fetch|network|failed|http|request|webgl|context/i.test(message)){
+          console.warn('Vector basemap failed before its first rendered frame:',message);
           fail();
         }
       });
-      timeout=setTimeout(()=>{if(!loaded)fail()},11000);
+      timeout=setTimeout(()=>{if(!ready)fail()},18000);
       map.on('unload',()=>{
         ended=true;
         instances.delete(record);
@@ -365,7 +370,7 @@ const STYLES=Object.freeze({
       });
       return {layer,kind:'vector',map:glMap};
     }catch(error){
-      console.warn('Modern basemap unavailable; displaying OpenStreetMap',error);
+      console.warn('Modern basemap unavailable; displaying MapTiler raster tiles',error);
       fail();
       return {layer:null,kind:'raster'};
     }
