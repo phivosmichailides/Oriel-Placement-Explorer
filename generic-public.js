@@ -68,25 +68,28 @@
       return html;
     };
 
-    // A neutral visit starts broad. Returning users who completed onboarding get their
-    // own saved starting region/limits instead of Phivos's.
-    quick.clear();
-    document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
+    // A first visit starts broad. Returning visitors keep the temporary filters
+    // they saved in the local workspace; app-base.js has already restored them.
+    const preserveSavedFilters=!wasFresh&&(has(KEY)||onboardingDone);
     const region=document.getElementById('region');
     const decision=document.getElementById('decision');
     const salary=document.getElementById('salary');
     const hours=document.getElementById('hours');
     const hideAvoid=document.getElementById('hideAvoid');
     const visa=document.getElementById('visa');
-    if(region)region.value=profile?.region||'';
-    if(decision)decision.value='all';
-    if(salary)salary.value=profile?.salary||'';
-    if(hours)hours.value=profile?.hours||'';
-    if(hideAvoid)hideAvoid.checked=false;
-    if(visa)visa.value='';
+    if(!preserveSavedFilters){
+      quick.clear();
+      document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
+      if(region)region.value=profile?.region||'';
+      if(decision)decision.value='all';
+      if(salary)salary.value=profile?.salary||'';
+      if(hours)hours.value=profile?.hours||'';
+      if(hideAvoid)hideAvoid.checked=false;
+      if(visa)visa.value='';
+    }
 
     const allBtn=document.getElementById('allRegionsBtn');
-    if(allBtn)allBtn.classList.toggle('on',!region?.value);
+    if(allBtn)allBtn.classList.toggle('on',!region?.value&&!quick.size);
 
     // Copy should describe the product, not the creator's personal London search.
     const notice=document.querySelector('.notice');
@@ -129,7 +132,8 @@
       allBtn.classList.add('on');
       requestAnimationFrame(()=>{try{placementMap?.invalidateSize(false)}catch{}});
     });
-    region?.addEventListener('change',()=>allBtn?.classList.toggle('on',!region.value));
+    region?.addEventListener('change',()=>allBtn?.classList.toggle('on',!region.value&&!quick.size));
+    document.getElementById('quick')?.addEventListener('click',()=>requestAnimationFrame(()=>allBtn?.classList.toggle('on',!region?.value&&!quick.size)));
     document.querySelector('[data-q="london"]')?.addEventListener('click',()=>allBtn?.classList.remove('on'));
 
     try{renderAll()}catch{}

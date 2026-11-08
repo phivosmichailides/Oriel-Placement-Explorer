@@ -31,7 +31,7 @@
     };
     const loadGeneric=()=>{
       const generic=document.createElement('script');
-      generic.src='generic-public.js?v=20261108atlas2';
+      generic.src='generic-public.js?v=20261108atlas3';
       generic.onload=loadSectors;
       generic.onerror=loadSectors;
       document.body.appendChild(generic);
