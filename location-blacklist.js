@@ -65,12 +65,15 @@
   };
   const shouldHide=p=>assess(p).kind==='blocked';
   const matchesPreferred=p=>{
-    const preferred=likedAreas();
-    if(!preferred.length)return false;
-    return (p.postcodes||[]).some(raw=>{
-      const site=adminCache[pcKey(raw)];
-      return !!site&&preferred.some(area=>matchArea(area,site));
-    });
+    const preferred=likedAreas();if(!preferred.length)return null;
+    const codes=[...new Set((p.postcodes||[]).map(pcKey).filter(Boolean))];if(!codes.length)return null;
+    let uncertain=false;
+    for(const pc of codes){
+      const site=adminCache[pc];
+      if(!has(pc)||!site){uncertain=true;continue;}
+      if(preferred.some(area=>matchArea(area,site)))return true;
+    }
+    return uncertain?null:false;
   };
   const getExcluded=()=>postcodes().map(p=>({p,assessment:assess(p)}))
     .filter(x=>x.assessment.kind!=='clear');
@@ -197,6 +200,7 @@
   const removeLikeArea=id=>{
     if(!prefs())return;
     prefs().locationLikes=likedAreas().filter(a=>a.id!==id);
+    if(!prefs().locationLikes.length)prefs().preferredAreasOnly=false;
     save();refresh();scan();
   };
   const removeLegacyLike=label=>{
@@ -224,6 +228,7 @@
       const close=document.createElement('button');close.type='button';close.textContent='×';close.title='Remove '+value+' from legacy preferred areas';close.setAttribute('aria-label','Remove '+value+' from preferred areas');
       close.onclick=()=>removeLegacyLike(value);chip.append(label,close);host.append(chip);
     });
+    const focus=byId('geoPreferredOnly');if(focus){focus.checked=!!prefs()?.preferredAreasOnly;focus.disabled=!likedAreas().length;}
   };
   const renderChips=()=>{
     renderLikeChips();
@@ -315,7 +320,8 @@
     const likesPane=document.createElement('section');likesPane.className='geoLikesPane';
     likesPane.innerHTML='<label class="geoSearchLabel" for="geoLikeSearch">Areas you like <span>· Permanent preference</span></label>'+
       '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoLikeSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Find a borough, town or neighbourhood…" aria-label="Search UK locations to prefer"><button class="btn" id="geoAddLike" type="button" disabled>Add area</button></div><div id="geoLikeSuggestions" class="geoSuggestions" role="group" aria-label="Preferred location suggestions"></div></div>'+
-      '<p id="geoLikeStatus" class="geoBlacklistStatus" role="status">Choose an exact suggested area. Preferred areas improve fit scores and ranking; they do not hide other programmes.</p>'+
+      '<p id="geoLikeStatus" class="geoBlacklistStatus" role="status">Choose an exact suggested area. Preferred areas improve fit scores and ranking; the optional focus filter can narrow the results.</p>'+
+      '<label class="geoPreferredOnly"><input id="geoPreferredOnly" type="checkbox"> <span>Only show programmes in these preferred areas</span></label>'+
       '<div id="geoLikeChips" class="geoLikeChips" aria-label="Saved preferred areas"></div>';
     const pane=document.createElement('section');pane.className='geoBlacklistPane';
     pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Areas you want to exclude <span>· Permanent verified-site filter</span></label>'+
@@ -332,6 +338,7 @@
       add?.addEventListener('click',()=>saveNewArea(mode));
     };
     bindLocationSearch('like');bindLocationSearch('exclude');
+    byId('geoPreferredOnly')?.addEventListener('change',()=>{if(!prefs())return;prefs().preferredAreasOnly=byId('geoPreferredOnly').checked;save();refresh();scan();});
     byId('geoRetry').onclick=()=>scan();
     document.addEventListener('click',e=>{
       if(e.target.closest('[data-geo-open]'))openModal();
