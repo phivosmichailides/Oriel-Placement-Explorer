@@ -355,19 +355,21 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
     const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
-    const miniImage=await card.locator('.uxMiniMap .leaflet-image-layer').evaluate(node=>({
-      src:node.currentSrc||node.src,width:node.naturalWidth,height:node.naturalHeight,complete:node.complete,
-      filter:getComputedStyle(node).filter
-    }));
+    const miniImage=await card.locator('.uxMiniMap').evaluate(holder=>{
+      const node=holder.querySelector('.leaflet-image-layer')||holder.querySelector('.leaflet-tile-loaded');
+      return {src:node?.currentSrc||node?.src||'',width:node?.naturalWidth||0,height:node?.naturalHeight||0,complete:!!node?.complete,
+        filter:node?getComputedStyle(node).filter:null};
+    });
     assert.equal(miniBasemap,localPreview?'osm-fallback':'vector-editorial-light','Programme mini-map did not render its expected basemap: '+miniBasemap);
     if(!localPreview)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
-    else assert(await card.locator('.uxMiniMap .leaflet-tile-loaded').count()>0,'Local-preview mini map has no visible base-map tiles');
+    else assert(miniImage.src.startsWith('https://tile.openstreetmap.org/')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+      'Local-preview mini map has no visible OSM tile image: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
     if(!localPreview)assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
     assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
     assert.doesNotMatch(miniAttribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
-    assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
+    if(!localPreview)assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
     if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // Changing the main map style must re-render the existing mini-map too.
