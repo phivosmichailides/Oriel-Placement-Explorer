@@ -115,7 +115,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
     })));
     const shownState=await page.locator('#placementMap').getAttribute('data-basemap');
-    if(shownState==='vector-editorial'){
+    if(shownState==='vector-editorial-light'){
       assert.equal(mapTiles,0,'Old OSM raster tiles are still visible above Editorial Light');
       const vectorVisibility=await page.evaluate(()=>{
         const holder=document.getElementById('placementMap');
@@ -444,6 +444,54 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return {count,expanded};
     });
     assert.deepEqual(groupPinCheck,{count:3,expanded:3},'Shared-location pins do not expand to every programme');
+
+    // Reproduce a persisted failed postcode lookup: null must be retried and
+    // its outcode centroid must be used instead of silently marking it done.
+    await page.evaluate(()=>{
+      geo['TN250LZ']=null;
+      delete geo['@OUTCODE:TN25'];
+      try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
+    });
+    const mapScope=page.locator('#mapScope');
+    assert.equal(await mapScope.inputValue(),'matching','Map scope should begin by following active filters');
+    await mapScope.selectOption('all');
+    await page.waitForFunction(()=>{
+      const status=document.getElementById('mapStatus')?.textContent||'';
+      return window.OrielMapScope==='all'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
+    },null,{timeout:90000});
+    const allCatalogueCoverage=await page.evaluate(()=>{
+      const codes=p=>{
+        const exact=(p.postcodes||[]).map(pcKey);
+        const preferred=exact.map(code=>{
+          if(Array.isArray(geo[code]))return code;
+          const outward=(code.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[])[0];
+          const fallback=outward?'@OUTCODE:'+outward:null;
+          return fallback&&Array.isArray(geo[fallback])?fallback:code;
+        });
+        return [...new Set([...preferred,...(p.outcodes||[]).map(oc=>'@OUTCODE:'+String(oc).toUpperCase())])];
+      };
+      const missing=placements.filter(p=>!codes(p).length||codes(p).some(code=>!Array.isArray(geo[code])));
+      return {count:placements.length,missing:missing.length,missingDetails:missing.map(p=>({id:p.id,title:p.title,postcodes:p.postcodes,outcodes:p.outcodes})),
+        status:document.getElementById('mapStatus')?.textContent||'',title:document.getElementById('mapStatus')?.title||'',
+        fallback:geo['@OUTCODE:TN25']};
+    });
+    assert.equal(allCatalogueCoverage.count,4064,'All-programmes map scope must use the complete catalogue');
+    assert.equal(allCatalogueCoverage.missing,0,'All-programmes map scope still has unmapped sites: '+JSON.stringify(allCatalogueCoverage));
+    assert.match(allCatalogueCoverage.status,/4,064 of 4,064 programmes have all listed sites mapped/,'All-catalogue map status does not report complete coverage');
+    assert.match(allCatalogueCoverage.title,/entire programme catalogue/,'All-catalogue map does not explain that filters are bypassed');
+    assert(Array.isArray(allCatalogueCoverage.fallback),'A persisted null postcode was not retried and resolved via its outcode');
+    await mapScope.selectOption('matching');
+    await page.waitForFunction(()=>window.OrielMapScope==='matching'&&document.getElementById('mapStatus')?.title.includes('current filters'));
+
+    // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
+    await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
+    const tubeDataCount=await page.evaluate(()=>window.ORIEL_TUBE_STATIONS.length);
+    assert(tubeDataCount>=250,'TfL Underground station data did not load');
+    await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],12,{animate:false}));
+    await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-marker').length>=250,null,{timeout:20000});
+    const mainTubeCount=await page.locator('#placementMap .oriel-tube-marker').count();
+    assert(mainTubeCount>=250,'The main map did not render the Underground station roundels');
+
     await page.locator('[data-q="london"]').first().click();
 
     // Visibility rules inspect every training-site postcode, not merely
