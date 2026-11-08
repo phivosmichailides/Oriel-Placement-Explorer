@@ -61,3 +61,18 @@ html[data-theme="light"] .geoReasonRed{color:#ae273e!important}
  .geoModalHead{padding:17px 16px 11px}.geoModalTools{padding:10px 16px}
  .geoExcludedList{padding:9px 12px 17px}.geoOpenForYou{margin-left:0}
 }
+
+
+/* Preferred areas are outlined; excluded areas remain filled for an immediate visual distinction. */
+.geoLegacyLike{display:none!important}
+.geoLikesPane{min-width:0;margin:14px 0 16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.geoLikeChips{display:flex;flex-wrap:wrap;gap:7px;min-width:0;margin:5px 0 8px}
+.geoLikeChip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:7px 8px 7px 11px;background:transparent;border:1.5px solid var(--ux-accent);border-radius:999px;color:var(--ux-accent-ink);font-size:12px;font-weight:750}
+.geoLikeChip span{overflow-wrap:anywhere}
+.geoLikeChip button{border:0;background:transparent;color:inherit;cursor:pointer;border-radius:50%;font-weight:900;font-size:16px;padding:0 3px}
+.geoLikeChip button:hover{background:var(--ux-accent-soft)}
+.geoLikeChipLegacy{border-style:dashed;opacity:.88}
+.geoLikeNote{font-size:11px;line-height:1.5;color:var(--mut);margin:7px 0 0}
+.geoBlacklistPane{padding-top:1px}
+.geoAreaChip{background:var(--ux-accent-soft);border-color:var(--ux-accent-border);color:var(--ux-accent-ink)}
+@media(max-width:680px){.geoLikesPane,.geoBlacklistPane{margin-top:12px}.geoLikeChip,.geoAreaChip{max-width:100%}}
