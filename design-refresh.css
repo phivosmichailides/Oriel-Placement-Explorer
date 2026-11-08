@@ -352,7 +352,7 @@ html .uxLocationPanel .uxLocationSummary{font-size:12.5px!important;font-weight:
 html .uxLocationPanel .uxLocationInfo{font-size:12px!important;line-height:1.58!important}
 html .uxLocationPanel .uxMapFootnote,html .uxLocationPanel .uxMapLinks{font-size:11px!important;line-height:1.4!important}
 html .uxLocationPanel .uxMiniMap{
-  display:block!important;height:170px!important;min-height:170px!important;
+  display:block!important;height:195px!important;min-height:195px!important;
   background:var(--panel)!important;border-radius:12px!important;
   border:1px solid var(--line)!important;overflow:hidden!important;
 }
@@ -366,10 +366,10 @@ html .uxSiteControls{background:var(--panel)!important;border-color:var(--line)!
 /* A map should be meaningful on first paint, even before remote tiles arrive. */
 html #placementMap{
   background:linear-gradient(135deg,var(--ux-accent-soft),var(--soft))!important;
-  height:335px!important;min-height:335px!important;
+  height:420px!important;min-height:420px!important;
 }
 @media(max-width:720px){
-  html #placementMap{height:280px!important;min-height:280px!important}
+  html #placementMap{height:310px!important;min-height:310px!important}
 }
 html[data-theme="dark"] .uxMapCustom,
 html[data-theme="dark"][data-palette="forest"] .uxMapCustom{
@@ -951,6 +951,20 @@ html[data-theme="light"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-til
 html[data-theme="dark"] #placementMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
 html[data-theme="dark"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane{
   filter:saturate(.38) brightness(.68) contrast(.91)!important;
+}
+html #placementMap[data-basemap="osm-fallback"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="osm-fallback"] .leaflet-tile-pane{
+  opacity:1!important;visibility:visible!important;
+  filter:saturate(.38) contrast(.96) brightness(1.055)!important;
+}
+html[data-theme="dark"] #placementMap[data-basemap="osm-fallback"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap="osm-fallback"] .leaflet-tile-pane{
+  opacity:1!important;visibility:visible!important;
+  filter:saturate(.3) brightness(.68) contrast(.91)!important;
+}
+html #placementMap[data-basemap="osm-fallback"] .leaflet-tile,
+html .uxMiniMap[data-basemap="osm-fallback"] .leaflet-tile{
+  opacity:1!important;visibility:visible!important;
 }
 
 

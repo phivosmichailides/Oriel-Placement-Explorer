@@ -323,13 +323,13 @@
       "type": "fill",
       "source": "maptiler_planet_v4",
       "source-layer": "aviation",
-      "minzoom": 7,
+      "minzoom": 11.5,
       "layout": {
         "visibility": "visible"
       },
       "paint": {
         "fill-color": "#303b3b",
-        "fill-opacity": 1
+        "fill-opacity": 0.42
       },
       "filter": [
         "==",
@@ -9860,7 +9860,7 @@
       "type": "line",
       "source": "maptiler_planet_v4",
       "source-layer": "aviation_line",
-      "minzoom": 8,
+      "minzoom": 12.5,
       "layout": {
         "visibility": "visible"
       },
@@ -14105,56 +14105,6 @@
                 "has",
                 "construction"
               ]
-            ]
-          ]
-        ]
-      ]
-    },
-    {
-      "id": "Building 3D",
-      "type": "fill-extrusion",
-      "source": "maptiler_planet_v4",
-      "source-layer": "building",
-      "minzoom": 15,
-      "layout": {
-        "visibility": "none"
-      },
-      "paint": {
-        "fill-extrusion-base": {
-          "property": "height_min",
-          "type": "identity"
-        },
-        "fill-extrusion-color": "hsl(44,14%,79%)",
-        "fill-extrusion-height": {
-          "property": "height",
-          "type": "identity"
-        },
-        "fill-extrusion-opacity": 0.4
-      },
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "geometry-type"
-          ],
-          "Polygon"
-        ],
-        [
-          "any",
-          [
-            "==",
-            [
-              "get",
-              "underground"
-            ],
-            false
-          ],
-          [
-            "!",
-            [
-              "has",
-              "underground"
             ]
           ]
         ]
@@ -27251,7 +27201,7 @@
       "type": "symbol",
       "source": "maptiler_planet_v4",
       "source-layer": "poi_station",
-      "minzoom": 6,
+      "minzoom": 13,
       "maxzoom": 16,
       "layout": {
         "icon-allow-overlap": false,

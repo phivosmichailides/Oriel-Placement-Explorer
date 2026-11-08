@@ -7,6 +7,7 @@ const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const base = process.env.TARGET || 'https://phivosmichailides.github.io/Oriel-Placement-Explorer/';
+const localPreview = ['localhost','127.0.0.1','::1'].includes(new URL(base).hostname);
 const output = '/tmp/oriel-map-theme-smoke';
 fs.mkdirSync(output, {recursive:true});
 const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
@@ -26,7 +27,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       // A previous OpenFreeMap selection must not survive the provider migration.
       localStorage.setItem('oriel-basemap-style-v1','bright');
       localStorage.setItem('phivos-onboarding-profile-v1',JSON.stringify({
-        region:'London',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
+        region:'',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
       }));
     });
     // Mock the postcode service so the regression verifies all batches without
@@ -53,10 +54,41 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube3')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial10')&&(await page.content()).includes('sector-map.js?v=20261108mapcoverage8')&&(await page.content()).includes('map-basemap.js?v=20261108editorial9')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108atlas1')&&(await page.content()).includes('tube-stations.js?v=20261108tfl2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108atlas2')&&(await page.content()).includes('sector-map.js?v=20261108atlas2')&&(await page.content()).includes('map-basemap.js?v=20261108atlas2')&&(await page.content()).includes('generic-public.js?v=20261108atlas2')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active;},null,{timeout:30000});
+    const pwaAudit=await page.evaluate(async()=>{
+      const manifestLink=document.querySelector('link[rel="manifest"]');
+      const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
+      if(!manifestLink||!faviconLink)throw Error('Manifest or SVG favicon link is missing');
+      const manifestResponse=await fetch(manifestLink.href);
+      if(!manifestResponse.ok)throw Error('Manifest returned HTTP '+manifestResponse.status);
+      const manifest=await manifestResponse.json();
+      const icons=await Promise.all(manifest.icons.map(async icon=>{
+        const response=await fetch(new URL(icon.src,manifestLink.href));
+        const blob=await response.blob();
+        return {sizes:icon.sizes,ok:response.ok,type:blob.type,bytes:blob.size};
+      }));
+      const faviconResponse=await fetch(faviconLink.href);
+      const favicon=await faviconResponse.text();
+      const registration=await navigator.serviceWorker.getRegistration();
+      return {title:document.title,manifestName:manifest.name,shortName:manifest.short_name,display:manifest.display,
+        icons,faviconOk:faviconResponse.ok,faviconCross:favicon.includes('M22.4 4.8'),
+        swScope:registration?.scope||null,swState:registration?.active?.state||null,
+        expectedScope:new URL('./',location.href).href};
+    });
+    assert.equal(pwaAudit.title,'Placement Atlas','Browser tab title is not branded Placement Atlas');
+    assert.equal(pwaAudit.manifestName,'Placement Atlas','PWA app name is not Placement Atlas');
+    assert.equal(pwaAudit.shortName,'Placement Atlas','PWA short name is not Placement Atlas');
+    assert.equal(pwaAudit.display,'standalone','PWA is not configured for standalone app display');
+    assert(pwaAudit.faviconOk&&pwaAudit.faviconCross,'Tab favicon is not the matching pharmacy cross');
+    assert(pwaAudit.icons.length>=2&&pwaAudit.icons.every(icon=>icon.ok&&icon.type==='image/png'&&icon.bytes>500),
+      'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
+    assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
+    assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
+    console.log('PWA/BRANDING AUDIT:',JSON.stringify(pwaAudit));
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
     // Verify both the actual runtime script and the final rendered footer.
     const productScript=await page.waitForFunction(()=>{
@@ -64,10 +96,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage10$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108atlas2$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
-    assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
+    assert.match(footer,/^Placement Atlas · Pharmacy Foundation Programme catalogue:/,
       'Expected independent product footer is not rendered');
     assert.doesNotMatch(footer,/based on|original explorer|forked from/i,
       'Obsolete footer attribution was injected at runtime');
@@ -83,6 +115,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     });
     assert.equal(catalogue.origin,'oriel-owner-export-2026','The live site fell back to inherited legacy.html');
     assert.equal(catalogue.count,4064,'Programme count mismatched the uploaded Oriel export');
+    assert.equal(await page.locator('#decision').inputValue(),'all','Fresh Explore should start with all decision states included');
+    assert.equal(await page.locator('#region').inputValue(),'','Fresh Explore should not apply a region filter by default');
+    assert.equal(await page.evaluate(()=>quick.size),0,'Fresh Explore should not apply hidden quick filters by default');
+    assert.equal(await page.locator('#mapScope').count(),0,'Map scope should no longer be independently selectable');
+    assert.match(await page.locator('#count').innerText(),/4,064 total programmes · 4,064 shown/,'Results should show both the catalogue total and current matching count');
+    assert.match(await page.locator('link[rel="icon"][type="image/svg+xml"]').getAttribute('href'),/favicon\.svg/,'Placement Atlas favicon is missing');
     assert.equal(catalogue.regions,12,'Expected the 12 Oriel England & Wales regions');
     assert(catalogue.sample,'A known programme ID changed and could detach saved applicant selections');
 
@@ -97,7 +135,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const holder=document.getElementById('placementMap');
       const state=holder?.dataset.basemap||'';
       if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
-      return state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup');
+      return (['localhost','127.0.0.1','::1'].includes(location.hostname)&&state==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded'))||
+         (state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup'));
     },null,{timeout:30000});
     const editorialStyleForDesign=await page.evaluate(async()=>{
       const url=window.OrielBasemap?.styles?.['editorial-light'];
@@ -110,6 +149,28 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'Editorial style is missing the designed road network');
     assert(editorialStyleForDesign.layers.some(layer=>layer.id==='Road labels'&&layer.minzoom<=13),
       'Editorial road names are not enabled at neighbourhood zoom');
+    assert.equal(editorialStyleForDesign.layers.filter(layer=>layer.type==='fill-extrusion').length,0,
+      'Editorial Light should not render 3D building extrusions');
+    const designCoverage=await page.evaluate(async editorialStyleForDesign=>{
+      const darkResponse=await fetch(window.OrielBasemap.styles['editorial-dark']);
+      const boroughResponse=await fetch(new URL('data/london-borough-labels.geojson',location.href));
+      if(!darkResponse.ok||!boroughResponse.ok)throw Error('Could not load dark map style or London borough labels');
+      const dark=await darkResponse.json(),boroughs=await boroughResponse.json();
+      const airportSummary=style=>Object.fromEntries(['Airport zone','Aeroway','Airport labels'].map(id=>[id,style.layers.find(layer=>layer.id===id)?.minzoom??null]));
+      return {darkAirportMinZoom:airportSummary(dark),lightAirportMinZoom:airportSummary(editorialStyleForDesign),
+        boroughCount:boroughs.features?.length||0,
+        boroughNames:(boroughs.features||[]).map(feature=>feature.properties?.name).sort(),
+        boroughLayer:editorialStyleForDesign.layers.find(layer=>layer.id==='Oriel London borough labels')};
+    },editorialStyleForDesign);
+    for(const [theme,levels] of Object.entries({light:designCoverage.lightAirportMinZoom,dark:designCoverage.darkAirportMinZoom})){
+      assert(levels['Airport zone']>=11&&levels.Aeroway>=12&&levels['Airport labels']>=12,
+        theme+' map shows distracting airport POIs too early: '+JSON.stringify(levels));
+    }
+    assert.equal(designCoverage.boroughCount,33,'London borough label data must include all 32 boroughs and the City of London');
+    for(const borough of ['Barnet','Camden','Haringey','Hammersmith and Fulham','Islington','Kensington and Chelsea','Newham','Westminster','City of London']){
+      assert(designCoverage.boroughNames.includes(borough),'Missing London borough label: '+borough);
+    }
+    assert.equal(designCoverage.boroughLayer?.source,'oriel_borough_labels','The full London borough label layer is not attached to the map style');
     const mapTiles=await page.locator('#placementMap .leaflet-tile-loaded').count();
     const mainTileSources=await page.locator('#placementMap .leaflet-tile-loaded').evaluateAll(tiles=>tiles.map(img=>({
       url:img.currentSrc||img.src,width:img.naturalWidth,height:img.naturalHeight,complete:img.complete
@@ -130,7 +191,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
           osmCredits:(attrib.match(/OpenStreetMap contributors/g)||[]).length,
           attribution:attrib
         };
-      });
+      },editorialStyleForDesign);
       console.log('CUSTOM MAP VISUAL DIAGNOSTIC:',JSON.stringify(vectorVisibility));
       assert(vectorVisibility.panePresent&&vectorVisibility.canvasPresent&&vectorVisibility.canvasWidth>50&&vectorVisibility.canvasHeight>50,
         'Vector map does not have a visible, sized canvas in the proper Leaflet pane');
@@ -139,12 +200,16 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.equal(vectorVisibility.osmCredits,1,'OpenStreetMap attribution is missing or duplicated');
       assert.doesNotMatch(vectorVisibility.attribution,/\bLeaflet\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
+    }else if(localPreview&&shownState==='osm-fallback'){
+      assert(mapTiles>0,'Local-preview fallback has no rendered base-map tiles');
+      assert(mainTileSources.every(tile=>{try{return new URL(tile.url).hostname==='tile.openstreetmap.org'&&tile.width>100&&tile.height>100}catch{return false}}),
+        'Local-preview OSM fallback tiles are missing or malformed: '+JSON.stringify(mainTileSources.slice(0,4)));
     }else{
       const fallbackAudit=mainTileSources.map(tile=>{
         let url;try{url=new URL(tile.url)}catch{}
         const path=url?.pathname||'';
         const validStyle=path.startsWith('/maps/streets-v4/256/')||path.startsWith('/maps/streets-v4-dark/256/');
-        const numericTiles=path.split('/').slice(-3).every(part=>/^\\d+(?:\\.png)?$/.test(part));
+        const numericTiles=path.split('/').slice(-3).every(part=>/^\d+(?:\.png)?$/.test(part));
         return {...tile,hostOK:url?.hostname==='api.maptiler.com',pathOK:validStyle&&numericTiles&&path.endsWith('.png'),
           imageOK:tile.complete&&tile.width>100&&tile.height>100};
       });
@@ -160,7 +225,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
     }));
     console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify(vectorDiagnostic));
-    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
         const value=document.getElementById('placementMap')?.dataset.basemap||'';
         return value.startsWith('vector-')&&value!=='vector-loading';
@@ -173,7 +238,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await mapPicker.locator('option[value="auto"]').count(),1,'Automatic map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-light"]').count(),1,'Editorial Light map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-dark"]').count(),1,'Editorial Dark map option missing');
-    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
       const styleOriginAudit=await page.evaluate(()=>({origin:window.location.origin,styles:Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin]))}));
@@ -205,7 +270,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
             boroughCityFilter:style.layers.find(layer=>layer.id==='City labels')?.filter,
             boroughCityDuplicatesRemoved:['London','Westminster','City of London'].every(name=>JSON.stringify(style.layers.find(layer=>layer.id==='City labels')?.filter||[]).includes(name)),
             subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
-            roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
+            roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom,
+             fillExtrusionLayers:style.layers.filter(layer=>layer.type==='fill-extrusion').map(layer=>layer.id)};
         },styleName);
         assert.equal(styleAudit.sourceHost,'api.maptiler.com','The Editorial map is not using MapTiler vector data: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
@@ -231,6 +297,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         }
         assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
         assert(styleAudit.roadLabelsMinZoom<=11.5,'Road names are not visible at neighbourhood zoom');
+         assert.deepEqual(styleAudit.fillExtrusionLayers,[],'Editorial style still contains unnecessary 3D building layers');
       }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
@@ -241,9 +308,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
       await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial-light',null,{timeout:30000});
     }else{
-      assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
+      assert(await mapPicker.isDisabled(),'Map style selector should explain unavailable vector rendering');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
-      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),'raster-fallback');
+      const actualFallback=await page.locator('#placementMap').getAttribute('data-basemap');
+      assert(localPreview?actualFallback==='osm-fallback':actualFallback==='raster-fallback',
+        'Unexpected basemap fallback state: '+actualFallback);
     }
 
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
@@ -280,26 +349,35 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&holder.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
+      return ['localhost','127.0.0.1','::1'].includes(location.hostname)
+        ?holder?.dataset.basemap==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded')
+        :holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
     const miniBasemap=await card.locator('.uxMiniMap').evaluate(node=>node.dataset.basemap||'unknown');
-    const miniImage=await card.locator('.uxMiniMap .leaflet-image-layer').evaluate(node=>({
-      src:node.currentSrc||node.src,width:node.naturalWidth,height:node.naturalHeight,complete:node.complete,
-      filter:getComputedStyle(node).filter
-    }));
-    assert.equal(miniBasemap,'vector-editorial-light','Programme mini-map is not using the custom Editorial vector style: '+miniBasemap);
-    assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+    const miniImage=await card.locator('.uxMiniMap').evaluate(holder=>{
+      const node=holder.querySelector('.leaflet-image-layer')||holder.querySelector('.leaflet-tile-loaded');
+      return {src:node?.currentSrc||node?.src||'',width:node?.naturalWidth||0,height:node?.naturalHeight||0,complete:!!node?.complete,
+        filter:node?getComputedStyle(node).filter:null};
+    });
+    assert(localPreview?miniBasemap==='osm-fallback':miniBasemap==='vector-editorial-light',
+      'Programme mini-map did not render its expected basemap: '+miniBasemap);
+    if(!localPreview)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
+    else assert(miniImage.src.startsWith('https://tile.openstreetmap.org/')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+      'Local-preview mini map has no visible fallback tile image: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
-    assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
+    if(!localPreview)assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
     assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
     assert.doesNotMatch(miniAttribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
-    assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
-    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+    if(!localPreview)assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
+    if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // Changing the main map style must re-render the existing mini-map too.
+    // Local PR previews use OSM fallback because the production MapTiler key is
+    // intentionally origin-restricted; style switching is verified on production.
+    if(!localPreview){
     await mapPicker.selectOption('editorial-dark');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
@@ -340,8 +418,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         holder?.dataset.miniStyle==='editorial-light'&&
         !!holder?.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
-    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+    if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 response during mini-map style changes: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
+    }
     // The image overlay must not intercept the original mini-map click action.
     await page.evaluate(()=>{
       window.__openedMiniMapUrl=null;
@@ -418,13 +497,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
-        return state==='vector-editorial-light'||state==='raster-fallback';
+        return state==='vector-editorial-light'||state==='raster-fallback'||(['localhost','127.0.0.1','::1'].includes(location.hostname)&&state==='osm-fallback');
       },null,{timeout:14000});
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
-      assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback','WebGL map hung during initialisation');
+      assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback'||(localPreview&&finalState==='osm-fallback'),'WebGL map hung during initialisation');
     }
-    assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback'].includes(browserBasemaps.main),
+    assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback',...(localPreview?['osm-fallback']:[])].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
     await card.locator('.uxLocationMore summary').click();
     assert(await card.locator('.uxLocationMore').evaluate(el=>el.open),'Extra location details do not expand');
@@ -449,7 +528,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return status.includes('location codes resolved')&&
         !status.includes('codes still need locating')&&
         !status.includes('no postcode/outcode in the source')&&
-        stats?.scope==='all'&&stats.programmes===4064&&
+        stats?.scope==='matching'&&stats.programmes===4064&&
         stats.programmesRepresented===4064&&stats.programmesWithAllSites===4064&&
         placementMap.getZoom()<=7.5&&full?.isValid?.()&&placementMap.getBounds().contains(full);
     },null,{timeout:90000});
@@ -519,10 +598,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.locator('#placementMap').screenshot({path:output+'/map-london-neighbourhood.png'});
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
     await sleep(700);
-    // Exercise shared-location grouping in Matching results mode so the
-    // synthetic fixtures are not intentionally overridden by the All programmes scope.
-    await page.locator('#mapScope').selectOption('matching');
-    await page.waitForFunction(()=>window.OrielMapScope==='matching');
+    // Exercise shared-location grouping. The map now always uses the same
+    // filtered dataset as Explore, including synthetic test fixtures.
     const groupPinCheck=await page.evaluate(()=>{
       const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
       if(!sample)return null;
@@ -532,13 +609,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const marker=document.querySelector('#placementMap .oriel-group-marker');
       const count=Number(marker?.dataset.programmeCount||marker?.querySelector('.oriel-group-count')?.dataset.programmeCount||0);
       marker?.click();
-      const expanded=document.querySelectorAll('#mapSelection .placement').length;
+      const expanded=document.querySelectorAll('.atlasProgrammePopup .atlasPopupProgramme').length;
+      const hasOpenAction=!!document.querySelector('.atlasProgrammePopup [data-open]');
       drawMap(placements.filter(matches));
-      return {count,expanded};
+      return {count,expanded,hasOpenAction};
     });
-    assert.deepEqual(groupPinCheck,{count:3,expanded:3},'Shared-location pins do not expand to every programme');
-    await page.locator('#mapScope').selectOption('all');
-    await page.waitForFunction(()=>window.OrielMapScope==='all');
+    assert.deepEqual(groupPinCheck,{count:3,expanded:3,hasOpenAction:true},'Shared-location pins do not open a programme preview for every programme');
 
     // Reproduce a persisted failed postcode lookup: null must be retried and
     // its outcode centroid must be used instead of silently marking it done.
@@ -547,14 +623,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       delete geo['@OUTCODE:TN25'];
       try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
     });
-    const mapScope=page.locator('#mapScope');
-    assert.equal(await mapScope.inputValue(),'all','The map should show the complete catalogue by default');
-    await mapScope.selectOption('matching');
     await page.locator('#locateBtn').click();
-    assert.equal(await mapScope.inputValue(),'all','Locate all sites should switch the map to the complete catalogue');
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
-      return window.OrielMapScope==='all'&&status.includes('location codes resolved')&&!status.includes('codes still need locating');
+      return window.OrielMapScope==='matching'&&status.includes('location codes resolved')&&!status.includes('codes still need locating')&&(Array.isArray(geo['TN250LZ'])||Array.isArray(geo['@OUTCODE:TN25']));
     },null,{timeout:90000});
     const allCatalogueCoverage=await page.evaluate(()=>{
       const codes=p=>{
@@ -575,10 +647,38 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(allCatalogueCoverage.count,4064,'All-programmes map scope must use the complete catalogue');
     assert.equal(allCatalogueCoverage.missing,0,'All-programmes map scope still has unmapped sites: '+JSON.stringify(allCatalogueCoverage));
     assert.match(allCatalogueCoverage.status,/4,064 of 4,064 programmes have all listed sites mapped/,'All-catalogue map status does not report complete coverage');
-    assert.match(allCatalogueCoverage.title,/entire programme catalogue/,'All-catalogue map does not explain that filters are bypassed');
+    assert.match(allCatalogueCoverage.title,/current filters.*full catalogue is shown/,'Map does not explain that the complete catalogue is shown when no filters are active');
     assert(Array.isArray(allCatalogueCoverage.fallback),'A persisted null postcode was not retried and resolved via its outcode');
-    await mapScope.selectOption('matching');
     await page.waitForFunction(()=>window.OrielMapScope==='matching'&&document.getElementById('mapStatus')?.title.includes('current filters'));
+
+    // The custom controls must zoom the existing map and move that same map
+    // instance into a spacious, reversible focus window.
+    const zoomAudit=await page.evaluate(()=>{
+      const map=document.getElementById('placementMap'),control=document.getElementById('atlasMapZoom');
+      const m=map.getBoundingClientRect(),c=control.getBoundingClientRect();
+      return {defaultControls:map.querySelectorAll('.leaflet-control-zoom').length,customVisible:!!control&&c.width>50&&c.height>25,
+        centerOffset:Math.abs((c.left+c.width/2)-(m.left+m.width/2)),bottomGap:m.bottom-c.bottom};
+    });
+    assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
+    assert(zoomAudit.customVisible&&zoomAudit.centerOffset<=4&&zoomAudit.bottomGap>=8&&zoomAudit.bottomGap<=28,
+      'Rounded Placement Atlas zoom control is not centred at the bottom of the map: '+JSON.stringify(zoomAudit));
+    const startingZoom=await page.evaluate(()=>placementMap.getZoom());
+    await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
+    await page.waitForFunction(z=>placementMap.getZoom()>z,startingZoom);
+    await page.locator('#atlasMapZoom [data-atlas-zoom="out"]').click();
+    await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<0.01,startingZoom);
+    await page.evaluate(()=>placementMap.setView([0,0],15,{animate:false}));
+    await page.waitForFunction(()=>{const hint=document.getElementById('atlasMapEmptyHint');return !!hint&&!hint.hidden;},null,{timeout:12000});
+    assert.match(await page.locator('#atlasMapEmptyHint').innerText(),/No programme sites in this view/,
+      'An empty close-up map should explain that there are no programme sites in the current viewport');
+    await page.locator('#atlasMapEmptyHint [data-atlas-fit-view]').click();
+    await page.waitForFunction(()=>document.getElementById('atlasMapEmptyHint')?.hidden===true,null,{timeout:12000});
+    await page.locator('#atlasMapExpand').click();
+    await page.waitForFunction(()=>!document.getElementById('atlasMapFocus')?.hidden);
+    assert.equal(await page.locator('#atlasMapFocus .atlasMapFocusStage #placementMap').count(),1,'Expanded map should move the existing map rather than create a duplicate');
+    await page.locator('#atlasMapFocusClose').click();
+    await page.waitForFunction(()=>!!document.querySelector('.map-card #placementMap'));
+    assert.equal(await page.locator('#atlasMapFocus .atlasMapFocusStage #placementMap').count(),0,'Closing the focus map should restore the original map position');
 
     // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
     await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
@@ -590,6 +690,40 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(mainTubeCount>=1,'The London neighbourhood map did not render a visible Underground station roundel');
 
     await page.locator('[data-q="london"]').first().click();
+    await page.waitForFunction(()=>{
+      const expected=placements.filter(matches).length;
+      const status=document.getElementById('count')?.textContent||'';
+      return window.OrielMapStats?.programmes===expected&&status.includes(expected.toLocaleString('en-GB')+' shown');
+    });
+    const filteredView=await page.evaluate(()=>({matching:placements.filter(matches).length,map:window.OrielMapStats?.programmes,count:document.getElementById('count')?.textContent||'',quick:[...quick]}));
+    assert(filteredView.matching<4064,'The London quick filter did not narrow the catalogue');
+    assert.equal(filteredView.map,filteredView.matching,'Map markers are not using the same filtered programme set as the results list');
+    assert.match(filteredView.count,/4,064 total programmes · \d+ shown/,'Filtered result count should retain the original catalogue total');
+    assert(filteredView.quick.includes('london'),'The London quick filter did not remain active');
+    const savedFilter=await page.evaluate(()=>JSON.parse(localStorage.getItem('phivos-desk-v2')||'{}').filters);
+    assert(savedFilter?.quick?.includes('london'),'Temporary filters were not saved to the local workspace cache');
+    await page.reload();
+    await page.waitForFunction(()=>window.OrielMapStats&&window.OrielMapStats.programmes===placements.filter(matches).length,null,{timeout:30000});
+    assert(await page.evaluate(()=>quick.has('london')),'Saved quick filters were not restored after refresh');
+    assert.equal(await page.evaluate(()=>window.OrielMapStats.programmes),filteredView.matching,'The filtered map changed after refreshing the page');
+    await page.locator('[data-q="london"]').first().click();
+    await page.waitForFunction(()=>window.OrielMapStats?.programmes===4064,null,{timeout:30000});
+
+    // Unknown site data and approximate matches must stay visible for review;
+    // only exact verified postcode or borough matches may be excluded.
+    const reviewRule=await page.evaluate(()=>{
+      const previous=state.prefs.locationBlacklist;
+      state.prefs.locationBlacklist=[{id:'test-review-area',kind:'district',district:'Imaginary Borough',label:'Imaginary Borough'}];
+      const testProgramme={id:'__unverified-location-test',title:'Unknown training site',postcodes:['ZZ99 9ZZ'],outcodes:[]};
+      const assessment=OrielGeoBlacklist.assess(testProgramme);
+      const hidden=OrielGeoBlacklist.shouldHide(testProgramme);
+      state.prefs.locationBlacklist=previous;save();
+      const likes=document.querySelector('.geoLikesPane'),exclusions=document.querySelector('.geoBlacklistPane');
+      return {kind:assessment.kind,hidden,likesBeforeExclusions:!!likes&&!!exclusions&&!!(likes.compareDocumentPosition(exclusions)&Node.DOCUMENT_POSITION_FOLLOWING),likeSearch:!!document.getElementById('geoLikeSearch'),preferredToggle:!!document.getElementById('geoPreferredOnly'),preferredToggleDisabled:!!document.getElementById('geoPreferredOnly')?.disabled};
+    });
+    assert.equal(reviewRule.kind,'unverified','A missing postcode should be classified as needing review');
+    assert.equal(reviewRule.hidden,false,'A programme needing review must remain visible in Explore and on the map');
+    assert(reviewRule.likesBeforeExclusions&&reviewRule.likeSearch&&reviewRule.preferredToggle&&reviewRule.preferredToggleDisabled,'Preferred areas should appear above exclusions with a focus filter that activates after an area is selected');
 
     // Visibility rules inspect every training-site postcode, not merely
     // the first site name; these are synthetic fixtures, never user edits.
@@ -616,10 +750,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await sidebarButton.getAttribute('aria-expanded'),sidebarFirst,
       'Sidebar could not be reopened from the results toolbar');
     await page.locator('#uxHideExcludedBtn').click();
-    assert(!(await page.locator('#hideExcluded').isChecked()),
-      'Show excluded toolbar toggle did not update the canonical filter');
+    assert(await page.locator('#hideExcluded').isChecked(),'Hide excluded could not be enabled');
     await page.locator('#uxHideExcludedBtn').click();
-    assert(await page.locator('#hideExcluded').isChecked(),'Hide excluded could not be reenabled');
+    assert(!(await page.locator('#hideExcluded').isChecked()),'Hide excluded could not be disabled');
     await page.locator('#uxResultsSort').selectOption('salary');
     await page.waitForTimeout(500);
     assert.equal(await page.locator('#sort').inputValue(),'salary',

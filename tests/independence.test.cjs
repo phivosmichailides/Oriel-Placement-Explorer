@@ -27,8 +27,11 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261108editorial10/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261108mapcoverage10/);
+  assert.match(html,/app\.js\?v=20261108atlas2/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261108atlas2/);
+  assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas2/);
+  assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
+  assert.doesNotMatch(read('generic-public.js'),/Oriel Placement Desk/);
 });
 
 test('site uses maintainer-supplied catalogue without rewriting stable saved IDs', () => {
@@ -56,4 +59,24 @@ test('public files document historical provenance, not a fictional authorship cl
   const notice=read('THIRD_PARTY_NOTICES.md');
   assert.match(notice, /originally started from a GitHub fork/);
   assert.match(notice, /copyright rights/);
+});
+
+test('Placement Atlas branding and install assets are complete', () => {
+  const html=read('index.html');
+  assert.match(html,/<title>Placement Atlas<\/title>/);
+  assert.match(html,/rel="icon"[^>]+favicon\.svg/);
+  assert.match(html,/rel="manifest"[^>]+manifest\.webmanifest/);
+  assert.match(html,/id="installAppBtn"/);
+  assert.match(html,/pwa\.js\?v=/);
+  const manifest=JSON.parse(read('manifest.webmanifest'));
+  assert.equal(manifest.name,'Placement Atlas');
+  assert.equal(manifest.short_name,'Placement Atlas');
+  assert.equal(manifest.display,'standalone');
+  assert(manifest.icons.some(icon=>icon.sizes==='192x192'));
+  assert(manifest.icons.some(icon=>icon.sizes==='512x512'));
+  assert.match(read('favicon.svg'),/M22\.4 4\.8/,'The browser icon should use the same pharmacy cross as the site logo');
+  for(const file of ['icons/placement-atlas-192.png','icons/placement-atlas-512.png']){
+    const bytes=fs.readFileSync(path.join(root,file));
+    assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],file+' is not a valid PNG');
+  }
 });

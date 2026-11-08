@@ -1,10 +1,10 @@
-# Oriel Placement Desk
+# Placement Atlas
 
 **Explore more clearly. Compare what matters. Rank with confidence.**
 
 A personalised, independent decision-support web app for applicants comparing **England & Wales Foundation Pharmacist Training programmes**. Built around the real challenges of choosing between thousands of placements—not just displaying a spreadsheet.
 
-**[Open the live app](https://phivosmichailides.github.io/Oriel-Placement-Explorer/)** · [How it works](#how-it-works) · [Data and limitations](#data-and-limitations) · [Technical overview](#technical-overview)
+**[Open the live app](https://placementatlas.co.uk/)** · [How it works](#how-it-works) · [Data and limitations](#data-and-limitations) · [Technical overview](#technical-overview)
 
 > **Independent project.** Not affiliated with, endorsed by, or connected to NHS England or the Oriel recruitment service. This tool does not submit or change official preferences.
 

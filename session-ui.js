@@ -1,6 +1,6 @@
 'use strict';
 /* In-browser session restore, global zoom and non-jumping filters.
-   Does not write to the existing Placement Desk shortlist storage. */
+   Does not write to the existing Placement Atlas shortlist storage. */
 (()=>{
  const $=id=>document.getElementById(id);
  const SESSION='oriel-desk-last-view-v1',COLLAPSE='oriel-desk-sidebar-collapsed-v1',ZOOM='oriel-desk-page-zoom-v1';
@@ -128,6 +128,7 @@
    requestAnimationFrame(()=>requestAnimationFrame(()=>{window.scrollTo({top:y,behavior:'instant'});syncFloating();snapshot()}));
  },true);
  window.addEventListener('pagehide',()=>snapshot());
+ document.addEventListener('desk:filters-saved',()=>snapshot(false));
  // Keep whole-interface colours and map-pin colours adjacent, but independent.
  const arrangePreferenceColours=()=>{
    const settings=document.querySelector('#prefs .settings'),appearance=settings?.querySelector('.uxAppearanceSettings');

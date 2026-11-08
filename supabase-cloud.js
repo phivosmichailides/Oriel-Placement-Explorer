@@ -47,7 +47,8 @@
   const meaningfulLocalData=()=>{
     try{
       const desk=JSON.parse(read('phivos-desk-v2')||'null');
-      if(desk&&((desk.marks&&Object.keys(desk.marks).length)||(Array.isArray(desk.compare)&&desk.compare.length)||(desk.prefs&&desk.prefs.onboarding)))return true;
+      if(desk&&((desk.marks&&Object.keys(desk.marks).length)||(Array.isArray(desk.compare)&&desk.compare.length)||(desk.prefs&&desk.prefs.onboarding)||(desk.prefs?.locationLikes?.length)||(desk.prefs?.locationBlacklist?.length)||(desk.prefs?.preferredAreasOnly)))return true;
+      if(desk?.filters){const f=desk.filters;if(f.search||f.sector||f.region||f.hours||f.salary||f.visa||f.decision&&f.decision!=='all'||f.sort&&f.sort!=='fit'||f.quick?.length||['hideAvoid','hideOuterLondon','hideExcluded','hideShortlisted','hideJustice','hideMental','hideOtherSpecialist'].some(key=>f[key]===true)||f.specialistView&&f.specialistView!=='all')return true;}
       if(desk&&desk.prefs&&desk.prefs.weights&&Object.keys(desk.prefs.weights).some(key=>Number(desk.prefs.weights[key])!==({money:5,hospital:5,gp:5,lifestyle:4,location:4,progression:5,independence:4,communityPenalty:4}[key])))return true;
       if(desk&&desk.prefs){
         if(desk.prefs.likes&&desk.prefs.likes!=='London Bridge, Southwark, Borough, Waterloo, Holborn, Bloomsbury, Clerkenwell, Angel, Islington, Shoreditch, Camden, Fitzrovia, Westminster, Vauxhall, Battersea, Kensington, Chelsea, Hammersmith, Fulham, Ealing, Wembley')return true;

@@ -186,10 +186,11 @@
    const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
-   const total=options.length,pages=Math.max(1,Math.ceil(total/20));
+   const total=options.length,catalogueTotal=getData().length,pages=Math.max(1,Math.ceil(total/20));
+   window.OrielFilteredProgrammes=options;
    page=Math.min(Math.max(1,page),pages);
    const shown=options.slice((page-1)*20,page*20);
-   $('count').textContent=total.toLocaleString('en-GB')+' matching programmes';
+   $('count').textContent=catalogueTotal.toLocaleString('en-GB')+' total programmes · '+total.toLocaleString('en-GB')+' shown';
    cleanupMiniMaps();
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
    pager(shown.length,total);
@@ -204,9 +205,15 @@
  const drawer=$('uxDrawer'),backdrop=$('uxDrawerBackdrop'),drawerItems=$('uxDrawerItems'),drawerSearch=$('uxDrawerSearch');
  let drawerOpener=null;
  const updateCounts=()=>{
-   const count=getRanks().length;
-   document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent=count?'('+count+')':'(0)');
+   // Count canonical shortlist statuses directly, independent of the current
+   // view or whether the floating drawer is expanded.
+   const count=getData().reduce((total,p)=>total+(isShortlisted(p)?1:0),0);
+   document.querySelectorAll('[data-ux-shortlist-count]').forEach(n=>n.textContent='('+count+')');
  };
+ document.addEventListener('desk:action',()=>{updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();});
+ document.addEventListener('desk:state-saved',updateCounts);
+ window.addEventListener('focus',updateCounts);
+ window.addEventListener('storage',event=>{if(event.key!=='phivos-desk-v2'||!event.newValue)return;try{const latest=JSON.parse(event.newValue);if(latest.marks&&typeof latest.marks==='object')state.marks=latest.marks;updateCounts();if(drawer?.classList.contains('uxOpen'))renderDrawer();}catch{}});
  const renderDrawer=()=>{
    if(!drawerItems)return;
    const query=(drawerSearch?.value||'').toLowerCase().trim();
@@ -241,7 +248,7 @@
    drawerOpener=e?.currentTarget||document.activeElement;
    drawer.classList.add('uxOpen');drawer.setAttribute('aria-hidden','false');drawer.inert=false;
    backdrop.hidden=false;root.classList.add('uxDrawerOpen');
-   renderDrawer();$('uxDrawerClose')?.focus();
+   updateCounts();renderDrawer();$('uxDrawerClose')?.focus();
  };
  const closeDrawer=()=>{
    if(!drawer||!backdrop)return;
@@ -365,7 +372,7 @@
    if(!window.L)return;
    try{
      holder.replaceChildren();
-     const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false});
+     const map=L.map(holder,{zoomControl:false,attributionControl:true,scrollWheelZoom:false,dragging:false,keyboard:false,boxZoom:false,touchZoom:false,doubleClickZoom:false,preferCanvas:false,zoomSnap:.25,zoomDelta:.5});
      // Reuse the custom MapTiler vector style through one shared renderer.
      // Leaflet still owns the site markers, arrows, attribution and click target.
      const miniBasemap=window.OrielBasemap?.addTo
@@ -374,9 +381,7 @@
          maxZoom:19,attribution:'© OpenStreetMap contributors'
        }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
-     const central=p.region==='London'?[51.5074,-.1278]:null;
-     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng):[];
-     if(central)L.circleMarker(central,{radius:3.4,color:'#697f77',weight:1.4,fillColor:'#f8f2e7',fillOpacity:1}).addTo(map).bindTooltip('Central London');
+     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng,1.8):[];
      nearbyStations.forEach(station=>{
        const icon=L.divIcon({className:'oriel-tube-marker oriel-tube-mini-marker',html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',iconSize:[15,15],iconAnchor:[7.5,7.5]});
        const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
@@ -387,9 +392,8 @@
      });
      L.circleMarker(sitePoint,{radius:6.2,weight:2,color:'#ffffff',fillColor:'#995c68',fillOpacity:1}).addTo(map).bindTooltip(selected.pc);
      const boundsPoints=[sitePoint,...nearbyStations.map(station=>[station.lat,station.lng])];
-     if(central)boundsPoints.push(central);
-     if(central)map.fitBounds(L.latLngBounds(boundsPoints),{padding:[20,20],maxZoom:12,animate:false});
-     else map.setView(sitePoint,12,{animate:false});
+     if(nearbyStations.length)map.fitBounds(L.latLngBounds(boundsPoints),{padding:[18,18],maxZoom:14,animate:false});
+     else map.setView(sitePoint,14,{animate:false});
      const openSelected=()=>{
        const label=siteName(p,selected,index,sites.length);
        const lookup=/^Training location/.test(label)?selected.pc:label+' '+selected.pc;

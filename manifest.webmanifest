@@ -1,0 +1,37 @@
+{
+  "id": "./",
+  "name": "Placement Atlas",
+  "short_name": "Placement Atlas",
+  "description": "Explore and compare pharmacy foundation programmes across England and Wales.",
+  "lang": "en-GB",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f7f6f2",
+  "theme_color": "#24352a",
+  "categories": [
+    "education",
+    "productivity",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/placement-atlas-192.png?v=20261108atlas2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/placement-atlas-512.png?v=20261108atlas2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
