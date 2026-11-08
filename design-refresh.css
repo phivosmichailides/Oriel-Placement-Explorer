@@ -976,3 +976,11 @@ html .placement .uxLocationCaption[data-commute-tone="good"]{
 html .placement .uxLocationCaption[data-commute-tone="bad"]{
   color:var(--fit-low-ink)!important;
 }
+
+/* Programme mini-maps use MapTiler raster tiles of the selected vector style.
+   Do not apply the old OSM tint: the MapTiler cartography is already styled. */
+html .uxMiniMap[data-basemap^="maptiler-raster"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap^="maptiler-raster"] .leaflet-tile-pane{
+  filter:none!important;
+  opacity:1!important;
+}
