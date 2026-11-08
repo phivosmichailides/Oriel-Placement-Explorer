@@ -493,7 +493,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
-        return state==='vector-editorial-light'||state==='raster-fallback'||(localPreview&&state==='osm-fallback');
+        return state==='vector-editorial-light'||state==='raster-fallback'||(['localhost','127.0.0.1','::1'].includes(location.hostname)&&state==='osm-fallback');
       },null,{timeout:14000});
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
