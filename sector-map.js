@@ -44,14 +44,16 @@
     };
     updateMapScopeHeading();
     const fitScopePins=()=>{
-      if(!placementMap||!mapLayer)return;
+      if(!placementMap||!mapLayer)return false;
+      placementMap.invalidateSize(false);
       const bounds=window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds:null;
       const points=mapLayer.getLayers().map(layer=>layer.getLatLng()).filter(point=>Number.isFinite(point.lat)&&Number.isFinite(point.lng));
-      if(bounds)placementMap.fitBounds(bounds,{padding:[55,55],maxZoom:mapScopeMode==='all'?7:11,animate:false});
-      else if(points.length)placementMap.fitBounds(L.latLngBounds(points),{
-        padding:[55,55],maxZoom:mapScopeMode==='all'?7:11,animate:false
-      });
+      const target=bounds|| (points.length?L.latLngBounds(points):null);
+      if(!target?.isValid?.())return false;
+      placementMap.fitBounds(target,{padding:[42,42],maxZoom:mapScopeMode==='all'?7:11,animate:false});
+      return true;
     };
+    window.OrielFitMapToScope=fitScopePins;
     const label={
       Hospital:'Hospital',
       'General Practice':'GP',
@@ -267,8 +269,11 @@
         :null;
 
       const zoom=placementMap.getZoom();
-      const cellSize=zoom<=7?48:zoom<=8?40:zoom<=9?32:zoom<=10?26:
-        zoom<=11?21:zoom<=12?17:zoom<=13?13:zoom<=14?9:zoom<=15?6:0;
+      // Keep national-scale clusters geographically informative. The former
+      // 48px cells collapsed the entire England & Wales catalogue into only
+      // a handful of pins; tighter cells preserve more visible regional detail.
+      const cellSize=zoom<=7?24:zoom<=8?28:zoom<=9?30:zoom<=10?24:
+        zoom<=11?20:zoom<=12?16:zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
       const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
       const displayGroups=[];
       if(cellSize>0){
@@ -326,7 +331,7 @@
         const needsBadge=group.cluster||entries.length>1;
         let pin;
         if(needsBadge){
-          const size=group.cluster?(entries.length>=100?38:entries.length>=10?32:28):(entries.length>=100?34:entries.length>=10?29:25);
+          const size=group.cluster?(entries.length>=100?34:entries.length>=10?28:24):(entries.length>=100?30:entries.length>=10?26:23);
           const fontSize=entries.length>=100?9:10;
           const countLabel=entries.length>999?'999+':String(entries.length);
           pin=L.marker(c,{
@@ -399,6 +404,21 @@
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
       $('mapStatus').title=(mapScopeMode==='all'?'Showing the entire programme catalogue regardless of current filters. ':'Showing programmes that match your current filters. ')+'At wider zooms, numbered clusters zoom into nearby sites; individual location pins open every programme there. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
+      window.OrielMapStats={
+        scope:mapScopeMode,
+        programmes:list.length,
+        programmesRepresented:programmePins.size,
+        programmesWithAnySite,
+        programmesWithAllSites,
+        programmesWithoutCode,
+        uniqueSites:groups.size,
+        visibleMarkers:displayGroups.length,
+        clusters:window.OrielMapClusterCount,
+        locationCodes:allCodes.size,
+        resolvedLocationCodes:resolvedCodes.size,
+        unresolvedLocationCodes:unresolved,
+        bounds:window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds.toBBoxString():null
+      };
       syncMap();
     };
     const scheduleMapRedraw=()=>{
@@ -412,6 +432,9 @@
     placementMap.on('zoomend',scheduleMapRedraw);
     placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw()});
     try{drawMap(placements.filter(matches));}catch{}
+    // Fit the complete catalogue on first paint as well as after geocoding.
+    // This prevents the default London view from hiding the rest of the map.
+    requestAnimationFrame(()=>setTimeout(fitScopePins,120));
     return true;
   };
 
