@@ -8,15 +8,16 @@
 (()=>{
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
-const maptilerStyle=id=>`https://api.maptiler.com/maps/${id}/style.json?key=${MAPTILER_KEY}`;
-const STYLES = Object.freeze({
-  editorial: maptilerStyle('01a1b7cf-4ca7-7662-9861-84b5b44c218c'),
-  positron: maptilerStyle('base-v4-light'),
-  bright: maptilerStyle('bright-v2'),
-  liberty: maptilerStyle('streets-v4'),
-  dark: maptilerStyle('streets-v4-dark'),
-  fiord: maptilerStyle('landscape-v4')
+const STYLE_IDS=Object.freeze({
+  editorial:'01a1b7cf-4ca7-7662-9861-84b5b44c218c',
+  positron:'base-v4-light',
+  bright:'bright-v2',
+  liberty:'streets-v4',
+  dark:'streets-v4-dark',
+  fiord:'landscape-v4'
 });
+const maptilerStyle=id=>`https://api.maptiler.com/maps/${id}/style.json?key=${MAPTILER_KEY}`;
+const STYLES=Object.freeze(Object.fromEntries(Object.entries(STYLE_IDS).map(([name,id])=>[name,maptilerStyle(id)])));
   const STYLE_KEY='oriel-basemap-style-v2';
   const CHOICES=new Set(['auto',...Object.keys(STYLES)]);
   let preference='auto';
@@ -30,11 +31,13 @@ const STYLES = Object.freeze({
   const MAPTILER_ATTR='<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> · '+OSM_ATTR;
   const RASTER_ATTR=OSM_ATTR;
   const instances=new Set();
+  const miniInstances=new Set();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-  // Automatic preserves the custom editorial cartography in both light and
-  // dark app themes. The explicit Dark option is a separate MapTiler dark map.
+  // Automatic preserves the custom editorial cartography in both app themes.
+  // The explicit Dark option is a separate MapTiler dark map.
   const activeStyleName=()=>preference==='auto'?'editorial':preference;
   const style=()=>STYLES[activeStyleName()];
+  const rasterTileUrl=()=>`https://api.maptiler.com/maps/${STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
   const styleAttribution=()=>MAPTILER_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
@@ -51,6 +54,16 @@ const STYLES = Object.freeze({
           record.leaflet.getContainer().dataset.basemap='vector-loading';
         }
       }catch(error){console.warn('Map style could not switch',error)}
+    }
+    // Mini-maps use MapTiler's raster rendering of the exact same style.
+    // This avoids creating another WebGL context for every programme card.
+    for(const record of miniInstances){
+      try{
+        const holder=record.leaflet.getContainer();
+        if(!holder.isConnected){miniInstances.delete(record);continue;}
+        record.layer.setUrl(rasterTileUrl());
+        holder.dataset.basemap='maptiler-raster-'+activeStyleName();
+      }catch(error){console.warn('Mini-map style could not switch',error)}
     }
   };
   const choose=choice=>{
@@ -85,10 +98,56 @@ const STYLES = Object.freeze({
     reportMainRenderer(map,true,'WebGL or the map provider is unavailable; the standard map remains interactive.');
     return {layer,kind:'raster'};
   };
+  const addMiniRaster=map=>{
+    const holder=map.getContainer();
+    let layer,record,loaded=false,finished=false,timer=null,errors=0;
+    const cleanup=()=>{
+      if(timer)clearTimeout(timer);
+      if(record)miniInstances.delete(record);
+    };
+    const fallback=()=>{
+      if(finished||loaded)return;
+      finished=true;cleanup();
+      try{if(layer)map.removeLayer(layer)}catch{}
+      raster(map);
+    };
+    try{
+      layer=L.tileLayer(rasterTileUrl(),{
+        tileSize:256,minZoom:0,maxZoom:20,maxNativeZoom:20,
+        keepBuffer:1,updateWhenIdle:true,updateWhenZooming:false,
+        crossOrigin:true,className:'oriel-maptiler-mini',
+        attribution:MAPTILER_ATTR
+      }).addTo(map);
+      record={leaflet:map,layer,attribution:MAPTILER_ATTR};
+      miniInstances.add(record);
+      holder.dataset.basemap='maptiler-raster-'+activeStyleName();
+      layer.on('tileload',()=>{
+        loaded=true;
+        holder.dataset.basemap='maptiler-raster-'+activeStyleName();
+        if(timer){clearTimeout(timer);timer=null;}
+      });
+      layer.on('tileerror',()=>{
+        errors++;
+        if(!loaded&&errors>=4)fallback();
+      });
+      timer=setTimeout(fallback,12000);
+      map.on('unload',cleanup);
+      return {layer,kind:'raster',provider:'maptiler'};
+    }catch(error){
+      console.warn('MapTiler mini-map tiles unavailable; displaying OpenStreetMap',error);
+      cleanup();
+      try{if(layer)map.removeLayer(layer)}catch{}
+      return raster(map);
+    }
+  };
   const addTo=(map,{mini=false}={})=>{
     if(!map||!window.L)return null;
     const holder=map.getContainer();
     if(!holder)return null;
+    // Mini-maps use the same selected MapTiler style through raster XYZ tiles.
+    // They retain their own Leaflet pins, site navigation and click behaviour,
+    // without consuming scarce browser WebGL contexts.
+    if(mini)return addMiniRaster(map);
     // MapLibre GL JS v5 may not expose supported(); absence is not a WebGL failure.
     const maplibre=window.maplibregl;
     const explicitlyUnsupported=typeof maplibre?.supported==='function'&&!maplibre.supported();
