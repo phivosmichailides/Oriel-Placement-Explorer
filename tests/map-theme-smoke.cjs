@@ -303,7 +303,14 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     },null,{timeout:30000});
     // The same custom-style image must remain untinted in the dark interface.
     await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-    await sleep(250);
+    await page.waitForFunction(()=>{
+      const main=document.getElementById('placementMap');
+      const holder=document.querySelector('#results .placement .uxMiniMap');
+      return main?.dataset.basemap==='vector-editorial-dark'&&
+        holder?.dataset.basemap==='vector-editorial-dark'&&
+        holder?.dataset.miniStyle==='editorial-dark'&&
+        !!holder?.querySelector('.leaflet-image-layer');
+    },null,{timeout:30000});
     const darkMini=await card.locator('.uxMiniMap').evaluate(node=>({
       basemap:node.dataset.basemap,
       miniStyle:node.dataset.miniStyle,
@@ -458,6 +465,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(locationCoverage.programmesWithoutLocationCodes.length,0,'Some programmes have no usable location code: '+JSON.stringify(locationCoverage.programmesWithoutLocationCodes));
     assert(await page.evaluate(()=>Array.isArray(geo['@OUTCODE:TN25'])),'A postcode with no exact match did not fall back to its postcode-district centre');
     assert(geocodeRequests>0,'The all-regions action did not call the location resolver');
+    const allMapView=await page.evaluate(()=>({zoom:placementMap.getZoom(),bounds:placementMap.getBounds().toBBoxString(),pins:mapLayer.getLayers().length}));
+    assert(allMapView.pins>100,'The all-programmes map has too few unique location groups: '+JSON.stringify(allMapView));
+    assert(allMapView.zoom<=7.5,'The all-programmes map did not zoom out to show the full catalogue: '+JSON.stringify(allMapView));
+    await page.locator('#placementMap').screenshot({path:output+'/map-all-programmes.png'});
+    await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.5,{animate:false}));
+    await sleep(900);
+    await page.locator('#placementMap').screenshot({path:output+'/map-london-boroughs.png'});
     // A shared coordinate must show a count and expand to every programme.
     const groupPinCheck=await page.evaluate(()=>{
       const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
