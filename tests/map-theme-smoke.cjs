@@ -14,6 +14,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
   const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   const page=await browser.newPage({viewport:{width:1440,height:960}});
   const errors=[];
+  let geocodeRequests=0;
   page.on('pageerror',e=>{errors.push(e.message);console.log('RUNTIME ERROR:',e.message)});
   page.on('requestfailed',r=>{if(/openfreemap|maptiler/i.test(r.url()))console.log('MAP REQUEST FAILED:',r.url(),r.failure()?.errorText)});
   page.on('response',r=>{if(!r.ok()&&/openfreemap|maptiler/i.test(r.url()))console.log('MAP HTTP ERROR:',r.status(),r.url())});
@@ -25,10 +26,29 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         region:'London',environment:'mixed',priorities:[],salary:'',hours:'',community:'some'
       }));
     });
+    // Mock the postcode service so the regression verifies all batches without
+    // relying on external geocoder availability or consuming a provider quota.
+    await page.route('https://api.postcodes.io/**',async route=>{
+      geocodeRequests++;
+      const url=new URL(route.request().url());
+      const point=code=>{
+        let hash=7;
+        for(const ch of String(code))hash=(hash*31+ch.charCodeAt(0))>>>0;
+        return {latitude:50+(hash%6500)/1000,longitude:-5.8+((hash*17)%8000)/1000};
+      };
+      if(url.pathname==='/postcodes'&&route.request().method()==='POST'){
+        const body=JSON.parse(route.request().postData()||'{}');
+        const result=(body.postcodes||[]).map(code=>({query:code,result:point(code)}));
+        await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result})});
+      }else if(url.pathname.startsWith('/outcodes/')){
+        const code=decodeURIComponent(url.pathname.split('/').pop());
+        await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:200,result:point(code)})});
+      }else await route.continue();
+    });
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261107independent1')&&(await page.content()).includes('map-basemap.js?v=20261107editorial5')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261106commute1')&&(await page.content()).includes('design-refresh.css?v=20261106commute1')&&(await page.content()).includes('app.js?v=20261108mapcoverage2')&&(await page.content()).includes('map-basemap.js?v=20261108mapcoverage1')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -128,18 +148,23 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await mapPicker.locator('option[value="editorial"]').count(),1,'Editorial Light map option missing');
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
-      await mapPicker.selectOption('liberty');
-      const savedMapStyle=await page.evaluate(()=>({
-        active:window.OrielBasemap?.preference,
-        stored:localStorage.getItem('oriel-basemap-style-v1')
-      }));
-      assert.deepEqual(savedMapStyle,{active:'liberty',stored:'liberty'},'Map style was not saved');
-      // Wait for one transition to finish before starting another. Rapid
-      // back-to-back setStyle calls can cancel each other's tile requests.
-      await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-liberty',null,{timeout:30000});
+      const styleProviders=await page.evaluate(()=>Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).hostname])));
+      assert(Object.values(styleProviders).every(host=>host==='api.maptiler.com'),'Every selectable map style must use MapTiler: '+JSON.stringify(styleProviders));
+      for(const styleName of ['positron','bright','liberty','dark','fiord']){
+        await mapPicker.selectOption(styleName);
+        await page.waitForFunction(name=>document.getElementById('placementMap')?.dataset.basemap==='vector-'+name,styleName,{timeout:30000});
+        const attribution=await page.locator('#placementMap .leaflet-control-attribution').innerText();
+        assert.match(attribution,/MapTiler/,'MapTiler attribution missing for '+styleName);
+        assert.doesNotMatch(attribution,/OpenFreeMap/,'An old OpenFreeMap style is still being used for '+styleName);
+      }
       await mapPicker.selectOption('auto');
       await page.waitForFunction(()=>window.OrielBasemap?.preference==='auto');
       await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial',null,{timeout:30000});
+      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      await sleep(350);
+      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),'vector-editorial',
+        'Automatic switched away from the custom Editorial map in dark interface mode');
+      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
     }else{
       assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
@@ -277,30 +302,53 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       await page.locator('[data-q="london"]').first().click();
     }
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .leaflet-interactive').length>0,null,{timeout:12000});
+    // One All-regions action must finish the entire postcode/outcode backlog.
+    await page.waitForFunction(()=>{
+      const status=document.getElementById('mapStatus')?.textContent||'';
+      return status.includes('location codes resolved')&&!status.includes('codes still need locating')&&!status.includes('no postcode/outcode in the source');
+    },null,{timeout:90000});
     const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
     const allRegionStatus=await page.locator('#mapStatus').innerText();
     const locationCoverage=await page.evaluate(()=>{
       const list=placements.filter(matches);
-      const missing=list.filter(p=>!p.postcodes.some(pc=>geo[pcKey(pc)]));
-      const unique=[...new Set(list.flatMap(p=>p.postcodes))];
+      const codes=p=>[...(p.postcodes||[]).map(pcKey),...(p.outcodes||[]).map(oc=>'@OUTCODE:'+String(oc).toUpperCase())];
+      const unique=[...new Set(list.flatMap(codes))];
+      const missing=list.filter(p=>!codes(p).length||codes(p).some(code=>!Array.isArray(geo[code])));
       return {
         matching:list.length,
-        mapped:list.length-missing.length,
-        missingCount:missing.length,
-        uniquePostcodes:unique.length,
-        unresolvedPostcodes:unique.filter(pc=>!geo[pc]).length,
-        programmesWithoutPostcodes:list.filter(p=>!p.postcodes.length).map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area,desc:p.desc?.slice(0,180)})),
-        programmesWithPartiallyResolvedSites:list.filter(p=>p.postcodes.some(pc=>geo[pc])&&p.postcodes.some(pc=>!geo[pc])).length,
-        missing:missing.map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area,postcodes:p.postcodes})).slice(0,100)
+        programmesWithAllSitesMapped:list.length-missing.length,
+        missingProgrammes:missing.length,
+        uniqueLocationCodes:unique.length,
+        unresolvedLocationCodes:unique.filter(code=>!Array.isArray(geo[code])).length,
+        programmesWithoutLocationCodes:list.filter(p=>!codes(p).length).map(p=>({id:p.id,title:p.title,employer:p.employer,region:p.region,area:p.area})),
+        partiallyMappedProgrammes:list.filter(p=>codes(p).some(code=>Array.isArray(geo[code]))&&codes(p).some(code=>!Array.isArray(geo[code]))).length
       };
     });
     console.log('ALL-REGIONS LOCATION COVERAGE:',JSON.stringify(locationCoverage));
+    console.log('POSTCODE SERVICE MOCK REQUESTS:',geocodeRequests);
     assert(allRegionPins>100,
       'England & Wales mode has too few map pins: '+allRegionPins+' ('+allRegionStatus+')');
     assert(!await page.evaluate(()=>quick.has('london')||document.getElementById('region').value==='London'),
       'The test did not actually enter England & Wales mode');
-    assert(!/0 of \d+ matching programmes mapped/.test(await page.locator('#mapStatus').innerText()),
-      'England & Wales unexpectedly maps zero programmes');
+    assert.equal(locationCoverage.missingProgrammes,0,'Some matching programmes still have an unmapped site: '+JSON.stringify(locationCoverage));
+    assert.equal(locationCoverage.unresolvedLocationCodes,0,'Some postcode/outcode codes remain unresolved: '+JSON.stringify(locationCoverage));
+    assert.equal(locationCoverage.programmesWithoutLocationCodes.length,0,'Some programmes have no usable location code: '+JSON.stringify(locationCoverage.programmesWithoutLocationCodes));
+    assert(geocodeRequests>0,'The all-regions action did not call the location resolver');
+    // A shared coordinate must show a count and expand to every programme.
+    const groupPinCheck=await page.evaluate(()=>{
+      const sample=placements.find(p=>(p.postcodes||[]).some(pc=>Array.isArray(geo[pcKey(pc)])));
+      if(!sample)return null;
+      const postcode=sample.postcodes.find(pc=>Array.isArray(geo[pcKey(pc)]));
+      const synthetic=[0,1,2].map(i=>({...sample,id:'__group-pin-test-'+i,title:'Shared-site test '+(i+1),postcodes:[postcode],outcodes:[]}));
+      drawMap(synthetic);
+      const marker=document.querySelector('#placementMap .oriel-group-marker');
+      const count=Number(marker?.dataset.programmeCount||marker?.querySelector('.oriel-group-count')?.dataset.programmeCount||0);
+      marker?.click();
+      const expanded=document.querySelectorAll('#mapSelection .placement').length;
+      drawMap(placements.filter(matches));
+      return {count,expanded};
+    });
+    assert.deepEqual(groupPinCheck,{count:3,expanded:3},'Shared-location pins do not expand to every programme');
     await page.locator('[data-q="london"]').first().click();
 
     // Visibility rules inspect every training-site postcode, not merely
