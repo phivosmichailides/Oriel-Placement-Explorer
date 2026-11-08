@@ -161,7 +161,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         boroughCount:boroughs.features?.length||0,
         boroughNames:(boroughs.features||[]).map(feature=>feature.properties?.name).sort(),
         boroughLayer:editorialStyleForDesign.layers.find(layer=>layer.id==='Oriel London borough labels')};
-    });
+    },editorialStyleForDesign);
     for(const [theme,levels] of Object.entries({light:designCoverage.lightAirportMinZoom,dark:designCoverage.darkAirportMinZoom})){
       assert(levels['Airport zone']>=11&&levels.Aeroway>=12&&levels['Airport labels']>=12,
         theme+' map shows distracting airport POIs too early: '+JSON.stringify(levels));
