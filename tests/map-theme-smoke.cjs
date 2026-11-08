@@ -7,6 +7,7 @@ const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const base = process.env.TARGET || 'https://phivosmichailides.github.io/Oriel-Placement-Explorer/';
+const localPreview = ['localhost','127.0.0.1','::1'].includes(new URL(base).hostname);
 const output = '/tmp/oriel-map-theme-smoke';
 fs.mkdirSync(output, {recursive:true});
 const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
@@ -95,7 +96,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108atlas1$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108atlas2$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Placement Atlas · Pharmacy Foundation Programme catalogue:/,
@@ -134,7 +135,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const holder=document.getElementById('placementMap');
       const state=holder?.dataset.basemap||'';
       if(state==='raster-fallback')return holder.querySelector('.leaflet-tile-loaded');
-      return state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup');
+      return (localPreview&&state==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded'))||
+         (state==='vector-editorial-light'&&!holder.querySelector('.oriel-map-backup'));
     },null,{timeout:30000});
     const editorialStyleForDesign=await page.evaluate(async()=>{
       const url=window.OrielBasemap?.styles?.['editorial-light'];
@@ -198,6 +200,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       assert.equal(vectorVisibility.osmCredits,1,'OpenStreetMap attribution is missing or duplicated');
       assert.doesNotMatch(vectorVisibility.attribution,/\bLeaflet\b/,'Unnecessary Leaflet library prefix is still visible');
       await page.locator('#placementMap').screenshot({path:output+'/map-editorial.png'});
+    }else if(localPreview&&shownState==='osm-fallback'){
+      assert(mapTiles>0,'Local-preview fallback has no rendered base-map tiles');
+      assert(mainTileSources.every(tile=>{try{return new URL(tile.url).hostname==='tile.openstreetmap.org'&&tile.width>100&&tile.height>100}catch{return false}}),
+        'Local-preview OSM fallback tiles are missing or malformed: '+JSON.stringify(mainTileSources.slice(0,4)));
     }else{
       const fallbackAudit=mainTileSources.map(tile=>{
         let url;try{url=new URL(tile.url)}catch{}
@@ -219,7 +225,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
     }));
     console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify(vectorDiagnostic));
-    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
         const value=document.getElementById('placementMap')?.dataset.basemap||'';
         return value.startsWith('vector-')&&value!=='vector-loading';
@@ -302,9 +308,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));
       await page.waitForFunction(()=>document.getElementById('placementMap')?.dataset.basemap==='vector-editorial-light',null,{timeout:30000});
     }else{
-      assert(await mapPicker.isDisabled(),'Map style selector should explain unsupported WebGL');
+      assert(await mapPicker.isDisabled(),'Map style selector should explain unavailable vector rendering');
       assert(await page.locator('#mapStyleStatus').isVisible(),'Fallback explanation is missing');
-      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),'raster-fallback');
+      const expectedFallback=localPreview?'osm-fallback':'raster-fallback';
+      assert.equal(await page.locator('#placementMap').getAttribute('data-basemap'),expectedFallback);
     }
 
     const pins=await page.locator('#placementMap .leaflet-interactive').count();
@@ -341,7 +348,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return holder&&holder.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
+      return localPreview
+        ?holder?.dataset.basemap==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded')
+        :holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
@@ -350,17 +359,21 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       src:node.currentSrc||node.src,width:node.naturalWidth,height:node.naturalHeight,complete:node.complete,
       filter:getComputedStyle(node).filter
     }));
-    assert.equal(miniBasemap,'vector-editorial-light','Programme mini-map is not using the custom Editorial vector style: '+miniBasemap);
-    assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+    assert.equal(miniBasemap,localPreview?'osm-fallback':'vector-editorial-light','Programme mini-map did not render its expected basemap: '+miniBasemap);
+    if(!localPreview)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
+    else assert(await card.locator('.uxMiniMap .leaflet-tile-loaded').count()>0,'Local-preview mini map has no visible base-map tiles');
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
     assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
     assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
     assert.doesNotMatch(miniAttribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
     assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
-    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+    if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // Changing the main map style must re-render the existing mini-map too.
+    // Local PR previews use OSM fallback because the production MapTiler key is
+    // intentionally origin-restricted; style switching is verified on production.
+    if(!localPreview){
     await mapPicker.selectOption('editorial-dark');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
@@ -401,8 +414,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         holder?.dataset.miniStyle==='editorial-light'&&
         !!holder?.querySelector('.leaflet-image-layer');
     },null,{timeout:30000});
-    assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+    if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 response during mini-map style changes: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
+    }
     // The image overlay must not intercept the original mini-map click action.
     await page.evaluate(()=>{
       window.__openedMiniMapUrl=null;
