@@ -53,7 +53,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     let fresh=false;
     for(let retry=0;retry<18;retry++){
       await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
-      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial3')&&(await page.content()).includes('map-basemap.js?v=20261108editorial7')){fresh=true;break;}
+      if((await page.content()).includes('programme-preview.js?v=20261106fixed1')&&(await page.content()).includes('workspace-ux.js?v=20261108tube2')&&(await page.content()).includes('design-refresh.css?v=20261108editorial2')&&(await page.content()).includes('app.js?v=20261108editorial5')&&(await page.content()).includes('map-basemap.js?v=20261108editorial9')){fresh=true;break;}
       await sleep(5000);
     }
     assert(fresh,'Latest public build not served');
@@ -64,7 +64,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage6$/,
+    assert.match(scriptSrc,/app-product\.js\?v=20261108mapcoverage7$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Oriel Placement Desk · Programme catalogue:/,
@@ -190,6 +190,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
             roads:style.layers.filter(layer=>layer.id.startsWith('Oriel editorial road')).length,
             casingZoomIsTopLevel:Array.isArray(casing?.paint?.['line-width'])&&casing.paint['line-width'][0]==='interpolate'&&casing.paint['line-width'][2]?.[0]==='zoom',
             bridgeRoadsIncluded:JSON.stringify(casing?.filter||[]).includes('"tunnel"')&&!JSON.stringify(casing?.filter||[]).includes('"bridge"'),
+            boroughSource:style.sources?.oriel_borough_labels?.type,
+            boroughData:style.sources?.oriel_borough_labels?.data,
+            boroughLayer:style.layers.find(layer=>layer.id==='Oriel London borough labels')?.minzoom,
+            boroughCityFilter:style.layers.find(layer=>layer.id==='City labels')?.filter,
             subwayLayerVisible:style.layers.find(layer=>layer.id==='Subway station')?.layout?.visibility!=='none',
             roadLabelsMinZoom:style.layers.find(layer=>layer.id==='Road labels')?.minzoom};
         },styleName);
@@ -197,6 +201,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         assert.equal(styleAudit.roads,2,'The Editorial road casing/surface pair is incomplete: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.casingZoomIsTopLevel,true,'Road casing uses an invalid nested zoom expression: '+JSON.stringify(styleAudit));
         assert.equal(styleAudit.bridgeRoadsIncluded,true,'Road bridges should remain visible above rivers: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.boroughSource,'geojson','Official London borough label source is missing: '+JSON.stringify(styleAudit));
+        assert.equal(styleAudit.boroughLayer,8.5,'London borough names should appear from London-wide zoom: '+JSON.stringify(styleAudit));
+        const boroughsResponse=await page.evaluate(async name=>{
+          const style=await (await fetch(window.OrielBasemap.styles[name])).json();
+          const source=style.sources.oriel_borough_labels;
+          const url=new URL(source.data,window.OrielBasemap.styles[name]);
+          const data=await (await fetch(url)).json();
+          return {count:data.features?.length||0,names:(data.features||[]).map(f=>f.properties?.name)};
+        },styleName);
+        assert.equal(boroughsResponse.count,33,'All 32 boroughs and the City of London must have label anchors: '+JSON.stringify(boroughsResponse));
+        for(const required of ['Camden','Islington','Kensington and Chelsea','Hammersmith and Fulham','Newham','Barnet','Haringey','Westminster','City of London']){
+          assert(boroughsResponse.names.includes(required),'Missing London borough label: '+required);
+        }
         assert.equal(styleAudit.subwayLayerVisible,false,'Generic subway markers would duplicate the TfL Underground roundels');
         assert(styleAudit.roadLabelsMinZoom<=13,'Road names are not visible at neighbourhood zoom');
       }
@@ -463,7 +480,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
     });
     const mapScope=page.locator('#mapScope');
-    assert.equal(await mapScope.inputValue(),'matching','Map scope should begin by following active filters');
+    assert.equal(await mapScope.inputValue(),'all','The map should show the complete catalogue by default');
+    await mapScope.selectOption('matching');
     await mapScope.selectOption('all');
     await page.waitForFunction(()=>{
       const status=document.getElementById('mapStatus')?.textContent||'';
