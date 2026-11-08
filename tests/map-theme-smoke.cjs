@@ -726,8 +726,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const savedFilter=await page.evaluate(()=>JSON.parse(localStorage.getItem('phivos-desk-v2')||'{}').filters);
     assert(savedFilter?.quick?.includes('london'),'Temporary filters were not saved to the local workspace cache');
     await page.reload();
-    await page.waitForFunction(()=>quick.has('london')&&window.OrielMapStats&&window.OrielMapStats.programmes===placements.filter(matches).length,null,{timeout:30000});
-    assert(await page.evaluate(()=>quick.has('london')),'Saved quick filters were not restored after refresh');
+    try{
+      await page.waitForFunction(()=>quick.has('london'),null,{timeout:30000});
+    }catch(error){
+      const restoreDebug=await page.evaluate(()=>({
+        quick:[...quick],
+        saved:JSON.parse(localStorage.getItem('phivos-desk-v2')||'{}').filters?.quick||null,
+        resultCount:document.getElementById('count')?.textContent||'',
+        mapProgrammes:window.OrielMapStats?.programmes??null,
+        matching:placements.filter(matches).length
+      }));
+      throw Error('Saved quick filters were not restored after refresh: '+JSON.stringify(restoreDebug));
+    }
+    await page.waitForFunction(()=>window.OrielMapStats&&window.OrielMapStats.programmes===placements.filter(matches).length,null,{timeout:30000});
     assert.equal(await page.evaluate(()=>window.OrielMapStats.programmes),filteredView.matching,'The filtered map changed after refreshing the page');
     await page.locator('[data-q="london"]').first().click();
     await page.waitForFunction(()=>window.OrielMapStats?.programmes===4064,null,{timeout:30000});
