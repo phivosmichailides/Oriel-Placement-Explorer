@@ -55,7 +55,7 @@
       if(geoBusy){resolveScopeAgain=true;return;}
       if(typeof geo==='undefined')return;
       const region=activeRegion();
-      const source=region?scopePlacements():placements.filter(matches);
+      const source=region?scopePlacements():placements;
       const hasGeo=key=>Object.prototype.hasOwnProperty.call(geo,key);
       const postcodes=[...new Set(source.flatMap(p=>(p.postcodes||[]).map(pcKey)))];
       const outcodes=[...new Set(source.flatMap(p=>(p.outcodes||[]).map(x=>String(x).toUpperCase())))];
