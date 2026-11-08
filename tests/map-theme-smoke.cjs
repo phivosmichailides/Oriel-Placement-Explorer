@@ -167,8 +167,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
-      const styleOrigins=await page.evaluate(()=>Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin])));
-      assert(Object.values(styleOrigins).every(origin=>origin===location.origin),'Editorial styles should be hosted with the app: '+JSON.stringify(styleOrigins));
+      const styleOriginAudit=await page.evaluate(()=>({origin:window.location.origin,styles:Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin]))}));
+      assert(Object.values(styleOriginAudit.styles).every(origin=>origin===styleOriginAudit.origin),'Editorial styles should be hosted with the app: '+JSON.stringify(styleOriginAudit));
       for(const styleName of ['editorial-light','editorial-dark']){
         await mapPicker.selectOption(styleName);
         await page.waitForFunction(name=>document.getElementById('placementMap')?.dataset.basemap==='vector-'+name,styleName,{timeout:30000});
