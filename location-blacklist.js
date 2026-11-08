@@ -184,7 +184,7 @@
     const entry={...item,createdAt:new Date().toISOString()};
     if(like)prefs().locationLikes=[...likedAreas(),entry];
     else{prefs().locationBlacklist=[...areas(),entry];prefs().locationAllowed={};}
-    save();selected[mode]=null;
+    save();const status=byId(like?'geoLikeStatus':'geoBlacklistStatus');if(status)status.textContent=like?'Added '+entry.label+' to your preferred areas. It will improve fit scores and ranking.':'Added '+entry.label+' to exclusions. Only exact verified matches will be hidden.';selected[mode]=null;
     const input=byId(like?'geoLikeSearch':'geoAreaSearch'),add=byId(like?'geoAddLike':'geoAddArea'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions');
     if(input)input.value='';if(add)add.disabled=true;if(list)list.replaceChildren();
     progress();refresh();scan();
