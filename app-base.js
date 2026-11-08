@@ -139,6 +139,7 @@ function visaMatches(p){return !$('visa').value||($('visa').value==='yes'?p.visa
 function decisionMatches(p){
   // Permanent location blacklist applies irrespective of optional Explore filters.
   if(window.OrielGeoBlacklist?.shouldHide(p))return false;
+  if($('hideAvoid')?.checked){const avoided=tokens(state.prefs.avoids),placeText=`${p.title} ${p.area} ${p.region}`.toLowerCase().replace(/[^a-z0-9]+/g,' ');if(avoided.some(name=>(' '+placeText+' ').includes(' '+name.toLowerCase().replace(/[^a-z0-9]+/g,' ')+' ')))return false;}
   if(window.OrielSpecialist?.filterOut(p))return false;
   const d=$('decision').value,m=mark(p);
   if($('hideShortlisted')?.checked&&SHORT.has(m.status))return false;
