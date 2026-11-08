@@ -6,6 +6,8 @@ on:
       - 'index.html'
       - '*.js'
       - '*.css'
+      - 'favicon.svg'
+      - 'map-styles/**'
       - 'locations.json'
       - 'tests/map-theme-smoke.cjs'
       - 'tests/catalogue-parser.test.cjs'
