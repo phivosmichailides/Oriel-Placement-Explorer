@@ -26,7 +26,7 @@ fs.mkdirSync(output,{recursive:true});
    const el=document.querySelector('#placementMap');
    return el&&(['streets-editorial-light','streets-editorial-dark','osm-fallback'].includes(el.dataset.basemap))&&
     el.querySelectorAll('.leaflet-tile-loaded').length>=3;
-  },{timeout:45000});
+  },null,{timeout:45000});
   const initial=await page.evaluate(()=>({
     provider:document.querySelector('#placementMap').dataset.basemap,
     tiles:[...document.querySelectorAll('#placementMap .leaflet-tile-loaded')].map(x=>x.currentSrc||x.src),
@@ -88,7 +88,6 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(count=>ranked().length===count+1,countBefore,{timeout:10000});
   await page.locator('nav.tabs [data-tab=shortlist]').click();
   await page.waitForFunction(id=>!![...document.querySelectorAll('#shortlistList>.rank-row .placement')].find(el=>el.dataset.id===id),id,{timeout:12000});
-  const row=page.locator('#shortlistList>.rank-row').filter({has:page.locator('.placement[data-id='+JSON.stringify(id)+']')});
   const x=page.locator('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');
   assert(await x.count()>0,'Desktop red X missing');
   await x.first().click();
