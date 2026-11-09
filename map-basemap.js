@@ -201,8 +201,11 @@ const STYLES=Object.freeze({
     const previous=map._orielBasemapRecord;
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
     setMapBackdrop(map);
+    // The main map retains previously loaded Streets tiles while zooming.
+    // Mini-maps keep their existing lightweight settings.
+    const mainMap=map.getContainer()?.id==='placementMap';
     const layer=L.tileLayer(rasterTileUrl(),{
-      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      maxZoom:19,keepBuffer:mainMap?6:3,updateWhenIdle:false,updateWhenZooming:!mainMap,updateInterval:200,
       attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR,intentional};
