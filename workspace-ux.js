@@ -343,6 +343,12 @@
      .filter(station=>Number.isFinite(station.distanceKm)&&station.distanceKm<=maxKm)
      .sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,3);
  };
+ const nearbyRailStations=(lat,lng,maxKm=3)=>{
+   const stations=Array.isArray(window.ORIEL_RAIL_STATIONS)?window.ORIEL_RAIL_STATIONS:[];
+   return stations.map(station=>({...station,type:'National Rail',distanceKm:distanceKm(lat,lng,Number(station.lat),Number(station.lng))}))
+     .filter(station=>Number.isFinite(station.distanceKm)&&station.distanceKm<=maxKm)
+     .sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,3);
+ };
  const siteName=(p,site,index,count)=>{
    const title=String(p.title||''),p0=title.search(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
    const prefix=(p0>=0?title.slice(0,p0):title).replace(/[\/+\s]+$/,'');
@@ -381,8 +387,13 @@
          maxZoom:19,attribution:'© OpenStreetMap contributors'
        }).addTo(map);
      const sitePoint=[selected.lat,selected.lng];
-     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng,1.8):[];
+     const nearbyStations=p.region==='London'?nearbyTubeStations(selected.lat,selected.lng,1.8):nearbyRailStations(selected.lat,selected.lng,3);
      nearbyStations.forEach(station=>{
+       if(station.type==='National Rail'){
+         L.circleMarker([station.lat,station.lng],{radius:4.5,weight:1.6,color:'#fff',fillColor:'#547b91',fillOpacity:1})
+          .addTo(map).bindTooltip(escape(station.name),{direction:'top'});
+         return;
+       }
        const icon=L.divIcon({className:'oriel-tube-marker oriel-tube-mini-marker',html:'<span class="oriel-tube-roundel" aria-hidden="true"></span>',iconSize:[15,15],iconAnchor:[7.5,7.5]});
        const marker=L.marker([station.lat,station.lng],{icon,title:station.name,alt:station.name,keyboard:true,zIndexOffset:450});
        marker.bindTooltip(escape(station.name),{direction:'top',offset:[0,-7]});
@@ -464,8 +475,16 @@
    const foot=document.createElement('div');foot.className='uxMapFootnote';more.append(foot);
    more.append(commuteAdvice);panel.append(more);
    const links=document.createElement('div');links.className='uxMapLinks';
-   const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Check rail/Tube route ↗';links.append(route);
+   const route=document.createElement('a');route.target='_blank';route.rel='noopener noreferrer';route.textContent='Local station directions ↗';links.append(route);
+   const homeRoute=document.createElement('a');homeRoute.target='_blank';homeRoute.rel='noopener noreferrer';homeRoute.textContent='Directions from my postcode ↗';homeRoute.hidden=true;links.append(homeRoute);
    const maps=document.createElement('a');maps.target='_blank';maps.rel='noopener noreferrer';maps.textContent='Open selected site ↗';links.append(maps);panel.append(links);
+   const stationCredit=document.createElement('small');stationCredit.className='uxStationCredit';
+   stationCredit.style.cssText='display:block;margin-top:7px;font-size:10px;line-height:1.45;color:var(--mut)';
+   stationCredit.append('Rail station locations: ');
+   const stationSource=document.createElement('a');stationSource.href='https://github.com/davwheat/uk-railway-stations';stationSource.target='_blank';stationSource.rel='noopener noreferrer';stationSource.textContent='davwheat / Trainline EU';
+   const stationLicence=document.createElement('a');stationLicence.href='https://opendatacommons.org/licenses/odbl/1-0/';stationLicence.target='_blank';stationLicence.rel='noopener noreferrer';stationLicence.textContent='ODbL 1.0';
+   stationCredit.append(stationSource,' · ',stationLicence,' · London Underground data: TfL');
+   panel.append(stationCredit);
    let activeSite=null,activeLocation=null,activeLookup='',captionBase='';
    const brief=text=>{
      const x=String(text||'').replace(/\s+/g,' ').trim();
@@ -473,43 +492,42 @@
    };
    const captionStatus=(status,details='')=>{
      const prefix=status==='good'?'Convenient':status==='bad'?'Not convenient':
-       status==='loading'?'Checking your commute':status==='general'?'Area connections':status==='missing'?'Exact site location needed':'Journey time unavailable';
+       status==='loading'?'Checking your commute':'Area connections';
      caption.dataset.commuteTone=status;
      caption.textContent=prefix+(details?' · '+details:'')+(captionBase?' · '+captionBase:'');
      caption.title=caption.textContent;
    };
+   const directionsUrl=(origin,destination,mode='transit')=>'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin+', UK')+'&destination='+encodeURIComponent(destination+', UK')+'&travelmode='+mode;
    const refreshCommute=()=>{
      const site=activeSite,loc=activeLocation,siteLookup=activeLookup;
      const origin=window.OrielCommuteProfile?.read?.()||'';
+     const destination=siteLookup||loc?.place||loc?.headline||p.area||p.region||'Training area';
+     const station=loc?.hub||'';
+     const stationOrigin=station?(/station|underground|tube|railway/i.test(station)?station:station+' station'):(loc?.place||p.area||p.region||'local town centre');
+     route.textContent=station?'Directions from '+station+' ↗':'Local transport directions ↗';
+     route.href=directionsUrl(stationOrigin,destination,'transit');
+     route.title='Open public-transport directions from a useful local station or town-centre reference to this training site.';
+     maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(destination+', UK');
+     homeRoute.hidden=!origin;
+     if(origin){
+       homeRoute.href=window.OrielCommute?.mapsUrl?.(origin,site?.pc||destination)||directionsUrl(origin,destination,'transit');
+       homeRoute.title='Open public-transport directions from your saved starting postcode to this training site.';
+     }else homeRoute.removeAttribute('href');
      if(!origin){
-       // Without a starting postcode, show the area's transport links, not an invented commute assessment.
        captionStatus('general');
-       personalisedHint.textContent='General transport guidance · Add a home postcode to personalise travel time and convenience.';
+       personalisedHint.textContent='General local transport guidance · Use the nearby station and directions above. Add a home postcode only if you want a personalised commute estimate.';
        personalisedHint.hidden=false;
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
-       if(loc?.hub&&site?.pc){
-         route.textContent='Transit to '+loc.hub.replace(/^London /,'')+' ↗';
-         route.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(siteLookup+', UK')+'&destination='+encodeURIComponent(loc.hub+', UK')+'&travelmode=transit';
-         route.title='Open a Google Maps public-transport route from this programme postcode to '+loc.hub;
-       }else{
-         route.textContent='Check rail/Tube route ↗';
-         route.href=guides?.sourceUrls?.[loc?.source]||'https://tfl.gov.uk/plan-a-journey/';
-         route.title='Open the relevant public transport journey planner';
-       }
        return;
      }
      if(!site?.pc){
-       captionStatus('missing');
-       personalisedHint.textContent='A precise site postcode is needed for personal commute estimates. General area guidance is still available.';
+       captionStatus('general');
+       personalisedHint.textContent='Oriel does not list a full postcode for this site. The local area, station and transport guidance are shown instead; confirm the exact entrance with the employer.';
        personalisedHint.hidden=false;
-       commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-unverified';
-       commuteLabel.textContent='Journey not assessed';
-       commuteSummary.textContent='Oriel does not provide a training-site postcode for this location, so a reliable journey time cannot be calculated.';
-       commuteDetails.textContent='No travel time has been guessed.';
-       commuteMeta.textContent='Add or verify the site address with the employer.';
-       route.textContent='Open journey planner ↗';route.href='https://tfl.gov.uk/plan-a-journey/';route.title='Open a public-transport journey planner';
+       commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
+       commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
        return;
      }
@@ -518,17 +536,15 @@
      const key=origin+'|'+site.pc;
      if(panel.dataset.uxCommuteKey===key&&panel.dataset.uxCommuteLoadedKey===key)return;
      captionStatus('loading');
-     personalisedHint.textContent='Checking a weekday morning journey from '+originLabel+'.';
+     personalisedHint.textContent='Checking a weekday morning journey from '+originLabel+'. Local station directions remain available below.';
      personalisedHint.hidden=false;
      commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice is-loading';
      commuteLabel.textContent='Checking your commute…';
      commuteSummary.textContent='From '+originLabel+' to '+(siteTitle.textContent||site.pc);
      commuteDetails.textContent='Checking a typical weekday morning public-transport journey.';
-     commuteMeta.textContent='Your map pin remains the training site; only this travel advice uses your starting postcode.';
-     route.textContent='Open home-to-site route ↗';
-     route.href=window.OrielCommute?.mapsUrl?.(origin,site.pc)||'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin+', UK')+'&destination='+encodeURIComponent(site.pc+', UK')+'&travelmode=transit';
-     route.title='Open a public-transport route from '+origin+' to training site '+site.pc;
+     commuteMeta.textContent='The separate local-station link remains available if the planner does not return a route.';
      panel.dataset.uxCommuteKey=key;
+     panel.dataset.uxCommuteLoadedKey='';
      panel._uxRunCommute=async()=>{
        if(!panel.isConnected||panel.dataset.uxCommuteLoadedKey===key)return;
        panel.dataset.uxCommuteLoadedKey=key;
@@ -538,7 +554,7 @@
          const convenient=Number(journey.duration)<=40;
          captionStatus(convenient?'good':'bad',Math.round(journey.duration)+' min');
          personalisedHint.textContent='Personalised to '+originLabel+' · typical weekday morning sample.';
-         commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
+         commuteAdvice.hidden=false;commuteAdvice.className='uxCommuteAdvice '+(convenient?'is-convenient':'is-not-convenient');
          commuteLabel.textContent=convenient?'Convenient':'Not Convenient';
          commuteSummary.textContent=journey.duration+' min from '+originLabel+' to '+(siteTitle.textContent||site.pc)+(convenient?' · within your 40-minute target.':' · '+(journey.duration-40)+' min beyond your 40-minute target.');
          commuteDetails.textContent=(journey.legs||[]).join(' → ')||'The planner returned a journey time but no leg-by-leg description.';
@@ -549,13 +565,11 @@
          commuteMeta.textContent=[journey.sampleDate,(journey.departure||'08:00')+' weekday sample',notes.join(' · '),'TfL Journey Planner'].filter(Boolean).join(' · ');
        }catch{
          if(panel.dataset.uxCommuteKey!==key)return;
-         captionStatus('unavailable');
-         personalisedHint.textContent='Journey time unavailable from the planner; the area connections remain useful general guidance.';
-         commuteAdvice.className='uxCommuteAdvice is-unverified';
-         commuteLabel.textContent='Exact journey time unavailable';
-         commuteSummary.textContent='The transport planner did not return a reliable journey time from '+origin+' to '+site.pc+'.';
-         commuteDetails.textContent='No time or convenience rating has been guessed. Use the route link to check the exact journey.';
-         commuteMeta.textContent='Route data unavailable for this postcode pair.';
+         captionStatus('general');
+         personalisedHint.textContent='Local station and area connections are shown above. Use either directions link to plan the exact journey for your travel date.';
+         personalisedHint.hidden=false;
+         commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
+         commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
        }
      };
      scheduleCommute(panel);
@@ -571,16 +585,16 @@
      siteTitle.textContent=siteName(p,site,i,sites.length);
      count.textContent=sites.length>1?'Site '+(i+1)+' of '+sites.length+' · '+site.pc:site.pc;
      headline.textContent=loc.headline+(loc.relative?' · '+loc.relative:'');
-     const hubNote=loc.hub?'A transit link below checks a route to '+loc.hub+'. This is a useful London connection, not a guarantee that it is the nearest or fastest option.':'';
+     const hubNote=loc.hub?'Local station reference: '+loc.hub+(Number.isFinite(loc.hubDistanceKm)?' · about '+loc.hubDistanceKm.toFixed(1)+' km straight-line':'')+'. Use the directions link for the actual walk or bus; this is not a live journey-time estimate.':'';
      const connections=String(loc.connections||loc.detail||'See directions and transport links below.').replace(/\s+/g,' ').trim();
      const lead=connections.split(/(?<=[.!?])\s/)[0]||connections;
      captionBase=brief(lead);
      caption.textContent=captionBase;
      caption.title=connections;
      info.textContent=[loc.connections,hubNote,sites.length>1?'Each training site may need a different commute.':loc.detail||''].filter(Boolean).join(' ');
-     foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied');
+     foot.textContent=sites.length>1?'Showing postcode '+site.pc+' only. Use the arrows for the other site.':'Programme postcode: '+(site.pc||'Not supplied')+' · Station proximity is straight-line; check the actual walking route.';
      more.open=false;
-     activeLookup=/^Training location/.test(siteTitle.textContent)?site.pc:(siteTitle.textContent+' '+site.pc);
+     activeLookup=/^Training location/.test(siteTitle.textContent)?(site.pc||loc.place||loc.headline||p.area||p.region||'Training area'):(siteTitle.textContent+(site.pc?' '+site.pc:''));
      maps.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(activeLookup+', UK');
      refreshCommute();
      if(miniMaps.has(map)){try{miniMaps.get(map).remove()}catch{}miniMaps.delete(map)}
@@ -604,6 +618,9 @@
    refreshSite();
    return panel;
  }
+ window.addEventListener('oriel:rail-stations-ready',()=>{
+   document.querySelectorAll('.uxLocationPanel').forEach(panel=>panel._uxRefreshSite?.());
+ });
   function enhanceCard(article){
    if(!article||!article.matches('.placement')||article.dataset.uxEnhanced==='1')return;
    const p=byId().get(article.dataset.id);if(!p)return;
