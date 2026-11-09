@@ -57,9 +57,21 @@ const STYLES=Object.freeze({
     if(!map.isStyleLoaded?.()||!map.getSource('maptiler_planet_v4'))return false;
     const existing=map.getStyle()?.layers||[],beforeId=existing.find(layer=>layer.type==='symbol')?.id;
     const dark=activeStyleName()==='editorial-dark',filter=['==',['geometry-type'],'LineString'];
-    const baseWidth=['interpolate',['linear'],['zoom'],3,.8,5,1.05,7,1.3,9,1.55,11,1.85,13,2.2,15,2.75,17,3.45,19,4.3];
-    const classScale=['match',['get','class'],'motorway',1.75,'trunk',1.55,'primary',1.4,'secondary',1.22,'tertiary',1.1,'minor',1,'service',.86,'track',.78,.95];
-    const surfaceWidth=['*',baseWidth,classScale],casingWidth=['+',surfaceWidth,1.15];
+    // MapLibre requires ["zoom"] to be the direct input of a top-level
+    // step/interpolate expression. Keep class-based road widths inside each
+    // interpolation stop; multiplying an interpolated zoom expression by a
+    // class scale makes the entire road layer invalid and silently removes it.
+    const roadWidth=base=>['match',['get','class'],
+      'motorway',base*1.75,'trunk',base*1.55,'primary',base*1.4,
+      'secondary',base*1.22,'tertiary',base*1.1,'minor',base,
+      'service',base*.86,'track',base*.78,base*.95];
+    const roadWidthAtZoom=offset=>['interpolate',['linear'],['zoom'],
+      3,roadWidth(.8+offset),5,roadWidth(1.05+offset),
+      7,roadWidth(1.3+offset),9,roadWidth(1.55+offset),
+      11,roadWidth(1.85+offset),13,roadWidth(2.2+offset),
+      15,roadWidth(2.75+offset),17,roadWidth(3.45+offset),
+      19,roadWidth(4.3+offset)];
+    const surfaceWidth=roadWidthAtZoom(0),casingWidth=roadWidthAtZoom(1.15);
     const casingColour=dark?'#1b2520':'#f7f3e9';
     const roadColour=dark
       ?['match',['get','class'],'motorway','#c79a70','trunk','#b88f68','primary','#a98361','secondary','#8e8d78','tertiary','#78867c','minor','#6f7d74','service','#64746c','track','#596b63','#65746c']
