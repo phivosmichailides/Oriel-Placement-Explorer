@@ -37,6 +37,18 @@ fs.mkdirSync(output,{recursive:true});
   assert(initial.tiles.length>=3,'The map has not loaded adequate street tiles');
   assert(initial.tiles.some(x=>/maptiler\.com|openstreetmap\.org/.test(x)),'Map has no real street tile provider');
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
+  // Tube markers must be absent until close street-level zoom.
+  await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
+  assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Underground icons clutter the initial London view');
+  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],15.4,{animate:false}));
+  await page.waitForFunction(()=>Math.abs(placementMap.getZoom()-15.4)<.05,null,{timeout:10000});
+  assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Underground icons appeared before street-level zoom');
+  await page.evaluate(()=>placementMap.setZoom(15.6,{animate:false}));
+  await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-roundel').length>0,null,{timeout:12000});
+  assert(await page.locator('#placementMap .oriel-tube-roundel').count()>0,'Underground icons missing at close street-level zoom');
+  await page.evaluate(()=>placementMap.setZoom(12,{animate:false}));
+  await page.waitForFunction(()=>Math.abs(placementMap.getZoom()-12)<.05&&!document.querySelector('#placementMap .oriel-tube-roundel'),null,{timeout:10000});
+  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],10.4,{animate:false}));
   // Custom controls and map interactions.
   const controls=page.locator('#atlasMapZoom');
   await controls.waitFor({state:'visible'});

@@ -97,7 +97,7 @@
       ['Mixed','Mixed / split'],
       ['Other','Other']
     ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+
-    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground station</span>'+
+    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground stations (close zoom)</span>'+
     '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
     '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
@@ -124,7 +124,9 @@
     let selectedProgramme=null,hoveredProgramme=null,currentMapList=placements.filter(matches),mapRedrawQueued=false;
 
     // TfL Underground markers are a separate layer, so filtering or redrawing
-    // placement pins never removes transport context.
+    // placement pins never removes transport context. Only show at street-level
+    // zoom to prevent visual clutter in the London-wide and neighbourhood views.
+    const tubeMinZoom=15.5;
     const tubeLayer=L.layerGroup();
     const tubeIcon=L.divIcon({
       className:'oriel-tube-marker',
@@ -134,7 +136,7 @@
     const safeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const updateTubeVisibility=()=>{
       if(!placementMap)return;
-      const visible=placementMap.getZoom()>=11.25;
+      const visible=placementMap.getZoom()>=tubeMinZoom;
       if(visible&&!placementMap.hasLayer(tubeLayer))tubeLayer.addTo(placementMap);
       else if(!visible&&placementMap.hasLayer(tubeLayer))placementMap.removeLayer(tubeLayer);
     };
@@ -505,7 +507,7 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground station symbols appear from neighbourhood zoom; station data provided by Transport for London.';
+      $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground station symbols appear at close street-level zoom (15.5+); station data provided by Transport for London.';
       window.OrielMapStats={
         scope:'matching',
         programmes:list.length,
