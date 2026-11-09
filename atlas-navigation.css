@@ -310,3 +310,36 @@ html .panel{scroll-margin-top:96px!important}
   html{scroll-padding-top:122px!important}
   html .panel{scroll-margin-top:122px!important}
 }
+
+
+/* Mobile Explore / For You sub-navigation: each control has its own row/cell.
+   Prevent "For You" and "Compare selected" from occupying the same pixels. */
+@media (max-width:720px){
+  html body .atlasExploreSubnav{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    gap:11px!important;
+    padding:12px!important;
+    min-width:0!important;
+  }
+  html body .atlasSubnavIntro{min-width:0!important;width:100%!important}
+  html body .atlasSubnavChoices{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:3px!important;max-width:100%!important;width:100%!important;
+    min-width:0!important;padding:4px!important;box-sizing:border-box!important;
+  }
+  html body .atlasSubnavChoices button{
+    min-width:0!important;width:100%!important;
+    white-space:normal!important;overflow-wrap:break-word!important;
+    line-height:1.25!important;padding:10px 5px!important;
+    gap:5px!important;
+  }
+  html body .atlasExploreSubnav .atlasCompareOpen{
+    display:flex!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;min-height:42px!important;
+    white-space:normal!important;box-sizing:border-box!important;
+    justify-content:center!important;margin:0!important;
+  }
+}
