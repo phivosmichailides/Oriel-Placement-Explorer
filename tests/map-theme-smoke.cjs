@@ -576,6 +576,37 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.doesNotMatch(await fallbackPanel.innerText(),/Journey time unavailable|Transport corridor not verified/i,
       'A dead-end transport warning is still shown after a live planner failure');
 
+    const initialProgrammeId=await page.locator('#results .placement').first().getAttribute('data-id');
+    const outsideProgramme=await page.evaluate(()=>{
+      const p=placements.find(item=>item.region!=='London'&&(item.postcodes||[]).length>0);
+      return p?{id:p.id,title:p.title,region:p.region,postcode:p.postcodes[0]}:null;
+    });
+    assert(outsideProgramme,'The catalogue has no regional programme fixture for transport guidance');
+    await page.evaluate(id=>{
+      $('search').value=id;$('region').value='';$('decision').value='all';
+      quick.clear();document.querySelectorAll('.chip[data-q]').forEach(el=>el.classList.remove('on'));
+      persistFilters();explore();
+    },outsideProgramme.id);
+    await page.waitForFunction(id=>document.querySelector('#results .placement')?.dataset.id===id,outsideProgramme.id,{timeout:15000});
+    await page.waitForFunction(()=>!!document.querySelector('#results .placement .uxLocationPanel'),null,{timeout:15000});
+    const outsidePanel=page.locator('#results .placement').first().locator('.uxLocationPanel');
+    const outsideCopy=await outsidePanel.innerText();
+    assert.match(outsideCopy,/Area connections/,'A regional programme should show local area guidance, not a London commute estimate');
+    assert.doesNotMatch(outsideCopy,/Convenient|Not Convenient|Journey time unavailable/,'A regional programme is still being judged against the applicant’s London commute');
+    assert.equal(await outsidePanel.locator('a').filter({hasText:'Directions from my postcode'}).count(),0,
+      'A non-London programme should not default to a directions link from the applicant’s London postcode');
+    const localDirections=outsidePanel.locator('.uxMapLinks a').first();
+    assert(await localDirections.isVisible(),'A regional programme has no local station/town-centre directions link');
+    assert.match(await localDirections.getAttribute('href')||'',/google\.com\/maps\/dir/,'Regional local directions link is not a working Google Maps route');
+    console.log('REGIONAL TRANSPORT GUIDANCE AUDIT:',JSON.stringify(outsideProgramme));
+    await page.evaluate(()=>{
+      $('search').value='';$('region').value='';$('decision').value='all';
+      quick.clear();document.querySelectorAll('.chip[data-q]').forEach(el=>el.classList.remove('on'));
+      persistFilters();explore();
+    });
+    await page.waitForFunction(id=>document.querySelector('#results .placement')?.dataset.id===id,initialProgrammeId,{timeout:15000});
+
+
     const browserBasemaps=await page.evaluate(()=>({
       main:document.querySelector('#placementMap')?.dataset.basemap,
       mini:document.querySelector('#results .placement .uxMiniMap')?.dataset.basemap,

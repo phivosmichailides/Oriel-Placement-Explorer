@@ -199,7 +199,9 @@ window.OrielLocationGuide=(()=>{
    .slice(0,3);
  };
  const isLondonPlace=(postcode,p)=>{
-  return String(p?.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\d/i.test(String(postcode||''));
+  const district=postcodeDistrict(postcode);
+  if(district)return /^(EC|WC|N|NW|E|SE|SW|W|HA|EN|IG|RM|CR|BR|SM|TW|UB)\d/i.test(district)||/^KT[1-4]$/.test(district);
+  return String(p?.region||'').toLowerCase()==='london';
  };
  const postcodeHub=postcode=>{
   const district=postcodeDistrict(postcode),prefix=postcodePrefix(postcode);
@@ -224,7 +226,7 @@ window.OrielLocationGuide=(()=>{
   const place=placeName(p,pc,nearest);
   const london=isLondonPlace(pc,p);
   const fallbackHub=postcodeHub(pc);
-  const hub=nearest[0]?.name||fallbackHub||null;
+  let hub=nearest[0]?.name||fallbackHub||null;
   let headline=g?g[1]:place;
   let connections=g?g[2]:'';
   if(!g){
@@ -242,6 +244,7 @@ window.OrielLocationGuide=(()=>{
   const whole=(String(p.area||'')+' '+String(p.title||'')).toLowerCase();
   if(/university of nottingham|nottingham university/.test(whole)){
    headline='Nottingham · University area';
+   if(!hub)hub='Nottingham';
    connections='Nottingham railway station is the main rail arrival point; the university area is served by local tram and bus links. Check the exact campus building and stop.'+(nearest.length?' Nearby mapped station: '+nearest[0].name+' (about '+nearest[0].distanceKm.toFixed(1)+' km straight-line).':'');
   }
   const relative=london&&site&&Number.isFinite(Number(site.lat))&&Number.isFinite(Number(site.lng))?getDirection(Number(site.lat),Number(site.lng),51.5074,-0.1278).label:null;

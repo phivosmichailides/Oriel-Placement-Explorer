@@ -44,12 +44,23 @@ test('an un-geocoded programme still receives useful postcode-area guidance',()=
  assert.doesNotMatch(result.connections,/not verified|unavailable/i);
 });
 
+test('a postcode outside London overrides a stale London region label',()=>{
+ const guide=makeGuide({rail:[{name:'Nottingham',lat:52.9473,lng:-1.1464,crs:'NOT',country:'england'}]});
+ const result=guide.lookup({region:'London',area:'Nottingham',title:'Regional hospital programme',postcodes:['NG1 5FS']},
+  [{pc:'NG1 5FS',lat:52.9538,lng:-1.1581}]);
+ assert.equal(result.relative,null);
+ assert.equal(result.source,'national');
+ assert.equal(result.hub,'Nottingham');
+ assert.doesNotMatch(result.connections,/London Victoria|London Waterloo/i);
+});
+
 test('an area-only Nottingham university programme gets local tram and bus context',()=>{
  const guide=makeGuide();
  const result=guide.lookup({region:'East Midlands',area:'Nottingham',title:'University of Nottingham programme',postcodes:[]},[]);
  assert.match(result.headline,/Nottingham/);
  assert.match(result.connections,/Nottingham railway station/);
  assert.match(result.connections,/tram and bus links/);
+ assert.equal(result.hub,'Nottingham');
  assert.doesNotMatch(result.connections,/not verified|unavailable/i);
 });
 
