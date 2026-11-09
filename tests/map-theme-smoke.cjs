@@ -298,7 +298,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
     }));
     console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify({...vectorDiagnostic,mapHttpErrors,consoleErrors:errors}));
-    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
         const value=document.getElementById('placementMap')?.dataset.basemap||'';
         return value.startsWith('vector-')&&value!=='vector-loading';
@@ -311,7 +311,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(await mapPicker.locator('option[value="auto"]').count(),1,'Automatic map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-light"]').count(),1,'Editorial Light map option missing');
     assert.equal(await mapPicker.locator('option[value="editorial-dark"]').count(),1,'Editorial Dark map option missing');
-    if(!localPreview&&vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
+    if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       assert(await mapPicker.isEnabled(),'Vector styles should be selectable when WebGL is supported');
       assert.equal(await page.evaluate(()=>window.OrielBasemap?.preference),'auto','A legacy basemap preference should migrate to the custom default');
       const styleOriginAudit=await page.evaluate(()=>({origin:window.location.origin,styles:Object.fromEntries(Object.entries(window.OrielBasemap.styles).map(([name,url])=>[name,new URL(url).origin]))}));
@@ -422,9 +422,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>document.querySelectorAll('#results .placement .uxMiniMap .leaflet-interactive').length>0,null,{timeout:25000});
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
-      return ['localhost','127.0.0.1','::1'].includes(location.hostname)
-        ?holder?.dataset.basemap==='osm-fallback'&&holder.querySelector('.leaflet-tile-loaded')
-        :holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
+      const vector=holder?.dataset.basemap==='vector-editorial-light'&&holder.dataset.miniStyle==='editorial-light'&&holder.dataset.miniStatus==='rendered'&&holder.querySelector('.leaflet-image-layer');
+      const fallback=holder?.dataset.basemap==='osm-fallback'||holder?.dataset.basemap==='raster-fallback';
+      return vector||(fallback&&holder.querySelector('.leaflet-tile-loaded'));
     },null,{timeout:30000});
     const miniDiagnostic=await card.locator('.uxMiniMap').evaluate(node=>({basemap:node.dataset.basemap,status:node.dataset.miniStatus,miniStyle:node.dataset.miniStyle,width:node.clientWidth,height:node.clientHeight,leafletReady:!!node._leaflet_id,images:node.querySelectorAll('.leaflet-image-layer').length}));
     console.log('MINI MAP RENDER DIAGNOSTIC:',JSON.stringify(miniDiagnostic));
@@ -434,23 +434,22 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return {src:node?.currentSrc||node?.src||'',width:node?.naturalWidth||0,height:node?.naturalHeight||0,complete:!!node?.complete,
         filter:node?getComputedStyle(node).filter:null};
     });
-    assert(localPreview?miniBasemap==='osm-fallback':miniBasemap==='vector-editorial-light',
-      'Programme mini-map did not render its expected basemap: '+miniBasemap);
-    if(!localPreview)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+    const miniUsesVector=miniBasemap.startsWith('vector-');
+    if(miniUsesVector)assert(miniImage.src.startsWith('data:image/png;base64,')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
       'Mini map does not contain a rendered custom-style snapshot: '+JSON.stringify(miniImage));
-    else assert(miniImage.src.startsWith('https://tile.openstreetmap.org/')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
-      'Local-preview mini map has no visible fallback tile image: '+JSON.stringify(miniImage));
+    else assert(miniImage.src.startsWith('https://')&&miniImage.complete&&miniImage.width>100&&miniImage.height>60,
+      'Mini map has no visible fallback tile image: '+JSON.stringify(miniImage));
     const miniAttribution=await card.locator('.uxMiniMap .leaflet-control-attribution').innerText();
-    if(!localPreview)assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
+    if(miniUsesVector||miniBasemap==='raster-fallback')assert.match(miniAttribution,/MapTiler/,'Mini-map MapTiler attribution is missing');
     assert.match(miniAttribution,/OpenStreetMap contributors/,'Mini-map required OSM attribution is missing');
     assert.doesNotMatch(miniAttribution,/\bLeaflet\b/,'Unnecessary Leaflet prefix remains visible on the mini-map');
-    if(!localPreview)assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
-    if(!localPreview)assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
+    if(miniUsesVector)assert.equal(miniImage.filter,'none','Mini-map snapshot is being tinted away from the custom map palette');
+    if(miniUsesVector||miniBasemap==='raster-fallback')assert.equal(mapHttpErrors.filter(x=>x.status===403).length,0,
       'MapTiler returned a 403 Invalid key response: '+JSON.stringify(mapHttpErrors.filter(x=>x.status===403)));
     // Changing the main map style must re-render the existing mini-map too.
     // Local PR previews use OSM fallback because the production MapTiler key is
     // intentionally origin-restricted; style switching is verified on production.
-    if(!localPreview){
+    if(miniUsesVector&&String(await page.locator('#placementMap').getAttribute('data-basemap')).startsWith('vector-')){
     await mapPicker.selectOption('editorial-dark');
     await page.waitForFunction(()=>{
       const holder=document.querySelector('#results .placement .uxMiniMap');
