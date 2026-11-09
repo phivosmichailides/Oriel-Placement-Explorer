@@ -41,6 +41,14 @@ const STYLES=Object.freeze({
   // MapTiler's native dark streets tiles until a custom raster style is hosted.
   const RASTER_STYLE_IDS={'editorial-light':'streets-v4','editorial-dark':'streets-v4-dark'};
   const rasterTileUrl=()=>`https://api.maptiler.com/maps/${RASTER_STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
+  // A matching sea-colour underlay hides hairline gaps between transparent raster tiles.
+  // It is only enabled while a raster fallback is active; the editorial vector canvas
+  // continues to render its own water and land fills without any tint or overlay.
+  const fallbackWaterColour=()=>activeStyleName()==='editorial-dark'?'#294b53':'#b4cce2';
+  const setTilePaneBackdrop=(map,enabled)=>{
+    const pane=map.getPane?.('tilePane');
+    if(pane)pane.style.backgroundColor=enabled?fallbackWaterColour():'';
+  };
   const styleAttribution=()=>MAPTILER_ATTR;
   const applyStyle=()=>{
     for(const record of instances){
@@ -72,6 +80,7 @@ const STYLES=Object.freeze({
       try{
         const holder=record.leaflet.getContainer();
         if(!holder.isConnected){rasterInstances.delete(record);continue;}
+        setTilePaneBackdrop(record.leaflet,true);
         record.layer.setUrl(rasterTileUrl());
       }catch(error){console.warn('Raster fallback style could not switch',error)}
     }
@@ -114,8 +123,10 @@ const STYLES=Object.freeze({
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
     map.attributionControl?.removeAttribution(MAPTILER_ATTR);
     map.attributionControl?.removeAttribution(RASTER_ATTR);
+    setTilePaneBackdrop(map,true);
     const layer=L.tileLayer(OSM_TILE_URL,{
-      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:OSM_ATTR,className:'oriel-osm-fallback'
+      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'osm'};
     map._orielBasemapRecord=record;
@@ -128,11 +139,13 @@ const STYLES=Object.freeze({
     map.on('unload',()=>{if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;});
     return {layer,kind:'osm',record};
   };
-  const raster=map=>{
+  const raster=(map,reason='Vector rendering is unavailable; the MapTiler raster map is being tried as a fallback.')=>{
     const previous=map._orielBasemapRecord;
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
+    setTilePaneBackdrop(map,true);
     const layer=L.tileLayer(rasterTileUrl(),{
-      maxZoom:19,keepBuffer:2,updateWhenIdle:true,attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
+      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'maptiler'};
     map._orielBasemapRecord=record;
@@ -154,8 +167,9 @@ const STYLES=Object.freeze({
     },7000);
     const holder=map.getContainer();
     holder.dataset.basemap='raster-fallback';
+    holder.dataset.basemapReason=reason;
     if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='raster-fallback';
-    reportMainRenderer(map,true,'Vector rendering is unavailable; the MapTiler raster map is being tried as a fallback.');
+    reportMainRenderer(map,true,reason);
     return {layer,kind:'raster',record};
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
@@ -341,7 +355,8 @@ const STYLES=Object.freeze({
     const maplibre=window.maplibregl;
     const explicitlyUnsupported=typeof maplibre?.supported==='function'&&!maplibre.supported();
     if(!L.maplibreGL||!maplibre||explicitlyUnsupported||instances.size>=MAX_GL_MAPS){
-      return raster(map);
+      const reason=!maplibre?'MapLibre GL JS did not load.':!L.maplibreGL?'The Leaflet–MapLibre adapter did not load.':explicitlyUnsupported?'This browser reports WebGL as unavailable.':'The page has reached its MapLibre renderer limit.';
+      return raster(map,reason);
     }
     // Keep the lightweight OSM underlay only while the Editorial vector style
     // loads. It is removed as soon as the MapLibre canvas is ready; the actual
@@ -373,7 +388,7 @@ const STYLES=Object.freeze({
       }
       holder.dataset.basemapReason=reason;
       if(forceOsm)osmFallback(map,reason);
-      else raster(map);
+      else raster(map,reason);
     };
     try{
       layer=L.maplibreGL({
@@ -417,6 +432,8 @@ const STYLES=Object.freeze({
           try{map.removeLayer(retainedUnderlay)}catch{}
           retainedUnderlay=null;
         }
+        setTilePaneBackdrop(map,false);
+        delete holder.dataset.basemapReason;
         holder.dataset.basemap='vector-'+mapAppearance();
         reportMainRenderer(map,false);
       });

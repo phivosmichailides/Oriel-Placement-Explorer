@@ -24,7 +24,7 @@
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261108atlas2';
+      sectors.src='sector-map.js?v=20261109smooth1';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
