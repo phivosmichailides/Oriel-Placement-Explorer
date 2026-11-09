@@ -817,3 +817,17 @@ html[data-theme="dark"] .uxCommuteAdvice.is-not-convenient{background:#49312d;bo
 html[data-theme="dark"] .uxCommuteAdvice.is-not-convenient>strong{color:#f0c2b5}
 html[data-theme="dark"] .uxCommuteAdvice.is-unverified{background:var(--soft);border-color:var(--line)}
 
+
+/* Unpersonalised users should never see invented fit confidence. */
+html .placement .score[data-fit-tone="unpersonalised"],
+html[data-theme="dark"] .placement .score[data-fit-tone="unpersonalised"]{
+ background:var(--soft)!important;color:var(--mut)!important;
+ border:1px solid var(--line)!important;
+}
+html .atlasFitQuizLink{
+ border:0;background:transparent;color:var(--ux-accent-ink,var(--ink));
+ cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+ padding:6px 2px;font-size:12px;line-height:1.45;font-weight:800;
+ max-width:185px;
+}
+html .atlasFitQuizLink:focus-visible{outline:2px solid var(--ux-accent-ink);outline-offset:2px;border-radius:4px}
