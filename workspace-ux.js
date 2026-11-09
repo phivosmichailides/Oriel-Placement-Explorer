@@ -523,8 +523,11 @@
        return;
      }
      if(!site?.pc){
+       if(String(p.region||'').toLowerCase()!=='london'){homeRoute.hidden=true;homeRoute.removeAttribute('href');}
        captionStatus('general');
-       personalisedHint.textContent='Oriel does not list a full postcode for this site. The local area, station and transport guidance are shown instead; confirm the exact entrance with the employer.';
+       personalisedHint.textContent=String(p.region||'').toLowerCase()!=='london'
+         ?'Oriel does not list a full postcode for this regional site. Use the local station or town-centre directions above and confirm the exact training address with the employer.'
+         :'Oriel does not list a full postcode for this site. The local area, station and transport guidance are shown instead; confirm the exact entrance with the employer.';
        personalisedHint.hidden=false;
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
@@ -537,7 +540,7 @@
      if(!isLondonSite){
        homeRoute.hidden=true;homeRoute.removeAttribute('href');
        captionStatus('general');
-       personalisedHint.textContent='This training site is outside London. Local rail, bus and area connections are shown above; use the separate postcode directions link if you want to plan the longer journey.';
+       personalisedHint.textContent='This training site is outside London. Local rail, bus and area connections are shown above; use the local station directions link to plan the final leg and check current services for your travel date.';
        personalisedHint.hidden=false;
        commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
        commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';

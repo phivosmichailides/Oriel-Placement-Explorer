@@ -599,6 +599,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return p?{id:p.id,title:p.title,region:p.region,postcode:p.postcodes[0]}:null;
     });
     assert(outsideProgramme,'The catalogue has no regional programme fixture for transport guidance');
+    console.log('REGIONAL TRANSPORT TEST FIXTURE:',JSON.stringify(outsideProgramme));
     await page.evaluate(id=>{
       $('search').value=id;$('region').value='';$('decision').value='all';
       quick.clear();document.querySelectorAll('.chip[data-q]').forEach(el=>el.classList.remove('on'));
