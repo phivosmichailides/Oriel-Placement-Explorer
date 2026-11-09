@@ -86,9 +86,9 @@ test('Placement Atlas branding and install assets are complete', () => {
 test('primary navigation and footer management use separate, cache-versioned assets', () => {
   const html=read('index.html');
   const sw=read('sw.js');
-  assert.match(html,/atlas-navigation\.css\?v=20261109nav2/);
+  assert.match(html,/atlas-navigation\.css\?v=20261109mobile3/);
   assert.match(html,/atlas-navigation\.js\?v=20261109nav2/);
-  assert.match(sw,/atlas-navigation\.css\?v=20261109nav2/);
+  assert.match(sw,/atlas-navigation\.css\?v=20261109mobile3/);
   assert.match(sw,/atlas-navigation\.js\?v=20261109nav2/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/root\.append\(utilities\)/);
@@ -110,10 +110,10 @@ test('theme-aware header and muted map remain purely visual changes', () => {
 test('Tinder Mode preloads real next card without blurred gradient', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261109react2/);
-  assert.match(html,/tinder-mode\.css\?v=20261109react2/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109react2/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109react2/);
+  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
   assert.match(js,/tdShowingNext/);
@@ -123,10 +123,10 @@ test('Tinder Mode preloads real next card without blurred gradient', () => {
 
 test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
   const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
-  assert.match(html,/tinder-mode\.js\?v=20261109react2/);
-  assert.match(html,/tinder-mode\.css\?v=20261109react2/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109react2/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109react2/);
+  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
   assert.match(js,/const shine=\(status\)=>/);
   assert.match(js,/tdDirectionalParticles/);
   assert.match(js,/tdSwipeHints/);
@@ -136,4 +136,17 @@ test('Tinder Mode-only directional shines, instruction hints and decision drawer
   assert.match(css,/body\[data-atlas-view="tinderMode"\] #uxDrawerLauncher/);
   assert.match(css,/tdDragNo/);
   assert.match(css,/tdLeavingSuper/);
+});
+
+test('Tinder refines its own programme pool and keeps outgoing stars independent of map',()=>{
+  const game=read('tinder-mode.js'),mobile=read('session-ui.js');
+  assert.match(game,/const defaultFilters=\(\)=>/);
+  assert.match(game,/const exitTwinkles=\(card,status\)=>/);
+  assert.match(game,/tdExitTwinkles-/);
+  assert.match(game,/id="tinderFilterToggle"/);
+  assert.match(game,/id="tinderFilterPanel"/);
+  assert.match(game,/ff\.hideDecided/);
+  assert.match(mobile,/mobileFirst\?true:/);
+  assert.match(read('atlas-navigation.css'),/max-width:720px/);
+  assert.match(read('tinder-mode.css'),/tdExitStar/);
 });

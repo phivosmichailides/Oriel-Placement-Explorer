@@ -12,7 +12,8 @@
     super:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 1.9 3.2 6.6 7.2 1.1-5.2 5.1 1.3 7.3L12 18.5 5.5 22l1.3-7.3-5.2-5.1 7.2-1.1L12 1.9Z"/></svg>'
   };
   const getData=()=>typeof placements!=='undefined'&&Array.isArray(placements)?placements:[];
-  let game={version:1,seen:[],history:[],region:'London'};
+  const defaultFilters=()=>({setting:'all',minSalary:'',maxHours:'',splitOnly:false,hideDecided:false});
+  let game={version:1,seen:[],history:[],region:'London',filters:defaultFilters()};
   const hydrateGame=()=>{
     // Run again after the cloud workspace has restored, not just on script
     // evaluation, otherwise old local progress could overwrite cloud data.
@@ -22,6 +23,13 @@
         game.seen=Array.isArray(v.seen)?v.seen.filter(x=>typeof x==='string').slice(-5000):[];
         game.history=Array.isArray(v.history)?v.history.filter(x=>x&&typeof x.id==='string').slice(-150):[];
         game.region=typeof v.region==='string'?v.region:'London';
+        const saved=v.filters&&typeof v.filters==='object'&&!Array.isArray(v.filters)?v.filters:{};
+        game.filters={...defaultFilters(),
+          setting:['all','hospital','gp','community','industry','mixed'].includes(saved.setting)?saved.setting:'all',
+          minSalary:['','26000','28000','30000','32000','36000'].includes(String(saved.minSalary??''))?String(saved.minSalary??''):'',
+          maxHours:['','35','37.5','40','42.5'].includes(String(saved.maxHours??''))?String(saved.maxHours??''):'',
+          splitOnly: saved.splitOnly===true,
+          hideDecided:saved.hideDecided===true};
       }
     }catch{}
   };
@@ -38,11 +46,27 @@
     const profile=typeof state!=='undefined'?state?.prefs||{}:{};
     const geo=profile.locationBlacklist||[];
     const signature=JSON.stringify([game.region,data.length,data[0]?.id,data[data.length-1]?.id,
-      profile.weights,profile.likes,profile.locationAllowed,geo]);
+      profile.weights,profile.likes,profile.locationAllowed,geo,game.filters]);
     if(signature===poolSignature)return poolData;
     poolSignature=signature;
-    poolData=data.filter(p=>(game.region==='all'||p.region===game.region)&&!blacklisted(p))
-      .map(p=>({p,score:assessed(p).score}))
+    const ff=game.filters;
+    poolData=data.filter(p=>{
+      if((game.region!=='all'&&p.region!==game.region)||blacklisted(p))return false;
+      if(ff.minSalary&&Number(p.salary||0)<Number(ff.minSalary))return false;
+      if(ff.maxHours&&(!p.hours||Number(p.hours)>Number(ff.maxHours)))return false;
+      if(ff.splitOnly&&(p.settings||[]).length<2)return false;
+      if(ff.hideDecided&&prefs()?.marks?.[p.id]?.status)return false;
+      if(ff.setting!=='all'){
+        const kind=typeof sector==='function'?sector(p):'';
+        const str=String(kind).toLowerCase();
+        if(ff.setting==='mixed'&&(p.settings||[]).length<2)return false;
+        if(ff.setting==='hospital'&&!str.includes('hospital'))return false;
+        if(ff.setting==='gp'&&!str.includes('general practice')&&!str.includes('gp'))return false;
+        if(ff.setting==='community'&&!str.includes('community'))return false;
+        if(ff.setting==='industry'&&!str.includes('industry'))return false;
+      }
+      return true;
+    }).map(p=>({p,score:assessed(p).score}))
       .sort((a,b)=>b.score-a.score||(b.p.salary||0)-(a.p.salary||0)||a.p.id.localeCompare(b.p.id))
       .map(x=>x.p);
     return poolData;
@@ -63,7 +87,7 @@
   };
   const available=()=>selectedPool();
   const nextProgramme=()=>{
-    if(forced){const p=lookup(forced);if(p&&!blacklisted(p))return p;forced=null;}
+    if(forced){const p=lookup(forced);if(p&&!blacklisted(p)&&available().some(x=>x.id===p.id))return p;forced=null;}
     const seen=new Set(game.seen);return available().find(p=>!seen.has(p.id))||null;
   };
   const code=p=>String(p.id||'').split('/').pop();
@@ -202,6 +226,27 @@
       layer.remove();
     };
   };
+  // A few coloured stars follow the outgoing physical card, echoing the
+  // familiar gold Undo return without ever covering the card underneath.
+  const exitTwinkles=(card,status)=>{
+    if(!card||reduced())return ()=>{};
+    const layer=document.createElement('span');
+    layer.className='tdExitTwinkles tdExitTwinkles-'+(status==='no'?'No':status==='yes'?'Yes':'Super');
+    layer.setAttribute('aria-hidden','true');
+    const points=[[12,14,-28,-36],[78,10,35,-42],[93,33,53,-9],[82,70,35,38],[52,89,0,53],[10,75,-43,37],[5,42,-54,-8]];
+    for(let i=0;i<points.length;i++){
+      const [x,y,dx,dy]=points[i];
+      const star=document.createElement('i');
+      star.textContent='✦';
+      star.style.left=x+'%';star.style.top=y+'%';
+      star.style.setProperty('--td-star-x',dx+'px');
+      star.style.setProperty('--td-star-y',dy+'px');
+      star.style.animationDelay=(i%3*35)+'ms';
+      layer.append(star);
+    }
+    card.append(layer);
+    return ()=>layer.remove();
+  };
   const commit=(p,status,vector)=>{
     if(animating)return;
     animating=true;
@@ -228,6 +273,7 @@
     // current card flies off, never a blurred empty gradient.
     $('tinderCardSlot')?.classList.add('tdShowingNext');
     const clearShine=shine(status);
+    const clearStars=exitTwinkles(card,status);
     card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
     const distance=Math.max(680,window.innerWidth*.7);
     const slide=vector*distance;
@@ -242,7 +288,7 @@
     };
     // Start the transition from the card's last drag position, avoiding a jump.
     requestAnimationFrame(departure);
-    setTimeout(()=>{clearShine();finish();},EXIT_MS+35);
+    setTimeout(()=>{clearShine();clearStars();finish();},EXIT_MS+35);
   };
   const undo=()=>{
     if(animating)return;
@@ -556,7 +602,16 @@
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
     section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
-     '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label><div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
+     '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
+     '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine cards</span></button>'+
+     '<div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
+     '<div id="tinderFilterPanel" class="tdFilterPanel" hidden aria-label="Tinder Mode programme filters">'+
+     '<label>Training setting<select id="tdSetting"><option value="all">All settings</option><option value="hospital">Hospital-led</option><option value="gp">GP-led</option><option value="mixed">Split training</option><option value="community">Community-led</option><option value="industry">Industry</option></select></label>'+
+     '<label>Minimum salary<select id="tdMinSalary"><option value="">Any salary</option><option value="26000">£26k+</option><option value="28000">£28k+</option><option value="30000">£30k+</option><option value="32000">£32k+</option><option value="36000">£36k+</option></select></label>'+
+     '<label>Maximum weekly hours<select id="tdMaxHours"><option value="">Any hours</option><option value="35">35h</option><option value="37.5">37.5h</option><option value="40">40h</option><option value="42.5">42.5h</option></select></label>'+
+     '<label class="tdFilterCheck"><input id="tdSplitOnly" type="checkbox"><span>Split placements only</span></label>'+
+     '<label class="tdFilterCheck"><input id="tdHideDecided" type="checkbox"><span>Hide already-decided programmes</span></label>'+
+     '<button type="button" id="tdFiltersReset" class="tdFilterReset">Clear game filters</button></div>'+
      '<div class="tdBoard"><div id="tinderSwipeHints" class="tdSwipeHints" hidden><span class="tdSwipeHint tdSwipeHintLeft"><span class="tdHintArrow" aria-hidden="true">←</span><span>Swipe left to exclude a programme</span></span><span class="tdSwipeHint tdSwipeHintRight"><span>Swipe right to shortlist a programme</span><span class="tdHintArrow" aria-hidden="true">→</span></span></div><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
      '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
      '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
@@ -570,6 +625,32 @@
       if(![...region.options].some(x=>x.value===game.region))game.region='London';
       region.value=game.region;
       region.addEventListener('change',()=>{game.region=region.value;forced=null;saveGame();render()});
+    }
+    const filterPanel=$('tinderFilterPanel'),toggle=$('tinderFilterToggle');
+    if(filterPanel&&toggle){
+      filterPanel.hidden=true;
+      toggle.addEventListener('click',()=>{
+        filterPanel.hidden=!filterPanel.hidden;
+        toggle.setAttribute('aria-expanded',String(!filterPanel.hidden));
+      });
+      const updateFields=()=>{
+        $('tdSetting').value=game.filters.setting;
+        $('tdMinSalary').value=game.filters.minSalary;
+        $('tdMaxHours').value=game.filters.maxHours;
+        $('tdSplitOnly').checked=game.filters.splitOnly;
+        $('tdHideDecided').checked=game.filters.hideDecided;
+      };
+      updateFields();
+      filterPanel.addEventListener('change',()=>{
+        game.filters={setting:$('tdSetting').value,minSalary:$('tdMinSalary').value,
+          maxHours:$('tdMaxHours').value,splitOnly:$('tdSplitOnly').checked,
+          hideDecided:$('tdHideDecided').checked};
+        forced=null;saveGame();render();
+      });
+      $('tdFiltersReset').addEventListener('click',()=>{
+        game.filters=defaultFilters();forced=null;saveGame();
+        updateFields();render();
+      });
     }
     $('tinderUndo').onclick=undo;
     $('tinderNo').onclick=()=>{const p=nextProgramme();if(p)commit(p,'no',-1)};

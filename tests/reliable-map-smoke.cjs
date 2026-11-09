@@ -115,6 +115,15 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(initialDeck.hidden,'true','Preview should not be an interactive screen-reader duplicate');
   assert.equal(initialDeck.duplicateIds,1,'Duplicate active-card IDs');
   assert.equal(initialDeck.underFilter,'none','Next card blurred before swiping');
+  assert.equal(await page.locator('#tinderFilterPanel').isVisible(),false,'Tinder filter controls should begin closed');
+  await page.locator('#tinderFilterToggle').click();
+  assert(await page.locator('#tinderFilterPanel').isVisible(),'Tinder filter popover did not open');
+  assert.equal(await page.locator('#tinderFilterToggle').getAttribute('aria-expanded'),'true');
+  await page.locator('#tdMinSalary').selectOption('36000');
+  assert((await page.locator('#tinderProgress').textContent()).includes('0 /'),'Tinder round did not update filtered count');
+  await page.locator('#tdFiltersReset').click();
+  await page.locator('#tinderFilterToggle').click();
+  assert.equal(await page.locator('#tinderFilterPanel').isVisible(),false,'Tinder filters failed to close');
   assert(await page.locator('#tinderSwipeHints').isVisible(),'New visitors should see swipe instructions');
   assert(await page.locator('#tinderSwipeHints').evaluate(el=>el.textContent.includes('Swipe left to exclude')&&el.textContent.includes('Swipe right to shortlist')),'Hints must describe both directions');
   assert(await page.locator('#tdOpenLiked').isVisible(),'Tinder-only shortlist launcher is missing');
@@ -139,6 +148,8 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(flight.filter,'none','Underlying card blurred');
   assert.equal(flight.topOpacity,'1','Departing card became transparent');
   assert.equal(flight.feedback,false,'Blurred feedback overlay still active');
+  assert(await page.locator('#tinderActiveCard .tdExitTwinkles-Yes i').count()>=6,
+    'Green card-attached exit stars should be visible during Like');
   assert(await page.locator('#tinderMode .tdCardDeck.tdShineYes .tdDirectionalParticles .tdSparkle').count()>0,
     'Instant green Like sparkles did not appear');
   assert.equal(await page.locator('#tinderSwipeHints').isVisible(),false,'First successful swipe should dismiss the hints');
@@ -210,6 +221,8 @@ fs.mkdirSync(output,{recursive:true});
   }));
   assert(/translate3d\(\s*0px\s*,\s*-\d+(?:\.\d+)?px\s*,/.test(superFlight.transform),'Super Like should send the card upward: '+superFlight.transform);
   assert.equal(superFlight.underOpacity,'1','Blue shine blurred the next programme');
+  assert(await page.locator('#tinderActiveCard .tdExitTwinkles-Super i').count()>=6,
+    'Blue card-attached exit stars should appear on Super Like');
   await page.waitForFunction(()=>!document.querySelector('#tinderActiveCard.tdLeavingSuper'),null,{timeout:10000});
   await page.locator('nav.tabs [data-tab=explore]').click();
   assert(await page.locator('#uxDrawerLauncher').isVisible(),

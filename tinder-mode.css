@@ -449,3 +449,85 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
 @media(prefers-reduced-motion:reduce){
   .tdLauncher,.tdDrawerChevron{transition:none!important}
 }
+
+
+/* Tinder's compact, optional controls keep the card visually central. */
+#tinderMode .tdFilterToggle{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ color:var(--ink);background:var(--panel);
+ border:1px solid var(--line);border-radius:12px;
+ min-height:43px;padding:9px 13px;font-size:13px;font-weight:750;cursor:pointer;
+}
+#tinderMode .tdFilterToggle svg{width:17px;height:17px;flex:none}
+#tinderMode .tdFilterToggle[aria-expanded="true"]{
+ border-color:var(--ux-accent);color:var(--ux-accent-ink);
+ background:var(--ux-accent-soft);
+}
+#tinderMode .tdFilterPanel[hidden]{display:none!important}
+#tinderMode .tdFilterPanel{
+ display:flex;align-items:end;gap:10px;flex-wrap:wrap;
+ border:1px solid var(--line);border-radius:15px;
+ background:var(--soft);padding:14px;margin:0 14px 17px;
+}
+#tinderMode .tdFilterPanel>label:not(.tdFilterCheck){
+ display:grid;gap:6px;color:var(--mut);font-size:11px;font-weight:750;
+ flex:1 1 150px;min-width:140px;
+}
+#tinderMode .tdFilterPanel select{
+ width:100%;min-height:41px;font-size:13px;
+ background:var(--panel);color:var(--ink);border:1px solid var(--line);
+ border-radius:10px;padding:8px;
+}
+#tinderMode .tdFilterCheck{
+ display:flex;align-items:center;gap:8px;cursor:pointer;
+ flex:1 1 185px;min-height:42px;
+ color:var(--ink);font-size:12px;font-weight:680;
+}
+#tinderMode .tdFilterCheck input{accent-color:var(--ux-accent);width:17px;height:17px;flex:none}
+#tinderMode .tdFilterReset{
+ border:1px solid var(--line);border-radius:10px;
+ background:var(--panel);color:var(--mut);
+ font-size:12px;font-weight:750;min-height:40px;padding:8px 13px;cursor:pointer;
+}
+#tinderMode .tdFilterReset:hover{color:var(--ux-accent-ink);border-color:var(--ux-accent)}
+#tinderMode .tdFilterToggle:focus-visible,
+#tinderMode .tdFilterPanel :is(select,input,button):focus-visible{
+ outline:2px solid var(--ux-accent-ink);outline-offset:3px;
+}
+
+/* Direction-matched exit stars are physically attached to the outgoing
+   card, echoing gold Undo stars. The following card remains fully visible. */
+#tinderMode .tdExitTwinkles{
+ position:absolute;inset:0;z-index:10;pointer-events:none;overflow:visible;
+ border-radius:inherit;
+}
+#tinderMode .tdExitTwinkles i{
+ display:block;position:absolute;font-style:normal;font-weight:900;
+ font-size:clamp(18px,2.4vw,30px);line-height:1;
+ opacity:0;transform:translate3d(0,0,0) rotate(-20deg) scale(.3);
+ animation:tdExitStar .57s cubic-bezier(.12,.76,.22,1) forwards;
+}
+#tinderMode .tdExitTwinkles-No i{
+ color:#ff6077;text-shadow:0 0 13px #ff3d6bd8,0 0 25px #ff7792aa;
+}
+#tinderMode .tdExitTwinkles-Yes i{
+ color:#5de5a3;text-shadow:0 0 13px #25cb78cf,0 0 24px #8bf5b4aa;
+}
+#tinderMode .tdExitTwinkles-Super i{
+ color:#6fc1ff;text-shadow:0 0 13px #359dffe0,0 0 26px #8bd2ffaf;
+}
+@keyframes tdExitStar{
+ 0%{opacity:0;transform:translate3d(0,0,0) rotate(-25deg) scale(.35)}
+ 22%{opacity:1;transform:translate3d(0,-8px,0) rotate(10deg) scale(1.1)}
+ 72%{opacity:.85}
+ 100%{opacity:0;transform:translate3d(var(--td-star-x),var(--td-star-y),0) rotate(65deg) scale(.65)}
+}
+@media(max-width:600px){
+ #tinderMode .tdSettings{gap:9px}
+ #tinderMode .tdFilterToggle{min-height:41px;padding:8px 11px}
+ #tinderMode .tdFilterPanel{margin:0 0 14px;padding:11px}
+ #tinderMode .tdFilterPanel>label:not(.tdFilterCheck){flex-basis:calc(50% - 10px);min-width:130px}
+}
+@media(prefers-reduced-motion:reduce){
+ #tinderMode .tdExitTwinkles i{animation:none!important;opacity:0!important}
+}
