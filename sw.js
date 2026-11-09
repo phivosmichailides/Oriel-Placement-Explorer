@@ -1,14 +1,14 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v39';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v40';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109mobile3','atlas-map-tones.css?v=20261109tone1',
-  'supabase-cloud.js?v=20261109header2','app-base.js?v=20261109fix2','app-product.js?v=20261109header2','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261109header2',
+  'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
+  'supabase-cloud.js?v=20261109header2','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
+  'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261109appearance1','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261109fix2','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
-  'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261109refine3','tinder-mode.css?v=20261109refine3',
+  'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261109fit1','tinder-mode.css?v=20261109fit1',
   'commute-guide.js?v=20261106a','commute-profile.js?v=20261106pcfix',
   'programme-preview.js?v=20261106fixed1','location-guides.js?v=20261109national1',
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
