@@ -418,3 +418,15 @@ html #tinderMode .tdFitScore.tdFitPending{
   html .placement .score[data-fit-tone="unknown"]{min-height:134px!important}
   html .placement .fitQuizLink{font-size:12px}
 }
+
+
+/* While the global shortlist dialog is open, the programme page behind it
+   cannot steal tap events from the swipe-to-remove button. The drawer is a
+   sibling of .shell, so it remains fully interactive and keyboard accessible. */
+html.uxDrawerOpen body .shell{
+  pointer-events:none!important;
+}
+html.uxDrawerOpen body #uxDrawer,
+html.uxDrawerOpen body #uxDrawerBackdrop{
+  pointer-events:auto!important;
+}
