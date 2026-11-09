@@ -173,7 +173,7 @@ window.OrielLocationGuide=(()=>{
   KT1:'Kingston',TW3:'Hounslow Central',UB3:'Hayes & Harlington',WD17:'Watford Junction'
  });
  const postcodePrefix=postcode=>(String(postcode||'').match(/^([A-Z]{1,2})/i)||[])[1]?.toUpperCase()||'';
- const postcodeDistrict=postcode=>(String(postcode||'').toUpperCase().replace(/\\s+/g,'').match(/^([A-Z]{1,2}\\d{1,2}[A-Z]?)/)||[])[1]||'';
+ const postcodeDistrict=postcode=>(String(postcode||'').toUpperCase().replace(/\s+/g,'').match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)/)||[])[1]||'';
  const distanceKm=(aLat,aLng,bLat,bLng)=>{
   const rad=value=>value*Math.PI/180,dLat=rad(bLat-aLat),dLng=rad(bLng-aLng);
   const h=Math.sin(dLat/2)**2+Math.cos(rad(aLat))*Math.cos(rad(bLat))*Math.sin(dLng/2)**2;
