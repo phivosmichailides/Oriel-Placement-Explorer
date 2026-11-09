@@ -91,5 +91,5 @@ test('primary navigation and footer management use separate, cache-versioned ass
   assert.match(sw,/atlas-navigation\.css\?v=20261109nav1/);
   assert.match(sw,/atlas-navigation\.js\?v=20261109nav1/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
-  assert.match(read('atlas-navigation.js'),/footer\.before\(utilities\)/);
+  assert.match(read('atlas-navigation.js'),/root\.append\(utilities\)/);
 });
