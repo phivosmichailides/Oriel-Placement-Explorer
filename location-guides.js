@@ -242,9 +242,9 @@ window.OrielLocationGuide=(()=>{
   const whole=(String(p.area||'')+' '+String(p.title||'')).toLowerCase();
   if(/university of nottingham|nottingham university/.test(whole)){
    headline='Nottingham · University area';
-   if(!/nottingham/i.test(connections))connections='Nottingham railway station is the main rail arrival point; the university area is served by local tram and bus links. Check the exact campus building and stop.';
+   connections='Nottingham railway station is the main rail arrival point; the university area is served by local tram and bus links. Check the exact campus building and stop.'+(nearest.length?' Nearby mapped station: '+nearest[0].name+' (about '+nearest[0].distanceKm.toFixed(1)+' km straight-line).':'');
   }
-  const relative=london&&site?getDirection(site.lat,site.lng,51.5074,-0.1278).label:null;
+  const relative=london&&site&&Number.isFinite(Number(site.lat))&&Number.isFinite(Number(site.lng))?getDirection(Number(site.lat),Number(site.lng),51.5074,-0.1278).label:null;
   const multi=(p.postcodes||[]).filter(Boolean).length>1;
   const detail=multi?'Multiple training locations are listed; the most useful station and final leg can change between rotations.':
    nearest.length?'Station distance is straight-line, not a walking-route estimate; use the directions link for the actual walk or bus.':

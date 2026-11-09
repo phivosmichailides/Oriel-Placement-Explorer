@@ -52,12 +52,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       }else await route.continue();
     });
     const requiredAssets=[
-      'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261108atlas1',
-      'tube-stations.js?v=20261108tfl2','design-refresh.css?v=20261108editorial2',
-      'app.js?v=20261109smooth2','sector-map.js?v=20261109smooth2',
-      'map-basemap.js?v=20261109smooth1','generic-public.js?v=20261108atlas3',
+      'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261109national1',
+      'tube-stations.js?v=20261108tfl2','rail-stations.js?v=20261109national1','location-guides.js?v=20261109national1','design-refresh.css?v=20261108editorial2',
+      'app.js?v=20261109national1','sector-map.js?v=20261109national1',
+      'map-basemap.js?v=20261109national1','generic-public.js?v=20261108atlas3',
       'map-focus.css?v=20261108atlas3','session-ui.js?v=20261108filters3',
-      'pwa.js?v=20261109smooth2'
+      'pwa.js?v=20261109national1'
     ];
     await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
     let fresh=false;
@@ -81,8 +81,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       throw new Error('Placement Atlas dynamic boot did not finish at '+page.url()+': '+JSON.stringify(bootState)+'; '+error.message);
     }
     assert(fresh,'Latest Placement Atlas build did not finish loading');
-    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261109smooth2');},null,{timeout:30000});
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261109national1');},null,{timeout:30000});
     await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return registration?.active?.state==='activated';},null,{timeout:30000});
+    await page.waitForFunction(()=>Array.isArray(window.ORIEL_RAIL_STATIONS)&&window.ORIEL_RAIL_STATIONS.length>=2000,null,{timeout:20000});
     const pwaAudit=await page.evaluate(async()=>{
       const manifestLink=document.querySelector('link[rel="manifest"]');
       const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
@@ -116,10 +117,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert(pwaAudit.swState==='activated'||pwaAudit.swState==='activating','Placement Atlas service worker is not active: '+JSON.stringify(pwaAudit));
-    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261109smooth2'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
+    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261109national1'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
     const [pwaResponse,swResponse]=await Promise.all([
-      page.request.get(new URL('pwa.js?v=20261109smooth2',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('sw.js?v=20261109smooth2',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('pwa.js?v=20261109national1',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('sw.js?v=20261109national1',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
     const pwaUpdateAudit={
@@ -128,7 +129,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
         versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v14'),
-        cachedPwaAsset:swSource.includes("pwa.js?v=20261109smooth2")};
+        cachedPwaAsset:swSource.includes("pwa.js?v=20261109national1")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
@@ -556,6 +557,18 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     },null,{timeout:15000});
     assert(/Personalised to/.test(await card.locator('.uxCommutePersonalisation').innerText()),
       'Saving a home postcode did not personalise the selected site');
+    await page.evaluate(()=>{
+      window.OrielCommute.getJourney=async()=>{throw Error('No exact planner route for this postcode pair');};
+      window.OrielCommuteProfile.save('NG1 5FS',{silent:true});
+    });
+    await page.waitForFunction(()=>/^Area connections/.test(document.querySelector('#results .placement .uxLocationCaption')?.textContent||''),null,{timeout:15000});
+    const fallbackPanel=card.locator('.uxLocationPanel');
+    assert(await fallbackPanel.locator('a').filter({hasText:'Directions from my postcode'}).isVisible(),
+      'A failed live journey lookup did not retain the home-to-site directions link');
+    assert(/google\.com\/maps\/dir/.test(await fallbackPanel.locator('a').first().getAttribute('href')||''),
+      'Local station directions link is missing');
+    assert.doesNotMatch(await fallbackPanel.innerText(),/Journey time unavailable|Transport corridor not verified/i,
+      'A dead-end transport warning is still shown after a live planner failure');
 
     const browserBasemaps=await page.evaluate(()=>({
       main:document.querySelector('#placementMap')?.dataset.basemap,
@@ -566,6 +579,23 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       cssFilter:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter
     }));
     console.log('BASEMAP DIAGNOSTICS:',JSON.stringify(browserBasemaps));
+    const mapCacheAudit=await page.evaluate(async()=>{
+      const assets=await caches.open('placement-atlas-map-assets-v1');
+      const urls=[
+        'https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js',
+        'https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.css',
+        'https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js'
+      ];
+      return {
+        cachedAssets:await Promise.all(urls.map(async url=>!!await assets.match(url,{ignoreVary:true}))),
+        tilePaneBackground:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).backgroundColor,
+        railStations:window.ORIEL_RAIL_STATIONS?.length||0
+      };
+    });
+    console.log('OFFLINE MAP CACHE AUDIT:',JSON.stringify(mapCacheAudit));
+    assert(mapCacheAudit.cachedAssets.every(Boolean),'MapLibre runtime assets are not all in the offline cache: '+JSON.stringify(mapCacheAudit));
+    assert(mapCacheAudit.railStations>=2000,'National station dataset did not load');
+    assert.notEqual(mapCacheAudit.tilePaneBackground,'rgb(180, 204, 226)','Old pale-blue tile-pane background is still active');
     if(browserBasemaps.supported&&browserBasemaps.pluginLoaded){
       await page.waitForFunction(()=>{
         const state=document.querySelector('#placementMap')?.dataset.basemap;
@@ -574,6 +604,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const finalState=await page.locator('#placementMap').evaluate(el=>el.dataset.basemap);
       console.log('GPU BASEMAP:',finalState);
       assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark'||finalState==='raster-fallback'||(localPreview&&finalState==='osm-fallback'),'WebGL map hung during initialisation');
+      if(!localPreview&&browserBasemaps.supported&&browserBasemaps.pluginLoaded){
+        assert(finalState==='vector-editorial-light'||finalState==='vector-editorial-dark',
+          'The deployed online map did not use the full vector renderer: '+finalState);
+      }
     }
     assert(['vector-editorial-light','vector-editorial-dark','vector-loading','raster-fallback',...(localPreview?['osm-fallback']:[])].includes(browserBasemaps.main),
       'Unexpected basemap mode: '+browserBasemaps.main);
