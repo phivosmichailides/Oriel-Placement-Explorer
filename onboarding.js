@@ -136,6 +136,35 @@
 
         const final=step===5;
         card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0&&!final?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${!final?'<button class="btn primary" id="obNext">Continue →</button>':'<button class="btn primary" id="obFinish">Save &amp; show my matches</button>'}</div><div class="onboardFine">You can change all of this later under Preferences.</div>`;
+        if(final){
+          const chooser=document.createElement('section');
+          chooser.className='onboardAppearance';
+          chooser.innerHTML=
+            '<div class="onboardStepLabel">6 of 6 · Appearance</div>'+
+            '<h3>Make Placement Atlas yours.</h3>'+
+            '<p class="onboardLead">Choose one of six colour themes, then decide between light and dark. The whole site — including this quiz — updates instantly. Tap both choices to enable Save.</p>'+
+            '<div class="onboardPaletteGrid" role="group" aria-label="Colour theme">'+
+            APPEARANCES.map(([id,name,c1,c2,c3])=>
+              '<button type="button" class="onboardPaletteCard" data-ob-palette="'+id+'" aria-pressed="'+(appearance.palette===id)+'">'+
+              '<span class="onboardSwatches" style="--ob1:'+c1+';--ob2:'+c2+';--ob3:'+c3+'"><i></i><i></i><i></i></span>'+
+              '<span>'+name+'</span></button>').join('')+
+            '</div><div class="onboardBrightnessLabel">Brightness</div>'+
+            '<div class="onboardBrightness" role="group" aria-label="Light or dark appearance">'+
+            '<button type="button" data-ob-brightness="light" aria-pressed="'+(appearance.brightness==='light')+'">☀ Light</button>'+
+            '<button type="button" data-ob-brightness="dark" aria-pressed="'+(appearance.brightness==='dark')+'">☾ Dark</button></div>'+
+            '<p class="onboardFine">Your chosen appearance is saved with your preferences. You can change it anytime.</p>';
+          card.querySelector('.onboardActions').before(chooser);
+          card.querySelector('#obFinish').disabled=!(confirmed.palette&&confirmed.brightness);
+          chooser.addEventListener('click',event=>{
+            const pal=event.target.closest('[data-ob-palette]');
+            const bright=event.target.closest('[data-ob-brightness]');
+            if(pal){appearance.palette=pal.dataset.obPalette;confirmed.palette=true;}
+            else if(bright){appearance.brightness=bright.dataset.obBrightness;confirmed.brightness=true;}
+            else return;
+            applyLook(appearance.palette,appearance.brightness);
+            render();
+          });
+        }
         card.querySelector('.onboardClose').onclick=close;
 
         if(step===0){
@@ -159,7 +188,34 @@
         if(final)card.querySelector('#obFinish').onclick=()=>finish();
       };
 
+      const promptCloudSave=async()=>{
+        try{
+          const cloud=window.OrielCloud;
+          if(!cloud?.getClient||!cloud?.signIn)return;
+          if(window.OrielCloudReady)await window.OrielCloudReady;
+          const client=cloud.getClient();
+          if(!client||document.querySelector('.cloudOverlay'))return;
+          const user=await client.auth.getUser();
+          if(user?.data?.user)return;
+          cloud.signIn();
+          const modal=document.querySelector('.cloudOverlay .cloudDialog');
+          if(!modal)return;
+          const title=modal.querySelector('#cloudDialogTitle');
+          const lead=modal.querySelector('.cloudLead');
+          if(title)title.textContent='Keep your progress on every device';
+          if(lead)lead.textContent='Sign in with Google or email to sync your quiz answers, shortlist and decisions securely between devices.';
+          const later=document.createElement('button');
+          later.type='button';later.className='cloudMaybeLater';
+          later.textContent='Maybe later';
+          later.addEventListener('click',()=>modal.closest('.cloudOverlay')?.remove());
+          modal.append(later);
+        }catch(error){console.warn('Cloud invitation unavailable; local preferences remain saved.',error)}
+      };
       const finish=()=>{
+        if(!confirmed.palette||!confirmed.brightness)return;
+        answers.appearancePalette=appearance.palette;
+        answers.appearanceMode=appearance.brightness;
+        savedAppearance=true;
         const weights={money:3,hospital:2,gp:2,lifestyle:3,location:3,progression:3,independence:3,communityPenalty:3};
         if(answers.environment==='hospital'){weights.hospital=5;weights.gp=2;weights.progression=4;weights.communityPenalty=4;}
         else if(answers.environment==='gp'){weights.gp=5;weights.hospital=2;weights.independence=4;weights.communityPenalty=3;}
@@ -212,6 +268,7 @@
           }catch{}
         },0);
         overlay.remove();document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
+        setTimeout(promptCloudSave,350);
       };
 
       render();card.querySelector('button')?.focus();
