@@ -1,0 +1,11 @@
+/* Calm editorial colour treatment for the actual MapTiler Streets raster.
+   Unlike a fallback filter, this applies in normal "Streets Light" and
+   Automatic mode. It affects tile imagery only, never pins or map behaviour. */
+html #placementMap[data-basemap="streets-editorial-light"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="streets-editorial-light"] .leaflet-tile-pane{
+  filter:saturate(.45) contrast(.975) brightness(1.025)!important;
+}
+html #placementMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane{
+  filter:saturate(.62) contrast(.96) brightness(.81)!important;
+}
