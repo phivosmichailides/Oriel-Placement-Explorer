@@ -256,27 +256,34 @@
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
       zoom.innerHTML='<button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button>';
-      // Remember the intended target when the user taps +/− rapidly.
-      let requestedZoom=null;
+      // Queue additional taps until the active Leaflet zoom animation ends.
+      // Interrupting a CSS tile transition can leave the map between levels.
+      let zoomAnimating=false,zoomTarget=null,queuedZoom=null;
+      const animateTo=target=>{
+        if(Math.abs(placementMap.getZoom()-target)<.045){zoomAnimating=false;zoomTarget=null;return;}
+        zoomAnimating=true;zoomTarget=target;
+        placementMap.setZoom(target,{animate:true});
+      };
       placementMap.on('zoomend',()=>{
-        if(requestedZoom!==null&&Math.abs(placementMap.getZoom()-requestedZoom)<.045)requestedZoom=null;
+        if(!zoomAnimating)return;
+        zoomAnimating=false;zoomTarget=null;
+        if(queuedZoom===null)return;
+        const next=queuedZoom;queuedZoom=null;
+        // Run after Leaflet's current zoomend callbacks finish.
+        requestAnimationFrame(()=>animateTo(next));
       });
       zoom.addEventListener('click',event=>{
         const button=event.target.closest('[data-atlas-zoom]');if(!button)return;
         event.preventDefault();event.stopPropagation();
         const delta=button.dataset.atlasZoom==='in'?1:-1;
-        const currentZoom=requestedZoom===null?placementMap.getZoom():requestedZoom;
+        const currentZoom=queuedZoom!==null?queuedZoom:zoomAnimating?zoomTarget:placementMap.getZoom();
         const minZoom=Number.isFinite(placementMap.getMinZoom())?placementMap.getMinZoom():3;
         const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
-        if(delta>0&&currentZoom>=maxZoom-0.001)return;
-        if(delta<0&&currentZoom<=minZoom+0.001)return;
-        // Use the exact fractional target. Leaflet's zoomIn/zoomOut methods
-        // snap around integer zoom levels and can fail to reverse a 9.4 start.
-        // Animate the current tile level while fetching the next one.
-        const target=Math.round((currentZoom+delta)*10)/10;
-        requestedZoom=target;
-        placementMap.stop();
-        placementMap.setZoom(target,{animate:true});
+        const target=Math.max(minZoom,Math.min(maxZoom,Math.round((currentZoom+delta)*10)/10));
+        if(Math.abs(target-currentZoom)<.045)return;
+        // Preserve fractional zoom levels, including the 9.4 Greater London view.
+        if(zoomAnimating)queuedZoom=target;
+        else animateTo(target);
       });
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
