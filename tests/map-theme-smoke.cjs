@@ -52,11 +52,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       }else await route.continue();
     });
     const requiredAssets=[
-      'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261109national1',
+      'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261109fix2',
       'tube-stations.js?v=20261108tfl2','rail-stations.js?v=20261109national1','location-guides.js?v=20261109national1','design-refresh.css?v=20261109national2',
-      'app.js?v=20261109national1','sector-map.js?v=20261109national1',
-      'map-basemap.js?v=20261109national1','generic-public.js?v=20261108atlas3',
-      'map-focus.css?v=20261108atlas3','session-ui.js?v=20261108filters3',
+      'app.js?v=20261109fix1','sector-map.js?v=20261109fix1',
+      'map-basemap.js?v=20261109fix3','generic-public.js?v=20261108atlas3',
+      'map-focus.css?v=20261109fix3','session-ui.js?v=20261108filters3',
       'pwa.js?v=20261109national2'
     ];
     await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
