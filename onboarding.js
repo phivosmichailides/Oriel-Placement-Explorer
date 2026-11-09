@@ -15,6 +15,37 @@
   .onboardField input{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px;color:#29332d}.onboardHomeBase{margin:15px 0 4px;padding:14px 15px;border:1px solid #dce7df;background:#f7faf7;border-radius:16px}.onboardHomeBase>p{font-size:11px;line-height:1.5;color:#647169;margin:8px 2px 0}.onboardHomeBase .onboardError{margin-top:5px}
   .onboardActions{display:flex;align-items:center;gap:8px;margin-top:22px}.onboardActions .spacer{flex:1}.onboardFine{font-size:11px;color:#7a817d;margin-top:9px}.onboardError{font-size:12px;color:#9a3e3e;margin-top:9px;min-height:17px}.onboardFinal{padding:10px 0 3px}.onboardSummary{display:flex;flex-wrap:wrap;gap:7px;margin:17px 0}.onboardSummary span{background:#eff5f1;border:1px solid #dce8df;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;color:#46554c}
   .personaliseAgain{margin-top:13px}.phivosSignature{margin-top:14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,sans-serif;font-size:10px;line-height:1.5;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--mut)}.phivosSignature i{width:4px;height:4px;border-radius:50%;background:var(--ux-accent);display:inline-block}
+
+  /* Palette and brightness choices follow the same six app themes. */
+  .onboardCard{background:var(--panel);color:var(--ink);border-color:var(--line)}
+  .onboardCard h2,.onboardCard h3{color:var(--ink)}
+  .onboardLead,.onboardFine{color:var(--mut)}
+  .onboardChoice,.onboardField input,.onboardField select,.onboardHomeBase,.onboardReassure{
+    background:var(--soft);color:var(--ink);border-color:var(--line)
+  }
+  .onboardChoice small,.onboardHomeBase>p{color:var(--mut)}
+  .onboardChoice.selected{border-color:var(--ux-accent);background:var(--ux-accent-soft);box-shadow:inset 0 0 0 1px var(--ux-accent)}
+  .onboardClose{background:var(--soft);color:var(--ink)}
+  .onboardProgress{background:var(--soft)}
+  .onboardProgress>span{background:var(--ux-accent)}
+  .onboardLookLabel{font-size:12px;font-weight:850;margin:20px 0 9px;color:var(--ink)}
+  .onboardPaletteChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .onboardPaletteChoice,.onboardModeChoices button{
+    min-height:64px;display:flex;align-items:center;justify-content:center;gap:9px;
+    padding:10px;border:1px solid var(--line);border-radius:14px;
+    background:var(--soft);color:var(--ink);font-size:13px;cursor:pointer
+  }
+  .onboardPaletteChoice[aria-pressed="true"],.onboardModeChoices button[aria-pressed="true"]{
+    border:2px solid var(--ux-accent);background:var(--ux-accent-soft);
+  }
+  .onboardPaletteSwatch{width:23px;height:23px;border-radius:50%;background:var(--ob-swatch);flex:none}
+  .onboardModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .onboardSyncOverlay{position:fixed;inset:0;z-index:5100;display:grid;place-items:center;padding:18px;background:#10121ac0}
+  .onboardSyncDialog{display:grid;gap:12px;width:min(420px,100%);border-radius:22px;padding:25px;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:0 25px 70px #0003}
+  .onboardSyncDialog h2{margin:0;font-size:24px;line-height:1.2}
+  .onboardSyncDialog p{color:var(--mut);font-size:14px;line-height:1.6;margin:0}
+  .onboardSyncDialog .textbtn{justify-self:center;color:var(--mut)}
+  @media(max-width:520px){.onboardPaletteChoices{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @keyframes obFade{from{opacity:0}to{opacity:1}}
   @media(max-width:600px){.onboardCard{padding:21px 17px;border-radius:22px}.onboardCard h2{font-size:27px}.onboardChoices,.onboardFields{grid-template-columns:1fr}.onboardChoice.wide{grid-column:auto}.onboardActions{flex-wrap:wrap}.onboardActions .spacer{display:none}.onboardActions .btn{flex:1}.onboardActions .textbtn{flex-basis:100%;order:3}}
   `;
@@ -44,7 +75,12 @@
       try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
     };
 
-    const defaultAnswers=()=>({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some',homePostcode:window.OrielCommuteProfile?.read?.()||''});
+    const paletteValues=['forest','copper','mauve','amber','cocoa','mono'];
+    const getAppearance=()=>({
+      palette:localStorage.getItem('oriel-desk-palette-v1')||'forest',
+      theme:document.documentElement.getAttribute('data-theme')||'light'
+    });
+    const defaultAnswers=()=>({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some',homePostcode:window.OrielCommuteProfile?.read?.()||'',...getAppearance()});
     const renderAppliedProfile=profile=>{
       const panel=document.getElementById('uxProfileApplied'),target=document.getElementById('uxProfileAppliedChips');
       if(!panel||!target)return;
@@ -68,21 +104,43 @@
       if(document.querySelector('.onboardOverlay'))return;
       document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_started'}}));
       const previousFocus=document.activeElement;
+      const startingAppearance=getAppearance();
+      let appearanceSaved=false;
       let answers={...defaultAnswers(),...(loadAnswers()||{})};
+      answers.palette=paletteValues.includes(answers.palette)?answers.palette:startingAppearance.palette;
+      answers.theme=['light','dark'].includes(answers.theme)?answers.theme:startingAppearance.theme;
+      const applyAppearance=()=>{
+        const root=document.documentElement;
+        root.setAttribute('data-palette',answers.palette);
+        try{localStorage.setItem('oriel-desk-palette-v1',answers.palette)}catch{}
+        document.querySelectorAll('[data-ux-palette]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxPalette===answers.palette)));
+        const current=root.getAttribute('data-theme')||'light';
+        if(current!==answers.theme)document.getElementById('themeToggle')?.click();
+        document.dispatchEvent(new CustomEvent('desk:palette'));
+      };
       if(!answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.read?.()||'';
       answers.priorities=Array.isArray(answers.priorities)?answers.priorities:[];
       let step=-1;
       const overlay=document.createElement('div');overlay.className='onboardOverlay';overlay.setAttribute('role','presentation');
       const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise Placement Atlas');overlay.appendChild(card);document.body.appendChild(overlay);
-      const close=()=>{document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_skipped'}}));overlay.remove();previousFocus?.focus();try{sessionStorage.setItem(SESSION_SKIP,'1')}catch{}};
+      const close=()=>{
+        if(!appearanceSaved){
+          answers.palette=startingAppearance.palette;answers.theme=startingAppearance.theme;
+          applyAppearance();
+        }
+        document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_skipped'}}));
+        overlay.remove();previousFocus?.focus();try{sessionStorage.setItem(SESSION_SKIP,'1')}catch{}
+      };
       overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
       overlay.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...card.querySelectorAll('button,select,input')].filter(x=>!x.disabled);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
 
       const regions=[...new Set(placements.map(p=>p.region).filter(Boolean))].sort((a,b)=>a==='London'?-1:b==='London'?1:a.localeCompare(b));
       const choice=(value,emoji,title,desc,selected,wide=false)=>`<button type="button" class="onboardChoice ${selected?'selected':''} ${wide?'wide':''}" data-value="${esc(value)}" aria-pressed="${selected}"><span class="emoji" aria-hidden="true">${emoji}</span><span><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span></button>`;
-      const progress=()=>step<0?0:Math.min(100,(step+1)/5*100);
+      const progress=()=>step<0?0:Math.min(100,(step+1)/6*100);
 
       const render=()=>{
+        card.dataset.palette=answers.palette;
+        card.dataset.theme=answers.theme;
         queueMicrotask(()=>card.querySelector('.onboardChoice.selected, #obNext, #obFinish, #obStart, button')?.focus());
         if(step===-1){
           card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardSpark"></div><div class="onboardStepLabel">A tiny setup before we start</div><h2><span aria-hidden="true">👋</span> Let’s learn a bit more about you!</h2><p class="onboardLead">There are thousands of Oriel programmes, so instead of making you stare at all of them equally, I can use a few quick answers to make the map, recommendations and fit scores feel much more like <i>your</i> search.</p><div class="onboardReassure"><span></span><span><b>Nothing here is permanent.</b> You can change every answer later in Preferences, retake this setup, or ignore the recommendations completely.</span></div><div class="onboardActions"><button class="btn primary" id="obStart">Okay, personalise it </button><span class="spacer"></span><button class="textbtn" id="obLater">Maybe later</button></div><div class="onboardFine">About 30 seconds. Your choices stay in this browser. If you add a home postcode or area, it is sent to TfL only when a journey estimate is requested.</div>`;
@@ -104,8 +162,21 @@
           const opts=[['happy','😊','Happy with community','I’m comfortable with a community-heavy programme.'],['some','🙂','Some is fine','I’m happy to have it as part of a mixed programme.'],['less','🌿','Prefer less community','I’d rather hospital/GP/other settings take the lead.'],['avoid','🙅','Avoid community-heavy','Strongly push community-heavy programmes down my recommendations.']];
           body=`<div class="onboardStepLabel">5 of 5 · One last thing</div><h3><span aria-hidden="true">💊</span> How do you feel about community pharmacy exposure?</h3><p class="onboardLead">This changes how strongly community-heavy programmes are penalised in your personal fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
         }else{
-          const labels={hospital:'Hospital',gp:'GP',mixed:'Mixed settings',industry:'Industry / research',community:'Community',unsure:'Still exploring',happy:'Community welcome',some:'Some community',less:'Less community',avoid:'Avoid community-heavy'};
-          body=`<div class="onboardFinal"><div class="onboardSpark"></div><div class="onboardStepLabel">You’re ready</div><h2><span aria-hidden="true">🎉</span> Perfect — I’ve got you.</h2><p class="onboardLead">I’ll use this as a starting point for your fit scores and recommendations. It’s guidance, not a final ranking, and you can change your mind whenever you want.</p><div class="onboardSummary"><span> ${esc(answers.region||'All regions')}</span><span> ${esc(labels[answers.environment]||answers.environment)}</span>${answers.priorities.map(x=>`<span> ${esc(x)}</span>`).join('')}${answers.salary?`<span> £${Number(answers.salary).toLocaleString()}+</span>`:''}${answers.hours?`<span> ≤${esc(answers.hours)}h</span>`:''}<span> ${esc(labels[answers.community]||answers.community)}</span>${answers.homePostcode?`<span> Commute base · ${esc(window.OrielCommuteProfile?.areaLabel?.(answers.homePostcode)||answers.homePostcode)} (${esc(answers.homePostcode)})</span>`:''}</div></div>`;
+          const colours=[['forest','Forest','#274333'],['copper','Copper','#b26d55'],['mauve','Mauve','#805e78'],
+            ['amber','Amber','#c49348'],['cocoa','Cocoa','#695443'],['mono','Monochrome','#55575a']];
+          body=`<div class="onboardStepLabel">6 of 6 · Make it yours</div>
+            <h3>Choose your Placement Atlas look</h3>
+            <p class="onboardLead">Choose your colour palette and light or dark appearance. The whole website, including this quiz, previews your choices instantly.</p>
+            <div class="onboardLookLabel">Your colour theme</div>
+            <div class="onboardPaletteChoices" role="group" aria-label="Choose colour palette">
+             ${colours.map(([id,label,colour])=>`<button type="button" class="onboardPaletteChoice" data-ob-palette="${id}" aria-pressed="${answers.palette===id}">
+               <span class="onboardPaletteSwatch" style="--ob-swatch:${colour}"></span><b>${label}</b>${answers.palette===id?'<span aria-hidden="true">✓</span>':''}
+             </button>`).join('')}</div>
+            <div class="onboardLookLabel">Appearance</div>
+            <div class="onboardModeChoices" role="group" aria-label="Choose light or dark mode">
+             <button type="button" data-ob-mode="light" aria-pressed="${answers.theme==='light'}">☀ Light</button>
+             <button type="button" data-ob-mode="dark" aria-pressed="${answers.theme==='dark'}">☾ Dark</button>
+            </div><p class="onboardFine">You can change both later in Preferences.</p>`;
         }
 
         const final=step===5;
@@ -122,6 +193,15 @@
         if(step===2){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{const v=b.dataset.value;const i=answers.priorities.indexOf(v);if(i>=0)answers.priorities.splice(i,1);else if(answers.priorities.length<3)answers.priorities.push(v);else{const er=card.querySelector('#obError');if(er)er.textContent='Pick up to three — you can still adjust every weight later.';return;}render()});}
         if(step===3){const sal=card.querySelector('#obSalary'),hrs=card.querySelector('#obHours');sal.value=answers.salary;hrs.value=answers.hours;sal.onchange=()=>answers.salary=sal.value;hrs.onchange=()=>answers.hours=hrs.value;}
         if(step===4){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.community=b.dataset.value;render()});}
+        if(step===5){
+          card.querySelectorAll('[data-ob-palette]').forEach(button=>button.addEventListener('click',()=>{
+            answers.palette=button.dataset.obPalette;applyAppearance();render();
+          }));
+          card.querySelectorAll('[data-ob-mode]').forEach(button=>button.addEventListener('click',()=>{
+            answers.theme=button.dataset.obMode;applyAppearance();render();
+          }));
+          card.querySelector('#obFinish').disabled=!paletteValues.includes(answers.palette)||!['light','dark'].includes(answers.theme);
+        }
         if(card.querySelector('#obBack'))card.querySelector('#obBack').onclick=()=>{step--;render()};
         if(card.querySelector('#obNext'))card.querySelector('#obNext').onclick=()=>{
           if(step===0&&String(answers.homePostcode||'').trim()&&!window.OrielCommuteProfile?.isValid?.(answers.homePostcode)){
@@ -134,6 +214,9 @@
       };
 
       const finish=()=>{
+        if(!paletteValues.includes(answers.palette)||!['light','dark'].includes(answers.theme))return;
+        appearanceSaved=true;
+        applyAppearance();
         const weights={money:3,hospital:2,gp:2,lifestyle:3,location:3,progression:3,independence:3,communityPenalty:3};
         if(answers.environment==='hospital'){weights.hospital=5;weights.gp=2;weights.progression=4;weights.communityPenalty=4;}
         else if(answers.environment==='gp'){weights.gp=5;weights.hospital=2;weights.independence=4;weights.communityPenalty=3;}
@@ -185,7 +268,26 @@
             document.querySelector('[data-tab="foryou"]')?.click();
           }catch{}
         },0);
-        overlay.remove();document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
+        overlay.remove();
+        // Reuse the existing real Supabase Google/email authentication flow.
+        // A separate optional prompt leaves saved local preferences intact.
+        if(window.OrielCloud?.signIn){
+          const prompt=document.createElement('div');
+          prompt.className='onboardSyncOverlay';
+          prompt.innerHTML='<section class="onboardSyncDialog" role="dialog" aria-modal="true" aria-labelledby="obSyncTitle">'+
+            '<div class="onboardStepLabel">Keep your progress</div><h2 id="obSyncTitle">Save your preferences across devices</h2>'+
+            '<p>Sign in with Google or email to sync your shortlist, your personalised choices and your progress between devices.</p>'+
+            '<button type="button" class="btn primary" data-ob-sync>Continue with Google or email</button>'+
+            '<button type="button" class="textbtn" data-ob-later>Maybe later</button></section>';
+          document.body.append(prompt);
+          const dismiss=()=>prompt.remove();
+          prompt.querySelector('[data-ob-later]').onclick=dismiss;
+          prompt.querySelector('[data-ob-sync]').onclick=()=>{dismiss();window.OrielCloud?.signIn?.()};
+          prompt.addEventListener('click',e=>{if(e.target===prompt)dismiss()});
+          prompt.addEventListener('keydown',e=>{if(e.key==='Escape')dismiss()});
+          prompt.querySelector('[data-ob-sync]').focus();
+        }
+        document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
       };
 
       render();card.querySelector('button')?.focus();
