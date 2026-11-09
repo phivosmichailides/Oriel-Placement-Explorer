@@ -197,7 +197,7 @@ const STYLES=Object.freeze({
     fallbackInstances.add(record);
     let loadedTiles=0,errorTiles=0,switched=false,timer;
     const useOpenStreetMap=reason=>{
-      if(switched||loadedTiles>0||!map.getContainer().isConnected)return;
+      if(switched||!map.getContainer().isConnected)return;
       switched=true;
       if(timer)clearTimeout(timer);
       rasterInstances.delete(record);
@@ -427,11 +427,12 @@ const STYLES=Object.freeze({
     const vectorPane=map.getPane('orielVectorBasemap')||map.createPane('orielVectorBasemap');
     vectorPane.style.zIndex='250';
     vectorPane.style.pointerEvents='none';
-    let layer,glMap,loaded=false,ready=false,ended=false,timeout;
+    let layer,glMap,loaded=false,ready=false,ended=false,timeout,tileErrorCount=0;
     const record={map:null,leaflet:map,layer:null,attribution:styleAttribution(),replaceFallback};
     map._orielBasemapRecord=record;
     const fail=(reason='MapTiler vector rendering did not produce a usable map.',forceOsm=false)=>{
-      if(ended||ready)return;
+      if(ended)return;
+      ready=false;
       ended=true;
       if(timeout)clearTimeout(timeout);
       instances.delete(record);
@@ -503,6 +504,14 @@ const STYLES=Object.freeze({
       glMap.on('error',event=>{
         const message=String(event.error?.message||event.error||'');
         const status=Number(event.error?.status||event.error?.statusCode||event.status||0);
+        if(status>=400&&!/abort|cancel/i.test(message)){
+          tileErrorCount++;
+          if(ready&&tileErrorCount>=2){
+            console.warn('Vector basemap developed repeated tile/request errors after initial render:',message,status);
+            fail('MapTiler vector tiles became incomplete after loading ('+tileErrorCount+' failed requests).',status===403);
+            return;
+          }
+        }
         // An initial style/tile failure should fall back rather than leave a
         // blank map. Aborted requests during later style switches are expected.
         if(!ready&&(status>=400||/style|fetch|network|failed|http|request|webgl|context|forbidden|unauthori|not found/i.test(message))){
