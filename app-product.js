@@ -283,7 +283,11 @@
       const region=activeRegion();
       const arr=placements.filter(p=>!window.OrielSpecialist?.filterOut(p)&&(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!window.OrielGeoBlacklist?.shouldHide(p)&&!isExcluded(p)&&(!$('hideShortlisted')?.checked||!SHORT.has(mark(p).status))&&(!($('hideOuterLondon')?.checked&&region==='London')||!window.OrielAreaRules?.isOuterTown(p))&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
       const title=document.querySelector('#foryou .sectionHero h2');
-      if(title)title.textContent=`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`;
+      if(title)title.textContent=state.prefs.onboarding?`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`:'✨ Explore possibilities · personalise to see your matches';
+      if(!state.prefs.onboarding){
+        $('reco').innerHTML='<div class="card empty"><h3>Make these recommendations yours</h3><p>Complete the short quiz to unlock personalised fit scores and recommendations based on what you value.</p><button type="button" class="btn primary" data-atlas-start-quiz>Personalise my matches</button></div>';
+        return;
+      }
       $('reco').innerHTML=arr.length?arr.map((x,i)=>`<article class="reco card"><div class="eyebrow">#${i+1} TO LOOK AT · ${x.a.score}/100</div><h3>${esc(x.p.title)}</h3><div class="badges"><span class="badge good"> ${esc(x.a.band)}</span><span class="badge"> ${esc(x.p.region)}</span>${x.p.places?`<span class="badge"> ${x.p.places} ${x.p.places===1?'place':'places'}</span>`:''}<span class="badge ${x.p.salary?'salary-value':''}"> ${x.p.salary?'£'+x.p.salary.toLocaleString():'n/a'}</span><span class="badge"> ${x.p.hours||'?'}h</span></div><div class="miniFit"><b>Why:</b> ${esc(x.a.good.slice(0,3).join(' · ')||'No strong signals yet.')}</div>${x.a.bad.length?`<div class="miniFit warning"><b>Check:</b> ${esc(x.a.bad.slice(0,2).join(' · '))}</div>`:''}<button class="btn" data-open="${esc(x.p.id)}">Open in Explore</button></article>`).join(''):'<div class="card empty">No programmes match these limits. Loosen your salary or hours filters in Explore, or retake setup in Preferences.</div>';
     };
 
