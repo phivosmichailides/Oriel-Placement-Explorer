@@ -82,3 +82,14 @@ test('Placement Atlas branding and install assets are complete', () => {
     assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],file+' is not a valid PNG');
   }
 });
+
+test('primary navigation and footer management use separate, cache-versioned assets', () => {
+  const html=read('index.html');
+  const sw=read('sw.js');
+  assert.match(html,/atlas-navigation\.css\?v=20261109nav1/);
+  assert.match(html,/atlas-navigation\.js\?v=20261109nav1/);
+  assert.match(sw,/atlas-navigation\.css\?v=20261109nav1/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261109nav1/);
+  assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
+  assert.match(read('atlas-navigation.js'),/footer\.before\(utilities\)/);
+});
