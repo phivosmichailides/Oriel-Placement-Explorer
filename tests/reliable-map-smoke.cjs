@@ -21,7 +21,7 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(()=>typeof placements!=='undefined'&&placements.length===4064&&!!window.OrielMapStats&&!!placementMap,null,{timeout:90000});
   const starting=await page.evaluate(()=>({center:placementMap.getCenter(),zoom:placementMap.getZoom(),name:document.title}));
   assert.equal(starting.name,'Placement Atlas');
-  assert(starting.zoom>=10&&starting.zoom<=11.6&&Math.abs(starting.center.lat-51.5074)<.2,'Default map did not start in London: '+JSON.stringify(starting));
+  assert(starting.zoom>=9.1&&starting.zoom<=9.7&&Math.abs(starting.center.lat-51.5074)<.2,'Default map did not start in London: '+JSON.stringify(starting));
   await page.waitForFunction(()=>{
    const el=document.querySelector('#placementMap');
    return el&&(['streets-editorial-light','streets-editorial-dark','osm-fallback'].includes(el.dataset.basemap))&&
@@ -35,20 +35,26 @@ fs.mkdirSync(output,{recursive:true});
   }));
   assert.equal(initial.programmes,4064);
   assert(initial.tiles.length>=3,'The map has not loaded adequate street tiles');
+  assert(initial.markers>0&&initial.markers<1400,'Unexpected number of London overview markers: '+initial.markers);
+  assert(await page.locator('#placementMap .oriel-group-count').first().evaluate(el=>el.getBoundingClientRect().width<=24),'Overview cluster icons should be small');
   assert(initial.tiles.some(x=>/maptiler\.com|openstreetmap\.org/.test(x)),'Map has no real street tile provider');
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
   // Tube markers must be absent until close street-level zoom.
   await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
   assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Underground icons clutter the initial London view');
-  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],15.4,{animate:false}));
-  await page.waitForFunction(()=>Math.abs(placementMap.getZoom()-15.4)<.05,null,{timeout:10000});
-  assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Underground icons appeared before street-level zoom');
+  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],13.8,{animate:false}));
+  await page.waitForFunction(()=>Math.abs(placementMap.getZoom()-13.8)<.05,null,{timeout:10000});
+  assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Underground icons appeared at wide neighbourhood zoom');
+  await page.evaluate(()=>placementMap.setZoom(14.4,{animate:false}));
+  await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-roundel').length>0,null,{timeout:12000});
+  const localTubeCount=await page.locator('#placementMap .oriel-tube-roundel').count();
+  assert(localTubeCount>0&&localTubeCount<=24,'Local Tube stations are missing or overcrowded: '+localTubeCount);
   await page.evaluate(()=>placementMap.setZoom(15.6,{animate:false}));
   await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-roundel').length>0,null,{timeout:12000});
-  assert(await page.locator('#placementMap .oriel-tube-roundel').count()>0,'Underground icons missing at close street-level zoom');
+  assert(await page.locator('#placementMap .oriel-tube-roundel').count()>0,'Underground icons missing at street-level zoom');
   await page.evaluate(()=>placementMap.setZoom(12,{animate:false}));
   await page.waitForFunction(()=>Math.abs(placementMap.getZoom()-12)<.05&&!document.querySelector('#placementMap .oriel-tube-roundel'),null,{timeout:10000});
-  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],10.4,{animate:false}));
+  await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],9.4,{animate:false}));
   // Custom controls and map interactions.
   const controls=page.locator('#atlasMapZoom');
   await controls.waitFor({state:'visible'});
@@ -86,6 +92,13 @@ fs.mkdirSync(output,{recursive:true});
   await page.evaluate(()=>placementMap.setView([51.5074,-.1278],12,{animate:false}));
   await page.waitForFunction(()=>document.querySelector('#placementMap .leaflet-tile-loaded'),null,{timeout:12000});
   await page.locator('#placementMap').screenshot({path:output+'/map-neighbourhood.png'});
+  await page.locator('nav.tabs [data-tab=foryou]').click();
+  assert(await page.locator('.productIntro').isVisible(),'Intro should remain on For You');
+  await page.locator('nav.tabs [data-tab=tinderMode]').click();
+  assert.equal(await page.locator('.productIntro').isVisible(),false,'Intro should hide on Tinder Mode');
+  assert(await page.locator('#tinderMode .tdBoard').isVisible(),'Centred Tinder game should be visible');
+  await page.locator('nav.tabs [data-tab=explore]').click();
+  assert(await page.locator('.productIntro').isVisible(),'Intro should return on Explore');
   assert(await page.locator('#results .placement').count()>0,'Explore programme cards disappeared');
   assert(await page.locator('#results .uxMiniMap').count()>0,'Programme mini maps missing');
   // PWA metadata, install assets and shortlist interactions remain available.
