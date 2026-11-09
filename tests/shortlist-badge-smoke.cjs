@@ -78,6 +78,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   assert.equal(await mobileRemove.evaluate(el=>getComputedStyle(el).opacity),'0','Phone drawer X should stay hidden before a swipe');
   await mobile.evaluate(()=>{const item=document.querySelector('#uxDrawerItems .uxDrawerItem');const start=new Event('touchstart',{bubbles:true});Object.defineProperty(start,'touches',{value:[{clientX:320,clientY:240}]});item.dispatchEvent(start);const end=new Event('touchend',{bubbles:true});Object.defineProperty(end,'changedTouches',{value:[{clientX:205,clientY:243}]});item.dispatchEvent(end);});
   assert(await mobileItem.evaluate(el=>el.classList.contains('atlasSwipeOpen')),'Swiping left did not reveal the shortlist X');
+  await mobile.waitForFunction(()=>getComputedStyle(document.querySelector('#uxDrawerItems .uxDrawerItem [data-atlas-remove-shortlist]')).opacity==='1',null,{timeout:2500});
   assert.equal(await mobileRemove.evaluate(el=>getComputedStyle(el).opacity),'1','Phone drawer X did not appear after swiping left');
   await mobileRemove.click();
   await mobile.waitForFunction(()=>document.querySelector('#uxDrawerLauncher [data-ux-shortlist-count]')?.textContent==='(0)',null,{timeout:15000});
