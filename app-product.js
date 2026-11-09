@@ -2,7 +2,7 @@
 (()=>{
   const hadSaved=(()=>{try{return !!localStorage.getItem('phivos-desk-v2')}catch{return false}})();
   const base=document.createElement('script');
-  base.src='app-base.js?v=20261109fix2';
+  base.src='app-base.js?v=20261109fit4';
   base.onload=()=>{
     const hasProfile=()=>window.OrielHasPersonalProfile?.()===true;
     // Do not label default heuristic weights as an applicant's personal fit.
