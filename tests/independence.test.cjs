@@ -27,10 +27,10 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261109header2/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261109header2/);
+  assert.match(html,/app\.js\?v=20261109fit4/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261109fit4/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
-  assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
+  assert.match(read('app-product.js'),/app-base\.js\?v=20261109fit4/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
   assert.doesNotMatch(read('generic-public.js'),/Oriel Placement Desk/);
@@ -110,9 +110,9 @@ test('theme-aware header and muted map remain purely visual changes', () => {
 test('Tinder Mode preloads real next card without blurred gradient', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.js\?v=20261109fit4/);
   assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109fit4/);
   assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
@@ -123,9 +123,9 @@ test('Tinder Mode preloads real next card without blurred gradient', () => {
 
 test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
   const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
-  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.js\?v=20261109fit4/);
   assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109fit4/);
   assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
   assert.match(js,/const shine=\(status\)=>/);
   assert.match(js,/tdDirectionalParticles/);
@@ -149,4 +149,29 @@ test('Tinder refines its own programme pool and keeps outgoing stars independent
   assert.match(mobile,/mobileFirst\?true:/);
   assert.match(read('atlas-navigation.css'),/max-width:720px/);
   assert.match(read('tinder-mode.css'),/tdExitStar/);
+});
+
+test('Unpersonalised profiles cannot claim a calibrated fit',()=>{
+  const base=read('app-base.js'),product=read('app-product.js'),game=read('tinder-mode.js');
+  assert.match(base,/window\.OrielHasPersonalProfile=hasPersonalProfile/);
+  assert.match(product,/data-fit-tone="\\$\{tone\}"/);
+  assert.match(product,/Not personalised/);
+  assert.match(product,/a\.score>=35\?'mixed':'poor'/);
+  assert.match(product,/data-start-fit-quiz/);
+  assert.match(product,/Discover your personalised matches/);
+  assert.match(game,/tdFitPending/);
+  assert.match(read('workspace-themes.css'),/data-fit-tone="unknown"/);
+});
+test('Quiz final step reuses all six palettes and existing Google/email account modal',()=>{
+  const quiz=read('onboarding.js'),sw=read('sw.js'),html=read('index.html'),boot=read('app.js');
+  assert.match(quiz,/const APPEARANCES=/);
+  assert.match(quiz,/data-ob-palette/);
+  assert.match(quiz,/data-ob-brightness/);
+  assert.match(quiz,/confirmed\.palette&&confirmed\.brightness/);
+  assert.match(quiz,/promptCloudSave/);
+  assert.match(quiz,/cloud\.signIn\(\)/);
+  assert.match(quiz,/Maybe later/);
+  assert.match(boot,/onboarding\.js\?v=20261109quiz4/);
+  assert.match(sw,/onboarding\.js\?v=20261109quiz4/);
+  assert.match(html,/workspace-themes\.css\?v=20261109fit4/);
 });
