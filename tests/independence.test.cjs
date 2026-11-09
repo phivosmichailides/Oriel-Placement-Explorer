@@ -28,7 +28,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
       `Obsolete source attribution in ${filename}`);
   }
   assert.match(html,/app\.js\?v=20261109header2/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261109header2/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261109fit1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
@@ -86,9 +86,9 @@ test('Placement Atlas branding and install assets are complete', () => {
 test('primary navigation and footer management use separate, cache-versioned assets', () => {
   const html=read('index.html');
   const sw=read('sw.js');
-  assert.match(html,/atlas-navigation\.css\?v=20261109mobile3/);
+  assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
   assert.match(html,/atlas-navigation\.js\?v=20261109nav2/);
-  assert.match(sw,/atlas-navigation\.css\?v=20261109mobile3/);
+  assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
   assert.match(sw,/atlas-navigation\.js\?v=20261109nav2/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/root\.append\(utilities\)/);
@@ -110,10 +110,10 @@ test('theme-aware header and muted map remain purely visual changes', () => {
 test('Tinder Mode preloads real next card without blurred gradient', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
-  assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.js\?v=20261109fit1/);
+  assert.match(html,/tinder-mode\.css\?v=20261109fit1/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109fit1/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109fit1/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
   assert.match(js,/tdShowingNext/);
@@ -123,10 +123,10 @@ test('Tinder Mode preloads real next card without blurred gradient', () => {
 
 test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
   const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
-  assert.match(html,/tinder-mode\.js\?v=20261109refine3/);
-  assert.match(html,/tinder-mode\.css\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109refine3/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109refine3/);
+  assert.match(html,/tinder-mode\.js\?v=20261109fit1/);
+  assert.match(html,/tinder-mode\.css\?v=20261109fit1/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109fit1/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109fit1/);
   assert.match(js,/const shine=\(status\)=>/);
   assert.match(js,/tdDirectionalParticles/);
   assert.match(js,/tdSwipeHints/);
