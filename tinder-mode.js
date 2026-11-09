@@ -165,7 +165,17 @@
     }
     const top=document.createElement('div');top.className='tdCardTop';
     const tag=document.createElement('span');tag.className='tdCardCode';tag.textContent='PROGRAMME '+code(p);
-    const score=document.createElement('span');score.className='tdFitScore';score.textContent='FIT '+fit.score+'/100';
+    const score=document.createElement('span');score.className='tdFitScore';score.textContent=typeof state!=='undefined'&&state.prefs?.onboarding?'FIT '+fit.score+'/100':'FIT · TAKE QUIZ';
+    if(!(typeof state!=='undefined'&&state.prefs?.onboarding)){
+      score.classList.add('tdFitUnpersonalised');
+      if(!underlay){
+        score.title='Take the personalisation quiz for a meaningful fit estimate';
+        score.setAttribute('role','button');score.tabIndex=0;
+        const open=()=>window.openOrielPersonalisation?.();
+        score.addEventListener('click',open);
+        score.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+      }
+    }
     top.append(tag,score);
     const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=p.title||p.employer||'Untitled programme';
     const employer=document.createElement('p');employer.className='tdEmployer';employer.textContent=p.employer||'Employer not specified';
