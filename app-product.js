@@ -322,7 +322,7 @@
       const header=document.querySelector('header.top');if(!header)return;
       const intro=document.createElement('section');intro.className='productIntro card';
       intro.innerHTML=`<div class="productIntroCopy"><div class="eyebrow">ENGLAND & WALES · PERSONALISED ORIEL DECISION TOOL</div><h2>4,064 programmes across 12 regions. <span class="uxNoBreak">One long-term decision.</span></h2><p><b>Oriel</b> gives pharmacy applicants thousands of England & Wales Foundation Pharmacy programmes to preference. This desk turns the dataset into a cleaner decision by filtering and explaining each programme against the priorities that matter to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Personalise my desk</button><button class="btn" id="showForYou">Show my strongest matches</button></div></div><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>Choose the region and priorities that work for you.</small></div></div>`;
-      header.insertAdjacentElement('afterend',intro);
+      (document.getElementById('atlasHeaderTools')||header).insertAdjacentElement('afterend',intro);
       $('tuneCriteria')?.addEventListener('click',()=>{
         if(typeof window.openOrielPersonalisation==='function')window.openOrielPersonalisation();
         else document.getElementById('personaliseAgain')?.click();

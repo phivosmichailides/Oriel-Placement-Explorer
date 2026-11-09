@@ -13,6 +13,24 @@
   header.classList.add('atlasStickyHeader');
   nav.setAttribute('aria-label','Placement Atlas main navigation');
   header.insertBefore(nav,headerActions);
+  // Account, theme and the recruitment deadline are below the sticky banner.
+  const headerTools=document.createElement('div');
+  headerTools.id='atlasHeaderTools';
+  headerTools.className='atlasHeaderTools';
+  headerTools.append(headerActions);
+  header.insertAdjacentElement('afterend',headerTools);
+  // A palette-aware cross without the filled square from the favicon.
+  const logo=header.querySelector('.brand .logo');
+  if(logo){
+    const namespace='http://www.w3.org/2000/svg';
+    const glyph=document.createElementNS(namespace,'svg');
+    glyph.setAttribute('viewBox','0 0 64 64');
+    glyph.setAttribute('class','atlasLogoGlyph');
+    glyph.setAttribute('aria-hidden','true');
+    const cross=document.createElementNS(namespace,'path');
+    cross.setAttribute('d','M22.4 4.8h19.2v17.6h17.6v19.2H41.6v17.6H22.4V41.6H4.8V22.4h17.6z');
+    glyph.append(cross);logo.replaceChildren(glyph);
+  }
 
   // File management is available after the active page's content rather than
   // occupying the primary app navigation. All original click handlers survive.
@@ -93,7 +111,18 @@
     shortlistBar.append(shortcuts);
   }
 
+  // Keep exactly one undo/redo toolbar, repositioned inside each active page.
+  const placeHistory=()=>{
+    const panel=document.querySelector('.panel.active');
+    const history=document.querySelector('.historyControls');
+    if(!panel||!history)return;
+    const subnav=panel.querySelector(':scope > .atlasExploreSubnav');
+    if(subnav)subnav.insertAdjacentElement('afterend',history);
+    else panel.prepend(history);
+  };
+  document.addEventListener('desk:history-ready',placeHistory);
   const sync=()=>{
+    placeHistory();
     const view=document.querySelector('.panel.active')?.id||'explore';
     document.body.dataset.atlasView=view;
     nav.querySelector('[data-tab="explore"]')?.classList.toggle('atlasParentActive',view==='foryou'||view==='compare');

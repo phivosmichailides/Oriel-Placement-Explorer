@@ -27,8 +27,8 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261109tubezoom1/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261109fix3/);
+  assert.match(html,/app\.js\?v=20261109header2/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261109header2/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
@@ -86,10 +86,23 @@ test('Placement Atlas branding and install assets are complete', () => {
 test('primary navigation and footer management use separate, cache-versioned assets', () => {
   const html=read('index.html');
   const sw=read('sw.js');
-  assert.match(html,/atlas-navigation\.css\?v=20261109nav1/);
-  assert.match(html,/atlas-navigation\.js\?v=20261109nav1/);
-  assert.match(sw,/atlas-navigation\.css\?v=20261109nav1/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261109nav1/);
+  assert.match(html,/atlas-navigation\.css\?v=20261109nav2/);
+  assert.match(html,/atlas-navigation\.js\?v=20261109nav2/);
+  assert.match(sw,/atlas-navigation\.css\?v=20261109nav2/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261109nav2/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/root\.append\(utilities\)/);
+});
+
+test('theme-aware header and muted map remain purely visual changes', () => {
+  const html=read('index.html'),nav=read('atlas-navigation.js');
+  const theme=read('atlas-map-tones.css'),app=read('desk-enhancements.js');
+  assert.match(html,/atlas-map-tones\.css\?v=20261109tone1/);
+  assert.match(nav,/headerTools\.append\(headerActions\)/);
+  assert.match(nav,/logo\.replaceChildren\(glyph\)/);
+  assert.match(nav,/placeHistory\(\)/);
+  assert.match(app,/desk:history-ready/);
+  assert.match(theme,/streets-editorial-light/);
+  assert.match(theme,/streets-editorial-dark/);
+  assert.match(read('map-basemap.js'),/keepBuffer:mainMap\?6:3/);
 });

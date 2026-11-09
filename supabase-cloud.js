@@ -101,7 +101,7 @@
     if(!host){
       host=element('div','cloudAccount');
       host.id='orielCloudAccount';
-      const actions=document.querySelector('.top .actions');
+      const actions=document.querySelector('#atlasHeaderTools .actions')||document.querySelector('.top .actions');
       if(actions)actions.prepend(host);
     }
     return host;
