@@ -35,6 +35,13 @@ fs.mkdirSync(output,{recursive:true});
   }));
   assert.equal(initial.programmes,4064);
   assert(initial.tiles.length>=3,'The map has not loaded adequate street tiles');
+  // Regression: the map must not discard its previous tile level mid-zoom.
+  const mainRasterOptions=await page.evaluate(()=>{
+    const layer=placementMap._orielBasemapRecord?.layer;
+    return {keepBuffer:layer?.options?.keepBuffer,updateWhenZooming:layer?.options?.updateWhenZooming};
+  });
+  assert(mainRasterOptions.keepBuffer>=6&&mainRasterOptions.updateWhenZooming===false,
+    'Main map should retain previous tiles while zooming: '+JSON.stringify(mainRasterOptions));
   assert(initial.tiles.some(x=>/maptiler\.com|openstreetmap\.org/.test(x)),'Map has no real street tile provider');
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
   // Tube markers must be absent until close street-level zoom.
