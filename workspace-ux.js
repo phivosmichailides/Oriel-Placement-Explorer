@@ -531,7 +531,7 @@
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
        return;
      }
-     const isLondonSite=String(p.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\\d/i.test(String(site.pc||''));
+     const isLondonSite=String(p.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\d/i.test(String(site.pc||''));
      if(!isLondonSite){
        captionStatus('general');
        personalisedHint.textContent='This training site is outside London. Local rail, bus and area connections are shown above; use the separate postcode directions link if you want to plan the longer journey.';
