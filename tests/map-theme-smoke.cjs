@@ -55,9 +55,9 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261108atlas1',
       'tube-stations.js?v=20261108tfl2','design-refresh.css?v=20261108editorial2',
       'app.js?v=20261108atlas3','sector-map.js?v=20261108atlas2',
-      'map-basemap.js?v=20261108atlas4','generic-public.js?v=20261108atlas3',
+      'map-basemap.js?v=20261109roads1','generic-public.js?v=20261108atlas3',
       'map-focus.css?v=20261108atlas3','session-ui.js?v=20261108filters3',
-      'pwa.js?v=20261108atlas9'
+      'pwa.js?v=20261109roads1'
     ];
     await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
     let fresh=false;
@@ -81,7 +81,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       throw new Error('Placement Atlas dynamic boot did not finish at '+page.url()+': '+JSON.stringify(bootState)+'; '+error.message);
     }
     assert(fresh,'Latest Placement Atlas build did not finish loading');
-    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261108atlas9');},null,{timeout:30000});
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261109roads1');},null,{timeout:30000});
     const pwaAudit=await page.evaluate(async()=>{
       const manifestLink=document.querySelector('link[rel="manifest"]');
       const faviconLink=document.querySelector('link[rel="icon"][type="image/svg+xml"]');
@@ -115,10 +115,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert.equal(pwaAudit.swState,'activated','Placement Atlas service worker did not activate');
-    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261108atlas9'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
+    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261109roads1'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
     const [pwaResponse,swResponse]=await Promise.all([
-      page.request.get(new URL('pwa.js?v=20261108atlas9',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('sw.js?v=20261108atlas9',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('pwa.js?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('sw.js?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
     const pwaUpdateAudit={
@@ -127,13 +127,13 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
         versionedCache:swSource.includes('placement-atlas-shell-2026-11-08-v11'),
-        cachedPwaAsset:swSource.includes("pwa.js?v=20261108atlas9")};
+        cachedPwaAsset:swSource.includes("pwa.js?v=20261109roads1")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
     const [lightStyleResponse,darkStyleResponse]=await Promise.all([
-      page.request.get(new URL('map-styles/editorial-light.json?v=20261108atlas3',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('map-styles/editorial-dark.json?v=20261108atlas3',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('map-styles/editorial-light.json?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('map-styles/editorial-dark.json?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     assert(lightStyleResponse.ok()&&darkStyleResponse.ok(),'One or both Placement Atlas map styles could not be loaded');
     const [lightStyle,darkStyle]=await Promise.all([lightStyleResponse.json(),darkStyleResponse.json()]);
@@ -205,6 +205,15 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const editorialRoadLayers=editorialStyleForDesign.layers.filter(layer=>layer.id.startsWith('Oriel editorial road'));
     assert.deepEqual(editorialRoadLayers.map(layer=>layer.id).sort(),['Oriel editorial road casing','Oriel editorial road surface'],
       'Editorial style is missing the designed road network');
+    const allowsMissingBrunnel = layer => {
+      const alternatives=layer.filter?.[2];
+      return Array.isArray(alternatives)&&alternatives[0]==='any'&&
+        alternatives.some(rule=>JSON.stringify(rule)==='["!",["has","brunnel"]]')&&
+        alternatives.some(rule=>JSON.stringify(rule)==='["==",["get","brunnel"],null]')&&
+        alternatives.some(rule=>JSON.stringify(rule)==='["!=",["get","brunnel"],"tunnel"]');
+    };
+    assert(editorialRoadLayers.every(allowsMissingBrunnel),
+      'Editorial road layers must include ordinary roads with missing/null brunnel properties while excluding tunnels');
     assert(editorialStyleForDesign.layers.some(layer=>layer.id==='Road labels'&&layer.minzoom<=13),
       'Editorial road names are not enabled at neighbourhood zoom');
     assert.equal(editorialStyleForDesign.layers.filter(layer=>layer.type==='fill-extrusion').length,0,
@@ -218,8 +227,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return {darkAirportMinZoom:airportSummary(dark),lightAirportMinZoom:airportSummary(editorialStyleForDesign),
         boroughCount:boroughs.features?.length||0,
         boroughNames:(boroughs.features||[]).map(feature=>feature.properties?.name).sort(),
-        boroughLayer:editorialStyleForDesign.layers.find(layer=>layer.id==='Oriel London borough labels')};
+        boroughLayer:editorialStyleForDesign.layers.find(layer=>layer.id==='Oriel London borough labels'),
+        darkRoadFilters:dark.layers.filter(layer=>layer.id.startsWith('Oriel editorial road')).map(layer=>({filter:layer.filter}))};
     },editorialStyleForDesign);
+    assert(designCoverage.darkRoadFilters.length===2&&designCoverage.darkRoadFilters.every(allowsMissingBrunnel),
+      'Editorial Dark road layers must include ordinary roads with missing/null brunnel properties while excluding tunnels');
     for(const [theme,levels] of Object.entries({light:designCoverage.lightAirportMinZoom,dark:designCoverage.darkAirportMinZoom})){
       assert(levels['Airport zone']>=11&&levels.Aeroway>=12&&levels['Airport labels']>=12,
         theme+' map shows distracting airport POIs too early: '+JSON.stringify(levels));

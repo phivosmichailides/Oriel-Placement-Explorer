@@ -1472,7 +1472,7 @@
         ]
       ]
     },
-        {
+    {
       "id": "Cycleway tunnel outline",
       "type": "line",
       "source": "maptiler_planet_v4",
@@ -14672,12 +14672,30 @@
           "LineString"
         ],
         [
-          "!=",
+          "any",
           [
-            "get",
-            "brunnel"
+            "!",
+            [
+              "has",
+              "brunnel"
+            ]
           ],
-          "tunnel"
+          [
+            "==",
+            [
+              "get",
+              "brunnel"
+            ],
+            null
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "brunnel"
+            ],
+            "tunnel"
+          ]
         ]
       ],
       "minzoom": 3,
@@ -14732,12 +14750,30 @@
           "LineString"
         ],
         [
-          "!=",
+          "any",
           [
-            "get",
-            "brunnel"
+            "!",
+            [
+              "has",
+              "brunnel"
+            ]
           ],
-          "tunnel"
+          [
+            "==",
+            [
+              "get",
+              "brunnel"
+            ],
+            null
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "brunnel"
+            ],
+            "tunnel"
+          ]
         ]
       ],
       "minzoom": 3,
