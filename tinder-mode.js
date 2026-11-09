@@ -3,7 +3,7 @@
    Decisions use the existing Placement Desk statuses. The local progress record
    stores an undo history and is included in the account's cloud sync. */
 (()=>{
-  const KEY='oriel-tinder-mode-v1', $=id=>document.getElementById(id);
+  const KEY='oriel-tinder-mode-v1', HINT_KEY='oriel-tinder-swipe-hints-seen-v1', $=id=>document.getElementById(id);
   const icon={
     flame:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.8 2.2c.8 3.1-.2 4.4-1.8 6.4-.4-1.5-1.4-2.9-3-4.1.3 2.5-.7 3.9-2.4 5.7C4.9 12 4.3 13.7 4.3 16A7.7 7.7 0 0 0 12 23.6 7.7 7.7 0 0 0 19.7 16c0-4.3-2.7-8.1-5.9-13.8Zm-1.8 18a4.4 4.4 0 0 1-4.4-4.4c0-1.5.8-2.8 2.1-4.1.3 1 .9 1.7 1.7 2.3 1.3-1.2 2-2.2 2-3.7 2 2.2 3 3.8 3 5.5a4.4 4.4 0 0 1-4.4 4.4Z"/></svg>',
     undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
@@ -48,7 +48,19 @@
     return poolData;
   };
   const lookup=id=>getData().find(p=>p.id===id);
-  let forced=null,animating=false,initialized=false, activeId='',returningId='';
+  let forced=null,animating=false,initialized=false,activeId='',returningId='';
+  let drawerMode=null,drawerOpener=null;
+  const dismissHints=()=>{
+    try{localStorage.setItem(HINT_KEY,'1')}catch{}
+    const tips=$('tinderSwipeHints');
+    if(tips)tips.hidden=true;
+  };
+  const refreshHints=()=>{
+    const tips=$('tinderSwipeHints');
+    if(!tips)return;
+    let completed=false;try{completed=localStorage.getItem(HINT_KEY)==='1'}catch{}
+    tips.hidden=completed||game.seen.length>0;
+  };
   const available=()=>selectedPool();
   const nextProgramme=()=>{
     if(forced){const p=lookup(forced);if(p&&!blacklisted(p))return p;forced=null;}
@@ -160,41 +172,40 @@
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const EXIT_MS=560;
-  const feedback=(status)=>{
+  // Small directional sparkle bursts: no full-deck gradient or blurred frame.
+  const shine=(status)=>{
     const deck=document.querySelector('#tinderMode .tdCardDeck');
     if(!deck)return ()=>{};
-    deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
+    deck.classList.remove('tdShineYes','tdShineNo','tdShineSuper');
     deck.querySelector('.tdFeedbackParticles')?.remove();
-    const kind=status==='yes'?'Yes':status==='no'?'No':'Super';
-    deck.classList.add('tdFeedback'+kind);
-    if(status==='yes'||status==='love'){
-      const layer=document.createElement('div');
-      layer.className='tdFeedbackParticles';
-      layer.setAttribute('aria-hidden','true');
-      // A few CSS-only sparkle particles: light-weight and non-interactive.
-      const spots=[[19,20,-65,-70],[44,14,-20,-80],[77,19,54,-83],[90,45,78,-16],
-        [78,72,75,72],[52,84,-4,75],[21,74,-72,47],[9,44,-80,-12]];
-      spots.forEach(([x,y,dx,dy],i)=>{
-        const p=document.createElement('span');
-        p.className='tdSparkle';
-        p.textContent='✦';
-        p.style.left=x+'%';
-        p.style.top=y+'%';
-        p.style.setProperty('--spark-x',dx+'px');
-        p.style.setProperty('--spark-y',dy+'px');
-        p.style.animationDelay=(i%3*38)+'ms';
-        layer.append(p);
-      });
-      deck.append(layer);
+    const kind=status==='no'?'No':status==='yes'?'Yes':'Super';
+    deck.classList.add('tdShine'+kind);
+    const layer=document.createElement('div');
+    layer.className='tdFeedbackParticles tdDirectionalParticles';
+    layer.setAttribute('aria-hidden','true');
+    const left=[[6,20,-55,-50],[13,35,-70,-9],[8,54,-65,26],[15,73,-40,60],[23,88,-38,42]];
+    const right=[[82,16,44,-55],[92,31,65,-22],[89,52,73,10],[82,71,52,55],[76,88,28,60]];
+    const upper=[[22,8,-58,-55],[39,11,-22,-80],[55,5,16,-76],[70,10,43,-62],[86,18,65,-45]];
+    const spots=kind==='No'?left:kind==='Yes'?right:upper;
+    for(const [x,y,dx,dy] of spots){
+      const spark=document.createElement('span');
+      spark.className='tdSparkle';
+      spark.textContent='✦';
+      spark.style.left=x+'%';spark.style.top=y+'%';
+      spark.style.setProperty('--spark-x',dx+'px');
+      spark.style.setProperty('--spark-y',dy+'px');
+      layer.append(spark);
     }
+    deck.append(layer);
     return ()=>{
-      deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
-      deck.querySelector('.tdFeedbackParticles')?.remove();
+      deck.classList.remove('tdShineYes','tdShineNo','tdShineSuper');
+      layer.remove();
     };
   };
   const commit=(p,status,vector)=>{
     if(animating)return;
     animating=true;
+    dismissHints();
     const card=$('tinderActiveCard');
     const finish=()=>{
       const prev=prefs()?.marks?.[p.id] ? structuredClone(prefs().marks[p.id]):null;
@@ -216,6 +227,7 @@
     // The next real programme is already in the deck. Reveal it while the
     // current card flies off, never a blurred empty gradient.
     $('tinderCardSlot')?.classList.add('tdShowingNext');
+    const clearShine=shine(status);
     card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
     const distance=Math.max(680,window.innerWidth*.7);
     const slide=vector*distance;
@@ -230,7 +242,7 @@
     };
     // Start the transition from the card's last drag position, avoiding a jump.
     requestAnimationFrame(departure);
-    setTimeout(finish,EXIT_MS+35);
+    setTimeout(()=>{clearShine();finish();},EXIT_MS+35);
   };
   const undo=()=>{
     if(animating)return;
@@ -271,6 +283,9 @@
       const dx=e.clientX-startX,dy=e.clientY-startY;
       if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>14)return;
       deltaX=dx;
+      card.classList.toggle('tdDragNo',dx< -18);
+      card.classList.toggle('tdDragYes',dx>18);
+      card.style.setProperty('--td-drag-strength',String(Math.min(1,Math.abs(dx)/130)));
       card.style.transform='translate3d('+dx+'px,'+Math.min(Math.abs(dx)*.07,12)+'px,0) rotate('+(dx/23)+'deg)';
       const no=card.querySelector('.tdStampNo'),yes=card.querySelector('.tdStampYes');
       no?.classList.toggle('tdStampShow',dx< -50);
@@ -281,6 +296,8 @@
       tracking=false;
       if(deltaX>85){commit(p,'yes',1);return;}
       if(deltaX< -85){commit(p,'no',-1);return;}
+      card.classList.remove('tdDragNo','tdDragYes');
+      card.style.removeProperty('--td-drag-strength');
       card.style.transition='transform .28s cubic-bezier(.22,1,.36,1)';
       card.style.transform='';
       card.querySelectorAll('.tdStamp').forEach(x=>x.classList.remove('tdStampShow'));
@@ -349,6 +366,8 @@
       const status=$('tinderExisting');status.textContent=existing?'Current decision: '+({love:'Love',yes:'Strong yes',maybe:'Maybe',backup:'Only if needed',no:'No',never:'Absolutely not'}[existing]||'Unmarked'):'Not yet decided';
       void resolvePlaces(p,p.id);
     }
+    refreshHints();
+    refreshDrawerCounts();
     $('tinderUndo').disabled=!game.history.length||animating;
     for(const id of ['tinderNo','tinderYes','tinderSuper'])$(id).disabled=!p||animating;
     if(!p)$('tinderExisting').textContent='Round complete';
@@ -365,7 +384,7 @@
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
     section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label><div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
-     '<div class="tdBoard"><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
+     '<div class="tdBoard"><div id="tinderSwipeHints" class="tdSwipeHints" hidden><span class="tdSwipeHint tdSwipeHintLeft"><span class="tdHintArrow" aria-hidden="true">←</span><span>Swipe left to exclude a programme</span></span><span class="tdSwipeHint tdSwipeHintRight"><span>Swipe right to shortlist a programme</span><span class="tdHintArrow" aria-hidden="true">→</span></span></div><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
      '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
      '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
      '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
