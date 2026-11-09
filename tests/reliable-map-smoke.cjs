@@ -323,7 +323,17 @@ fs.mkdirSync(output,{recursive:true});
   await page.setViewportSize({width:1440,height:900});
 
   // A visitor who has not completed a quiz must never see a claimed fit score.
-  await page.waitForFunction(()=>document.querySelector('#results .score[data-fit-tone=unpersonalised]'),null,{timeout:12000});
+  await page.waitForFunction(()=>document.querySelector('#results .score[data-fit-tone=unpersonalised]'),null,{timeout:12000}).catch(async error=>{
+    const diagnostic=await page.evaluate(()=>({
+      onboarding:typeof state==='undefined'?'undefined':state.prefs?.onboarding,
+      active:document.querySelector('.panel.active')?.id,
+      resultsCount:document.querySelectorAll('#results .placement').length,
+      scores:[...document.querySelectorAll('#results .score')].slice(0,4).map(el=>({tone:el.dataset.fitTone,text:el.textContent.slice(0,90)})),
+      scripts:[...document.scripts].filter(el=>el.src.includes('app-product')).map(el=>el.src),
+      state:document.body.dataset.atlasView
+    }));
+    throw new Error('Unpersonalised fit missing: '+JSON.stringify(diagnostic)+'; '+error.message);
+  });
   assert(await page.locator('#results .atlasFitQuizLink').first().isVisible(),
     'Neutral Personal Fit lacks its accessible quiz CTA');
   await page.locator('#results .atlasFitQuizLink').first().click();
