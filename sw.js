@@ -14,7 +14,7 @@ const EXTRA_ASSETS=[
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
   'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
   'simulator.js?v=20261109brand1','motion-effects.js?v=20261107a',
-  'session-ui.js?v=20261109mobile4','interface-polish.js?v=20261107responsive2',
+  'session-ui.js?v=20261109mobile5','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
   'data/london-borough-labels.geojson','data/tube-stations.json','data/rail-stations-ew.json?v=20261109national1',
