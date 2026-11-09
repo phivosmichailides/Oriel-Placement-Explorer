@@ -483,8 +483,22 @@ const STYLES=Object.freeze({
       instances.add(record);
       holder.dataset.basemap='vector-loading';
       const mapAppearance=()=>activeStyleName();
+      // Keep the GL canvas explicitly aligned with Leaflet's canonical view.
+      // This also repairs the first paint if the adapter creates its GL map
+      // before Leaflet's initial setView has propagated.
+      const syncVectorViewport=()=>{
+        if(!glMap||!map.getCenter||!Number.isFinite(map.getZoom()))return;
+        const centre=map.getCenter(),zoom=map.getZoom();
+        const current=glMap.getCenter?.();
+        if(!current||Math.abs(glMap.getZoom()-zoom)>.02||
+          Math.abs(current.lng-centre.lng)>.002||Math.abs(current.lat-centre.lat)>.002){
+          glMap.jumpTo({center:[centre.lng,centre.lat],zoom,bearing:map.getBearing?.()||0,pitch:map.getPitch?.()||0});
+        }
+      };
+      map.on('moveend zoomend resize',syncVectorViewport);
       glMap.on('load',()=>{
         if(ended)return;
+        syncVectorViewport();
         loaded=true;
         applyEditorialRoadDetail(glMap);
       });
