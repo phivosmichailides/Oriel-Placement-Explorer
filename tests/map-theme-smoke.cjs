@@ -53,11 +53,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     });
     const requiredAssets=[
       'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261109national1',
-      'tube-stations.js?v=20261108tfl2','rail-stations.js?v=20261109national1','location-guides.js?v=20261109national1','design-refresh.css?v=20261108editorial2',
+      'tube-stations.js?v=20261108tfl2','rail-stations.js?v=20261109national1','location-guides.js?v=20261109national1','design-refresh.css?v=20261109national2',
       'app.js?v=20261109national1','sector-map.js?v=20261109national1',
       'map-basemap.js?v=20261109national1','generic-public.js?v=20261108atlas3',
       'map-focus.css?v=20261108atlas3','session-ui.js?v=20261108filters3',
-      'pwa.js?v=20261109national1'
+      'pwa.js?v=20261109national2'
     ];
     await page.goto(base+'?ui-smoke='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
     let fresh=false;
@@ -81,7 +81,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       throw new Error('Placement Atlas dynamic boot did not finish at '+page.url()+': '+JSON.stringify(bootState)+'; '+error.message);
     }
     assert(fresh,'Latest Placement Atlas build did not finish loading');
-    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261109national1');},null,{timeout:30000});
+    await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return !!registration?.active&&registration.active.scriptURL.includes('sw.js?v=20261109national2');},null,{timeout:30000});
     await page.waitForFunction(async()=>{const registration=await navigator.serviceWorker?.getRegistration();return registration?.active?.state==='activated';},null,{timeout:30000});
     await page.waitForFunction(()=>Array.isArray(window.ORIEL_RAIL_STATIONS)&&window.ORIEL_RAIL_STATIONS.length>=2000,null,{timeout:20000});
     const pwaAudit=await page.evaluate(async()=>{
@@ -117,10 +117,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       'One or more PWA PNG icons are missing or invalid: '+JSON.stringify(pwaAudit.icons));
     assert.equal(pwaAudit.swScope,pwaAudit.expectedScope,'Service worker scope does not match the Placement Atlas app path');
     assert(pwaAudit.swState==='activated'||pwaAudit.swState==='activating','Placement Atlas service worker is not active: '+JSON.stringify(pwaAudit));
-    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261109national1'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
+    assert.ok(pwaAudit.swScriptURL?.endsWith('/sw.js?v=20261109national2'),'Browser is still controlled by an outdated Placement Atlas service worker: '+pwaAudit.swScriptURL);
     const [pwaResponse,swResponse]=await Promise.all([
-      page.request.get(new URL('pwa.js?v=20261109national1',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('sw.js?v=20261109national1',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('pwa.js?v=20261109national2',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('sw.js?v=20261109national2',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     const [pwaSource,swSource]=await Promise.all([pwaResponse.text(),swResponse.text()]);
     const pwaUpdateAudit={
@@ -128,8 +128,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v15'),
-        cachedPwaAsset:swSource.includes("pwa.js?v=20261109national1")};
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v16'),
+        cachedPwaAsset:swSource.includes("pwa.js?v=20261109national2")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));

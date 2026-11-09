@@ -369,7 +369,7 @@ html #placementMap{
   height:420px!important;min-height:420px!important;
 }
 @media(max-width:720px){
-  html #placementMap{height:310px!important;min-height:310px!important}
+  html #placementMap{height:360px!important;min-height:360px!important}
 }
 html[data-theme="dark"] .uxMapCustom,
 html[data-theme="dark"][data-palette="forest"] .uxMapCustom{
