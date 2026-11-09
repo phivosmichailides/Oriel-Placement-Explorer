@@ -305,6 +305,23 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       rasterTileCount:document.querySelectorAll('#placementMap img.leaflet-tile-loaded').length
     }));
     console.log('PLACEMENT MAP VECTOR DIAGNOSTIC:',JSON.stringify({...vectorDiagnostic,mapHttpErrors,consoleErrors:errors}));
+    if(vectorDiagnostic.basemapStatus.startsWith('vector-')){
+      await page.waitForFunction(()=>placementMap?._orielBasemapRecord?.map?.isStyleLoaded(),null,{timeout:20000});
+      const nationalRoadDataAudit=await page.evaluate(()=>{
+        const gl=placementMap?._orielBasemapRecord?.map;
+        if(!gl)return {available:false};
+        const style=gl.getStyle(),source='maptiler_planet_v4';
+        const sourceLayers=['road','transportation','transportation_name'];
+        const sourceCounts=Object.fromEntries(sourceLayers.map(name=>[name,gl.querySourceFeatures(source,{sourceLayer:name}).length]));
+        const roadLayers=style.layers.filter(layer=>layer.source===source&&layer.type==='line'&&/road/i.test(layer.id)&&layer.layout?.visibility!=='none');
+        const visible=gl.queryRenderedFeatures(undefined,{layers:roadLayers.map(layer=>layer.id)});
+        const custom=gl.queryRenderedFeatures(undefined,{layers:['Oriel editorial road surface']});
+        return {available:true,zoom:gl.getZoom(),sourceCounts,roadLayerCount:roadLayers.length,
+          renderedRoadFeatures:visible.length,customRoadFeatures:custom.length,
+          sample:visible.slice(0,3).map(feature=>({layer:feature.layer.id,sourceLayer:feature.sourceLayer,geometry:feature.geometry?.type,properties:feature.properties}))};
+      });
+      console.log('NATIONAL ROAD SOURCE AUDIT:',JSON.stringify(nationalRoadDataAudit));
+    }
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
         const value=document.getElementById('placementMap')?.dataset.basemap||'';
