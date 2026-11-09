@@ -206,7 +206,7 @@ const STYLES=Object.freeze({
       osmFallback(map,reason);
     };
     layer.on('tileload',()=>{loadedTiles++;if(timer)clearTimeout(timer);});
-    layer.on('tileerror',()=>{errorTiles++;if(loadedTiles===0&&errorTiles>=2)useOpenStreetMap('MapTiler raster tiles were rejected or unavailable.');});
+    layer.on('tileerror',()=>{errorTiles++;if(errorTiles>=2)useOpenStreetMap('MapTiler raster tiles returned repeated errors; switching to a complete OpenStreetMap tile layer rather than leaving missing patches.');});
     map.on('unload',()=>{if(timer)clearTimeout(timer);rasterInstances.delete(record);fallbackInstances.delete(record);});
     timer=setTimeout(()=>{
       if(loadedTiles===0)useOpenStreetMap(errorTiles?'MapTiler raster tiles returned errors.':'MapTiler raster tiles did not arrive before the loading timeout.');
