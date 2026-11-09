@@ -180,7 +180,7 @@ const STYLES=Object.freeze({
     map.attributionControl?.removeAttribution(RASTER_ATTR);
     setMapBackdrop(map);
     const layer=L.tileLayer(OSM_TILE_URL,{
-      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      maxZoom:19,keepBuffer:6,updateWhenIdle:false,updateWhenZooming:false,updateInterval:180,
       attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'osm',attribution:OSM_ATTR};
@@ -202,7 +202,7 @@ const STYLES=Object.freeze({
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
     setMapBackdrop(map);
     const layer=L.tileLayer(rasterTileUrl(),{
-      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      maxZoom:19,keepBuffer:6,updateWhenIdle:false,updateWhenZooming:false,updateInterval:180,
       attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR,intentional};
