@@ -1,10 +1,10 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v40';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v41';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
   'supabase-cloud.js?v=20261109header2','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261109appearance1','deadline-dates.js?v=20261109header2',
+  'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261109copperswatch1','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261109fix2','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
