@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v22';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v23';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'app-base.js?v=20261109fix1','app-product.js?v=20261109fix1','generic-public.js?v=20261108atlas3',
