@@ -31,6 +31,7 @@ const STYLES=Object.freeze({
   const instances=new Set();
   const miniInstances=new Set();
   const rasterInstances=new Set();
+  const fallbackInstances=new Set();
   let miniRenderer=null,miniRendererHost=null,miniRendererStyle=null,miniQueue=Promise.resolve();
   const mode=()=>document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
   // Automatic switches between two coordinated versions of the same map design.
@@ -41,19 +42,30 @@ const STYLES=Object.freeze({
   // MapTiler's native dark streets tiles until a custom raster style is hosted.
   const RASTER_STYLE_IDS={'editorial-light':'streets-v4','editorial-dark':'streets-v4-dark'};
   const rasterTileUrl=()=>`https://api.maptiler.com/maps/${RASTER_STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
-  // A matching sea-colour underlay hides hairline gaps between transparent raster tiles.
-  // It is only enabled while a raster fallback is active; the editorial vector canvas
-  // continues to render its own water and land fills without any tint or overlay.
-  const fallbackWaterColour=()=>activeStyleName()==='editorial-dark'?'#294b53':'#b4cce2';
-  const setTilePaneBackdrop=(map,enabled)=>{
-    const pane=map.getPane?.('tilePane');
-    if(pane)pane.style.backgroundColor=enabled?fallbackWaterColour():'';
+  // Empty tile areas use the style's real canvas colour; no tile-shaped blue overlay.
+  const mapBackdropColour=()=>activeStyleName()==='editorial-dark'?'#1b2520':'#f7f3e9';
+  const setMapBackdrop=map=>{
+    const holder=map?.getContainer?.();
+    if(holder)holder.style.backgroundColor=mapBackdropColour();
+    const pane=map?.getPane?.('tilePane');
+    if(pane)pane.style.backgroundColor='';
   };
   const styleAttribution=()=>MAPTILER_ATTR;
+  const removeFallbackRecord=record=>{
+    if(!record)return;
+    const map=record.leaflet;
+    if(record.layer){try{map?.removeLayer(record.layer)}catch{}}
+    rasterInstances.delete(record);
+    fallbackInstances.delete(record);
+    if(record.provider==='maptiler')map?.attributionControl?.removeAttribution(MAPTILER_ATTR);
+    if(record.provider==='osm')map?.attributionControl?.removeAttribution(OSM_ATTR);
+    if(map?._orielBasemapRecord===record)delete map._orielBasemapRecord;
+  };
   const applyStyle=()=>{
     for(const record of instances){
       try{
         if(record.leaflet.getContainer().isConnected&&record.map){
+          setMapBackdrop(record.leaflet);
           const nextAttribution=styleAttribution();
           if(record.attribution!==nextAttribution){
             record.leaflet.attributionControl?.removeAttribution(record.attribution);
@@ -72,6 +84,7 @@ const STYLES=Object.freeze({
       try{
         const holder=record.leaflet.getContainer();
         if(!holder.isConnected){miniInstances.delete(record);continue;}
+        setMapBackdrop(record.leaflet);
         holder.dataset.basemap='vector-loading';
         queueMiniRender(record);
       }catch(error){console.warn('Mini-map style could not switch',error)}
@@ -79,8 +92,8 @@ const STYLES=Object.freeze({
     for(const record of rasterInstances){
       try{
         const holder=record.leaflet.getContainer();
-        if(!holder.isConnected){rasterInstances.delete(record);continue;}
-        setTilePaneBackdrop(record.leaflet,true);
+        if(!holder.isConnected){rasterInstances.delete(record);fallbackInstances.delete(record);continue;}
+        setMapBackdrop(record.leaflet);
         record.layer.setUrl(rasterTileUrl());
       }catch(error){console.warn('Raster fallback style could not switch',error)}
     }
@@ -120,48 +133,51 @@ const STYLES=Object.freeze({
   const OSM_TILE_URL='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   const osmFallback=(map,reason='MapTiler tiles are unavailable.')=>{
     const previous=map._orielBasemapRecord;
-    if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
+    if(previous?.layer)removeFallbackRecord(previous);
     map.attributionControl?.removeAttribution(MAPTILER_ATTR);
     map.attributionControl?.removeAttribution(RASTER_ATTR);
-    setTilePaneBackdrop(map,true);
+    setMapBackdrop(map);
     const layer=L.tileLayer(OSM_TILE_URL,{
       maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
       attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
-    const record={leaflet:map,layer,provider:'osm'};
+    const record={leaflet:map,layer,provider:'osm',attribution:OSM_ATTR};
     map._orielBasemapRecord=record;
+    fallbackInstances.add(record);
     const holder=map.getContainer();
     holder.dataset.basemap='osm-fallback';
     holder.dataset.basemapReason=reason;
     if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='osm-fallback';
     reportMainRenderer(map,true,'OpenStreetMap fallback: '+reason+' Programme pins remain interactive.');
     layer.on('tileerror',()=>{holder.dataset.mapTileStatus='tile-error';});
-    map.on('unload',()=>{if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;});
+    map.on('unload',()=>{fallbackInstances.delete(record);if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;});
     return {layer,kind:'osm',record};
   };
   const raster=(map,reason='Vector rendering is unavailable; the MapTiler raster map is being tried as a fallback.')=>{
     const previous=map._orielBasemapRecord;
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
-    setTilePaneBackdrop(map,true);
+    setMapBackdrop(map);
     const layer=L.tileLayer(rasterTileUrl(),{
       maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
       attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
-    const record={leaflet:map,layer,provider:'maptiler'};
+    const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR};
     map._orielBasemapRecord=record;
     rasterInstances.add(record);
+    fallbackInstances.add(record);
     let loadedTiles=0,errorTiles=0,switched=false,timer;
     const useOpenStreetMap=reason=>{
       if(switched||loadedTiles>0||!map.getContainer().isConnected)return;
       switched=true;
       if(timer)clearTimeout(timer);
       rasterInstances.delete(record);
+      fallbackInstances.delete(record);
       try{map.removeLayer(layer)}catch{}
       osmFallback(map,reason);
     };
     layer.on('tileload',()=>{loadedTiles++;if(timer)clearTimeout(timer);});
     layer.on('tileerror',()=>{errorTiles++;if(loadedTiles===0&&errorTiles>=2)useOpenStreetMap('MapTiler raster tiles were rejected or unavailable.');});
-    map.on('unload',()=>{if(timer)clearTimeout(timer);rasterInstances.delete(record);});
+    map.on('unload',()=>{if(timer)clearTimeout(timer);rasterInstances.delete(record);fallbackInstances.delete(record);});
     timer=setTimeout(()=>{
       if(loadedTiles===0)useOpenStreetMap(errorTiles?'MapTiler raster tiles returned errors.':'MapTiler raster tiles did not arrive before the loading timeout.');
     },7000);
@@ -281,6 +297,7 @@ const STYLES=Object.freeze({
     record.overlay=L.imageOverlay(image,bounds,{
       pane:'orielMiniSnapshot',interactive:false,opacity:1
     }).addTo(map);
+    if(record.replaceFallback){removeFallbackRecord(record.replaceFallback);record.replaceFallback=null;}
     const renderedStyle=activeStyleName();
     holder.dataset.basemap='vector-'+renderedStyle;
     holder.dataset.miniStyle=renderedStyle;
@@ -317,7 +334,7 @@ const STYLES=Object.freeze({
     miniQueue=record.promise.catch(()=>{});
     return record.promise;
   };
-  const addMiniSnapshot=map=>{
+  const addMiniSnapshot=(map,replaceFallback=null)=>{
     const holder=map.getContainer();
     const maplibre=window.maplibregl;
     const unsupported=typeof maplibre?.supported==='function'&&!maplibre.supported();
@@ -327,7 +344,7 @@ const STYLES=Object.freeze({
       pane.style.zIndex='250';
       pane.style.pointerEvents='none';
       map.attributionControl?.addAttribution(MAPTILER_ATTR);
-      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR,queued:false,needsRender:false,promise:null,sizeObserver:null,waitingForLoad:false};
+      const record={leaflet:map,overlay:null,attribution:MAPTILER_ATTR,queued:false,needsRender:false,promise:null,sizeObserver:null,waitingForLoad:false,replaceFallback};
       miniInstances.add(record);
       holder.dataset.basemap='vector-loading';
       holder.dataset.miniStatus='registered';
@@ -339,7 +356,7 @@ const STYLES=Object.freeze({
       return raster(map);
     }
   };
-  const addTo=(map,{mini=false}={})=>{
+  const addTo=(map,{mini=false,replaceFallback=null}={})=>{
     if(!map||!window.L)return null;
     const holder=map.getContainer();
     if(!holder)return null;
@@ -350,7 +367,7 @@ const STYLES=Object.freeze({
     // Mini-maps render snapshots from the same selected Editorial vector style.
     // Leaflet still owns their site/Tube markers, attribution and click target,
     // while a single shared MapLibre context avoids WebGL-context exhaustion.
-    if(mini)return addMiniSnapshot(map);
+    if(mini)return addMiniSnapshot(map,replaceFallback);
     // MapLibre GL JS v5 may not expose supported(); absence is not a WebGL failure.
     const maplibre=window.maplibregl;
     const explicitlyUnsupported=typeof maplibre?.supported==='function'&&!maplibre.supported();
@@ -375,12 +392,15 @@ const STYLES=Object.freeze({
     vectorPane.style.zIndex='250';
     vectorPane.style.pointerEvents='none';
     let layer,glMap,loaded=false,ready=false,ended=false,timeout;
-    const record={map:null,leaflet:map,layer:null,attribution:styleAttribution()};
+    const record={map:null,leaflet:map,layer:null,attribution:styleAttribution(),replaceFallback};
+    map._orielBasemapRecord=record;
     const fail=(reason='MapTiler vector rendering did not produce a usable map.',forceOsm=false)=>{
       if(ended||ready)return;
       ended=true;
       if(timeout)clearTimeout(timeout);
       instances.delete(record);
+      if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;
+      if(record.replaceFallback){removeFallbackRecord(record.replaceFallback);record.replaceFallback=null;}
       try{map.removeLayer(layer)}catch{}
       if(retainedUnderlay){
         try{map.removeLayer(retainedUnderlay)}catch{}
@@ -432,7 +452,8 @@ const STYLES=Object.freeze({
           try{map.removeLayer(retainedUnderlay)}catch{}
           retainedUnderlay=null;
         }
-        setTilePaneBackdrop(map,false);
+        setMapBackdrop(map);
+        if(record.replaceFallback){removeFallbackRecord(record.replaceFallback);record.replaceFallback=null;}
         delete holder.dataset.basemapReason;
         holder.dataset.basemap='vector-'+mapAppearance();
         reportMainRenderer(map,false);
@@ -455,6 +476,7 @@ const STYLES=Object.freeze({
         ended=true;
         instances.delete(record);
         if(timeout)clearTimeout(timeout);
+        if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;
       });
       return {layer,kind:'vector',map:glMap};
     }catch(error){
@@ -469,5 +491,55 @@ const STYLES=Object.freeze({
     selector.value=preference;
     selector.addEventListener('change',()=>choose(selector.value));
   }
-  window.OrielBasemap={addTo,mode,styles:STYLES,choose,get preference(){return preference;}};
+  const MAPLIBRE_JS='https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js';
+  const MAPLIBRE_CSS='https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.css';
+  const MAPLIBRE_LEAFLET='https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js';
+  const loadMapScript=(src,ready)=>{
+    if(ready())return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const existing=[...document.querySelectorAll('script[data-oriel-map-asset]')].find(node=>node.dataset.orielMapAsset===src);
+      if(existing)existing.remove();
+      const script=document.createElement('script');
+      script.src=src;script.crossOrigin='anonymous';script.dataset.orielMapAsset=src;
+      const timer=setTimeout(()=>{script.remove();reject(Error('Map library timed out: '+src));},18000);
+      script.onload=()=>{clearTimeout(timer);ready()?resolve():reject(Error('Map library loaded without its expected API: '+src));};
+      script.onerror=()=>{clearTimeout(timer);script.remove();reject(Error('Map library could not be loaded: '+src));};
+      document.head.appendChild(script);
+    });
+  };
+  const ensureMapLibraries=async()=>{
+    if(navigator.onLine===false)throw Error('The browser is offline.');
+    if(!document.querySelector('link[data-oriel-map-asset]')){
+      const link=document.createElement('link');link.rel='stylesheet';link.href=MAPLIBRE_CSS;
+      link.crossOrigin='anonymous';link.dataset.orielMapAsset=MAPLIBRE_CSS;document.head.appendChild(link);
+    }
+    if(!window.maplibregl?.Map)await loadMapScript(MAPLIBRE_JS,()=>!!window.maplibregl?.Map);
+    if(!window.L?.maplibreGL)await loadMapScript(MAPLIBRE_LEAFLET,()=>!!window.L?.maplibreGL);
+    if(!window.maplibregl?.Map||!window.L?.maplibreGL)throw Error('MapLibre or its Leaflet adapter is still unavailable.');
+  };
+  let retryPromise=null;
+  const retryFallbacks=()=>{
+    if(navigator.onLine===false)return Promise.resolve(false);
+    if(retryPromise)return retryPromise;
+    retryPromise=(async()=>{
+      try{await ensureMapLibraries();}catch(error){console.warn('MapLibre retry is not ready yet.',error);return false;}
+      let recovered=0;
+      for(const old of [...fallbackInstances]){
+        const map=old.leaflet,holder=map?.getContainer?.();
+        if(!holder?.isConnected){fallbackInstances.delete(old);rasterInstances.delete(old);continue;}
+        const reason=String(holder.dataset.basemapReason||'');
+        if(/webgl.{0,30}unavailable|renderer limit|HTTP 403|forbidden|unauthori/i.test(reason))continue;
+        if(holder.dataset.basemap==='vector-loading')continue;
+        const mini=holder.classList.contains('uxMiniMap');
+        const result=addTo(map,{mini,replaceFallback:old});
+        if(mini&&result?.kind==='snapshot'){
+          try{await result.render();if(holder.dataset.basemap?.startsWith('vector-'))recovered++;}catch{}
+        }else if(result?.kind==='vector')recovered++;
+      }
+      return recovered>0;
+    })().finally(()=>{retryPromise=null;});
+    return retryPromise;
+  };
+  window.addEventListener('online',()=>setTimeout(()=>retryFallbacks(),450));
+  window.OrielBasemap={addTo,mode,styles:STYLES,choose,retry:retryFallbacks,get preference(){return preference;}};
 })();
