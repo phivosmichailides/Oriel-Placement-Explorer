@@ -150,3 +150,19 @@ test('Tinder refines its own programme pool and keeps outgoing stars independent
   assert.match(read('atlas-navigation.css'),/max-width:720px/);
   assert.match(read('tinder-mode.css'),/tdExitStar/);
 });
+
+test('personal fit requires onboarding and quiz can set appearance without changing map sources', () => {
+  const app=read('app-product.js'),quiz=read('onboarding.js'),tinder=read('tinder-mode.js');
+  const nav=read('atlas-navigation.css'),html=read('index.html'),sw=read('sw.js');
+  assert.match(app,/data-atlas-start-quiz/);
+  assert.match(app,/unpersonalised/);
+  assert.match(app,/state\.prefs\.onboarding/);
+  assert.match(quiz,/data-ob-palette/);
+  assert.match(quiz,/data-ob-mode/);
+  assert.match(quiz,/window\.OrielCloud\?\.signIn/);
+  assert.match(quiz,/Maybe later/);
+  assert.match(tinder,/FIT · TAKE QUIZ/);
+  assert.match(nav,/atlasSubnavChoices/);
+  assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
+  assert.match(sw,/onboarding\.js\?v=20261109appearance1/);
+});
