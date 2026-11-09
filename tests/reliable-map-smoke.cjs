@@ -115,6 +115,11 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(initialDeck.hidden,'true','Preview should not be an interactive screen-reader duplicate');
   assert.equal(initialDeck.duplicateIds,1,'Duplicate active-card IDs');
   assert.equal(initialDeck.underFilter,'none','Next card blurred before swiping');
+  assert(await page.locator('#tinderSwipeHints').isVisible(),'New visitors should see swipe instructions');
+  assert(await page.locator('#tinderSwipeHints').evaluate(el=>el.textContent.includes('Swipe left to exclude')&&el.textContent.includes('Swipe right to shortlist')),'Hints must describe both directions');
+  assert(await page.locator('#tdOpenLiked').isVisible(),'Tinder-only shortlist launcher is missing');
+  assert(await page.locator('#tdOpenRejected').isVisible(),'Tinder-only rejected launcher is missing');
+  assert.equal(await page.locator('#uxDrawerLauncher').isVisible(),false,'Ordinary shortlist launcher must be hidden only inside Tinder');
   await page.locator('#tinderYes').click();
   await page.waitForFunction(()=>!!document.querySelector('#tinderActiveCard.tdLeaving')&&
     !!document.querySelector('#tinderCardSlot.tdShowingNext > .tdNextCard'),null,{timeout:4000});
@@ -134,9 +139,34 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(flight.filter,'none','Underlying card blurred');
   assert.equal(flight.topOpacity,'1','Departing card became transparent');
   assert.equal(flight.feedback,false,'Blurred feedback overlay still active');
+  assert(await page.locator('#tinderMode .tdCardDeck.tdShineYes .tdDirectionalParticles .tdSparkle').count()>0,
+    'Instant green Like sparkles did not appear');
+  assert.equal(await page.locator('#tinderSwipeHints').isVisible(),false,'First successful swipe should dismiss the hints');
   await page.waitForFunction(expected=>document.querySelector('#tinderActiveCard .tdProgrammeName')?.textContent.trim()===expected,
     initialDeck.next,{timeout:10000});
   assert(await page.locator('#tinderCardSlot > .tdNextCard').count()>0,'New programme is not preloaded');
+  // Only on Tinder Mode: shortlist and rejection drawers share canonical marks.
+  await page.locator('#tdOpenLiked').click();
+  await page.waitForFunction(()=>document.querySelector('#tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
+  assert(await page.locator('#tdDrawerItems .tdDrawerItem').count()>=1,'Liked programme absent in Tinder shortlist drawer');
+  await page.locator('#tdDrawerItems .tdDrawerSummary').first().click();
+  assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().isVisible(),
+    'Tapping the title should open the real programme detail card with personalised fit');
+  assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdMetrics').first().isVisible(),
+    'Expanded programme details should include salary and hours');
+  await page.locator('#tdDrawerItems .tdDrawerMove').first().click();
+  await page.waitForFunction(()=>document.querySelector('#tdShortlistedCount')?.textContent==='(0)'&&
+    document.querySelector('#tdRejectedCount')?.textContent==='(1)',null,{timeout:5000});
+  await page.locator('#tdDrawerClose').click();
+  await page.locator('#tdOpenRejected').click();
+  assert(await page.locator('#tdDrawerItems .tdDrawerItem').count()>=1,'Rejected programme missing from the Like No drawer');
+  await page.locator('#tdDrawerItems .tdDrawerSummary').first().click();
+  assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().isVisible(),
+    'Rejected programme details must show the personalised fit score');
+  await page.locator('#tdDrawerItems .tdDrawerMove').first().click();
+  await page.waitForFunction(()=>document.querySelector('#tdShortlistedCount')?.textContent==='(1)'&&
+    document.querySelector('#tdRejectedCount')?.textContent==='(0)',null,{timeout:5000});
+  await page.locator('#tdDrawerClose').click();
   // At this point the tall card may lie below the browser viewport after
   // navigation. Hovering its title scrolls to a confirmed on-card start point
   // before issuing raw mouse events (local viewport heights may differ).
@@ -158,11 +188,27 @@ fs.mkdirSync(output,{recursive:true});
   assert(dragging.next&&dragging.transform?.includes('translate3d(-'),
     'Following programme missing during pointer drag: '+JSON.stringify(dragging));
   assert.equal(dragging.filter,'none','Drag blurred upcoming card');
+  assert(await page.locator('#tinderActiveCard.tdDragNo').count()===1,
+    'Red directional shine should activate during a left drag');
   await page.mouse.move(dragX-125,dragY+5,{steps:5});
   await page.mouse.up();
   await page.waitForFunction(expected=>document.querySelector('#tinderActiveCard .tdProgrammeName')?.textContent.trim()===expected,
     dragging.next,{timeout:10000});
+  // Test the special upward Super Like gesture and blue shine.
+  await page.locator('#tinderSuper').click();
+  await page.waitForFunction(()=>document.querySelector('#tinderActiveCard.tdLeavingSuper')&&
+    document.querySelector('#tinderMode .tdCardDeck.tdShineSuper'),null,{timeout:4000});
+  const superFlight=await page.evaluate(()=>({
+    transform:document.querySelector('#tinderActiveCard')?.style.transform,
+    blue:getComputedStyle(document.querySelector('#tinderActiveCard')).boxShadow,
+    underOpacity:getComputedStyle(document.querySelector('#tinderCardSlot>.tdNextCard')).opacity
+  }));
+  assert(superFlight.transform.includes('translate3d(0px,-'),'Super Like should send the card upward');
+  assert.equal(superFlight.underOpacity,'1','Blue shine blurred the next programme');
+  await page.waitForFunction(()=>!document.querySelector('#tinderActiveCard.tdLeavingSuper'),null,{timeout:10000});
   await page.locator('nav.tabs [data-tab=explore]').click();
+  assert(await page.locator('#uxDrawerLauncher').isVisible(),
+    'Ordinary shortlist launcher must remain available outside Tinder');
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
   // Tube markers must be absent until close street-level zoom.
   await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
