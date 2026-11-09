@@ -201,14 +201,14 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(()=>document.querySelector('#tinderActiveCard.tdLeavingSuper')&&
     document.querySelector('#tinderMode .tdCardDeck.tdShineSuper'),null,{timeout:4000});
   await page.waitForFunction(()=>
-    document.querySelector('#tinderActiveCard')?.style.transform.startsWith('translate3d(0px,-'),
+    /translate3d\(\s*0px\s*,\s*-\d+(?:\.\d+)?px\s*,/.test(document.querySelector('#tinderActiveCard')?.style.transform||''),
     null,{timeout:3000});
   const superFlight=await page.evaluate(()=>({
     transform:document.querySelector('#tinderActiveCard')?.style.transform,
     blue:getComputedStyle(document.querySelector('#tinderActiveCard')).boxShadow,
     underOpacity:getComputedStyle(document.querySelector('#tinderCardSlot>.tdNextCard')).opacity
   }));
-  assert(superFlight.transform.includes('translate3d(0px,-'),'Super Like should send the card upward');
+  assert(/translate3d\(\s*0px\s*,\s*-\d+(?:\.\d+)?px\s*,/.test(superFlight.transform),'Super Like should send the card upward: '+superFlight.transform);
   assert.equal(superFlight.underOpacity,'1','Blue shine blurred the next programme');
   await page.waitForFunction(()=>!document.querySelector('#tinderActiveCard.tdLeavingSuper'),null,{timeout:10000});
   await page.locator('nav.tabs [data-tab=explore]').click();
