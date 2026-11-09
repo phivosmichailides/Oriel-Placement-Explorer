@@ -335,7 +335,9 @@
       const nav=document.querySelector('nav.tabs');if(!nav)return;
       const strip=document.createElement('div');strip.className='contextStrip';
       strip.innerHTML=`<span><b>Designed for a cleaner decision:</b> choose any included Oriel region, then compare programmes using the same personalised criteria, pros/cons, map and ranking tools.</span><span class="contextMeta">England & Wales programme dataset · Oct 2026 · not affiliated with NHS England or Oriel</span>`;
-      nav.insertAdjacentElement('afterend',strip);
+      const intro=document.querySelector('.productIntro');
+      if(intro)intro.insertAdjacentElement('afterend',strip);
+      else document.querySelector('header.top')?.insertAdjacentElement('afterend',strip);
     };
 
     if(!hadSaved){state.prefs.weights={money:5,hospital:4,gp:4,lifestyle:5,location:4,progression:5,independence:5,communityPenalty:5};save();}

@@ -1,0 +1,170 @@
+/* Placement Atlas — always-available navigation, retaining the existing icon set. */
+html body .shell > header.top.atlasStickyHeader{
+  position:sticky!important;top:0;z-index:1650;
+  display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;column-gap:clamp(10px,1.8vw,22px);row-gap:7px;
+  padding:10px 14px!important;margin:0 0 18px!important;
+  border:1px solid var(--line);border-radius:18px;
+  background:color-mix(in srgb,var(--panel) 95%,transparent);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  box-shadow:0 6px 24px rgba(18,13,22,.07);
+  transition:box-shadow .2s ease,border-radius .2s ease;
+}
+html body .shell > header.top.atlasStickyHeader.atlasNavScrolled{
+  box-shadow:0 12px 32px rgba(18,13,22,.14);
+}
+html .atlasStickyHeader .brand{display:flex;align-items:center;min-width:0;gap:9px}
+html .atlasStickyHeader .brand .eyebrow,
+html .atlasStickyHeader .brand p{display:none!important}
+html .atlasStickyHeader .logo{width:37px;height:37px;min-width:37px;border-radius:10px;box-shadow:none}
+html .atlasStickyHeader .brand h1{
+  margin:0!important;line-height:1.2;font-size:clamp(18px,1.35vw,21px)!important;
+  white-space:nowrap;letter-spacing:-.04em;
+}
+html body .atlasStickyHeader > nav.tabs{
+  display:flex!important;align-items:center;min-width:0;width:100%;margin:0!important;
+  padding:3px!important;gap:2px;overflow-x:auto;overflow-y:hidden;
+  border:0!important;border-radius:14px;background:transparent!important;
+  scrollbar-width:none;overscroll-behavior-x:contain;
+}
+html body .atlasStickyHeader > nav.tabs::-webkit-scrollbar{display:none}
+html body .atlasStickyHeader > nav.tabs .tab{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  gap:7px;min-height:39px;padding:9px clamp(9px,.85vw,13px)!important;
+  white-space:nowrap;border-radius:12px;
+  font-size:clamp(11px,.81vw,13px)!important;line-height:1.2;
+}
+html body .atlasStickyHeader > nav.tabs .tab svg.tab-icon,
+html body .atlasStickyHeader > nav.tabs .tab .tdNavFlame svg{
+  width:18px;height:18px;flex:none;
+}
+html body .atlasStickyHeader > nav.tabs .tab .simNavIcon,
+html body .atlasStickyHeader > nav.tabs .tab .tdNavFlame{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+}
+html body .atlasStickyHeader > nav.tabs .tab[data-tab="foryou"],
+html body .atlasStickyHeader > nav.tabs .tab[data-tab="compare"]{display:none!important}
+html body .atlasStickyHeader > nav.tabs .tab.atlasParentActive{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+  box-shadow:inset 0 0 0 1px var(--ux-accent-border)!important;
+}
+html .atlasStickyHeader > .actions{
+  display:flex;align-items:center;justify-content:flex-end;flex-wrap:nowrap;
+  gap:7px;min-width:0;margin:0;
+}
+html .atlasStickyHeader .cloudAccount{min-width:0}
+html .atlasStickyHeader .cloudAccountMain{
+  display:flex;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:6px;
+}
+html .atlasStickyHeader .cloudAccountStatus,
+html .atlasStickyHeader .cloudAccountHint{display:none}
+html .atlasStickyHeader .cloudAccountIdentity{max-width:110px}
+html .atlasStickyHeader #themeToggle{flex:none;margin:0;min-width:40px}
+html body[data-atlas-view]:not([data-atlas-view="explore"]):not([data-atlas-view="foryou"]) .productIntro,
+html body[data-atlas-view]:not([data-atlas-view="explore"]):not([data-atlas-view="foryou"]) .contextStrip{
+  display:none!important;
+}
+html{scroll-padding-top:105px}
+html .panel{scroll-margin-top:105px}
+
+/* Explore contains both catalogue browsing and personalised recommendations. */
+html .atlasExploreSubnav{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;
+  gap:11px 16px;padding:12px 15px;margin:0 0 16px;
+  border:1px solid var(--line);border-radius:16px;
+  background:var(--panel);box-shadow:0 4px 18px rgba(16,12,20,.035);
+}
+html .atlasSubnavIntro{display:grid;gap:2px;min-width:min(230px,100%);flex:1}
+html .atlasSubnavIntro .eyebrow{font-size:10px!important}
+html .atlasSubnavDescription{font-size:12px;color:var(--mut);line-height:1.5}
+html .atlasSubnavChoices{
+  display:inline-flex;align-items:center;gap:3px;padding:4px;
+  border:1px solid var(--line);background:var(--soft);border-radius:13px;
+}
+html .atlasSubnavChoices button{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:38px;padding:8px 12px;border:0;border-radius:10px;
+  background:transparent;color:var(--mut);font-weight:780;white-space:nowrap;
+}
+html .atlasSubnavChoices button svg,
+html .atlasCompareOpen svg{width:16px;height:16px;flex:none}
+html .atlasSubnavChoices button.atlasActive{
+  background:var(--panel);color:var(--ux-accent-ink);
+  box-shadow:0 2px 8px rgba(22,10,26,.09);
+}
+html .atlasSubnavChoices button:focus-visible,
+html .atlasStickyHeader .tab:focus-visible,
+html .atlasDataToolsButtons .btn:focus-visible{
+  outline:2px solid var(--ux-accent-ink);outline-offset:2px;
+}
+html .atlasCompareOpen{
+  display:inline-flex;align-items:center;gap:7px;justify-content:center;
+  white-space:nowrap;padding:9px 12px;
+}
+html .atlasCompareOpen b{
+  display:inline-grid;place-items:center;min-width:21px;height:21px;
+  padding:0 5px;border:1px solid var(--line);border-radius:999px;
+  background:var(--soft);font-size:11px;
+}
+html .atlasCompareBack{display:inline-flex;margin:0 0 12px}
+html #foryou.panel.active{animation:atlasSubviewIn .2s ease-out both}
+@keyframes atlasSubviewIn{from{opacity:.78;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  html #foryou.panel.active{animation:none}
+}
+
+/* Data and download actions stay at the foot of whichever page is open. */
+html .atlasDataTools{
+  display:grid;gap:15px;margin:28px 0 16px;padding:19px 20px;
+  border:1px solid var(--line);border-radius:20px;
+  background:var(--panel);box-shadow:0 6px 22px rgba(20,14,24,.045);
+}
+html .atlasDataToolsHeading h2{margin:3px 0 2px;font-size:19px;line-height:1.3;letter-spacing:-.02em}
+html .atlasDataToolsHeading p{margin:0;font-size:12px;color:var(--mut)}
+html .atlasDataToolsButtons{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+html .atlasDataToolsButtons > .btn{min-height:41px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+html .atlasDataToolsButtons > input[hidden]{display:none!important}
+html .atlasDataTools #saveHelp{
+  margin:0!important;max-width:100%!important;
+  padding-top:12px;border-top:1px solid var(--line);
+  color:var(--mut);
+}
+html #shortlist .shortlist-toolbar{flex-wrap:wrap}
+html .atlasShortlistDataActions{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center}
+html .atlasShortlistDataActions .btn{min-height:38px}
+
+@media(max-width:1280px){
+  html body .shell > header.top.atlasStickyHeader{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"brand actions" "nav nav";
+    gap:7px 12px;padding:10px 12px!important;
+  }
+  html .atlasStickyHeader .brand{grid-area:brand}
+  html .atlasStickyHeader > nav.tabs{grid-area:nav}
+  html .atlasStickyHeader > .actions{grid-area:actions}
+  html body .atlasStickyHeader > nav.tabs .tab{font-size:12px!important}
+  html{scroll-padding-top:132px}
+  html .panel{scroll-margin-top:132px}
+}
+@media(max-width:650px){
+  html body .shell > header.top.atlasStickyHeader{
+    top:0;padding:9px 9px!important;border-radius:14px;
+    margin-bottom:12px!important;
+  }
+  html .atlasStickyHeader .logo{width:32px;height:32px;min-width:32px}
+  html .atlasStickyHeader .brand h1{font-size:18px!important}
+  html .atlasStickyHeader .cloudAccountIdentity{max-width:65px}
+  html .atlasStickyHeader .cloudAccountButton{font-size:11px;padding:7px 8px}
+  html .atlasStickyHeader #themeToggle{min-width:36px;width:36px;padding:6px}
+  html body .atlasStickyHeader > nav.tabs{gap:3px}
+  html body .atlasStickyHeader > nav.tabs .tab{min-height:40px;padding:9px 11px!important;font-size:12px!important}
+  html .atlasExploreSubnav{padding:11px;gap:10px}
+  html .atlasSubnavIntro{flex-basis:100%}
+  html .atlasSubnavChoices{flex:1;justify-content:center;min-width:0}
+  html .atlasSubnavChoices button{padding:8px 9px;font-size:12px}
+  html .atlasCompareOpen{flex:1}
+  html .atlasDataTools{padding:16px 14px;margin-top:22px}
+  html .atlasDataToolsButtons .btn{flex-grow:1}
+  html{scroll-padding-top:128px}
+  html .panel{scroll-margin-top:128px}
+}
