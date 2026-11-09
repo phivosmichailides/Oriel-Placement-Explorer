@@ -305,7 +305,9 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('header.top .atlasLogoGlyph').isVisible(),'Mobile cross icon missing');
   // At phone width, For You and Compare may never collide or overflow.
   await page.locator('nav.tabs [data-tab=explore]').click();
-  assert(await page.locator('#explore.uxFiltersCollapsed').count()===1,
+  await page.waitForFunction(()=>document.getElementById('explore')?.classList.contains('uxFiltersCollapsed'),
+    null,{timeout:5000});
+  assert.equal(await page.locator('#explore.uxFiltersCollapsed').count(),1,
     'Mobile Explore filters should start folded instead of covering the map');
   const mobileSubnav=await page.evaluate(()=>{
     const choices=document.querySelector('#atlasExploreSubnav .atlasSubnavChoices');
