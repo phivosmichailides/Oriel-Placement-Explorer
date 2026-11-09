@@ -199,7 +199,7 @@ window.OrielLocationGuide=(()=>{
    .slice(0,3);
  };
  const isLondonPlace=(postcode,p)=>{
-  return String(p?.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\\d/i.test(String(postcode||''));
+  return String(p?.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\d/i.test(String(postcode||''));
  };
  const postcodeHub=postcode=>{
   const district=postcodeDistrict(postcode),prefix=postcodePrefix(postcode);
@@ -253,8 +253,8 @@ window.OrielLocationGuide=(()=>{
    hubType:nearest[0]?.type||null,nearbyStations:nearest,postcodes:(p.postcodes||[]).filter(Boolean),multi,place};
  };
  const describePostcode=postcode=>{
-  const pc=String(postcode||'').trim().toUpperCase().replace(/\\s+/g,' '),g=guides.find(x=>regexp(x[0]).test(pc));
-  const prefix=postcodePrefix(pc),place=PLACE_BY_POSTCODE[prefix]||((pc.match(/^([A-Z]{1,2}\\d[A-Z\\d]?)/)||[])[1]||'Your area')+' area';
+  const pc=String(postcode||'').trim().toUpperCase().replace(/\s+/g,' '),g=guides.find(x=>regexp(x[0]).test(pc));
+  const prefix=postcodePrefix(pc),place=PLACE_BY_POSTCODE[prefix]||((pc.match(/^([A-Z]{1,2}\d[A-Z\d]?)/)||[])[1]||'Your area')+' area';
   const hub=postcodeHub(pc);
   return {postcode:pc,headline:g?g[1]:place,
    connections:g?g[2]:(hub?'A useful local rail reference is '+hub+' station; local bus and walking links can complete the final leg.':'Use the main rail station serving '+place+' where available, then check local bus and walking links to the exact address.'),
