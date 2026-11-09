@@ -128,7 +128,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v18'),
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v19'),
         cachedPwaAsset:swSource.includes("pwa.js?v=20261109national2")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
@@ -156,6 +156,11 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert(pwaAudit.installButtonVisible,'Placement Atlas install button should remain visible until the app is installed.');
     console.log('PWA/BRANDING AUDIT:',JSON.stringify(pwaAudit));
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
+    await page.waitForFunction(()=>window.OrielMapStats?.programmes===placements.length&&placementMap?.getZoom()>=10,null,{timeout:30000});
+    const initialMapView=await page.evaluate(()=>({center:placementMap.getCenter(),zoom:placementMap.getZoom()}));
+    assert(initialMapView.zoom>=10&&initialMapView.zoom<=11.5&&Math.abs(initialMapView.center.lat-51.5074)<.15&&Math.abs(initialMapView.center.lng+.1278)<.2,
+      'The map should open on a useful London-wide view instead of automatically fitting England & Wales: '+JSON.stringify(initialMapView));
+    await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
     // Verify both the actual runtime script and the final rendered footer.
     const productScript=await page.waitForFunction(()=>{
       const script=[...document.scripts].find(el=>el.src.includes('/app-product.js'));
@@ -640,6 +645,15 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       cssFilter:getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter
     }));
     console.log('BASEMAP DIAGNOSTICS:',JSON.stringify(browserBasemaps));
+    const roadRenderAudit=await page.evaluate(()=>{
+      const renderer=placementMap?._orielBasemapRecord?.map,layers=renderer?.getStyle?.()?.layers||[],features=renderer?.queryRenderedFeatures?.()||[];
+      return {mode:document.getElementById('placementMap')?.dataset.basemap||'',zoom:renderer?.getZoom?.()??null,
+        casing:layers.some(layer=>layer.id==='atlas-road-casing'),surface:layers.some(layer=>layer.id==='atlas-road-surface'),
+        renderedRoads:features.filter(feature=>feature.source==='maptiler_planet_v4'&&feature.sourceLayer==='road').length};
+    });
+    console.log('VECTOR ROAD RENDER AUDIT:',JSON.stringify(roadRenderAudit));
+    if(roadRenderAudit.mode.startsWith('vector-'))assert(roadRenderAudit.casing&&roadRenderAudit.surface&&roadRenderAudit.renderedRoads>0,
+      'Vector map was declared ready without visibly rendered road geometry: '+JSON.stringify(roadRenderAudit));
     const mapCacheAudit=await page.evaluate(async()=>{
       const assets=await caches.open('placement-atlas-map-assets-v1');
       const urls=[
@@ -697,8 +711,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         !status.includes('no postcode/outcode in the source')&&
         stats?.scope==='matching'&&stats.programmes===4064&&
         stats.programmesRepresented===4064&&stats.programmesWithAllSites===4064&&
-        placementMap.getZoom()<=7.5&&full?.isValid?.()&&placementMap.getBounds().contains(full);
+        full?.isValid?.();
     },null,{timeout:90000});
+    await page.locator('#fitMap').click();
+    await page.waitForFunction(()=>placementMap.getZoom()<=7.5&&window.OrielMapCurrentBounds?.isValid?.()&&placementMap.getBounds().contains(window.OrielMapCurrentBounds),null,{timeout:20000});
     await sleep(450);
     const allRegionPins=await page.locator('#placementMap .leaflet-interactive').count();
     const allRegionStatus=await page.locator('#mapStatus').innerText();
@@ -842,11 +858,12 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       const m=map.getBoundingClientRect(),c=control.getBoundingClientRect(),e=document.getElementById('atlasMapExpand').getBoundingClientRect();
       const style=getComputedStyle(control);
       return {defaultControls:map.querySelectorAll('.leaflet-control-zoom').length,customVisible:!!control&&c.width>=38&&c.height>=70,
-        flexDirection:style.flexDirection,rightOffset:Math.abs(c.right-e.right),expandGap:e.top-c.bottom,width:c.width,height:c.height};
+        flexDirection:style.flexDirection,rightOffset:Math.abs(c.right-e.right),expandGap:e.top-c.bottom,width:c.width,height:c.height,
+        order:[...control.querySelectorAll('button')].map(button=>button.dataset.atlasZoom).join(',')};
     });
     assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
-    assert(zoomAudit.customVisible&&zoomAudit.flexDirection==='column'&&zoomAudit.rightOffset<=4&&zoomAudit.expandGap>=6&&zoomAudit.expandGap<=18,
-      'Rounded Placement Atlas zoom control should sit vertically above fullscreen at the lower-right edge: '+JSON.stringify(zoomAudit));
+    assert(zoomAudit.customVisible&&zoomAudit.flexDirection==='column'&&zoomAudit.rightOffset<=4&&zoomAudit.expandGap>=6&&zoomAudit.expandGap<=18&&zoomAudit.order==='in,out',
+      'Rounded Placement Atlas zoom control should put + above − and sit vertically above fullscreen at the lower-right edge: '+JSON.stringify(zoomAudit));
     const zoomStart=await page.evaluate(()=>({zoom:placementMap.getZoom(),min:placementMap.getMinZoom(),max:placementMap.getMaxZoom()}));
     console.log('MAP ZOOM CONTROL BEFORE:',JSON.stringify(zoomStart));
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();

@@ -223,7 +223,7 @@
    if(!list.length){const emp=document.createElement('div');emp.className='uxDrawerEmpty';emp.textContent='No shortlisted programmes match.';drawerItems.append(emp);return}
    const frag=document.createDocumentFragment();
    list.forEach(p=>{
-     const box=document.createElement('div');box.className='uxDrawerItem';
+     const box=document.createElement('div');box.className='uxDrawerItem';box.dataset.programmeId=String(p.id);
      const idx=indexes.get(p.id)||'?';
      box.innerHTML='<small>#'+idx+' · '+escape(p.region||'')+'</small><b>'+escape(p.title||p.employer)+'</b><p>'+escape(p.employer||'')+' · '+escape(money(p.salary))+'</p>';
      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='View programme';
@@ -827,4 +827,60 @@
      enhancedContainers.forEach(id=>enhanceCards($(id)));
    },{once:true});
  }
+})();
+
+/* Placement Atlas shortlist removal: desktop X + touch swipe-to-reveal. */
+(()=>{
+  const $=id=>document.getElementById(id);
+  if(!document.getElementById('atlasShortlistRemoveStyles')){
+    const style=document.createElement('style');style.id='atlasShortlistRemoveStyles';
+    style.textContent="\n.atlasRemoveShortlist{appearance:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;margin:0!important;padding:0!important;border:1px solid #edc5c8!important;border-radius:12px!important;background:#fff0f1!important;color:#b83f4b!important;box-shadow:0 5px 14px rgba(155,49,62,.13);cursor:pointer;opacity:1;pointer-events:auto;transition:opacity .18s ease,transform .18s ease,background .18s ease}\n.atlasRemoveShortlist svg{width:15px;height:15px;display:block}\n.atlasRemoveShortlist:hover{background:#fbdfe2!important;transform:translateY(-1px)}\n.atlasRemoveShortlist:focus-visible{outline:3px solid #d66a76;outline-offset:3px}\nhtml[data-theme=\"dark\"] .atlasRemoveShortlist{background:#3a252b!important;border-color:#77414c!important;color:#ff9aa5!important}\n#shortlistList>.rank-row{position:relative;touch-action:pan-y}\n#shortlistList>.rank-row>.placement{padding-right:54px;transition:transform .22s cubic-bezier(.2,.75,.25,1);touch-action:pan-y}\n#shortlistList>.rank-row>.atlasRemoveShortlist{position:absolute;right:10px;top:50%;z-index:6;transform:translateY(-50%)}\n.uxDrawerItem{position:relative;overflow:hidden;padding:0!important;touch-action:pan-y}\n.uxDrawerItem .atlasSwipeContent{padding:10px 54px 10px 12px;transition:transform .22s cubic-bezier(.2,.75,.25,1)}\n.uxDrawerItem .atlasSwipeContent .btn{margin-top:7px}\n.uxDrawerItem>.atlasRemoveShortlist{position:absolute;right:10px;top:50%;z-index:3;transform:translateY(-50%)}\n.uxDrawerItem.atlasSwipeOpen .atlasSwipeContent{transform:translateX(-62px)}\n#shortlistList>.rank-row.atlasSwipeOpen>.placement{transform:translateX(-62px)}\n@media(hover:none),(pointer:coarse){\n#shortlistList>.rank-row>.atlasRemoveShortlist,.uxDrawerItem>.atlasRemoveShortlist{opacity:0;pointer-events:none;transform:translate(8px,-50%)}\n#shortlistList>.rank-row.atlasSwipeOpen>.atlasRemoveShortlist,.uxDrawerItem.atlasSwipeOpen>.atlasRemoveShortlist{opacity:1;pointer-events:auto;transform:translateY(-50%)}\n#shortlistList>.rank-row>.placement{padding-right:17px}\n.uxDrawerItem .atlasSwipeContent{padding-right:12px}\n}\n@media(hover:hover) and (pointer:fine){#shortlistList>.rank-row>.atlasRemoveShortlist,.uxDrawerItem>.atlasRemoveShortlist{opacity:1;pointer-events:auto}}\n@media(prefers-reduced-motion:reduce){.atlasRemoveShortlist,#shortlistList>.rank-row>.placement,.uxDrawerItem .atlasSwipeContent{transition:none}}\n";
+    document.head.append(style);
+  }
+  const makeButton=id=>{
+    const button=document.createElement('button');button.type='button';button.className='atlasRemoveShortlist';
+    button.dataset.atlasRemoveShortlist=String(id);button.setAttribute('aria-label','Remove programme from shortlist');button.title='Remove from shortlist';
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+    return button;
+  };
+  const decorate=()=>{
+    $('shortlistList')?.querySelectorAll(':scope > .rank-row').forEach(row=>{
+      if(row.querySelector(':scope > .atlasRemoveShortlist'))return;
+      const id=row.querySelector(':scope > .placement')?.dataset.id;if(id)row.append(makeButton(id));
+    });
+    $('uxDrawerItems')?.querySelectorAll(':scope > .uxDrawerItem').forEach(item=>{
+      const id=item.dataset.programmeId;if(!id||item.querySelector(':scope > .atlasRemoveShortlist'))return;
+      let content=item.querySelector(':scope > .atlasSwipeContent');
+      if(!content){content=document.createElement('div');content.className='atlasSwipeContent';while(item.firstChild)content.append(item.firstChild);item.append(content);}
+      item.append(makeButton(id));
+    });
+  };
+  const remove=id=>{
+    if(typeof placements==='undefined'||typeof setMark!=='function')return;
+    const programme=placements.find(item=>String(item.id)===String(id));if(!programme)return;
+    setMark(programme,{status:'',priority:''});
+    document.querySelectorAll('.atlasSwipeOpen').forEach(item=>item.classList.remove('atlasSwipeOpen'));
+  };
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('[data-atlas-remove-shortlist]');
+    if(button){event.preventDefault();event.stopPropagation();remove(button.dataset.atlasRemoveShortlist);return;}
+    document.querySelectorAll('.atlasSwipeOpen').forEach(item=>{if(!item.contains(event.target))item.classList.remove('atlasSwipeOpen');});
+  });
+  let gesture=null;
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1)return;
+    const row=event.target.closest('#shortlistList > .rank-row, #uxDrawerItems > .uxDrawerItem');
+    if(!row||event.target.closest('button,a,input,select,textarea'))return;
+    const touch=event.touches[0];gesture={row,x:touch.clientX,y:touch.clientY};
+  },{passive:true});
+  document.addEventListener('touchend',event=>{
+    if(!gesture)return;const touch=event.changedTouches?.[0];
+    if(touch){const dx=touch.clientX-gesture.x,dy=touch.clientY-gesture.y;if(Math.abs(dx)>52&&Math.abs(dx)>Math.abs(dy)*1.2){if(dx<0)gesture.row.classList.add('atlasSwipeOpen');else gesture.row.classList.remove('atlasSwipeOpen');}}
+    gesture=null;
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{gesture=null;},{passive:true});
+  for(const id of ['shortlistList','uxDrawerItems']){
+    const container=$(id);if(container&&window.MutationObserver)new MutationObserver(decorate).observe(container,{childList:true,subtree:false});
+  }
+  decorate();document.addEventListener('desk:ready',decorate);document.addEventListener('desk:state-saved',decorate);
 })();

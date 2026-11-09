@@ -233,7 +233,7 @@
       if(!mapContainer||document.getElementById('atlasMapZoom'))return;
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
-      zoom.innerHTML='<button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>';
+      zoom.innerHTML='<button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button>';
       let pendingZoomTarget=null;
       placementMap.on('zoomend',()=>{pendingZoomTarget=null;});
       zoom.addEventListener('click',event=>{
@@ -532,13 +532,15 @@
         try{drawMap(currentMapList)}catch(error){console.warn('Map markers could not be refreshed after navigation',error)}
       });
     };
+    let viewportHintQueued=false;
+    const scheduleViewportHint=()=>{if(viewportHintQueued)return;viewportHintQueued=true;requestAnimationFrame(()=>{viewportHintQueued=false;updateViewportHint();});};
     placementMap.on('popupclose',()=>{selectedProgramme=null;syncMap();});
-    placementMap.on('zoomend',()=>{scheduleMapRedraw();updateViewportHint();});
-    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw();updateViewportHint();});
+    placementMap.on('zoomend',()=>{scheduleMapRedraw();scheduleViewportHint();});
+    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw();scheduleViewportHint();});
     try{drawMap(placements.filter(matches));}catch{}
-    // Fit the complete catalogue on first paint as well as after geocoding.
-    // This prevents the default London view from hiding the rest of the map.
-    requestAnimationFrame(()=>setTimeout(fitScopePins,120));
+    // Keep the intentional London starting view. Fit the national extent only
+    // when the user presses Fit results or the empty-map action.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{placementMap.invalidateSize({pan:false,animate:false});updateViewportHint();}));
     return true;
   };
 

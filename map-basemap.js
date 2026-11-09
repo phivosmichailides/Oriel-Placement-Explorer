@@ -51,6 +51,35 @@ const STYLES=Object.freeze({
     if(pane)pane.style.backgroundColor='';
   };
   const styleAttribution=()=>MAPTILER_ATTR;
+  const applyEditorialRoadDetail=map=>{
+  if(!map||typeof map.getLayer!=='function')return false;
+  try{
+    if(!map.isStyleLoaded?.()||!map.getSource('maptiler_planet_v4'))return false;
+    const existing=map.getStyle()?.layers||[],beforeId=existing.find(layer=>layer.type==='symbol')?.id;
+    const dark=activeStyleName()==='editorial-dark',filter=['==',['geometry-type'],'LineString'];
+    const baseWidth=['interpolate',['linear'],['zoom'],3,.8,5,1.05,7,1.3,9,1.55,11,1.85,13,2.2,15,2.75,17,3.45,19,4.3];
+    const classScale=['match',['get','class'],'motorway',1.75,'trunk',1.55,'primary',1.4,'secondary',1.22,'tertiary',1.1,'minor',1,'service',.86,'track',.78,.95];
+    const surfaceWidth=['*',baseWidth,classScale],casingWidth=['+',surfaceWidth,1.15];
+    const casingColour=dark?'#1b2520':'#f7f3e9';
+    const roadColour=dark
+      ?['match',['get','class'],'motorway','#c79a70','trunk','#b88f68','primary','#a98361','secondary','#8e8d78','tertiary','#78867c','minor','#6f7d74','service','#64746c','track','#596b63','#65746c']
+      :['match',['get','class'],'motorway','#9f7654','trunk','#a9825e','primary','#b48f68','secondary','#bea17c','tertiary','#c8b18f','minor','#cdbb9f','service','#d4c5ad','track','#d0c0a7','#d2c4ad'];
+    const layout={'line-cap':'round','line-join':'round'};
+    const layers=[
+      {id:'atlas-road-casing',type:'line',source:'maptiler_planet_v4','source-layer':'road',minzoom:3,filter,layout,paint:{'line-color':casingColour,'line-opacity':1,'line-width':casingWidth}},
+      {id:'atlas-road-surface',type:'line',source:'maptiler_planet_v4','source-layer':'road',minzoom:3,filter,layout,paint:{'line-color':roadColour,'line-opacity':1,'line-width':surfaceWidth}}
+    ];
+    let added=false;
+    for(const layer of layers){
+      if(!map.getLayer(layer.id)){map.addLayer(layer,beforeId);added=true;}
+      else{map.setFilter(layer.id,filter);map.setLayoutProperty(layer.id,'line-cap','round');map.setLayoutProperty(layer.id,'line-join','round');for(const [name,value] of Object.entries(layer.paint))map.setPaintProperty(layer.id,name,value);}
+    }
+    if(added)return false;
+    for(const id of ['Water','Water intermittent','Swimming pool'])if(map.getLayer(id))map.setPaintProperty(id,'fill-color',dark?'#2c413d':'#dfe8e4');
+    for(const id of ['River','River intermittent','River tunnel','Stream','Stream intermittent','Stream tunnel'])if(map.getLayer(id))map.setPaintProperty(id,'line-color',dark?'#668982':'#a9c5c1');
+    return true;
+  }catch(error){console.warn('Editorial road detail could not be applied.',error);return false;}
+};
   const removeFallbackRecord=record=>{
     if(!record)return;
     const map=record.leaflet;
@@ -149,6 +178,7 @@ const STYLES=Object.freeze({
     holder.dataset.basemapReason=reason;
     if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='osm-fallback';
     reportMainRenderer(map,true,'OpenStreetMap fallback: '+reason+' Programme pins remain interactive.');
+    scheduleFallbackRetry();
     layer.on('tileerror',()=>{holder.dataset.mapTileStatus='tile-error';});
     map.on('unload',()=>{fallbackInstances.delete(record);if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;});
     return {layer,kind:'osm',record};
@@ -186,6 +216,7 @@ const STYLES=Object.freeze({
     holder.dataset.basemapReason=reason;
     if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='raster-fallback';
     reportMainRenderer(map,true,reason);
+    scheduleFallbackRetry();
     return {layer,kind:'raster',record};
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
@@ -241,7 +272,9 @@ const STYLES=Object.freeze({
         }
       });
       miniRendererStyle=activeStyleName();
+      miniRenderer.on('style.load',()=>applyEditorialRoadDetail(miniRenderer));
       await waitForMiniEvent(miniRenderer,'load',18000);
+      applyEditorialRoadDetail(miniRenderer);
     }else{
       miniRendererHost.style.width=width+'px';
       miniRendererHost.style.height=height+'px';
@@ -252,6 +285,7 @@ const STYLES=Object.freeze({
       const ready=waitForMiniEvent(miniRenderer,'style.load',18000);
       miniRenderer.setStyle(style(),{diff:false});
       await ready;
+      applyEditorialRoadDetail(miniRenderer);
       miniRendererStyle=nextStyle;
     }
     return miniRenderer;
@@ -289,8 +323,10 @@ const STYLES=Object.freeze({
     renderer.triggerRepaint();
     await idle;
     if(!holder.isConnected)return;
-    const vectorFeatures=renderer.queryRenderedFeatures().some(feature=>feature.source==='maptiler_planet_v4');
-    if(!vectorFeatures)throw Error('MapTiler returned no visible vector features for this mini-map.');
+    const renderedFeatures=renderer.queryRenderedFeatures();
+    const vectorFeatures=renderedFeatures.some(feature=>feature.source==='maptiler_planet_v4');
+    const roadFeatures=renderedFeatures.some(feature=>feature.source==='maptiler_planet_v4'&&feature.sourceLayer==='road');
+    if(!vectorFeatures||!roadFeatures)throw Error('MapTiler did not render both map features and the road network for this mini-map.');
     const image=renderer.getCanvas().toDataURL('image/png');
     const bounds=map.getBounds();
     if(record.overlay){try{map.removeLayer(record.overlay)}catch{}}
@@ -437,15 +473,18 @@ const STYLES=Object.freeze({
       glMap.on('load',()=>{
         if(ended)return;
         loaded=true;
+        applyEditorialRoadDetail(glMap);
       });
       // The style's "load" event can precede the first fully rendered frame.
       // Keep the neutral OSM underlay until MapLibre is genuinely idle, so the
       // main map never exposes a blank cream canvas while vector tiles arrive.
       glMap.on('idle',()=>{
         if(ended||!loaded)return;
-        let visibleVectorFeatures=0;
-        try{visibleVectorFeatures=glMap.queryRenderedFeatures().filter(feature=>feature.source==='maptiler_planet_v4').length}catch{}
-        if(!visibleVectorFeatures){fail('MapTiler loaded its style but returned no visible street/place features.');return;}
+        if(!applyEditorialRoadDetail(glMap))return;
+        let visibleVectorFeatures=0,visibleRoadFeatures=0;
+        try{const rendered=glMap.queryRenderedFeatures();visibleVectorFeatures=rendered.filter(feature=>feature.source==='maptiler_planet_v4').length;visibleRoadFeatures=rendered.filter(feature=>feature.source==='maptiler_planet_v4'&&feature.sourceLayer==='road').length;}catch{}
+        holder.dataset.roadFeatureCount=String(visibleRoadFeatures);
+        if(!visibleVectorFeatures||!visibleRoadFeatures){fail('MapTiler loaded its style but did not render a usable road network.');return;}
         ready=true;
         if(timeout)clearTimeout(timeout);
         if(retainedUnderlay){
@@ -459,7 +498,7 @@ const STYLES=Object.freeze({
         reportMainRenderer(map,false);
       });
       glMap.on('style.load',()=>{
-        if(!ended)holder.dataset.basemap='vector-loading';
+        if(!ended){ready=false;holder.dataset.basemap='vector-loading';applyEditorialRoadDetail(glMap);}
       });
       glMap.on('error',event=>{
         const message=String(event.error?.message||event.error||'');
@@ -540,6 +579,25 @@ const STYLES=Object.freeze({
     })().finally(()=>{retryPromise=null;});
     return retryPromise;
   };
-  window.addEventListener('online',()=>setTimeout(()=>retryFallbacks(),450));
+  let fallbackRetryAttempt=0,fallbackRetryTimer=null;
+  const scheduleFallbackRetry=()=>{
+    if(fallbackRetryTimer||!fallbackInstances.size||navigator.onLine===false)return;
+    const retryable=[...fallbackInstances].some(record=>{const holder=record.leaflet?.getContainer?.(),reason=String(holder?.dataset.basemapReason||'');return !!holder?.isConnected&&!/webgl.{0,30}unavailable|renderer limit|HTTP 403|forbidden|unauthori/i.test(reason);});
+    if(!retryable){fallbackRetryAttempt=0;return;}
+    const delays=[3000,9000,20000,40000];
+    if(fallbackRetryAttempt>=delays.length)return;
+    fallbackRetryTimer=setTimeout(async()=>{
+      fallbackRetryTimer=null;
+      try{await retryFallbacks()}catch(error){console.warn('Automatic map recovery attempt failed.',error)}
+      if(!fallbackInstances.size)fallbackRetryAttempt=0;else scheduleFallbackRetry();
+    },delays[fallbackRetryAttempt++]);
+  };
+  window.addEventListener('online',()=>{
+    fallbackRetryAttempt=0;
+    if(fallbackRetryTimer){clearTimeout(fallbackRetryTimer);fallbackRetryTimer=null;}
+    setTimeout(async()=>{await retryFallbacks();scheduleFallbackRetry();},450);
+  });
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleFallbackRetry();});
+
   window.OrielBasemap={addTo,mode,styles:STYLES,choose,retry:retryFallbacks,get preference(){return preference;}};
 })();
