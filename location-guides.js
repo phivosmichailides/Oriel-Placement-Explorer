@@ -129,73 +129,136 @@ window.OrielLocationGuide=(()=>{
   ['^GU16(?:\\s|$)','Frimley / Surrey','Frimley rail has different connections from fast Woking services; check transfers carefully.','national'],
   ['^SS16(?:\\s|$)','Basildon / Essex','c2c rail to London Fenchurch Street via Basildon; hospital access may need a local bus.','national']
  ];
- const lookup=(p,sites=[])=>{
-   const pc=first(p);
-   let g=guides.find(x=>regexp(x[0]).test(pc));
-   // Fallback: use actual named area only to identify general corridor, never claim an exact station.
-   const loc=area(p);
-   const title=String(p.title||'');
-   const whole=(loc+' '+title).toLowerCase();
-   if(!g){
-    const named=[
-      [/st albans/,'St Albans / Hertfordshire','Thameslink via St Albans City to Farringdon, St Pancras and Blackfriars.','national'],
-      [/reading/,'Reading / Berkshire','GWR and Elizabeth line via Reading towards Paddington.','national'],
-      [/slough|wexham/,'Slough / Berkshire','GWR/Elizabeth line via Slough and a possible local bus.','national'],
-      [/sevenoaks/,'Sevenoaks / Kent','Southeastern via Sevenoaks towards London Bridge and Charing Cross.','national'],
-      [/watford/,'Watford / Hertfordshire','Watford Junction rail towards Euston, then local transport if needed.','national'],
-      [/guildford/,'Guildford / Surrey','SWR services towards Waterloo; check the hospital/local leg.','swr'],
-      [/harlow/,'Harlow / Essex','Greater Anglia towards Liverpool Street and Stratford; check onward journey.','national'],
-      [/stevenage/,'Stevenage / Hertfordshire','Rail via Stevenage towards King’s Cross; check onward journey.','national'],
-      [/streatham/,'Streatham / south London','Victoria or Thameslink corridors depend on which Streatham station is nearest.','national'],
-      [/wimbledon/,'Wimbledon / south-west London','SWR Waterloo corridor plus District line and Thameslink at Wimbledon.','swr'],
-      [/hounslow/,'Hounslow / west London','Piccadilly line and SWR serve different stations; verify exact branch.','swr']
-    ];
-    const n=named.find(x=>x[0].test(whole));if(n)g=['',n[1],n[2],n[3]];
-   }
-   let headline=g?g[1]:(loc&&loc.toLowerCase()!=='london'?loc:'Location in England or Wales');
-   let connections=g?g[2]:'Transport corridor not verified for this postcode. Check the exact station-to-workplace journey.';
-   const l=sites[0];
-   const center={lat:51.5074,lng:-0.1278};
-   const bearing=l?getDirection(l.lat,l.lng,center.lat,center.lng):null;
-   const relative=bearing?bearing.label:null;
-   const multi=(p.postcodes||[]).filter(Boolean).length>1;
-   const detail=multi?'Multiple training locations are listed; the best route may change between rotations.':'Always check the precise address and final walk/bus leg.';
-   return {headline,relative,connections,detail,source:g?g[3]:'tfl',hub:hubFor(pc),postcodes:(p.postcodes||[]).filter(Boolean),multi};
+ const PLACE_BY_POSTCODE=Object.freeze({
+  AL:'St Albans / Hertfordshire',B:'Birmingham',BA:'Bath / Somerset',BB:'Blackburn / Lancashire',BD:'Bradford / West Yorkshire',
+  BH:'Bournemouth',BL:'Bolton',BN:'Brighton',BR:'Bromley / south-east London',BS:'Bristol',CA:'Carlisle / Cumbria',
+  CB:'Cambridge',CF:'Cardiff',CH:'Chester / Cheshire',CM:'Chelmsford / Essex',CO:'Colchester / Essex',CR:'Croydon / south London',
+  CT:'Canterbury / Kent',CV:'Coventry',CW:'Crewe / Cheshire',DA:'Dartford / Kent',DE:'Derby',DH:'Durham',DL:'Darlington',
+  DN:'Doncaster / South Yorkshire',DT:'Dorchester / Dorset',DY:'Dudley / West Midlands',E:'East London',EC:'City of London',
+  EN:'Enfield / north London',EX:'Exeter / Devon',FY:'Blackpool',GL:'Gloucester',GU:'Guildford / Surrey',HA:'Harrow / north-west London',
+  HD:'Huddersfield',HG:'Harrogate',HP:'Hemel Hempstead',HR:'Hereford',HU:'Hull',HX:'Halifax',IG:'Ilford / east London',
+  IP:'Ipswich / Suffolk',KT:'Kingston / Surrey',L:'Liverpool',LA:'Lancaster / Cumbria',LE:'Leicester',LL:'North Wales',
+  LN:'Lincoln',LS:'Leeds',LU:'Luton',M:'Manchester',ME:'Maidstone / Kent',MK:'Milton Keynes',N:'North London',
+  NE:'Newcastle upon Tyne',NG:'Nottingham',NN:'Northampton',NP:'Newport / South Wales',NR:'Norwich',NW:'North-west London',
+  OL:'Oldham / Greater Manchester',OX:'Oxford',PE:'Peterborough',PL:'Plymouth',PO:'Portsmouth',PR:'Preston / Lancashire',
+  RG:'Reading / Berkshire',RH:'Redhill / Surrey',RM:'Romford / east London',S:'Sheffield',SA:'Swansea',SE:'South-east London',
+  SG:'Stevenage',SK:'Stockport',SL:'Slough / Berkshire',SM:'Sutton / south London',SN:'Swindon',SO:'Southampton',
+  SP:'Salisbury',SR:'Sunderland',SS:'Southend-on-Sea',ST:'Stoke-on-Trent',SW:'South-west London',SY:'Shrewsbury / Shropshire',
+  TA:'Taunton / Somerset',TF:'Telford',TN:'Tunbridge Wells / Kent',TQ:'Torquay',TR:'Truro / Cornwall',TS:'Middlesbrough',
+  TW:'Hounslow / west London',UB:'Hayes / Uxbridge',W:'West London',WA:'Warrington',WC:'Bloomsbury / central London',
+  WD:'Watford / Hertfordshire',WF:'Wakefield',WN:'Wigan',WR:'Worcester',WS:'Walsall',WV:'Wolverhampton',YO:'York'
+ });
+ const HUB_BY_POSTCODE=Object.freeze({
+  AL:'St Albans City',B:'Birmingham New Street',BA:'Bath Spa',BD:'Bradford Interchange',BH:'Bournemouth',BL:'Bolton',
+  BN:'Brighton',BS:'Bristol Temple Meads',CA:'Carlisle',CB:'Cambridge',CF:'Cardiff Central',CH:'Chester',
+  CM:'Chelmsford',CO:'Colchester',CT:'Canterbury East',CV:'Coventry',CW:'Crewe',DA:'Dartford',DE:'Derby',
+  DH:'Durham',DL:'Darlington',DN:'Doncaster',DT:'Dorchester South',DY:'Dudley Port',EX:'Exeter St Davids',
+  FY:'Blackpool North',GL:'Gloucester',GU:'Guildford',HD:'Huddersfield',HG:'Harrogate',HR:'Hereford',
+  HU:'Hull',HX:'Halifax',IP:'Ipswich',L:'Liverpool Lime Street',LA:'Lancaster',LE:'Leicester',LL:'Llandudno Junction',
+  LN:'Lincoln',LS:'Leeds',LU:'Luton',M:'Manchester Piccadilly',ME:'Maidstone East',MK:'Milton Keynes Central',
+  NE:'Newcastle',NG:'Nottingham',NN:'Northampton',NP:'Newport',NR:'Norwich',OL:'Manchester Victoria',
+  OX:'Oxford',PE:'Peterborough',PL:'Plymouth',PO:'Portsmouth & Southsea',PR:'Preston',RG:'Reading',
+  RH:'Redhill',S:'Sheffield',SA:'Swansea',SG:'Stevenage',SK:'Stockport',SL:'Slough',SN:'Swindon',
+  SO:'Southampton Central',SP:'Salisbury',SR:'Sunderland',SS:'Southend Central',ST:'Stoke-on-Trent',
+  SY:'Shrewsbury',TA:'Taunton',TF:'Telford Central',TN:'Tunbridge Wells',TQ:'Torquay',TR:'Truro',
+  TS:'Middlesbrough',WA:'Warrington Central',WD:'Watford Junction',WF:'Wakefield Westgate',
+  WN:'Wigan North Western',WR:'Worcester Foregate Street',WS:'Walsall',WV:'Wolverhampton',YO:'York'
+ });
+ const LONDON_LOCAL_HUBS=Object.freeze({
+  SW10:"Earl's Court",SW6:'Fulham Broadway',SW11:'Clapham Junction',SW1:'Victoria',SE24:'Herne Hill',
+  SE1:'London Bridge',SE16:'Canada Water',SE15:'Peckham Rye',SE5:'Denmark Hill',N1:'Highbury & Islington',
+  N7:'Caledonian Road',N4:'Finsbury Park',NW1:'Camden Town',NW3:'Hampstead',E1:'Whitechapel',
+  E8:'Dalston Junction',E14:'Canary Wharf',E16:'Canning Town',W1:'Oxford Circus',W2:'Paddington',
+  W5:'Ealing Broadway',WC1:'Russell Square',EC1:'Farringdon',BR1:'Bromley South',CR0:'East Croydon',
+  KT1:'Kingston',TW3:'Hounslow Central',UB3:'Hayes & Harlington',WD17:'Watford Junction'
+ });
+ const postcodePrefix=postcode=>(String(postcode||'').match(/^([A-Z]{1,2})/i)||[])[1]?.toUpperCase()||'';
+ const postcodeDistrict=postcode=>(String(postcode||'').toUpperCase().replace(/\\s+/g,'').match(/^([A-Z]{1,2}\\d{1,2}[A-Z]?)/)||[])[1]||'';
+ const distanceKm=(aLat,aLng,bLat,bLng)=>{
+  const rad=value=>value*Math.PI/180,dLat=rad(bLat-aLat),dLng=rad(bLng-aLng);
+  const h=Math.sin(dLat/2)**2+Math.cos(rad(aLat))*Math.cos(rad(bLat))*Math.sin(dLng/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
  };
- const hubFor=(postcode)=>{
-   const pc=String(postcode||'').toUpperCase().replace(/\s+/g,'');
-   const district=(pc.match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)(?=\d[A-Z]{2}$)/)||[])[1]||'';
-   // A practical London terminal for checking the rail/Tube corridor, not a claim
-   // that this is the nearest station or the fastest route at every time of day.
-   if(['SW1','SW1A','SW1E','SW1H','SW1P','SW1V','SW1W','SW1X','SW1Y','SW3','SW4','SW5','SW6','SW10','SW12','SW16','SW17','SE24','BR1'].includes(district))return 'London Victoria';
-   if(['SW8','SW9','SW11','SW14','SW15','SW18','SW19','SW20','W4','KT1','KT2','KT3','KT5','KT6','KT9','KT12','TW3','TW7','TW9','TW10','TW13','TW18','GU1','GU2','GU16','GU21'].includes(district)||district.startsWith('SW'))return 'London Waterloo';
-   if(['W1','W2','W3','W5','W7','W12','W13','UB1','UB3','UB7','UB8','SL1','SL2','SL6','RG1','RG2','RG4','NW10'].includes(district)||district.startsWith('UB')||district.startsWith('SL')||district.startsWith('RG'))return 'London Paddington';
-   if(['WD17','WD18','WD24'].includes(district))return 'London Euston';
-   if(['WD6','AL1','AL2','LU1','LU4'].includes(district))return 'London St Pancras International';
-   if(['SG1','SG6','N1','N1C','N2','N3','N7','N10','N11','N12','N15','N17','N20','N22','NW1','NW2','NW3','WC1','WC2','HA5'].includes(district)||district.startsWith('N1')||district.startsWith('NW')||district.startsWith('WC')||district.startsWith('HA'))return 'London King’s Cross';
-   if(['SS1','SS16'].includes(district))return 'London Fenchurch Street';
-   if(district==='E16')return null;
-   if(['CM1','CM2','CM20','RM1','E1','E1W','E3','E8','E9','E11','E13','E14','E15','E16','E17','E18','E20','SE2','SE18','SE28'].includes(district)||district.startsWith('EC')||district.startsWith('E'))return 'London Liverpool Street';
-   if(['SE1','SE5','SE7','SE8','SE9','SE12','SE13','SE14','SE15','SE16','SE17','SE19','SE20','SE21','SE22','SE23','SE26','BR6','DA1','DA2','TN13','SM1','SM5','RH1'].includes(district)||district.startsWith('SE')||district.startsWith('BR')||district.startsWith('DA')||district.startsWith('TN')||district.startsWith('SM')||district.startsWith('RH'))return 'London Bridge';
-   return null;
+ const nearestStations=site=>{
+  const lat=Number(site?.lat),lng=Number(site?.lng);
+  if(!Number.isFinite(lat)||!Number.isFinite(lng))return [];
+  const candidates=[];
+  (Array.isArray(window.ORIEL_RAIL_STATIONS)?window.ORIEL_RAIL_STATIONS:[]).forEach(station=>{
+   const sLat=Number(station.lat),sLng=Number(station.lng);
+   if(Number.isFinite(sLat)&&Number.isFinite(sLng))candidates.push({name:station.name,lat:sLat,lng:sLng,type:'National Rail'});
+  });
+  (Array.isArray(window.ORIEL_TUBE_STATIONS)?window.ORIEL_TUBE_STATIONS:[]).forEach(station=>{
+   const sLat=Number(station.lat),sLng=Number(station.lng);
+   if(Number.isFinite(sLat)&&Number.isFinite(sLng))candidates.push({name:station.name,lat:sLat,lng:sLng,type:'London Underground',lines:station.lines||''});
+  });
+  const seen=new Set();
+  return candidates.map(station=>({...station,distanceKm:distanceKm(lat,lng,station.lat,station.lng)}))
+   .filter(station=>Number.isFinite(station.distanceKm))
+   .sort((a,b)=>a.distanceKm-b.distanceKm)
+   .filter(station=>{const key=station.name.toLowerCase();if(seen.has(key))return false;seen.add(key);return true;})
+   .slice(0,3);
+ };
+ const isLondonPlace=(postcode,p)=>{
+  return String(p?.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\\d/i.test(String(postcode||''));
+ };
+ const postcodeHub=postcode=>{
+  const district=postcodeDistrict(postcode),prefix=postcodePrefix(postcode);
+  return LONDON_LOCAL_HUBS[district]||HUB_BY_POSTCODE[prefix]||null;
+ };
+ const placeName=(p,postcode,nearest=[])=>{
+  const named=area(p);
+  if(named&&!/^(england|wales|united kingdom|uk)$/i.test(named))return named;
+  const prefix=postcodePrefix(postcode);
+  return PLACE_BY_POSTCODE[prefix]||nearest[0]?.name||String(p?.region||'').trim()||'Local area';
  };
  function getDirection(lat,lon,lat0,lon0){
-   const kmLat=(lat-lat0)*111.1,kmLon=(lon-lon0)*111.1*Math.cos(lat0*Math.PI/180);
-   const dist=Math.sqrt(kmLat*kmLat+kmLon*kmLon);
-   const brg=(Math.atan2(kmLon,kmLat)*180/Math.PI+360)%360;
-   const compass=['north','north-east','east','south-east','south','south-west','west','north-west'][Math.round(brg/45)%8];
-   return {distanceKm:Math.round(dist),compass,label:dist<3?'Around central London':dist<22?compass+' London':compass+' of central London'};
+  const kmLat=(lat-lat0)*111.1,kmLon=(lon-lon0)*111.1*Math.cos(lat0*Math.PI/180);
+  const dist=Math.sqrt(kmLat*kmLat+kmLon*kmLon);
+  const brg=(Math.atan2(kmLon,kmLat)*180/Math.PI+360)%360;
+  const compass=['north','north-east','east','south-east','south','south-west','west','north-west'][Math.round(brg/45)%8];
+  return {distanceKm:Math.round(dist),compass,label:dist<3?'Around central London':dist<22?compass+' London':compass+' of central London'};
  }
+ const lookup=(p,sites=[])=>{
+  const pc=first(p),g=guides.find(x=>regexp(x[0]).test(pc)),site=sites[0]||null;
+  const nearest=site?nearestStations(site):[];
+  const place=placeName(p,pc,nearest);
+  const london=isLondonPlace(pc,p);
+  const fallbackHub=postcodeHub(pc);
+  const hub=nearest[0]?.name||fallbackHub||null;
+  let headline=g?g[1]:place;
+  let connections=g?g[2]:'';
+  if(!g){
+   if(nearest.length){
+    const n=nearest[0],type=n.type==='London Underground'?'Underground station':'National Rail station';
+    connections='Nearby '+type+': '+n.name+' (about '+n.distanceKm.toFixed(1)+' km straight-line from the listed postcode). Local buses or walking can complete the final leg; check the exact site entrance and current services.';
+   }else if(fallbackHub){
+    connections='A useful local rail reference is '+fallbackHub+' station. Local buses or walking can complete the final leg; check the exact workplace address and current services.';
+   }else{
+    connections='Use the main rail station serving '+place+' where rail is available, then check local buses or walking for the final leg to the exact training address.';
+   }
+  }else if(nearest.length&&!connections.toLowerCase().includes(nearest[0].name.toLowerCase())){
+   connections+=' Nearby mapped station: '+nearest[0].name+' (about '+nearest[0].distanceKm.toFixed(1)+' km straight-line).';
+  }
+  const whole=(String(p.area||'')+' '+String(p.title||'')).toLowerCase();
+  if(/university of nottingham|nottingham university/.test(whole)){
+   headline='Nottingham · University area';
+   if(!/nottingham/i.test(connections))connections='Nottingham railway station is the main rail arrival point; the university area is served by local tram and bus links. Check the exact campus building and stop.';
+  }
+  const relative=london&&site?getDirection(site.lat,site.lng,51.5074,-0.1278).label:null;
+  const multi=(p.postcodes||[]).filter(Boolean).length>1;
+  const detail=multi?'Multiple training locations are listed; the most useful station and final leg can change between rotations.':
+   nearest.length?'Station distance is straight-line, not a walking-route estimate; use the directions link for the actual walk or bus.':
+   'Check the exact workplace entrance and final walk or bus leg.';
+  return {headline,relative,connections,detail,source:g?g[3]:(london?'tfl':'national'),hub,hubDistanceKm:nearest[0]?.distanceKm??null,
+   hubType:nearest[0]?.type||null,nearbyStations:nearest,postcodes:(p.postcodes||[]).filter(Boolean),multi,place};
+ };
  const describePostcode=postcode=>{
-   const pc=String(postcode||'').trim().toUpperCase().replace(/\s+/g,' ');
-   const g=guides.find(x=>regexp(x[0]).test(pc));
-   const outward=(pc.match(/^([A-Z]{1,2}\d[A-Z\d]?)/)||[])[1]||'';
-   return {
-     postcode:pc,
-     headline:g?g[1]:(outward?outward+' area':'Your area'),
-     connections:g?g[2]:'The local transport corridor is not verified for this postcode; use the door-to-door route below.',
-     source:g?g[3]:'tfl'
-   };
+  const pc=String(postcode||'').trim().toUpperCase().replace(/\\s+/g,' '),g=guides.find(x=>regexp(x[0]).test(pc));
+  const prefix=postcodePrefix(pc),place=PLACE_BY_POSTCODE[prefix]||((pc.match(/^([A-Z]{1,2}\\d[A-Z\\d]?)/)||[])[1]||'Your area')+' area';
+  const hub=postcodeHub(pc);
+  return {postcode:pc,headline:g?g[1]:place,
+   connections:g?g[2]:(hub?'A useful local rail reference is '+hub+' station; local bus and walking links can complete the final leg.':'Use the main rail station serving '+place+' where available, then check local bus and walking links to the exact address.'),
+   source:g?g[3]:'national',hub};
  };
  const sourceUrls={
    tfl:'https://tfl.gov.uk/plan-a-journey/',
