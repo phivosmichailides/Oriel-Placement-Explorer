@@ -170,7 +170,7 @@ async function initMap(){
   }catch{}
   placementMap=L.map('placementMap',{
     zoomControl:false,minZoom:3,maxZoom:19,preferCanvas:false,scrollWheelZoom:false,zoomAnimation:true,fadeAnimation:true
-  }).setView([51.51,-.12],11);
+  }).setView([51.5074,-.1278],10.4);
   mapLayer=L.layerGroup().addTo(placementMap);
   // No CARTO: its current public tiles can contain an HTTP-200
   // "API KEY REQUIRED" watermark, which does not trigger tileerror.
