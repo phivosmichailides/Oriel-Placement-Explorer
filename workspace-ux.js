@@ -226,6 +226,7 @@
      const box=document.createElement('div');box.className='uxDrawerItem';box.dataset.programmeId=String(p.id);
      const idx=indexes.get(p.id)||'?';
      box.innerHTML='<small>#'+idx+' · '+escape(p.region||'')+'</small><b>'+escape(p.title||p.employer)+'</b><p>'+escape(p.employer||'')+' · '+escape(money(p.salary))+'</p>';
+     const actions=document.createElement('div');actions.className='uxDrawerItemActions';
      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='View programme';
      btn.addEventListener('click',()=>{
        closeDrawer();
@@ -239,7 +240,9 @@
        page=1;explore();
        $('uxExploreToolbar')?.scrollIntoView({behavior:'smooth'});
      });
-     box.append(btn);frag.append(box);
+     const remove=document.createElement('button');remove.type='button';remove.className='uxDrawerRemove';remove.dataset.uxRemoveShortlist=String(p.id);
+     remove.setAttribute('aria-label','Remove '+(p.title||p.employer)+' from shortlist');remove.title='Remove from shortlist';remove.textContent='×';
+     actions.append(btn,remove);box.append(actions);frag.append(box);
    });
    drawerItems.append(frag);
  };
@@ -270,6 +273,28 @@
    }
  });
  drawerSearch?.addEventListener('input',renderDrawer);
+ // Reveal a compact red remove control when a mobile shortlist card is swiped left.
+ let drawerTouch=null;
+ drawerItems?.addEventListener('touchstart',event=>{
+   const item=event.target.closest('.uxDrawerItem');if(!item)return;
+   const touch=event.changedTouches?.[0];if(!touch)return;
+   drawerTouch={item,x:touch.clientX,y:touch.clientY};
+ },{passive:true});
+ drawerItems?.addEventListener('touchend',event=>{
+   if(!drawerTouch)return;
+   const touch=event.changedTouches?.[0],start=drawerTouch;drawerTouch=null;if(!touch)return;
+   const dx=touch.clientX-start.x,dy=touch.clientY-start.y;
+   if(dx<-48&&Math.abs(dy)<65){start.item.classList.add('uxSwipeRevealed');}
+   else if(dx>35){start.item.classList.remove('uxSwipeRevealed');}
+ },{passive:true});
+ drawerItems?.addEventListener('click',event=>{
+   const remove=event.target.closest('[data-ux-remove-shortlist]');if(!remove)return;
+   event.preventDefault();event.stopPropagation();
+   const p=byId().get(remove.dataset.uxRemoveShortlist);if(!p)return;
+   setMark(p,{status:''},false);
+   renderDrawer();shortlist();updateCounts();
+   document.querySelectorAll('.placement[data-id="'+CSS.escape(String(p.id))+'"]').forEach(card=>card.classList.remove('uxProgramSelected'));
+ });
 
  // Salary under every advertised gross salary (list, shortlist, map selections, recommendations).
  const currentPayElement=document.createElement('div');
