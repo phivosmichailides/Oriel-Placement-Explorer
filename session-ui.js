@@ -102,6 +102,14 @@
    if(topBtn)topBtn.classList.toggle('uxTopVisible',y>420);
  }
  setCollapsed(collapsed,false);
+ // A desktop window narrowed to phone size should behave like a new phone
+ // visit: start with the map and programme cards, not the long filter form.
+ // Keep the user's saved desktop choice when leaving the mobile breakpoint.
+ const mobileQuery=window.matchMedia?.('(max-width: 720px)');
+ mobileQuery?.addEventListener('change',event=>{
+   if(event.matches)setCollapsed(true,false);
+   else setCollapsed(storage.get(L,COLLAPSE)==='1',false);
+ });
  topBtn?.addEventListener('click',()=>{
    window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
  });
