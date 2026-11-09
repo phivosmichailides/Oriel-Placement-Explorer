@@ -150,6 +150,7 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(()=>document.querySelector('#tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
   assert(await page.locator('#tdDrawerItems .tdDrawerItem').count()>=1,'Liked programme absent in Tinder shortlist drawer');
   await page.locator('#tdDrawerItems .tdDrawerSummary').first().click();
+  await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().waitFor({state:'visible',timeout:5000});
   assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().isVisible(),
     'Tapping the title should open the real programme detail card with personalised fit');
   assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdMetrics').first().isVisible(),
@@ -161,6 +162,7 @@ fs.mkdirSync(output,{recursive:true});
   await page.locator('#tdOpenRejected').click();
   assert(await page.locator('#tdDrawerItems .tdDrawerItem').count()>=1,'Rejected programme missing from the Like No drawer');
   await page.locator('#tdDrawerItems .tdDrawerSummary').first().click();
+  await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().waitFor({state:'visible',timeout:5000});
   assert(await page.locator('#tdDrawerItems .tdDrawerCard .tdFitScore').first().isVisible(),
     'Rejected programme details must show the personalised fit score');
   await page.locator('#tdDrawerItems .tdDrawerMove').first().click();
