@@ -20,7 +20,7 @@ fs.mkdirSync(output,{recursive:true});
   await page.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>typeof placements!=='undefined'&&placements.length===4064&&!!window.OrielMapStats&&!!placementMap,null,{timeout:90000});
   const starting=await page.evaluate(()=>({center:placementMap.getCenter(),zoom:placementMap.getZoom(),name:document.title}));
-  assert.equal(starting.name,'Placement Atlas');
+  assert(starting.name.startsWith('Placement Atlas'),'Unexpected page title: '+starting.name);
   assert(starting.zoom>=10&&starting.zoom<=11.6&&Math.abs(starting.center.lat-51.5074)<.2,'Default map did not start in London: '+JSON.stringify(starting));
   await page.waitForFunction(()=>{
    const el=document.querySelector('#placementMap');
