@@ -71,8 +71,10 @@
     if(data.region==='London')return d+' ('+zone(d)+')';
     return d+(county&&county!==d?' ('+county+')':'');
   };
-  const resolvePlaces=async(p,id)=>{
-    const el=$('tinderLocations');if(!el||!p)return;
+  const resolvePlaces=async(p,id,target=null)=>{
+    // The next programme also has its own real, pre-rendered location text.
+    // Never let an old asynchronous postcode response update a newer card.
+    const el=target||$('tinderLocations');if(!el||!p)return;
     const pcs=[...new Set((p.postcodes||[]).filter(Boolean))].slice(0,6);
     if(!pcs.length){el.textContent='Training-site postcode not provided — verify before deciding';return;}
     el.textContent=pcs.map(pc=>'Postcode '+pc+' · '+p.region).join('  +  ');
@@ -86,7 +88,7 @@
         placeCache.set(key,data);return[pc,data];
       }catch{placeCache.set(key,null);return[pc,null];}
     }));
-    if(activeId!==id||!el.isConnected)return;
+    if(!el.isConnected||(!target&&activeId!==id))return;
     el.textContent=results.map(([pc,data])=>locTitle(p,data,pc)).join('  +  ')+(pcs.length>1?' · Split sites':'');
     el.title='Approximate locations resolved from Oriel training postcodes. Confirm sites with the employer.';
   };
@@ -112,10 +114,19 @@
     if(!bad.length)bad.push(...fit.bad.filter(Boolean).slice(0,2).map(s=>shorten(s,85)));
     return {good:good.slice(0,3),bad:bad.slice(0,3)};
   };
-  const build=(p)=>{
+  const build=(p,underlay=false)=>{
     const fit=assessed(p),list=checks(p);
-    const card=document.createElement('article');card.className='tdSwipeCard';card.id='tinderActiveCard';card.tabIndex=0;
-    card.setAttribute('aria-label','Programme '+p.title+'. Swipe right to like, left to reject; buttons below for other actions.');
+    const card=document.createElement('article');
+    card.className='tdSwipeCard'+(underlay?' tdNextCard':'');
+    if(underlay){
+      // Fully rendered, non-interactive programme underneath the active card.
+      // The preview has no duplicate IDs or swipe handlers.
+      card.setAttribute('aria-hidden','true');
+      card.inert=true;
+    }else{
+      card.id='tinderActiveCard';card.tabIndex=0;
+      card.setAttribute('aria-label','Programme '+p.title+'. Swipe right to like, left to reject; buttons below for other actions.');
+    }
     const top=document.createElement('div');top.className='tdCardTop';
     const tag=document.createElement('span');tag.className='tdCardCode';tag.textContent='PROGRAMME '+code(p);
     const score=document.createElement('span');score.className='tdFitScore';score.textContent='FIT '+fit.score+'/100';
@@ -128,7 +139,7 @@
       div.append(small,strong);metrics.append(div);
     }
     const sites=document.createElement('div');sites.className='tdSites';
-    sites.innerHTML='<span class="tdSectionLabel">⌖ APPROXIMATE TRAINING LOCATIONS</span><div id="tinderLocations" class="tdLocationText">Looking up site locations…</div>';
+    sites.innerHTML='<span class="tdSectionLabel">⌖ APPROXIMATE TRAINING LOCATIONS</span><div '+(underlay?'':'id="tinderLocations" ')+'class="tdLocationText">Looking up site locations…</div>';
     const rotations=document.createElement('div');rotations.className='tdRotations';
     for(const [label,n] of [['Hospital',week(p,'hospital')],['GP',week(p,'general practice')],['Community',week(p,'community')],['Industry',week(p,'industry')]])
       if(n){const span=document.createElement('span');span.textContent=label+' · '+n+'w';rotations.append(span)}
@@ -144,7 +155,7 @@
     }
     const stamps=document.createElement('div');stamps.className='tdStamps';stamps.innerHTML='<span class="tdStamp tdStampNo">NOPE</span><span class="tdStamp tdStampYes">LIKE</span><span class="tdStamp tdStampSuper">SUPER LIKE</span>';
     card.append(top,name,employer,metrics,sites,rotations,pros,stamps);
-    bindGesture(card,p);
+    if(!underlay)bindGesture(card,p);
     return card;
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -202,22 +213,24 @@
       note(status==='love'?'Super liked. Excellent taste.':status==='yes'?'Liked. Keep the good ones coming.':'Like No. Next contestant.');
     };
     if(!card||reduced()){finish();return;}
-    const clearFeedback=feedback(status);
+    // The next real programme is already in the deck. Reveal it while the
+    // current card flies off, never a blurred empty gradient.
+    $('tinderCardSlot')?.classList.add('tdShowingNext');
     card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
     const distance=Math.max(680,window.innerWidth*.7);
     const slide=vector*distance;
     const lift=status==='love'?-Math.max(460,window.innerHeight*.65):-30;
     const departure=()=>{
-      card.style.transition='transform '+EXIT_MS+'ms cubic-bezier(.25,.72,.22,1),opacity '+EXIT_MS+'ms ease-out,filter '+EXIT_MS+'ms ease-out';
+      // Keep the physical card opaque and crisp until it leaves the screen.
+      // Its movement uncovers the next card rather than exposing a blank deck.
+      card.style.transition='transform '+EXIT_MS+'ms cubic-bezier(.25,.72,.22,1)';
       card.style.transform='translate3d('+slide+'px,'+lift+'px,0) rotate('+(vector*14)+'deg)';
-      card.style.opacity='0';
-      if(status==='no')card.style.filter='saturate(.45) brightness(.85)';
       const stamp=card.querySelector(status==='no'?'.tdStampNo':status==='yes'?'.tdStampYes':'.tdStampSuper');
       stamp?.classList.add('tdStampShow');
     };
     // Start the transition from the card's last drag position, avoiding a jump.
     requestAnimationFrame(departure);
-    setTimeout(()=>{clearFeedback();finish();},EXIT_MS+35);
+    setTimeout(finish,EXIT_MS+35);
   };
   const undo=()=>{
     if(animating)return;
@@ -294,6 +307,22 @@
       done.innerHTML='<span aria-hidden="true">♡</span><h3>That’s everyone in this round.</h3><p>You’ve reviewed every available programme in this region. Switch regions to continue, or undo your last decision.</p>';
       cardSlot.append(done);
     }else{
+      // Render an actual second card *before* the active one. It stays visible
+      // during a drag and exit animation, so there is no intermediate blank
+      // frame or placeholder. The last card reveals the completion message.
+      const seenIds=new Set(game.seen);
+      const following=pool.find(candidate=>candidate.id!==p.id&&!seenIds.has(candidate.id))||null;
+      if(following){
+        const below=build(following,true);
+        cardSlot.append(below);
+        void resolvePlaces(following,following.id,below.querySelector('.tdLocationText'));
+      }else{
+        const done=document.createElement('div');
+        done.className='tdFinished tdNextFinished';
+        done.setAttribute('aria-hidden','true');
+        done.innerHTML='<span aria-hidden="true">♡</span><h3>Round complete</h3><p>You’ve seen every programme in this round.</p>';
+        cardSlot.append(done);
+      }
       const card=build(p);
       if(p.id===returningId){
         returningId='';
