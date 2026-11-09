@@ -894,6 +894,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(removed.shortlisted,false,'Removing from the mobile shortlist did not clear the shortlist decision');
     assert.equal(removed.note,'preserve this note','Removing a shortlist entry should preserve its note');
     assert(removed.drawerCount<1,'Removed programme remained in the shortlist drawer');
+    await page.locator('#uxDrawerClose').click();
     const zoomStart=await page.evaluate(()=>({zoom:placementMap.getZoom(),min:placementMap.getMinZoom(),max:placementMap.getMaxZoom()}));
     console.log('MAP ZOOM CONTROL BEFORE:',JSON.stringify(zoomStart));
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
