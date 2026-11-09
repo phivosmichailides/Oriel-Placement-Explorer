@@ -7,6 +7,12 @@ const FILTER_QUICK_KEYS=new Set(['london','hospital','gp','industry','community'
 const STATUSES=[['','Unmarked'],['love',' Love'],['yes',' Strong yes'],['maybe',' Maybe'],['backup',' Only if needed'],['no',' No'],['never',' Absolutely not']];
 const SHORT=new Set(['love','yes','maybe','backup']);
 let pageLimit=40;let placements=[],state=loadState(),quick=new Set(state.filters.quick||[]);
+function hasPersonalProfile(){
+  const setup=state?.prefs?.onboarding;
+  return !!(setup&&typeof setup==='object'&&!Array.isArray(setup)&&
+    typeof setup.environment==='string'&&Array.isArray(setup.priorities));
+}
+window.OrielHasPersonalProfile=hasPersonalProfile;
 function clone(x){return JSON.parse(JSON.stringify(x))}
 function loadState(){try{const x=JSON.parse(localStorage.getItem(KEY)||'{}'),savedPrefs=x.prefs||{},profile=savedPrefs.onboarding||{},profileQuick=[];const environmentQuick={hospital:'hospital',gp:'gp',mixed:'split',industry:'industry',community:'community'}[profile.environment];if(environmentQuick)profileQuick.push(environmentQuick);if(['less','avoid'].includes(profile.community)&&profile.environment!=='community')profileQuick.push('lowcommunity');const filters=x.filters&&typeof x.filters==='object'?{...FILTER_DEFAULTS,...x.filters,quick:Array.isArray(x.filters.quick)?x.filters.quick.filter(key=>FILTER_QUICK_KEYS.has(key)):[]}:{...FILTER_DEFAULTS,region:profile.region||'',salary:profile.salary||'',hours:profile.hours||'',quick:profileQuick};return{prefs:{...clone(DEFAULT),...savedPrefs,weights:{...DEFAULT.weights,...(savedPrefs.weights||{})},locationLikes:Array.isArray(savedPrefs.locationLikes)?savedPrefs.locationLikes:[],locationBlacklist:Array.isArray(savedPrefs.locationBlacklist)?savedPrefs.locationBlacklist:[],locationAllowed:savedPrefs.locationAllowed||{}},filters,marks:x.marks||{},compare:x.compare||[],orielSnapshot:x.orielSnapshot||null}}catch{return{prefs:clone(DEFAULT),filters:clone(FILTER_DEFAULTS),marks:{},compare:[],orielSnapshot:null}}}
 const FILTER_VALUE_IDS=['search','sector','region','hours','salary','sort','decision','visa','specialistView'];

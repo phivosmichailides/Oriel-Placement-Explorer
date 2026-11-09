@@ -35,6 +35,14 @@ fs.mkdirSync(output,{recursive:true});
   }));
   assert.equal(initial.programmes,4064);
   assert(initial.tiles.length>=3,'The map has not loaded adequate street tiles');
+  // A skipped quiz must not display fabricated personal-fit scores.
+  await page.waitForFunction(()=>document.querySelector('#results .placement .score[data-fit-tone="unknown"]'),null,{timeout:15000});
+  assert(await page.locator('#results .placement .score[data-fit-tone=unknown]').count()>0,
+    'Unpersonalised applicants should see a neutral fit panel');
+  assert(await page.locator('#results .placement .fitQuizLink').first().isVisible(),
+    'Unpersonalised fit must link to the questionnaire');
+  assert.equal(await page.evaluate(()=>window.OrielHasPersonalProfile?.()),false,
+    'A default profile was incorrectly treated as a completed questionnaire');
   // Regression: the map must not discard its previous tile level mid-zoom.
   const mainRasterOptions=await page.evaluate(()=>{
     const layer=placementMap._orielBasemapRecord?.layer;
@@ -303,7 +311,64 @@ fs.mkdirSync(output,{recursive:true});
   assert(mobileNav.left>=-1&&mobileNav.right<=391&&mobileNav.position==='sticky','Mobile navigation overflows the viewport: '+JSON.stringify(mobileNav));
   assert.equal(await page.locator('#atlasHeaderTools #themeToggle').count(),1,'Theme action missing on mobile');
   assert(await page.locator('header.top .atlasLogoGlyph').isVisible(),'Mobile cross icon missing');
+  await page.locator('nav.tabs [data-tab=explore]').click();
+  const mobileSubnav=await page.evaluate(()=>{
+    const one=document.querySelector('#atlasExploreSubnav .atlasSubnavChoices');
+    const compare=document.getElementById('atlasCompareOpen');
+    const rect1=one?.getBoundingClientRect(),rect2=compare?.getBoundingClientRect();
+    return {groupWidth:rect1?.width,compareWidth:rect2?.width,overlap:!!(rect1&&rect2&&
+      rect1.left<rect2.right&&rect2.left<rect1.right&&rect1.top<rect2.bottom&&rect2.top<rect1.bottom)};
+  });
+  assert(mobileSubnav.groupWidth>200&&!mobileSubnav.overlap,
+    'Mobile For You and Compare selected controls overlap: '+JSON.stringify(mobileSubnav));
   await page.setViewportSize({width:1440,height:900});
+
+  // Simulate the real quiz after initially declining personalisation. The
+  // last step must preview palette/mode instantly and require both choices.
+  await page.evaluate(()=>window.openOrielPersonalisation());
+  await page.locator('#obStart').click();
+  for(let i=0;i<5;i++)await page.locator('#obNext').click();
+  const saveLook=page.locator('#obFinish');
+  assert.equal(await saveLook.isDisabled(),true,
+    'Finish must wait for explicit palette and brightness choices');
+  assert.equal(await page.locator('.onboardPaletteCard').count(),6,
+    'Expected all six site appearance palettes on last quiz page');
+  await page.locator('[data-ob-palette=mauve]').click();
+  assert.equal(await saveLook.isDisabled(),true,'Brightness choice is still required');
+  await page.locator('[data-ob-brightness=dark]').click();
+  assert.equal(await saveLook.isEnabled(),true,'Finish should unlock after both appearance choices');
+  const look=await page.evaluate(()=>({
+    palette:document.documentElement.dataset.palette,
+    brightness:document.documentElement.dataset.theme,
+    overlayBackground:getComputedStyle(document.querySelector('.onboardCard')).backgroundColor
+  }));
+  assert.equal(look.palette,'mauve','Palette preview did not change entire app');
+  assert.equal(look.brightness,'dark','Brightness preview did not change the whole app');
+  await saveLook.click();
+  await page.waitForFunction(()=>window.OrielHasPersonalProfile?.()===true&&
+    state.prefs.onboarding?.appearancePalette==='mauve'&&
+    state.prefs.onboarding?.appearanceMode==='dark',null,{timeout:15000});
+  await page.waitForTimeout(520);
+  if(await page.locator('.cloudMaybeLater').count())await page.locator('.cloudMaybeLater').click();
+  await page.evaluate(()=>document.querySelector('header.top nav.tabs [data-tab=explore]')?.click());
+  await page.waitForFunction(()=>!!document.querySelector('#results .placement .score:not([data-fit-tone="unknown"])'),
+    null,{timeout:15000});
+  assert.equal(await page.locator('#results .placement .fitQuizLink').count(),0,
+    'Fit CTA should disappear when applicant has supplied personal preferences');
+  assert(await page.locator('#results .placement .score[data-fit-tone=excellent],#results .placement .score[data-fit-tone=good],#results .placement .score[data-fit-tone=mixed],#results .placement .score[data-fit-tone=poor]').count()>0,
+    'Completed quiz did not unlock calibrated fit colouring');
+
+  // Separate narrow initial page load: filter sidebar starts hidden, so the
+  // map is first on screen even when browser storage has no collapse choice.
+  const mobileFirstPage=await browser.newPage({viewport:{width:390,height:844}});
+  await mobileFirstPage.addInitScript(()=>localStorage.setItem('phivos-onboarding-v1','1'));
+  await mobileFirstPage.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
+  await mobileFirstPage.waitForFunction(()=>document.getElementById('explore')?.classList.contains('uxFiltersCollapsed'),
+    null,{timeout:25000});
+  assert.equal(await mobileFirstPage.locator('#uxFilterSidebar').isVisible(),false,
+    'Mobile first visit should not present the long filters before the map');
+  assert(await mobileFirstPage.locator('#placementMap').isVisible(),'Map not visible when mobile filters are collapsed');
+  await mobileFirstPage.close();
   assert(!errors.some(x=>/ReferenceError|SyntaxError/.test(x)),'Browser exceptions: '+errors.join(';'));
   console.log('RELIABLE MAP SMOKE PASS',JSON.stringify({starting,provider:initial.provider,tiles:initial.tiles.length,filtered,shortlistRestored:true}));
  }finally{await browser.close();}

@@ -165,7 +165,10 @@
     }
     const top=document.createElement('div');top.className='tdCardTop';
     const tag=document.createElement('span');tag.className='tdCardCode';tag.textContent='PROGRAMME '+code(p);
-    const score=document.createElement('span');score.className='tdFitScore';score.textContent='FIT '+fit.score+'/100';
+    const score=document.createElement('span');score.className='tdFitScore';
+    const hasFit=window.OrielHasPersonalProfile?.()===true;
+    score.textContent=hasFit?'FIT '+fit.score+'/100':'FIT · TAKE THE QUIZ';
+    score.classList.toggle('tdFitPending',!hasFit);
     top.append(tag,score);
     const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=p.title||p.employer||'Untitled programme';
     const employer=document.createElement('p');employer.className='tdEmployer';employer.textContent=p.employer||'Employer not specified';
@@ -421,7 +424,7 @@
       text.append(title,sub);
       const score=document.createElement('span');score.className='tdDrawerFit';
       const fit=assessed(p);
-      score.textContent='Fit '+fit.score+'/100';
+      score.textContent=window.OrielHasPersonalProfile?.()===true?'Fit '+fit.score+'/100':'Fit not personalised';
       const chevron=document.createElement('span');chevron.className='tdDrawerChevron';
       chevron.textContent='⌄';chevron.setAttribute('aria-hidden','true');
       summary.append(text,score,chevron);
