@@ -72,7 +72,7 @@
       let total=missingPostcodes.length+missingOutcodes.length;
       if(!total){
         drawMap(placements.filter(matches));
-        setTimeout(()=>fitCurrentMap?.(),100);
+        // Preserve the current viewport while postcode locations are updated.
         toast('All available postcode and outcode locations are already checked.');
         return;
       }
@@ -166,7 +166,7 @@
         await Promise.all(Array.from({length:Math.min(4,jobs.length)},worker));
         try{localStorage.setItem('phivos-geo-v1',JSON.stringify(geo))}catch{}
         drawMap(placements.filter(matches));
-        setTimeout(()=>fitCurrentMap?.(),100);
+        // Preserve the current viewport while postcode locations are updated.
         document.dispatchEvent(new CustomEvent('desk:locations-updated'));
         const unresolvedPostcodes=postcodes.filter(pc=>!hasGeo(pc));
         const unresolvedOutcodes=outcodes.filter(oc=>!validPoint(geo['@OUTCODE:'+oc]));
@@ -314,7 +314,7 @@
       stats();explore();reco();
       updateMapHeading();
       if(locate){try{await resolveScopePins()}catch{}}
-      setTimeout(fitCurrentMap,100);
+      // Filtering must not unexpectedly zoom the map to the national extent.
     };
 
     const injectProductIntro=()=>{
