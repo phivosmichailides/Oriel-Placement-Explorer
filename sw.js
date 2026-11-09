@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v38';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v39';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109mobile3','atlas-map-tones.css?v=20261109tone1',
@@ -13,7 +13,7 @@ const EXTRA_ASSETS=[
   'programme-preview.js?v=20261106fixed1','location-guides.js?v=20261109national1',
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
   'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
-  'simulator.js?v=20261106preview1','motion-effects.js?v=20261107a',
+  'simulator.js?v=20261109brand1','motion-effects.js?v=20261107a',
   'session-ui.js?v=20261109mobile4','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
