@@ -162,7 +162,7 @@
           const opts=[['happy','😊','Happy with community','I’m comfortable with a community-heavy programme.'],['some','🙂','Some is fine','I’m happy to have it as part of a mixed programme.'],['less','🌿','Prefer less community','I’d rather hospital/GP/other settings take the lead.'],['avoid','🙅','Avoid community-heavy','Strongly push community-heavy programmes down my recommendations.']];
           body=`<div class="onboardStepLabel">5 of 5 · One last thing</div><h3><span aria-hidden="true">💊</span> How do you feel about community pharmacy exposure?</h3><p class="onboardLead">This changes how strongly community-heavy programmes are penalised in your personal fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
         }else{
-          const colours=[['forest','Forest','#274333'],['copper','Copper','#b26d55'],['mauve','Mauve','#805e78'],
+          const colours=[['forest','Forest','#274333'],['copper','Copper','#3f6589'],['mauve','Mauve','#805e78'],
             ['amber','Amber','#c49348'],['cocoa','Cocoa','#695443'],['mono','Monochrome','#55575a']];
           body=`<div class="onboardStepLabel">6 of 6 · Make it yours</div>
             <h3>Choose your Placement Atlas look</h3>
