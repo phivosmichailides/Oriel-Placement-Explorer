@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261108atlas3/);
+  assert.match(html,/app\.js\?v=20261109smooth1/);
   assert.match(read('app.js'),/app-product\.js\?v=20261108atlas2/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
