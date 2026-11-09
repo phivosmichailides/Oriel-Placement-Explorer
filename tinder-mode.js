@@ -310,6 +310,176 @@
     const b=document.createElement('button');b.type='button';b.className='tdAction tdAction-'+kind;b.title=caption;b.setAttribute('aria-label',caption);
     b.innerHTML=icon[kind];b.addEventListener('click',fn);return b;
   };
+
+  // Tinder-only drawers use the shared canonical marks, never a second
+  // shortlist/rejection store. They include every region, not only the round.
+  const savedLists=()=>{
+    const all=getData(),marks=prefs()?.marks||{};
+    const liked=all.filter(p=>['love','yes','maybe','backup'].includes(marks[p.id]?.status));
+    const rejected=all.filter(p=>['no','never'].includes(marks[p.id]?.status));
+    const order=typeof ranked==='function'?ranked().map(p=>p.id):[];
+    const positions=new Map(order.map((id,i)=>[id,i]));
+    liked.sort((a,b)=>(positions.get(a.id)??999999)-(positions.get(b.id)??999999)||
+      assessed(b).score-assessed(a).score||a.title.localeCompare(b.title));
+    rejected.sort((a,b)=>assessed(b).score-assessed(a).score||a.title.localeCompare(b.title));
+    return {liked,rejected};
+  };
+  const refreshDrawerCounts=()=>{
+    const lists=savedLists();
+    const heart=$('tdShortlistedCount'),cross=$('tdRejectedCount');
+    if(heart)heart.textContent='('+lists.liked.length+')';
+    if(cross)cross.textContent='('+lists.rejected.length+')';
+  };
+  const closeDecisionDrawer=()=>{
+    const drawer=$('tdDecisionDrawer'),shade=$('tdDecisionShade');
+    if(!drawer||!shade||drawerMode===null)return;
+    drawerMode=null;
+    drawer.hidden=true;drawer.inert=true;drawer.setAttribute('aria-hidden','true');
+    shade.hidden=true;delete document.body.dataset.tdDrawerActive;
+    $('tdDrawerSearch').value='';
+    drawerOpener?.focus?.();drawerOpener=null;
+  };
+  const renderDecisionDrawer=()=>{
+    const list=$('tdDrawerItems'),header=$('tdDrawerHeading'),subtitle=$('tdDrawerSubtitle');
+    if(!list||drawerMode===null)return;
+    const {liked,rejected}=savedLists();
+    const inLiked=drawerMode==='liked',all=inLiked?liked:rejected;
+    const search=$('tdDrawerSearch')?.value.toLowerCase().trim()||'';
+    const matches=all.filter(p=>[p.title,p.employer,p.id,p.region,...(p.postcodes||[])]
+      .join(' ').toLowerCase().includes(search));
+    header.textContent=inLiked?'Shortlisted programmes':'Like No · Rejected';
+    subtitle.textContent=all.length+' saved '+(inLiked?'to your shortlist':'as Like No')+
+      ' · Tap a programme title for full details and your personalised fit.';
+    $('tdDrawerSearch').placeholder=inLiked?'Search shortlisted programmes':'Search rejected programmes';
+    list.replaceChildren();
+    if(!matches.length){
+      const empty=document.createElement('p');
+      empty.className='tdDrawerEmpty';
+      empty.textContent=search?'No matching programmes.':
+        inLiked?'Your shortlist is empty. Like a programme to see it here.':
+          'No rejected programmes yet. Swipe a card left to add one.';
+      list.append(empty);return;
+    }
+    const rows=document.createDocumentFragment();
+    matches.forEach((p,i)=>{
+      const row=document.createElement('article');row.className='tdDrawerItem';
+      row.dataset.programmeId=p.id;
+      const details=document.createElement('details');details.className='tdDrawerDetails';
+      const summary=document.createElement('summary');summary.className='tdDrawerSummary';
+      const text=document.createElement('span');text.className='tdDrawerSummaryText';
+      const title=document.createElement('strong');title.className='tdDrawerProgrammeTitle';
+      title.textContent=p.title||p.employer||'Unnamed programme';
+      const sub=document.createElement('span');sub.className='tdDrawerProgrammeSub';
+      sub.textContent=(p.region||'Region not listed')+' · '+money(p.salary)+
+        (p.hours?' · '+p.hours+'h/week':'');
+      text.append(title,sub);
+      const score=document.createElement('span');score.className='tdDrawerFit';
+      const fit=assessed(p);
+      score.textContent='Fit '+fit.score+'/100';
+      const chevron=document.createElement('span');chevron.className='tdDrawerChevron';
+      chevron.textContent='⌄';chevron.setAttribute('aria-hidden','true');
+      summary.append(text,score,chevron);
+      const previewSlot=document.createElement('div');previewSlot.className='tdDrawerPreview';
+      details.append(summary,previewSlot);
+      details.addEventListener('toggle',()=>{
+        if(!details.open||previewSlot.childElementCount)return;
+        const preview=build(p,true);
+        preview.classList.remove('tdNextCard');
+        preview.classList.add('tdDrawerCard');
+        preview.removeAttribute('aria-hidden');preview.inert=false;
+        previewSlot.append(preview);
+        void resolvePlaces(p,p.id,preview.querySelector('.tdLocationText'));
+      });
+      const action=document.createElement('button');
+      action.type='button';action.className='tdDrawerMove';
+      action.setAttribute('aria-label',inLiked?
+        'Like No — remove '+(p.title||p.employer)+' from shortlist':
+        'Take '+(p.title||p.employer)+' to shortlist');
+      action.innerHTML=inLiked?
+        '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg><span>Like No</span>':
+        '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg><span>Take to shortlist</span>';
+      action.addEventListener('click',()=>{
+        if(animating)return;
+        const status=inLiked?'no':'yes';
+        const old=prefs()?.marks?.[p.id]?structuredClone(prefs().marks[p.id]):null;
+        if(game.history.length>=150)game.history.shift();
+        game.history.push({id:p.id,prev:old,at:Date.now(),action:status});
+        if(!game.seen.includes(p.id))game.seen.push(p.id);
+        if(forced===p.id)forced=null;
+        if(typeof setMark==='function')setMark(p,{status,priority:''},false);
+        saveGame();
+        render();
+        renderDecisionDrawer();
+        note(inLiked?'Moved to rejected programmes.':'Moved to your shortlist.');
+        $('tdDrawerSearch')?.focus();
+      });
+      row.append(details,action);rows.append(row);
+    });
+    list.append(rows);
+  };
+  const openDecisionDrawer=(mode,opener)=>{
+    if(!['liked','rejected'].includes(mode))return;
+    if($('uxDrawer')?.classList.contains('uxOpen'))$('uxDrawerClose')?.click();
+    drawerOpener=opener||document.activeElement;
+    drawerMode=mode;
+    const drawer=$('tdDecisionDrawer'),shade=$('tdDecisionShade');
+    drawer.hidden=false;drawer.inert=false;drawer.setAttribute('aria-hidden','false');
+    shade.hidden=false;document.body.dataset.tdDrawerActive='true';
+    renderDecisionDrawer();
+    $('tdDrawerClose')?.focus();
+  };
+  const mountDecisionDrawers=()=>{
+    if($('tdFloatingDecisions'))return;
+    const float=document.createElement('div');
+    float.className='tdFloatingDecisions';float.id='tdFloatingDecisions';
+    float.setAttribute('aria-label','Tinder Mode saved decisions');
+    float.innerHTML='<button type="button" class="tdLauncher tdLauncherRejected" id="tdOpenRejected" aria-label="View rejected programmes">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>'+
+      '<span id="tdRejectedCount">(0)</span></button>'+
+      '<button type="button" class="tdLauncher tdLauncherLiked" id="tdOpenLiked" aria-label="View shortlisted programmes">'+
+      '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg>'+
+      '<span id="tdShortlistedCount">(0)</span></button>';
+    const shade=document.createElement('div');
+    shade.id='tdDecisionShade';shade.className='tdDecisionShade';shade.hidden=true;
+    const drawer=document.createElement('aside');
+    drawer.id='tdDecisionDrawer';drawer.className='tdDecisionDrawer';
+    drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');
+    drawer.setAttribute('aria-hidden','true');drawer.setAttribute('aria-labelledby','tdDrawerHeading');
+    drawer.hidden=true;drawer.inert=true;
+    drawer.innerHTML='<div class="tdDrawerHeader"><div>'+
+      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · TINDER MODE</div>'+
+      '<h2 id="tdDrawerHeading">Saved programmes</h2>'+
+      '<p id="tdDrawerSubtitle"></p></div>'+
+      '<button type="button" id="tdDrawerClose" class="tdDrawerClose" aria-label="Close saved programmes">×</button></div>'+
+      '<label class="tdDrawerSearchLabel" for="tdDrawerSearch">Find a programme</label>'+
+      '<input type="search" id="tdDrawerSearch" placeholder="Search programmes" autocomplete="off">'+
+      '<div class="tdDrawerItems" id="tdDrawerItems"></div>';
+    document.body.append(float,shade,drawer);
+    $('tdOpenRejected').addEventListener('click',e=>openDecisionDrawer('rejected',e.currentTarget));
+    $('tdOpenLiked').addEventListener('click',e=>openDecisionDrawer('liked',e.currentTarget));
+    $('tdDrawerClose').addEventListener('click',closeDecisionDrawer);
+    shade.addEventListener('click',closeDecisionDrawer);
+    $('tdDrawerSearch').addEventListener('input',renderDecisionDrawer);
+    document.addEventListener('keydown',e=>{
+      if(drawerMode===null)return;
+      if(e.key==='Escape'){e.preventDefault();closeDecisionDrawer();return;}
+      if(e.key!=='Tab')return;
+      const focus=[...drawer.querySelectorAll('button:not([disabled]),input:not([disabled]),summary')]
+        .filter(el=>el.getClientRects().length>0);
+      if(!focus.length)return;
+      const first=focus[0],last=focus[focus.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    });
+    document.addEventListener('desk:state-saved',()=>{
+      refreshDrawerCounts();
+      if(drawerMode!==null)renderDecisionDrawer();
+    });
+    document.addEventListener('desk:after-navigation',()=>{
+      if(drawerMode!==null&&!$('tinderMode')?.classList.contains('active'))closeDecisionDrawer();
+    });
+    refreshDrawerCounts();
+  };
   const render=()=>{
     if(!initialized)return;
     const pool=available(),ids=new Set(pool.map(p=>p.id));
@@ -390,6 +560,7 @@
      '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
      '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel CSV. Training areas are postcode-based approximations. Cheeky pros and cons are suggestions, not verified employer promises.</p></div>';
     $('simulator')?.after(section);
+    mountDecisionDrawers();
     const region=$('tinderRegion');if(region){
       const all=document.createElement('option');all.value='all';all.textContent='All regions — England & Wales';region.append(all);
       for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=r;region.append(option)}
@@ -402,7 +573,7 @@
     $('tinderYes').onclick=()=>{const p=nextProgramme();if(p)commit(p,'yes',1)};
     $('tinderSuper').onclick=()=>{const p=nextProgramme();if(p)commit(p,'love',0)};
     document.addEventListener('keydown',e=>{
-      if(!$('#tinderMode')?.classList.contains('active')||e.altKey||e.metaKey||e.ctrlKey)return;
+      if(drawerMode!==null||!$('#tinderMode')?.classList.contains('active')||e.altKey||e.metaKey||e.ctrlKey)return;
       if(['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)||e.target?.isContentEditable)return;
       const p=nextProgramme();
       if(e.key==='ArrowLeft'&&p){e.preventDefault();commit(p,'no',-1)}
