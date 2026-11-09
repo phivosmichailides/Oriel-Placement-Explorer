@@ -10,7 +10,10 @@
  const ids=['search','sector','region','hours','salary','sort','decision','visa','specialistView'];
  const getTab=()=>document.querySelector('.tab.active')?.dataset.tab||'explore';
  let lastTab=getTab(),restoreDone=false,restoreInProgress=false;
- let collapsed=storage.get(L,COLLAPSE)==='1';
+ // On a phone the map and programme results must appear before the long
+ // filter sidebar. The visitor can reveal it whenever they want.
+ const mobileFirst=window.matchMedia?.('(max-width: 720px)').matches;
+ let collapsed=mobileFirst?true:storage.get(L,COLLAPSE)==='1';
  let zoom=Number(storage.get(L,ZOOM)||100);
  if(!Number.isFinite(zoom)||zoom<70||zoom>130)zoom=100;
  function currentFilters(){const fields={};ids.forEach(id=>fields[id]=$(id)?.value??'');return {fields,quick:typeof quick!=='undefined'?[...quick]:[],hideAvoid:!!$('hideAvoid')?.checked,hideExcluded:!!$('hideExcluded')?.checked,hideOuterLondon:!!$('hideOuterLondon')?.checked,hideShortlisted:!!$('hideShortlisted')?.checked,hideJustice:!!$('hideJustice')?.checked,hideMental:!!$('hideMental')?.checked,hideOtherSpecialist:!!$('hideOtherSpecialist')?.checked}}
