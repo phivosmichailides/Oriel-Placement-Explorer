@@ -382,3 +382,39 @@ html[data-layout="grid"] #reco .reco p{font-size:11px}
 .oriel-tube-popup-content small{display:block;color:var(--mut);margin-top:5px}
 .oriel-tube-popup .leaflet-popup-content-wrapper{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px}
 .oriel-tube-popup .leaflet-popup-tip{background:var(--panel)}
+
+
+/* An unopened personalisation quiz must not imply a calibrated fit score. */
+html .placement .score[data-fit-tone="unknown"]{
+  background:#eef0ee!important;color:#535d58!important;
+  border:1px solid #d5dcd7!important;
+}
+html[data-theme="dark"] .placement .score[data-fit-tone="unknown"]{
+  background:#3b4141!important;color:#e3e7e5!important;
+  border-color:#666f6a!important;
+}
+html .placement .score[data-fit-tone="unknown"]>*{color:inherit!important}
+html .placement .score[data-fit-tone="unknown"] b{font-size:38px!important}
+html .placement .fitQuizLink{
+  display:inline-block;max-width:100%;border:0!important;
+  background:none!important;box-shadow:none!important;
+  padding:9px 1px 2px!important;margin:3px auto 0;
+  color:inherit!important;font-size:11px;line-height:1.45;
+  text-align:center;text-decoration:underline;font-weight:780;
+  text-underline-offset:3px;white-space:normal;cursor:pointer;
+}
+html .placement .fitQuizLink:hover{text-decoration-thickness:2px}
+html .uxFitSetupEmpty{
+  padding:24px;background:var(--panel);border:1px solid var(--line);
+  border-radius:17px;max-width:760px;
+}
+html .uxFitSetupEmpty h3{margin:0 0 8px;font-size:19px;color:var(--ink)}
+html .uxFitSetupEmpty p{color:var(--mut);font-size:14px;line-height:1.7;max-width:630px;margin:0 0 17px}
+html #tinderMode .tdFitScore.tdFitPending{
+  color:var(--mut)!important;background:var(--soft)!important;
+  border-color:var(--line)!important;
+}
+@media(max-width:720px){
+  html .placement .score[data-fit-tone="unknown"]{min-height:134px!important}
+  html .placement .fitQuizLink{font-size:12px}
+}
