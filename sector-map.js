@@ -34,12 +34,19 @@
     updateMapScopeHeading();
     const fitScopePins=()=>{
       if(!placementMap||!mapLayer)return false;
-      placementMap.invalidateSize(false);
       const bounds=window.OrielMapCurrentBounds?.isValid?.()?window.OrielMapCurrentBounds:null;
       const points=mapLayer.getLayers().map(layer=>layer.getLatLng()).filter(point=>Number.isFinite(point.lat)&&Number.isFinite(point.lng));
       const target=bounds|| (points.length?L.latLngBounds(points):null);
       if(!target?.isValid?.())return false;
-      placementMap.fitBounds(target,{padding:[42,42],maxZoom:11,animate:false});
+      let attempts=0;
+      const fitWhenSized=()=>{
+        if(!placementMap||!mapLayer)return;
+        placementMap.invalidateSize({pan:false,animate:false});
+        const size=placementMap.getSize();
+        if((size.x<180||size.y<140)&&attempts++<10){requestAnimationFrame(fitWhenSized);return;}
+        if(size.x>=180&&size.y>=140)placementMap.fitBounds(target,{padding:[42,42],maxZoom:11,animate:false});
+      };
+      requestAnimationFrame(()=>requestAnimationFrame(fitWhenSized));
       return true;
     };
     window.OrielFitMapToScope=fitScopePins;
@@ -317,7 +324,7 @@
       // become a regular-looking carpet of tiny numbered cells. Tighten the
       // screen-space radius progressively as the user zooms into regions,
       // boroughs and neighbourhoods; individual sites appear at street level.
-      const cellSize=zoom<=5?42:zoom<=6?36:zoom<=7?30:zoom<=8?28:
+      const cellSize=zoom<=5?22:zoom<=6?24:zoom<=7?26:zoom<=8?27:
         zoom<=9?26:zoom<=10?24:zoom<=11?20:zoom<=12?16:
         zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
       const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
