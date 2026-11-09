@@ -167,7 +167,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       return script?.src||null;
     },null,{timeout:12000});
     const scriptSrc=await productScript.jsonValue();
-    assert.match(scriptSrc,/app-product\.js\?v=20261109national1$/,
+    assert.match(scriptSrc,/app-product\\.js\\?v=20261109fix1$/,
       'Browser loaded an outdated product script');
     const footer=await page.locator('.app-footer').innerText();
     assert.match(footer,/^Placement Atlas · Pharmacy Foundation Programme catalogue:/,
@@ -864,6 +864,36 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
     assert(zoomAudit.customVisible&&zoomAudit.flexDirection==='column'&&zoomAudit.rightOffset<=4&&zoomAudit.expandGap>=6&&zoomAudit.expandGap<=18&&zoomAudit.order==='in,out',
       'Rounded Placement Atlas zoom control should put + above − and sit vertically above fullscreen at the lower-right edge: '+JSON.stringify(zoomAudit));
+    // The mobile shortlist must reveal a remove button after a left swipe,
+    // and removal must update the canonical decision without disturbing notes.
+    await page.evaluate(()=>{
+      const p=placements[0];setMark(p,{status:'yes',note:'preserve this note'},false);
+      window.__atlasSwipeTestId=p.id;
+    });
+    await page.locator('#uxDrawerLauncher').click();
+    const drawerItem=page.locator('.uxDrawerItem').filter({has:page.locator('[data-ux-remove-shortlist]')}).first();
+    await drawerItem.waitFor({state:'visible'});
+    await page.evaluate(()=>{
+      const item=document.querySelector('.uxDrawerItem');
+      const touch=(x,y)=>({clientX:x,clientY:y});
+      const start=new Event('touchstart',{bubbles:true});
+      Object.defineProperty(start,'changedTouches',{value:[touch(260,300)]});
+      item.dispatchEvent(start);
+      const end=new Event('touchend',{bubbles:true});
+      Object.defineProperty(end,'changedTouches',{value:[touch(170,304)]});
+      item.dispatchEvent(end);
+    });
+    await page.waitForFunction(()=>document.querySelector('.uxDrawerItem.uxSwipeRevealed .uxDrawerRemove'));
+    const removeButton=page.locator('.uxDrawerItem.uxSwipeRevealed .uxDrawerRemove').first();
+    assert.equal(await removeButton.getAttribute('aria-label')!==null,true,'Swipe should reveal an accessible remove button');
+    await removeButton.click();
+    const removed=await page.evaluate(()=>{
+      const p=placements.find(x=>x.id===window.__atlasSwipeTestId);
+      return {shortlisted:SHORT.has(mark(p).status),note:mark(p).note,drawerCount:document.querySelectorAll('.uxDrawerItem').length};
+    });
+    assert.equal(removed.shortlisted,false,'Removing from the mobile shortlist did not clear the shortlist decision');
+    assert.equal(removed.note,'preserve this note','Removing a shortlist entry should preserve its note');
+    assert(removed.drawerCount<1,'Removed programme remained in the shortlist drawer');
     const zoomStart=await page.evaluate(()=>({zoom:placementMap.getZoom(),min:placementMap.getMinZoom(),max:placementMap.getMaxZoom()}));
     console.log('MAP ZOOM CONTROL BEFORE:',JSON.stringify(zoomStart));
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
