@@ -137,10 +137,17 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(expected=>document.querySelector('#tinderActiveCard .tdProgrammeName')?.textContent.trim()===expected,
     initialDeck.next,{timeout:10000});
   assert(await page.locator('#tinderCardSlot > .tdNextCard').count()>0,'New programme is not preloaded');
-  const dragBox=await page.locator('#tinderActiveCard').boundingBox();
-  assert(dragBox,'Next active card absent for drag');
-  const dragX=dragBox.x+dragBox.width*.5,dragY=dragBox.y+Math.min(70,dragBox.height*.3);
-  await page.mouse.move(dragX,dragY);
+  // At this point the tall card may lie below the browser viewport after
+  // navigation. Hovering its title scrolls to a confirmed on-card start point
+  // before issuing raw mouse events (local viewport heights may differ).
+  const dragTarget=page.locator('#tinderActiveCard .tdProgrammeName');
+  await dragTarget.hover();
+  const dragBox=await dragTarget.boundingBox();
+  assert(dragBox,'Programme title not visible for pointer drag');
+  const dragX=dragBox.x+dragBox.width*.5,dragY=dragBox.y+dragBox.height*.5;
+  const hitCard=await page.evaluate(({x,y})=>
+    document.elementFromPoint(x,y)?.closest('#tinderActiveCard')?.id||'',{x:dragX,y:dragY});
+  assert.equal(hitCard,'tinderActiveCard','Simulated drag start is not on the active card');
   await page.mouse.down();
   await page.mouse.move(dragX-60,dragY+4,{steps:5});
   const dragging=await page.evaluate(()=>({
