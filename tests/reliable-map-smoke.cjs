@@ -303,7 +303,56 @@ fs.mkdirSync(output,{recursive:true});
   assert(mobileNav.left>=-1&&mobileNav.right<=391&&mobileNav.position==='sticky','Mobile navigation overflows the viewport: '+JSON.stringify(mobileNav));
   assert.equal(await page.locator('#atlasHeaderTools #themeToggle').count(),1,'Theme action missing on mobile');
   assert(await page.locator('header.top .atlasLogoGlyph').isVisible(),'Mobile cross icon missing');
+  // At phone width, For You and Compare may never collide or overflow.
+  await page.locator('nav.tabs [data-tab=explore]').click();
+  assert(await page.locator('#explore.uxFiltersCollapsed').count()===1,
+    'Mobile Explore filters should start folded instead of covering the map');
+  const mobileSubnav=await page.evaluate(()=>{
+    const choices=document.querySelector('#atlasExploreSubnav .atlasSubnavChoices');
+    const compare=document.querySelector('#atlasCompareOpen');
+    const a=choices?.getBoundingClientRect(),b=compare?.getBoundingClientRect();
+    return {choicesBottom:a?.bottom,compareTop:b?.top,compareRight:b?.right,
+      viewport:window.innerWidth};
+  });
+  assert(mobileSubnav.compareTop>=mobileSubnav.choicesBottom-2,
+    'Compare selected overlaps mobile Explore tabs: '+JSON.stringify(mobileSubnav));
+  assert(mobileSubnav.compareRight<=mobileSubnav.viewport+1,
+    'Compare selected extends outside mobile viewport');
   await page.setViewportSize({width:1440,height:900});
+
+  // A visitor who has not completed a quiz must never see a claimed fit score.
+  await page.waitForFunction(()=>document.querySelector('#results .score[data-fit-tone=unpersonalised]'),null,{timeout:12000});
+  assert(await page.locator('#results .atlasFitQuizLink').first().isVisible(),
+    'Neutral Personal Fit lacks its accessible quiz CTA');
+  await page.locator('#results .atlasFitQuizLink').first().click();
+  await page.locator('.onboardOverlay #obStart').waitFor({state:'visible',timeout:12000});
+  await page.locator('#obStart').click();
+  for(let i=0;i<5;i++)await page.locator('#obNext').click();
+  assert(await page.locator('[data-ob-palette]').count()===6,
+    'Appearance screen should present six real palettes');
+  assert.equal(await page.locator('[data-ob-mode]').count(),2,
+    'Appearance step should have light and dark controls');
+  await page.locator('[data-ob-palette=mauve]').click();
+  assert.equal(await page.locator('html').getAttribute('data-palette'),'mauve',
+    'Quiz palette should immediately recolour the app');
+  await page.locator('[data-ob-mode=dark]').click();
+  assert.equal(await page.locator('html').getAttribute('data-theme'),'dark',
+    'Quiz mode should immediately preview dark mode');
+  await page.locator('#obFinish').click();
+  await page.waitForFunction(()=>!document.querySelector('.onboardOverlay')&&
+    !!state.prefs?.onboarding,null,{timeout:12000});
+  const savedAppearance=await page.evaluate(()=>({
+    palette:localStorage.getItem('oriel-desk-palette-v1'),
+    mode:localStorage.getItem('oriel-desk-theme-v1'),
+    hasProfile:!!state.prefs.onboarding
+  }));
+  assert.deepEqual(savedAppearance,{palette:'mauve',mode:'dark',hasProfile:true},
+    'Saved quiz appearance did not persist');
+  if(await page.locator('.onboardSyncOverlay').count()){
+    assert(await page.locator('.onboardSyncOverlay [data-ob-later]').isVisible(),
+      'Optional cross-device sign-in prompt must offer Maybe later');
+    await page.locator('.onboardSyncOverlay [data-ob-later]').click();
+  }
   assert(!errors.some(x=>/ReferenceError|SyntaxError/.test(x)),'Browser exceptions: '+errors.join(';'));
   console.log('RELIABLE MAP SMOKE PASS',JSON.stringify({starting,provider:initial.provider,tiles:initial.tiles.length,filtered,shortlistRestored:true}));
  }finally{await browser.close();}
