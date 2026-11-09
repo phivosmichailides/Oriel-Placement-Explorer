@@ -97,7 +97,7 @@
       ['Mixed','Mixed / split'],
       ['Other','Other']
     ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+
-    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground stations (close zoom)</span>'+
+    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Tube stations</span>'+
     '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
     '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
     renderLegend();
@@ -126,7 +126,9 @@
     // TfL Underground markers are a separate layer, so filtering or redrawing
     // placement pins never removes transport context. Only show at street-level
     // zoom to prevent visual clutter in the London-wide and neighbourhood views.
-    const tubeMinZoom=15.5;
+    // Only draw TfL roundels near the part of London being explored.
+    // The wide overview never shows them; neighbourhood icons are decluttered.
+    const tubeMinZoom=14,tubeFullZoom=15.6;
     const tubeLayer=L.layerGroup();
     const tubeIcon=L.divIcon({
       className:'oriel-tube-marker',
@@ -134,28 +136,46 @@
       iconSize:[19,19],iconAnchor:[9.5,9.5]
     });
     const safeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    let tubeStations=[];
     const updateTubeVisibility=()=>{
       if(!placementMap)return;
-      const visible=placementMap.getZoom()>=tubeMinZoom;
-      if(visible&&!placementMap.hasLayer(tubeLayer))tubeLayer.addTo(placementMap);
-      else if(!visible&&placementMap.hasLayer(tubeLayer))placementMap.removeLayer(tubeLayer);
+      const zoom=placementMap.getZoom();
+      if(zoom<tubeMinZoom){
+        tubeLayer.clearLayers();
+        if(placementMap.hasLayer(tubeLayer))placementMap.removeLayer(tubeLayer);
+        return;
+      }
+      if(!placementMap.hasLayer(tubeLayer))tubeLayer.addTo(placementMap);
+      const bounds=placementMap.getBounds().pad(.02),centre=placementMap.getCenter();
+      const detailed=zoom>=tubeFullZoom;
+      const candidates=tubeStations
+        .filter(s=>bounds.contains(s.point)&&(detailed||centre.distanceTo(s.point)<=2600))
+        .sort((a,b)=>centre.distanceTo(a.point)-centre.distanceTo(b.point));
+      const usedPixels=[],nearby=[];
+      for(const station of candidates){
+        const pixel=placementMap.latLngToContainerPoint(station.point);
+        if(!detailed&&usedPixels.some(other=>other.distanceTo(pixel)<28))continue;
+        nearby.push(station);usedPixels.push(pixel);
+        if(nearby.length>=(detailed?70:24))break;
+      }
+      tubeLayer.clearLayers();
+      nearby.forEach(station=>station.marker.addTo(tubeLayer));
     };
     const renderTubeStations=()=>{
-      if(!placementMap)return;
       tubeLayer.clearLayers();
       const stations=Array.isArray(window.ORIEL_TUBE_STATIONS)?window.ORIEL_TUBE_STATIONS:[];
-      stations.forEach(station=>{
-        const lines=String(station.lines||'London Underground');
-        const marker=L.marker([Number(station.lat),Number(station.lng)],{
-          icon:tubeIcon,title:station.name,alt:station.name,keyboard:true,riseOnHover:true,zIndexOffset:650
-        });
+      tubeStations=stations.map(station=>{
+        const lat=Number(station.lat),lng=Number(station.lng);
+        if(!Number.isFinite(lat)||!Number.isFinite(lng))return null;
+        const point=L.latLng(lat,lng),lines=String(station.lines||'London Underground');
+        const marker=L.marker(point,{icon:tubeIcon,title:station.name,alt:station.name,keyboard:true,riseOnHover:true,zIndexOffset:650});
         marker.bindTooltip(safeText(station.name),{direction:'top',offset:[0,-9],opacity:.98});
         marker.bindPopup('<div class="oriel-tube-popup-content"><b>'+safeText(station.name)+'</b><span>'+safeText(lines)+'</span><small>Data provided by Transport for London</small></div>',{className:'oriel-tube-popup',maxWidth:250});
-        marker.addTo(tubeLayer);
-      });
+        return {point,marker};
+      }).filter(Boolean);
       updateTubeVisibility();
     };
-    placementMap.on('zoomend',updateTubeVisibility);
+    placementMap.on('zoomend moveend',updateTubeVisibility);
     document.addEventListener('desk:tube-stations-ready',renderTubeStations);
     if(Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length)renderTubeStations();
     else window.ORIEL_TUBE_STATIONS_READY?.then(renderTubeStations).catch(()=>{});
@@ -236,20 +256,34 @@
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
       zoom.innerHTML='<button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button>';
+      // Queue additional taps until the active Leaflet zoom animation ends.
+      // Interrupting a CSS tile transition can leave the map between levels.
+      let zoomAnimating=false,zoomTarget=null,queuedZoom=null;
+      const animateTo=target=>{
+        if(Math.abs(placementMap.getZoom()-target)<.045){zoomAnimating=false;zoomTarget=null;return;}
+        zoomAnimating=true;zoomTarget=target;
+        placementMap.setZoom(target,{animate:true});
+      };
+      placementMap.on('zoomend',()=>{
+        if(!zoomAnimating)return;
+        zoomAnimating=false;zoomTarget=null;
+        if(queuedZoom===null)return;
+        const next=queuedZoom;queuedZoom=null;
+        // Run after Leaflet's current zoomend callbacks finish.
+        requestAnimationFrame(()=>animateTo(next));
+      });
       zoom.addEventListener('click',event=>{
         const button=event.target.closest('[data-atlas-zoom]');if(!button)return;
         event.preventDefault();event.stopPropagation();
         const delta=button.dataset.atlasZoom==='in'?1:-1;
-        const currentZoom=placementMap.getZoom();
+        const currentZoom=queuedZoom!==null?queuedZoom:zoomAnimating?zoomTarget:placementMap.getZoom();
         const minZoom=Number.isFinite(placementMap.getMinZoom())?placementMap.getMinZoom():3;
         const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
-        if(delta>0&&currentZoom>=maxZoom-0.001)return;
-        if(delta<0&&currentZoom<=minZoom+0.001)return;
-        // Use the exact fractional target. Leaflet's zoomIn/zoomOut methods
-        // snap around integer zoom levels and can fail to reverse a 10.4 start.
-        // A single non-animated frame avoids competing in-flight zoom commands.
-        placementMap.stop();
-        placementMap.setZoom(Math.round((currentZoom+delta)*10)/10,{animate:false});
+        const target=Math.max(minZoom,Math.min(maxZoom,Math.round((currentZoom+delta)*10)/10));
+        if(Math.abs(target-currentZoom)<.045)return;
+        // Preserve fractional zoom levels, including the 9.4 Greater London view.
+        if(zoomAnimating)queuedZoom=target;
+        else animateTo(target);
       });
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
@@ -333,7 +367,9 @@
       const cellSize=zoom<=5?22:zoom<=6?24:zoom<=7?26:zoom<=8?27:
         zoom<=9?26:zoom<=10?24:zoom<=11?20:zoom<=12?16:
         zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
-      const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
+      // Render only markers around the viewport; retain all sites for Fit results.
+      const size=placementMap.getSize();
+      const visibleBounds=size.x>=180&&size.y>=140?placementMap.getBounds().pad(.28):null;
       const displayGroups=[];
       if(cellSize>0){
         // Use a spatial hash only to find nearby candidate clusters. Cluster
@@ -421,12 +457,15 @@
         const excluded=entries.every(isExcluded);
         const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
         const fillColor=palette[mapSector]||palette.Other;
-        const radius=(entries.length>1?4.3:2.9)+(preferred?.55:0);
+        const radius=(zoom<11.5?2.4:zoom<13.5?3.2:zoom<15.5?4.2:5.2)+(preferred?.5:0);
         const needsBadge=group.cluster||entries.length>1;
         let pin;
         if(needsBadge){
-          const size=group.cluster?(entries.length>=100?34:entries.length>=10?28:24):(entries.length>=100?30:entries.length>=10?26:23);
-          const fontSize=entries.length>=100?9:10;
+          const compact=zoom<11.5;
+          const size=compact?(entries.length>=100?23:entries.length>=10?20:17):
+            zoom<14?(entries.length>=100?29:entries.length>=10?25:21):
+            group.cluster?(entries.length>=100?34:entries.length>=10?28:24):(entries.length>=100?30:entries.length>=10?26:23);
+          const fontSize=compact?8.5:entries.length>=100?9:10;
           const countLabel=entries.length>999?'999+':String(entries.length);
           pin=L.marker(c,{
             icon:L.divIcon({
@@ -438,12 +477,12 @@
           }).addTo(mapLayer);
         }else{
           pin=L.circleMarker(c,{
-            radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,
+            radius,color:stroke,weight:zoom<11.5?1.2:preferred?2.7:excluded?2.4:1.6,
             fillColor,fillOpacity:excluded?.38:.94,opacity:excluded?.9:1
           }).addTo(mapLayer);
         }
 
-        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94,fillColor});
+        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:zoom<11.5?1.2:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94,fillColor});
         for(const p of entries){if(!programmePins.has(p.id))programmePins.set(p.id,[]);programmePins.get(p.id).push(pin)}
         pin.on('mouseover',()=>{
           hoveredProgramme=entries[0]?.id||null;syncMap();
@@ -507,7 +546,7 @@
       if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
-      $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground station symbols appear at close street-level zoom (15.5+); station data provided by Transport for London.';
+      $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground roundels reveal nearby stations at detailed neighbourhood zoom (14+) and become more complete as you zoom in; station data provided by Transport for London.';
       window.OrielMapStats={
         scope:'matching',
         programmes:list.length,
@@ -539,7 +578,7 @@
     const scheduleViewportHint=()=>{if(viewportHintQueued)return;viewportHintQueued=true;requestAnimationFrame(()=>{viewportHintQueued=false;updateViewportHint();});};
     placementMap.on('popupclose',()=>{selectedProgramme=null;syncMap();});
     placementMap.on('zoomend',()=>{scheduleMapRedraw();scheduleViewportHint();});
-    placementMap.on('moveend',()=>{if(placementMap.getZoom()>=16)scheduleMapRedraw();scheduleViewportHint();});
+    placementMap.on('moveend resize',()=>{scheduleMapRedraw();scheduleViewportHint();});
     try{drawMap(placements.filter(matches));}catch{}
     // Keep the intentional London starting view. Fit the national extent only
     // when the user presses Fit results or the empty-map action.

@@ -220,3 +220,10 @@
  #tinderMode .tdUndoReturning::after,
  #tinderMode .tdUndoTwinkles i{animation:none!important}
 }
+
+/* On Tinder Mode the game is the focus; the marketing intro belongs elsewhere. */
+html .productIntro[hidden]{display:none!important}
+#tinderMode .tdModeIntro{max-width:780px;margin:4px auto 0;text-align:center}
+#tinderMode .tdModeIntro p{margin-left:auto;margin-right:auto}
+#tinderMode .tdSettings{max-width:780px;margin-inline:auto}
+#tinderMode .tdBoard{margin-left:auto;margin-right:auto}
