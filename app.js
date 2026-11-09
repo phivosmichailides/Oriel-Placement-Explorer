@@ -17,7 +17,7 @@
     };
     const loadOnboarding=()=>{
       const onboarding=document.createElement('script');
-      onboarding.src='onboarding.js?v=20261108atlas1';
+      onboarding.src='onboarding.js?v=20261109quiz4';
       onboarding.onload=loadDeadlineDates;
       onboarding.onerror=loadDeadlineDates;
       document.body.appendChild(onboarding);
@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261109header2';
+    product.src='app-product.js?v=20261109fit4';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
