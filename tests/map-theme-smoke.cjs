@@ -738,6 +738,23 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
       stats:window.OrielMapStats
     }));
     console.log('ALL-REGIONS LOCATION COVERAGE:',JSON.stringify(locationCoverage));
+    const retryProbe=await page.evaluate(()=>{
+      const p=placements.find(item=>(item.postcodes||[]).length>0);
+      if(!p)return null;
+      const pc=String(p.postcodes[0]).toUpperCase().replace(/\s+/g,'');
+      const outward=(pc.match(/^[A-Z]{1,2}\d[A-Z\d]?/)||[])[0];
+      delete geo[pc];
+      if(outward)delete geo['@OUTCODE:'+outward];
+      try{localStorage.setItem('phivo-geo-v1',JSON.stringify(geo))}catch{}
+      return pc;
+    });
+    assert(retryProbe,'Could not choose a postcode for the automatic online-retry test');
+    await page.evaluate(()=>window.dispatchEvent(new Event('online')));
+    await page.waitForFunction(pc=>{
+      const point=geo[pc];
+      return Array.isArray(point)&&point.length>=2&&Number.isFinite(Number(point[0]))&&Number.isFinite(Number(point[1]));
+    },retryProbe,{timeout:15000});
+    console.log('ONLINE LOCATION RETRY AUDIT:',retryProbe);
     console.log('ALL-REGIONS MAP VIEW:',JSON.stringify(allMapView));
     console.log('POSTCODE SERVICE MOCK REQUESTS:',geocodeRequests);
     assert(allRegionPins>=15,

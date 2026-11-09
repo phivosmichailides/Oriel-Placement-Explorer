@@ -172,7 +172,7 @@
         const unresolvedOutcodes=outcodes.filter(oc=>!validPoint(geo['@OUTCODE:'+oc]));
         const unresolvedCount=new Set([...unresolvedPostcodes,...unresolvedOutcodes.map(oc=>'@OUTCODE:'+oc)]).size;
         if(failed.length)toast(located.toLocaleString()+' locations added; '+failed.length.toLocaleString()+' lookup requests need a retry.');
-        else if(unresolvedCount)toast(located.toLocaleString()+' locations added; '+unresolvedCount.toLocaleString()+' location codes remain unresolved.');
+        else if(unresolvedCount)toast(located.toLocaleString()+' locations added; '+unresolvedCount.toLocaleString()+' location codes remain unresolved.'+(navigator.onLine===false?' Reconnect and the app will retry automatically.':''));
         else toast('All '+(postcodes.length+outcodes.length).toLocaleString()+' location codes have usable map positions.');
       }catch(error){
         console.error('Location resolution failed',error);
@@ -184,6 +184,17 @@
         if(resolveScopeAgain){resolveScopeAgain=false;setTimeout(()=>resolveScopePins(),0);}
       }
     };
+    // Retry any missing postcode/outcode lookups automatically when connectivity returns.
+    let onlineResolveTimer=null;
+    window.addEventListener('online',()=>{
+      if(geoBusy){resolveScopeAgain=true;return;}
+      if(onlineResolveTimer)clearTimeout(onlineResolveTimer);
+      onlineResolveTimer=setTimeout(()=>{
+        onlineResolveTimer=null;
+        if(navigator.onLine!==false)resolveScopePins();
+      },900);
+    });
+
     areaPref=p=>{
       const selected=state.prefs.onboarding?.region||'';
       const t=`${p.title} ${p.area}`.toLowerCase();
