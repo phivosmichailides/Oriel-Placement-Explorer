@@ -1,7 +1,8 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v33';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v34';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
+  'atlas-navigation.js?v=20261109nav1','atlas-navigation.css?v=20261109nav1',
   'app-base.js?v=20261109fix2','app-product.js?v=20261109fix3','generic-public.js?v=20261108atlas3',
   'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261106g',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261109fix2','rail-stations.js?v=20261109national1',

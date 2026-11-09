@@ -43,6 +43,41 @@ fs.mkdirSync(output,{recursive:true});
   assert(mainRasterOptions.keepBuffer>=6&&mainRasterOptions.updateWhenZooming===false,
     'Main map should retain previous tiles while zooming: '+JSON.stringify(mainRasterOptions));
   assert(initial.tiles.some(x=>/maptiler\.com|openstreetmap\.org/.test(x)),'Map has no real street tile provider');
+  // Sticky app navigation reuses the original page controllers.
+  await page.waitForFunction(()=>!!document.querySelector('header.top nav.tabs')&&!!document.getElementById('atlasDataTools'),null,{timeout:12000}).catch(async error=>{
+    const detail=await page.evaluate(()=>({header:!!document.querySelector('header.top'),navParent:document.querySelector('nav.tabs')?.parentElement?.tagName,footer:!!document.getElementById('atlasDataTools'),scripts:[...document.scripts].filter(el=>el.src.includes('atlas-navigation')).map(el=>el.src),message:document.body.dataset.atlasView}));
+    throw new Error('Persistent navigation did not mount: '+JSON.stringify(detail)+'; '+error.message);
+  });
+  await page.waitForFunction(()=>!!document.querySelector('header.top nav.tabs [data-tab=tinderMode]'),null,{timeout:20000}).catch(async error=>{
+    const detail=await page.evaluate(()=>({tabs:[...document.querySelectorAll('nav.tabs .tab')].map(el=>el.dataset.tab),placements:typeof placements==='undefined'?'undefined':placements.length,simPanel:!!document.getElementById('simulator'),tinderPanel:!!document.getElementById('tinderMode')}));
+    throw new Error('Dynamic navigation not ready: '+JSON.stringify(detail)+'; '+error.message);
+  });
+  assert.equal(await page.locator('header.top nav.tabs').count(),1,'Main navigation is not in the persistent header');
+  assert.equal(await page.locator('header.top #exportBtn').count(),0,'Export decisions still occupies the top toolbar');
+  assert.equal(await page.locator('#atlasDataTools #exportBtn').count(),1,'Export decisions is missing from footer');
+  assert.equal(await page.locator('#atlasDataTools #backupBtn').count(),1,'Backup is missing from footer');
+  assert.equal(await page.locator('#atlasDataTools #restoreBtn').count(),1,'Restore is missing from footer');
+  assert.equal(await page.locator('#atlasDataTools #uploadBtn').count(),1,'CSV upload is missing from footer');
+  assert.equal(await page.locator('header.top #themeToggle').count(),1,'Theme control disappeared from the top header');
+  assert(await page.locator('header.top').evaluate(el=>getComputedStyle(el).position==='sticky'),'Main header must remain sticky');
+  const visibleNav=await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs .tab')]
+    .filter(el=>getComputedStyle(el).display!=='none').map(el=>el.dataset.tab));
+  assert.deepEqual(visibleNav,['explore','shortlist','simulator','tinderMode','outcome','prefs'],'Unexpected main navigation order');
+  await page.locator('#atlasExploreSubnav [data-atlas-subtab=foryou]').click();
+  await page.waitForFunction(()=>document.getElementById('foryou')?.classList.contains('active'),null,{timeout:10000});
+  assert(await page.locator('header.top [data-tab=explore]').evaluate(el=>el.classList.contains('atlasParentActive')),'Explore should remain the parent of For You');
+  assert(await page.locator('#foryou .atlasExploreSubnav').isVisible(),'For You nested navigation is missing');
+  await page.locator('#atlasForYouSubnav [data-atlas-subtab=explore]').click();
+  await page.waitForFunction(()=>document.getElementById('explore')?.classList.contains('active'),null,{timeout:10000});
+  await page.locator('#atlasCompareOpen').click();
+  await page.waitForFunction(()=>document.getElementById('compare')?.classList.contains('active'),null,{timeout:10000});
+  assert.equal(await page.locator('header.top [data-tab=compare]').isVisible(),false,'Compare should not occupy the main navigation');
+  await page.locator('#atlasCompareBack').click();
+  await page.waitForFunction(()=>document.getElementById('explore')?.classList.contains('active'),null,{timeout:10000});
+  await page.evaluate(()=>window.scrollTo(0,700));
+  await page.waitForFunction(()=>window.scrollY>250,null,{timeout:10000});
+  assert(await page.locator('header.top').evaluate(el=>{const y=el.getBoundingClientRect().top;return y>=-2&&y<=12}),'Navigation disappeared on scroll');
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
   // Tube markers must be absent until close street-level zoom.
   await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
@@ -106,11 +141,17 @@ fs.mkdirSync(output,{recursive:true});
   await toAdd.click();
   await page.waitForFunction(count=>ranked().length===count+1,countBefore,{timeout:10000});
   await page.locator('nav.tabs [data-tab=shortlist]').click();
+  assert(await page.locator('#atlasShortlistExportDecisions').isVisible(),'Shortlist decision export shortcut missing');
+  assert(await page.locator('#atlasShortlistBackup').isVisible(),'Shortlist backup shortcut missing');
   await page.waitForFunction(id=>!![...document.querySelectorAll('#shortlistList>.rank-row .placement')].find(el=>el.dataset.id===id),id,{timeout:12000});
   const x=page.locator('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');
   assert(await x.count()>0,'Desktop red X missing');
   await x.first().click();
   await page.waitForFunction(count=>ranked().length===count,countBefore,{timeout:12000});
+  await page.setViewportSize({width:390,height:844});
+  const mobileNav=await page.locator('header.top').evaluate(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,position:getComputedStyle(el).position}));
+  assert(mobileNav.left>=-1&&mobileNav.right<=391&&mobileNav.position==='sticky','Mobile navigation overflows the viewport: '+JSON.stringify(mobileNav));
+  await page.setViewportSize({width:1440,height:900});
   assert(!errors.some(x=>/ReferenceError|SyntaxError/.test(x)),'Browser exceptions: '+errors.join(';'));
   console.log('RELIABLE MAP SMOKE PASS',JSON.stringify({starting,provider:initial.provider,tiles:initial.tiles.length,filtered,shortlistRestored:true}));
  }finally{await browser.close();}
