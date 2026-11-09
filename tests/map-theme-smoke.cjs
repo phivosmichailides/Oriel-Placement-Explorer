@@ -899,14 +899,18 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     await page.waitForFunction(()=>!!document.querySelector('.map-card #placementMap'));
     assert.equal(await page.locator('#atlasMapFocus .atlasMapFocusStage #placementMap').count(),0,'Closing the focus map should restore the original map position');
 
-    // Underground roundels are a distinct layer, revealed at neighbourhood zoom.
+    // Underground roundels are visible only when zoomed in to street level.
     await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});
     const tubeDataCount=await page.evaluate(()=>window.ORIEL_TUBE_STATIONS.length);
     assert(tubeDataCount>=250,'TfL Underground station data did not load');
     await page.evaluate(()=>placementMap.setView([51.5074,-0.1278],12,{animate:false}));
+    assert.equal(await page.locator('#placementMap .oriel-tube-roundel').count(),0,'Tube icons clutter neighbourhood map');
+    await page.evaluate(()=>placementMap.setZoom(15.6,{animate:false}));
     await page.waitForFunction(()=>document.querySelectorAll('#placementMap .oriel-tube-roundel').length>=1,null,{timeout:20000});
     const mainTubeCount=await page.locator('#placementMap .oriel-tube-roundel').count();
-    assert(mainTubeCount>=1,'The London neighbourhood map did not render a visible Underground station roundel');
+    assert(mainTubeCount>=1,'The close street-level map did not render an Underground roundel');
+    await page.evaluate(()=>placementMap.setZoom(12,{animate:false}));
+    await page.waitForFunction(()=>!document.querySelector('#placementMap .oriel-tube-roundel'),null,{timeout:10000});
 
     await page.locator('[data-q="london"]').first().click();
     await page.waitForFunction(()=>{
