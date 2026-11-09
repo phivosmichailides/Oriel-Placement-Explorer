@@ -4,6 +4,25 @@
   const base=document.createElement('script');
   base.src='app-base.js?v=20261109fix2';
   base.onload=()=>{
+    const hasProfile=()=>window.OrielHasPersonalProfile?.()===true;
+    // Do not label default heuristic weights as an applicant's personal fit.
+    document.addEventListener('click',event=>{
+      if(event.target.closest('[data-start-fit-quiz]')){
+        event.preventDefault();
+        if(typeof window.openOrielPersonalisation==='function')window.openOrielPersonalisation();
+        else document.getElementById('personaliseAgain')?.click();
+      }
+    });
+    const updateFitSortLabels=()=>{
+      const text=hasProfile()?'Best personal fit':'Suggested order · personalise for fit';
+      for(const id of ['sort','uxResultsSort']){
+        const el=document.getElementById(id)?.querySelector('option[value="fit"]');
+        if(el)el.textContent=text;
+      }
+    };
+    document.addEventListener('desk:action',e=>{
+      if(e.detail?.name==='onboarding_completed')updateFitSortLabels();
+    });
     const decisions=[['','○','Unmarked'],['love','♡','Love'],['yes','✓','Strong yes'],['maybe','◐','Maybe'],['backup','◇','Only if needed'],['no','−','No'],['never','×','Absolutely not']];
     const decisionPicker=status=>{
       const current=decisions.find(x=>x[0]===status)||decisions[0];
@@ -249,6 +268,9 @@
 
     card=(p,compact=false)=>{
       const a=analyse(p),m=mark(p),inComp=state.compare.includes(p.id);
+      const personalised=hasProfile();
+      const tone=!personalised?'unknown':a.score>=78?'excellent':a.score>=65?'good':a.score>=35?'mixed':'poor';
+      const quizCta=personalised?'':'<button type="button" class="fitQuizLink" data-start-fit-quiz>Take the quiz to see if you’re a fit ↗</button>';
       const h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry');
       const icon=sector(p)==='Hospital'?'':sector(p)==='General Practice'?'':sector(p)==='Industry'?'':'';
       const badgeClass=label=>{
@@ -264,17 +286,23 @@
       const tags=[...specialised.map(x=>'Specialist: '+window.OrielSpecialist.labelOf(x)),p.places&&` ${p.places} training ${p.places===1?'place':'places'}`,`Sponsorship: ${p.visa===true?'offered':p.visa===false?'not offered':'not stated'}`,p.region&&` ${p.region}`,`${icon} ${sector(p)}`,p.hours&&` ${p.hours}h/week`,p.settings.length>1&&' Split',h&&`Hospital: ${h}w`,g&&`GP: ${g}w`,c&&`Community: ${c}w`,i&&`Industry: ${i}w`].filter(Boolean);
       const code=p.id.split('/').pop();
       const orielState=m.priority?`Your shortlist priority #${m.priority}`:SHORT.has(m.status)?'Saved to your shortlist':'Not shortlisted';
-      return `<article class="placement card" data-id="${esc(p.id)}"><div class="placementTop"><div><div class="eyebrow">${esc(p.postcodes.join(' · ')||p.area||p.region)}</div><h3>${esc(p.title||p.employer)}</h3><div class="employer">${esc(p.employer)}</div></div><div><div class="salary ${p.salary?'salary-value':''}">${p.salary?'£'+p.salary.toLocaleString():'Salary n/a'}</div><div class="hourly">${hourly(p)?'≈ £'+hourly(p).toFixed(2)+'/hr gross':''}</div></div></div><div class="badges">${tags.map(x=>`<span class="badge ${badgeClass(x)}">${esc(x)}</span>`).join('')}</div><div class="fit fitExpanded"><div class="score" data-fit-tone="${a.score>=78?'excellent':a.score>=65?'good':a.score>=50?'mixed':'poor'}"><span>Personal fit</span><b>${a.score}</b><small>${esc(a.band)}</small><em>based on your priorities</em></div><div class="fitBreakdown">${fitDetail('Why it could fit',a.good.slice(0,4),'positive','No strong positive signals found yet.')}${fitDetail('Trade-offs to check',a.bad.slice(0,3),'caution','No major trade-offs.')}</div></div>${compact?'':`<p class="desc">${esc(p.desc||'No programme description supplied.')}</p><button class="more" data-action="more">Read more</button>`}<div class="decision-quick"><button class="btn ${SHORT.has(m.status)?'selected':''}" data-action="prefer">${SHORT.has(m.status)?'Remove from shortlist':'Add to shortlist'}</button><button class="btn ${isExcluded(p)?'excluded':''}" data-action="exclude">${isExcluded(p)?'Excluded — undo':'Exclude'}</button><span class="smallnote">Programme ${esc(code)} · ${esc(orielState)}</span></div><div class="controls">${decisionPicker(m.status)}<input class="manualPriority" type="number" min="1" step="1" data-action="priority" inputmode="numeric" value="${esc(m.priority||'')}" placeholder="#" title="Manual priority"><input data-action="note" value="${esc(m.note||'')}" placeholder=" Your note…"><button class="btn compare ${inComp?'on':''}" data-action="compare">${inComp?' Comparing':' Compare'}</button></div></article>`;
+      return `<article class="placement card" data-id="${esc(p.id)}"><div class="placementTop"><div><div class="eyebrow">${esc(p.postcodes.join(' · ')||p.area||p.region)}</div><h3>${esc(p.title||p.employer)}</h3><div class="employer">${esc(p.employer)}</div></div><div><div class="salary ${p.salary?'salary-value':''}">${p.salary?'£'+p.salary.toLocaleString():'Salary n/a'}</div><div class="hourly">${hourly(p)?'≈ £'+hourly(p).toFixed(2)+'/hr gross':''}</div></div></div><div class="badges">${tags.map(x=>`<span class="badge ${badgeClass(x)}">${esc(x)}</span>`).join('')}</div><div class="fit fitExpanded"><div class="score" data-fit-tone="${tone}"><span>Personal fit</span><b>${personalised?a.score:'—'}</b><small>${personalised?esc(a.band):'Not personalised'}</small><em>${personalised?'Based on your priorities':'Your preferences are not set yet'}</em>${quizCta}</div><div class="fitBreakdown">${fitDetail('Why it could fit',a.good.slice(0,4),'positive','No strong positive signals found yet.')}${fitDetail('Trade-offs to check',a.bad.slice(0,3),'caution','No major trade-offs.')}</div></div>${compact?'':`<p class="desc">${esc(p.desc||'No programme description supplied.')}</p><button class="more" data-action="more">Read more</button>`}<div class="decision-quick"><button class="btn ${SHORT.has(m.status)?'selected':''}" data-action="prefer">${SHORT.has(m.status)?'Remove from shortlist':'Add to shortlist'}</button><button class="btn ${isExcluded(p)?'excluded':''}" data-action="exclude">${isExcluded(p)?'Excluded — undo':'Exclude'}</button><span class="smallnote">Programme ${esc(code)} · ${esc(orielState)}</span></div><div class="controls">${decisionPicker(m.status)}<input class="manualPriority" type="number" min="1" step="1" data-action="priority" inputmode="numeric" value="${esc(m.priority||'')}" placeholder="#" title="Manual priority"><input data-action="note" value="${esc(m.note||'')}" placeholder=" Your note…"><button class="btn compare ${inComp?'on':''}" data-action="compare">${inComp?' Comparing':' Compare'}</button></div></article>`;
     };
 
     stats=()=>{
       const marks=Object.values(state.marks),short=marks.filter(x=>SHORT.has(x.status)).length,scope=scopePlacements(),places=scope.reduce((sum,p)=>sum+(Number(p.places)||0),0),hosp=scope.filter(x=>sector(x)==='Hospital').length,gp=scope.filter(x=>sector(x)==='General Practice').length,strong=scope.filter(x=>analyse(x).score>=78).length;
-      const d=[['',short,'Shortlisted'],['',scope.length.toLocaleString(),`${scopeName()} programmes`],['',places.toLocaleString(),'Training places stated'],['',hosp,'Hospital-led'],['',gp,'GP-led'],['',strong,'Strong-fit flags']];
+      const d=[['',short,'Shortlisted'],['',scope.length.toLocaleString(),`${scopeName()} programmes`],['',places.toLocaleString(),'Training places stated'],['',hosp,'Hospital-led'],['',gp,'GP-led'],[ '',hasProfile()?strong:'—',hasProfile()?'Strong-fit flags':'Personalise for fit']];
       $('stats').innerHTML=d.map(x=>`<div class="stat"><div class="k">${x[0]} ${x[1]}</div><div class="l">${x[2]}</div></div>`).join('');
     };
 
     reco=()=>{
       const region=activeRegion();
+      if(!hasProfile()){
+        const title=document.querySelector('#foryou .sectionHero h2');
+        if(title)title.textContent='Discover your personalised matches';
+        $('reco').innerHTML='<div class="card uxFitSetupEmpty"><h3>Your preferences come first</h3><p>We haven’t asked what matters to you yet, so these programmes cannot honestly be ranked as your best personal matches. Take the short quiz to see explainable scores and trade-offs.</p><button type="button" class="btn primary" data-start-fit-quiz>Personalise my matches</button></div>';
+        return;
+      }
       const arr=placements.filter(p=>!window.OrielSpecialist?.filterOut(p)&&(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!window.OrielGeoBlacklist?.shouldHide(p)&&!isExcluded(p)&&(!$('hideShortlisted')?.checked||!SHORT.has(mark(p).status))&&(!($('hideOuterLondon')?.checked&&region==='London')||!window.OrielAreaRules?.isOuterTown(p))&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
       const title=document.querySelector('#foryou .sectionHero h2');
       if(title)title.textContent=`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`;
@@ -341,6 +369,7 @@
     };
 
     if(!hadSaved){state.prefs.weights={money:5,hospital:4,gp:4,lifestyle:5,location:4,progression:5,independence:5,communityPenalty:5};save();}
+    updateFitSortLabels();
     $('search').placeholder='Employer, region, postcode, programme ID…';
     $('quick').innerHTML='<button class="chip" id="allRegionsBtn"> All regions</button><button class="chip" data-q="london"> London</button><button class="chip" data-q="hospital"> Hospital-led</button><button class="chip" data-q="gp"> GP-heavy</button><button class="chip" data-q="hospitalgp">Hosp+GP</button><button class="chip" data-q="split"> Any split</button><button class="chip" data-q="industry"> Industry</button><button class="chip" data-q="community"> Community</button><button class="chip" data-q="lowcommunity"> Low community</button><button class="chip" data-q="desk"> Desk-ish</button><button class="chip" data-q="cv"> CV boost</button><button class="chip" data-q="hours"> ≤40h</button><button class="chip" data-q="pay"> £30k+</button>';
     document.querySelectorAll('.chip[data-q]').forEach(button=>button.classList.toggle('on',quick.has(button.dataset.q)));
