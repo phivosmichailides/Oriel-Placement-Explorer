@@ -234,19 +234,18 @@
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
       zoom.innerHTML='<button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button>';
-      let pendingZoomTarget=null;
-      placementMap.on('zoomend',()=>{pendingZoomTarget=null;});
       zoom.addEventListener('click',event=>{
         const button=event.target.closest('[data-atlas-zoom]');if(!button)return;
         event.preventDefault();event.stopPropagation();
         const delta=button.dataset.atlasZoom==='in'?1:-1;
-        const currentZoom=Number.isFinite(pendingZoomTarget)?pendingZoomTarget:placementMap.getZoom();
+        const currentZoom=placementMap.getZoom();
         const minZoom=Number.isFinite(placementMap.getMinZoom())?placementMap.getMinZoom():3;
         const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
-        const target=Math.max(minZoom,Math.min(maxZoom,currentZoom+delta));
-        if(Math.abs(target-placementMap.getZoom())<0.001)return;
-        placementMap.stop();pendingZoomTarget=target;
-        placementMap.setZoom(target,{animate:true});
+        if(delta>0&&currentZoom>=maxZoom-0.001)return;
+        if(delta<0&&currentZoom<=minZoom+0.001)return;
+        placementMap.stop();
+        if(delta>0)placementMap.zoomIn(1,{animate:true});
+        else placementMap.zoomOut(1,{animate:true});
       });
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
