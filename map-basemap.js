@@ -136,6 +136,7 @@ const STYLES=Object.freeze({
         if(!holder.isConnected){rasterInstances.delete(record);fallbackInstances.delete(record);continue;}
         setMapBackdrop(record.leaflet);
         record.layer.setUrl(rasterTileUrl());
+        if(record.intentional){holder.dataset.basemap='streets-'+activeStyleName();if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='rendered';}
       }catch(error){console.warn('Raster fallback style could not switch',error)}
     }
   };
