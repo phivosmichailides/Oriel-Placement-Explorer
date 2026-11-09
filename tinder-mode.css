@@ -531,3 +531,12 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
 @media(prefers-reduced-motion:reduce){
  #tinderMode .tdExitTwinkles i{animation:none!important;opacity:0!important}
 }
+
+#tinderMode .tdFitUnpersonalised{
+  background:var(--soft)!important;color:var(--mut)!important;
+  border-color:var(--line)!important;cursor:pointer;text-decoration:underline;
+  text-underline-offset:2px;
+}
+#tinderMode .tdFitUnpersonalised:focus-visible{
+  outline:2px solid var(--ux-accent-ink);outline-offset:3px;
+}
