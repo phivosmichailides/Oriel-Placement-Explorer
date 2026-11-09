@@ -256,11 +256,16 @@
       mapContainer.style.position='relative';
       const zoom=document.createElement('div');zoom.className='atlasMapZoom';zoom.id='atlasMapZoom';zoom.setAttribute('role','group');zoom.setAttribute('aria-label','Map zoom controls');
       zoom.innerHTML='<button type="button" data-atlas-zoom="in" aria-label="Zoom in" title="Zoom in">+</button><span aria-hidden="true"></span><button type="button" data-atlas-zoom="out" aria-label="Zoom out" title="Zoom out">−</button>';
+      // Remember the intended target when the user taps +/− rapidly.
+      let requestedZoom=null;
+      placementMap.on('zoomend',()=>{
+        if(requestedZoom!==null&&Math.abs(placementMap.getZoom()-requestedZoom)<.045)requestedZoom=null;
+      });
       zoom.addEventListener('click',event=>{
         const button=event.target.closest('[data-atlas-zoom]');if(!button)return;
         event.preventDefault();event.stopPropagation();
         const delta=button.dataset.atlasZoom==='in'?1:-1;
-        const currentZoom=placementMap.getZoom();
+        const currentZoom=requestedZoom===null?placementMap.getZoom():requestedZoom;
         const minZoom=Number.isFinite(placementMap.getMinZoom())?placementMap.getMinZoom():3;
         const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
         if(delta>0&&currentZoom>=maxZoom-0.001)return;
@@ -268,8 +273,10 @@
         // Use the exact fractional target. Leaflet's zoomIn/zoomOut methods
         // snap around integer zoom levels and can fail to reverse a 10.4 start.
         // Animate the current tile level while fetching the next one.
+        const target=Math.round((currentZoom+delta)*10)/10;
+        requestedZoom=target;
         placementMap.stop();
-        placementMap.setZoom(Math.round((currentZoom+delta)*10)/10,{animate:true});
+        placementMap.setZoom(target,{animate:true});
       });
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
