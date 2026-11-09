@@ -169,3 +169,8 @@ html .atlasShortlistDataActions .btn{min-height:38px}
   html{scroll-padding-top:128px}
   html .panel{scroll-margin-top:128px}
 }
+
+/* Drawers and other focused overlays must always sit above sticky navigation.
+   In particular, preserve swipe-to-remove hit targets on narrow screens. */
+html .uxDrawerBackdrop{z-index:2050!important}
+html .uxDrawer{z-index:2051!important}
