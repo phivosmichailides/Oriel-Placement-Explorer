@@ -200,6 +200,9 @@ fs.mkdirSync(output,{recursive:true});
   await page.locator('#tinderSuper').click();
   await page.waitForFunction(()=>document.querySelector('#tinderActiveCard.tdLeavingSuper')&&
     document.querySelector('#tinderMode .tdCardDeck.tdShineSuper'),null,{timeout:4000});
+  await page.waitForFunction(()=>
+    document.querySelector('#tinderActiveCard')?.style.transform.startsWith('translate3d(0px,-'),
+    null,{timeout:3000});
   const superFlight=await page.evaluate(()=>({
     transform:document.querySelector('#tinderActiveCard')?.style.transform,
     blue:getComputedStyle(document.querySelector('#tinderActiveCard')).boxShadow,
