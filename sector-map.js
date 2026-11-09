@@ -243,9 +243,11 @@
         const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
         if(delta>0&&currentZoom>=maxZoom-0.001)return;
         if(delta<0&&currentZoom<=minZoom+0.001)return;
+        // Use the exact fractional target. Leaflet's zoomIn/zoomOut methods
+        // snap around integer zoom levels and can fail to reverse a 10.4 start.
+        // A single non-animated frame avoids competing in-flight zoom commands.
         placementMap.stop();
-        if(delta>0)placementMap.zoomIn(1,{animate:true});
-        else placementMap.zoomOut(1,{animate:true});
+        placementMap.setZoom(Math.round((currentZoom+delta)*10)/10,{animate:false});
       });
       mapContainer.append(zoom);
       const emptyHint=document.createElement('div');
