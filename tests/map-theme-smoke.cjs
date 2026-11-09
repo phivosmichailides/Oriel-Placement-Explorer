@@ -54,7 +54,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const requiredAssets=[
       'programme-preview.js?v=20261106fixed1','workspace-ux.js?v=20261109fix2',
       'tube-stations.js?v=20261108tfl2','rail-stations.js?v=20261109national1','location-guides.js?v=20261109national1','design-refresh.css?v=20261109national2',
-      'app.js?v=20261109fix1','sector-map.js?v=20261109fix1',
+      'app.js?v=20261109fix2','sector-map.js?v=20261109fix2',
       'map-basemap.js?v=20261109fix3','generic-public.js?v=20261108atlas3',
       'map-focus.css?v=20261109fix3','session-ui.js?v=20261108filters3',
       'pwa.js?v=20261109national2'
@@ -128,7 +128,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v24'),
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v25'),
         cachedPwaAsset:swSource.includes("pwa.js?v=20261109national2")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
