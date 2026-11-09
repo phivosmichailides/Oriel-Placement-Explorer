@@ -71,7 +71,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await mobile.locator('#results .placement').first().waitFor({state:'visible',timeout:60000});
   await mobile.locator('#results .placement').first().locator('[data-action=prefer]').click();
   await mobile.waitForFunction(()=>document.querySelector('#uxDrawerLauncher [data-ux-shortlist-count]')?.textContent==='(1)',null,{timeout:15000});
-  await mobile.locator('[data-ux-open-drawer]').first().click();
+  await mobile.locator('#uxDrawerLauncher').click();
   const mobileItem=mobile.locator('#uxDrawerItems .uxDrawerItem').first();
   await mobileItem.waitFor({state:'visible',timeout:15000});
   const mobileRemove=mobileItem.locator('[data-atlas-remove-shortlist]');
