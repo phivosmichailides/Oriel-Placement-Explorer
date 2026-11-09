@@ -243,3 +243,209 @@
 @media(prefers-reduced-motion:reduce){
   #tinderMode .tdNextCard,#tinderMode .tdNextFinished{transition:none!important}
 }
+
+
+/* Directional, immediate shine without a blurred full-card overlay.
+   The NEXT real programme remains fully opaque and readable underneath. */
+#tinderMode .tdSwipeCard.tdDragNo,
+#tinderMode .tdSwipeCard.tdLeavingNo{
+  border-color:var(--td-red)!important;
+  box-shadow:0 14px 58px rgba(240,58,86,.36),
+    0 0 0 4px rgba(239,65,94,.15),-18px 0 44px rgba(239,65,94,.18)!important;
+}
+#tinderMode .tdSwipeCard.tdDragYes,
+#tinderMode .tdSwipeCard.tdLeavingYes{
+  border-color:var(--td-green)!important;
+  box-shadow:0 14px 58px rgba(41,189,123,.34),
+    0 0 0 4px rgba(56,195,136,.16),18px 0 44px rgba(36,197,125,.19)!important;
+}
+#tinderMode .tdSwipeCard.tdLeavingSuper{
+  border-color:var(--td-blue)!important;
+  box-shadow:0 14px 65px rgba(58,153,238,.38),
+    0 0 0 5px rgba(55,156,242,.20),0 -20px 62px rgba(49,151,238,.25)!important;
+}
+#tinderMode .tdCardDeck.tdShineNo .tdSparkle{
+  color:#ff566e!important;text-shadow:0 0 12px #f6385ac9,0 0 24px #ff6778a6!important;
+}
+#tinderMode .tdCardDeck.tdShineYes .tdSparkle{
+  color:#35d38a!important;text-shadow:0 0 12px #21c679c9,0 0 24px #70f8b4a6!important;
+}
+#tinderMode .tdCardDeck.tdShineSuper .tdSparkle{
+  color:#53aefd!important;text-shadow:0 0 12px #36a7ffdd,0 0 27px #80caffbb!important;
+}
+#tinderMode .tdDirectionalParticles{
+  z-index:4!important;mix-blend-mode:normal!important;
+}
+/* The original gradient feedback classes remain unused. They must not be
+   reactivated over real programme text. */
+#tinderMode .tdCardSlot > .tdNextCard{filter:none!important;opacity:1!important}
+
+/* First-time guidance beside the deck, not over the programme details. */
+#tinderMode .tdBoard{position:relative}
+#tinderMode .tdSwipeHints[hidden]{display:none!important}
+#tinderMode .tdSwipeHints{position:absolute;inset:0;pointer-events:none;z-index:5}
+#tinderMode .tdSwipeHint{
+  position:absolute;top:clamp(115px,22%,210px);
+  display:flex;align-items:center;gap:8px;
+  width:170px;max-width:170px;
+  font-size:clamp(12px,1vw,14px);font-weight:750;
+  line-height:1.55;letter-spacing:.006em;
+  color:var(--mut);opacity:.7;
+  animation:tdHintPulse 2.5s ease-in-out infinite;
+  text-wrap:balance;
+}
+#tinderMode .tdSwipeHintLeft{left:-180px;justify-content:flex-end;text-align:right}
+#tinderMode .tdSwipeHintRight{right:-180px;justify-content:flex-start;text-align:left;animation-delay:.35s}
+#tinderMode .tdHintArrow{font-size:24px;font-weight:500;color:var(--mut);flex:none}
+@keyframes tdHintPulse{0%,100%{opacity:.44}50%{opacity:.84}}
+@media(max-width:1080px){
+  #tinderMode .tdSwipeHints{
+    position:relative;inset:auto;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:10px;margin:0 0 15px;
+  }
+  #tinderMode .tdSwipeHint{
+    position:relative;top:auto;left:auto;right:auto;
+    width:50%;max-width:none;font-size:12px;min-height:42px;
+  }
+  #tinderMode .tdSwipeHintRight{justify-content:flex-end;text-align:right}
+}
+@media(prefers-reduced-motion:reduce){
+  #tinderMode .tdSwipeHint{animation:none!important;opacity:.75!important}
+}
+
+/* Tinder Mode alone replaces the standard single shortlist pill with two
+   matching saved-decision shortcuts. Every other page is unchanged. */
+body[data-atlas-view="tinderMode"] #uxDrawerLauncher{display:none!important}
+.tdFloatingDecisions{display:none}
+body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
+  position:fixed;display:flex;flex-direction:row;align-items:center;
+  gap:9px;right:18px;bottom:19px;z-index:1580;
+}
+.tdLauncher{
+  appearance:none;border:1px solid color-mix(in srgb,var(--ui-action-bg,#805e78) 74%,white);
+  background:var(--ui-action-bg,var(--ux-accent-ink,#805e78));
+  color:#fff;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-width:75px;min-height:59px;padding:12px 16px;
+  font-size:18px;font-weight:850;line-height:1;
+  box-shadow:0 7px 22px rgba(23,14,24,.19);
+  cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;
+}
+.tdLauncher svg{width:21px;height:21px;flex:none}
+.tdLauncher:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(23,14,24,.24)}
+.tdLauncher:active{transform:scale(.96)}
+.tdLauncher:focus-visible{outline:3px solid var(--ux-accent);outline-offset:3px}
+
+/* Spacious, touch-friendly details window (same programme data as game). */
+.tdDecisionShade[hidden],.tdDecisionDrawer[hidden]{display:none!important}
+.tdDecisionShade{
+  position:fixed;inset:0;background:rgba(16,12,20,.46);
+  z-index:2590;backdrop-filter:blur(2px);
+}
+.tdDecisionDrawer{
+  position:fixed;top:0;right:0;bottom:0;
+  z-index:2600;width:min(560px,100vw);max-width:100vw;
+  display:flex;flex-direction:column;min-height:0;
+  background:var(--panel);color:var(--ink);
+  border-left:1px solid var(--line);
+  box-shadow:-22px 0 70px rgba(12,8,15,.23);
+}
+.tdDrawerHeader{
+  padding:24px 24px 17px;display:flex;align-items:flex-start;
+  justify-content:space-between;gap:14px;
+  border-bottom:1px solid var(--line);
+}
+.tdDrawerEyebrow{
+  font-size:10px;font-weight:850;letter-spacing:.105em;
+  color:var(--ux-accent-ink);margin-bottom:6px;
+}
+.tdDrawerHeader h2{margin:0;font-size:clamp(21px,2vw,27px);letter-spacing:-.035em;line-height:1.2}
+.tdDrawerHeader p{margin:8px 0 0;font-size:13px;line-height:1.55;color:var(--mut)}
+.tdDrawerClose{
+  border:1px solid var(--line);background:var(--soft);color:var(--ink);
+  border-radius:12px;min-width:42px;min-height:42px;
+  font-size:27px;font-weight:400;cursor:pointer;line-height:1;
+}
+.tdDrawerSearchLabel{padding:15px 24px 6px;color:var(--mut);font-size:11px;font-weight:800}
+#tdDrawerSearch{
+  margin:0 24px 14px;padding:12px 14px;min-height:43px;
+  border:1px solid var(--line);border-radius:12px;
+  background:var(--soft);color:var(--ink);font-size:14px;
+}
+.tdDrawerItems{
+  flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:4px 20px 34px;display:flex;flex-direction:column;gap:13px;
+}
+.tdDrawerItem{
+  border:1px solid var(--line);background:var(--soft);
+  border-radius:18px;padding:14px;box-shadow:0 3px 14px rgba(10,9,13,.035);
+  min-width:0;
+}
+.tdDrawerDetails{min-width:0}
+.tdDrawerSummary{
+  display:flex;align-items:flex-start;gap:11px;
+  list-style:none;cursor:pointer;padding:4px 2px 13px;
+  min-height:66px;touch-action:manipulation;
+}
+.tdDrawerSummary::-webkit-details-marker{display:none}
+.tdDrawerSummaryText{display:grid;gap:7px;min-width:0;flex:1}
+.tdDrawerProgrammeTitle{
+  color:var(--ink);font-size:15px;line-height:1.45;
+  font-weight:820;letter-spacing:-.012em;overflow-wrap:anywhere;
+}
+.tdDrawerProgrammeSub{
+  color:var(--mut);font-size:12px;line-height:1.45;overflow-wrap:anywhere;
+}
+.tdDrawerFit{
+  flex:none;background:var(--ux-accent-soft);color:var(--ux-accent-ink);
+  border:1px solid var(--ux-accent-border);
+  border-radius:999px;padding:5px 9px;font-size:11px;font-weight:830;white-space:nowrap;
+}
+.tdDrawerChevron{
+  flex:none;font-size:19px;color:var(--mut);line-height:1.1;
+  transition:transform .2s ease;
+}
+.tdDrawerDetails[open] .tdDrawerChevron{transform:rotate(180deg)}
+.tdDrawerMove{
+  width:100%;min-height:43px;padding:10px 13px;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;
+  border:1px solid color-mix(in srgb,var(--ux-accent-ink) 36%,var(--line));
+  border-radius:11px;background:var(--panel);color:var(--ink);
+  font-size:13px;font-weight:830;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease;
+}
+.tdDrawerMove svg{width:16px;height:16px;flex:none;color:var(--ux-accent-ink)}
+.tdDrawerMove:hover{background:var(--ux-accent-soft);border-color:var(--ux-accent-ink)}
+.tdDrawerDetails[open] .tdDrawerPreview{padding:5px 0 14px}
+.tdDrawerPreview .tdDrawerCard{
+  position:relative;transform:none!important;filter:none!important;
+  cursor:default;user-select:text;touch-action:auto;
+  padding:17px;border-radius:15px;background:var(--panel);
+  box-shadow:0 6px 21px rgba(20,12,24,.06);
+}
+.tdDrawerPreview .tdDrawerCard .tdProgrammeName{font-size:18px}
+.tdDrawerPreview .tdDrawerCard .tdVerdictColumns{gap:8px}
+.tdDrawerPreview .tdDrawerCard .tdMetrics{gap:5px}
+.tdDrawerPreview .tdDrawerCard .tdMetrics>div{padding:9px 8px}
+.tdDrawerPreview .tdDrawerCard .tdMetrics strong{font-size:12px}
+.tdDrawerEmpty{padding:28px 16px;text-align:center;color:var(--mut);font-size:14px}
+.tdDecisionDrawer :is(button,summary,input):focus-visible{
+  outline:2px solid var(--ux-accent-ink);outline-offset:3px;
+}
+@media(max-width:600px){
+  body[data-atlas-view="tinderMode"] .tdFloatingDecisions{right:10px;bottom:12px;gap:7px}
+  .tdLauncher{min-width:64px;min-height:52px;padding:10px 13px;font-size:15px}
+  .tdLauncher svg{width:19px;height:19px}
+  .tdDrawerHeader{padding:20px 16px 14px}
+  .tdDrawerSearchLabel{padding:13px 16px 6px}
+  #tdDrawerSearch{margin:0 16px 12px}
+  .tdDrawerItems{padding:4px 13px 28px;gap:11px}
+  .tdDrawerItem{padding:11px;border-radius:14px}
+  .tdDrawerSummary{gap:7px}
+  .tdDrawerProgrammeTitle{font-size:14px}
+  .tdDrawerFit{padding:5px 7px;font-size:10px}
+  .tdDrawerPreview .tdDrawerCard .tdVerdictColumns{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  .tdLauncher,.tdDrawerChevron{transition:none!important}
+}
