@@ -5,7 +5,7 @@
   const header=root?.querySelector(':scope > header.top');
   const headerActions=header?.querySelector('.actions');
   const nav=root?.querySelector('nav.tabs');
-  const footer=root?.querySelector('.app-footer');
+  const footer=document.querySelector('.app-footer');
   if(!root||!header||!headerActions||!nav||!footer)return;
 
   // Reuse the original SVG navigation, button IDs, account and theme controls.
@@ -31,7 +31,8 @@
   }
   const savedHelp=document.getElementById('saveHelp');
   if(savedHelp)utilities.append(savedHelp);
-  footer.before(utilities);
+  // Keep the management panel inside the same bounded workspace as page content.
+  root.append(utilities);
 
   const navigate=target=>{
     if(typeof switchTab==='function')switchTab(target);
