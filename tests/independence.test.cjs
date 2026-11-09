@@ -164,5 +164,13 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261109appearance1/);
+  assert.match(sw,/onboarding\.js\?v=20261109copperswatch1/);
+});
+
+test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
+  const quiz=read('onboarding.js'),html=read('index.html'),app=read('app.js');
+  assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
+  assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
+  assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
+  assert.match(app,/onboarding\.js\?v=20261109copperswatch1/);
 });
