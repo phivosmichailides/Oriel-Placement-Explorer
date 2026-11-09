@@ -110,13 +110,30 @@ test('theme-aware header and muted map remain purely visual changes', () => {
 test('Tinder Mode preloads real next card without blurred gradient', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261109stack1/);
-  assert.match(html,/tinder-mode\.css\?v=20261109stack1/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109stack1/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109stack1/);
+  assert.match(html,/tinder-mode\.js\?v=20261109react2/);
+  assert.match(html,/tinder-mode\.css\?v=20261109react2/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109react2/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109react2/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
   assert.match(js,/tdShowingNext/);
   assert.match(css,/\.tdNextCard/);
   assert.match(css,/tdSwipeCard\.tdLeaving\{opacity:1/);
+});
+
+test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
+  const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
+  assert.match(html,/tinder-mode\.js\?v=20261109react2/);
+  assert.match(html,/tinder-mode\.css\?v=20261109react2/);
+  assert.match(sw,/tinder-mode\.js\?v=20261109react2/);
+  assert.match(sw,/tinder-mode\.css\?v=20261109react2/);
+  assert.match(js,/const shine=\(status\)=>/);
+  assert.match(js,/tdDirectionalParticles/);
+  assert.match(js,/tdSwipeHints/);
+  assert.match(js,/const savedLists=\(\)=>/);
+  assert.match(js,/tdDecisionDrawer/);
+  assert.match(js,/setMark\(p,\{status,priority:''\},false\)/);
+  assert.match(css,/body\[data-atlas-view="tinderMode"\] #uxDrawerLauncher/);
+  assert.match(css,/tdDragNo/);
+  assert.match(css,/tdLeavingSuper/);
 });

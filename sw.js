@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v36';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v37';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109nav2','atlas-map-tones.css?v=20261109tone1',
@@ -8,7 +8,7 @@ const EXTRA_ASSETS=[
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261109fix2','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
-  'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261109stack1','tinder-mode.css?v=20261109stack1',
+  'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261109react2','tinder-mode.css?v=20261109react2',
   'commute-guide.js?v=20261106a','commute-profile.js?v=20261106pcfix',
   'programme-preview.js?v=20261106fixed1','location-guides.js?v=20261109national1',
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',

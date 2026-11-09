@@ -3,7 +3,7 @@
    Decisions use the existing Placement Desk statuses. The local progress record
    stores an undo history and is included in the account's cloud sync. */
 (()=>{
-  const KEY='oriel-tinder-mode-v1', $=id=>document.getElementById(id);
+  const KEY='oriel-tinder-mode-v1', HINT_KEY='oriel-tinder-swipe-hints-seen-v1', $=id=>document.getElementById(id);
   const icon={
     flame:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.8 2.2c.8 3.1-.2 4.4-1.8 6.4-.4-1.5-1.4-2.9-3-4.1.3 2.5-.7 3.9-2.4 5.7C4.9 12 4.3 13.7 4.3 16A7.7 7.7 0 0 0 12 23.6 7.7 7.7 0 0 0 19.7 16c0-4.3-2.7-8.1-5.9-13.8Zm-1.8 18a4.4 4.4 0 0 1-4.4-4.4c0-1.5.8-2.8 2.1-4.1.3 1 .9 1.7 1.7 2.3 1.3-1.2 2-2.2 2-3.7 2 2.2 3 3.8 3 5.5a4.4 4.4 0 0 1-4.4 4.4Z"/></svg>',
     undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
@@ -48,7 +48,19 @@
     return poolData;
   };
   const lookup=id=>getData().find(p=>p.id===id);
-  let forced=null,animating=false,initialized=false, activeId='',returningId='';
+  let forced=null,animating=false,initialized=false,activeId='',returningId='';
+  let drawerMode=null,drawerOpener=null;
+  const dismissHints=()=>{
+    try{localStorage.setItem(HINT_KEY,'1')}catch{}
+    const tips=$('tinderSwipeHints');
+    if(tips)tips.hidden=true;
+  };
+  const refreshHints=()=>{
+    const tips=$('tinderSwipeHints');
+    if(!tips)return;
+    let completed=false;try{completed=localStorage.getItem(HINT_KEY)==='1'}catch{}
+    tips.hidden=completed||game.seen.length>0;
+  };
   const available=()=>selectedPool();
   const nextProgramme=()=>{
     if(forced){const p=lookup(forced);if(p&&!blacklisted(p))return p;forced=null;}
@@ -160,41 +172,40 @@
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const EXIT_MS=560;
-  const feedback=(status)=>{
+  // Small directional sparkle bursts: no full-deck gradient or blurred frame.
+  const shine=(status)=>{
     const deck=document.querySelector('#tinderMode .tdCardDeck');
     if(!deck)return ()=>{};
-    deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
+    deck.classList.remove('tdShineYes','tdShineNo','tdShineSuper');
     deck.querySelector('.tdFeedbackParticles')?.remove();
-    const kind=status==='yes'?'Yes':status==='no'?'No':'Super';
-    deck.classList.add('tdFeedback'+kind);
-    if(status==='yes'||status==='love'){
-      const layer=document.createElement('div');
-      layer.className='tdFeedbackParticles';
-      layer.setAttribute('aria-hidden','true');
-      // A few CSS-only sparkle particles: light-weight and non-interactive.
-      const spots=[[19,20,-65,-70],[44,14,-20,-80],[77,19,54,-83],[90,45,78,-16],
-        [78,72,75,72],[52,84,-4,75],[21,74,-72,47],[9,44,-80,-12]];
-      spots.forEach(([x,y,dx,dy],i)=>{
-        const p=document.createElement('span');
-        p.className='tdSparkle';
-        p.textContent='✦';
-        p.style.left=x+'%';
-        p.style.top=y+'%';
-        p.style.setProperty('--spark-x',dx+'px');
-        p.style.setProperty('--spark-y',dy+'px');
-        p.style.animationDelay=(i%3*38)+'ms';
-        layer.append(p);
-      });
-      deck.append(layer);
+    const kind=status==='no'?'No':status==='yes'?'Yes':'Super';
+    deck.classList.add('tdShine'+kind);
+    const layer=document.createElement('div');
+    layer.className='tdFeedbackParticles tdDirectionalParticles';
+    layer.setAttribute('aria-hidden','true');
+    const left=[[6,20,-55,-50],[13,35,-70,-9],[8,54,-65,26],[15,73,-40,60],[23,88,-38,42]];
+    const right=[[82,16,44,-55],[92,31,65,-22],[89,52,73,10],[82,71,52,55],[76,88,28,60]];
+    const upper=[[22,8,-58,-55],[39,11,-22,-80],[55,5,16,-76],[70,10,43,-62],[86,18,65,-45]];
+    const spots=kind==='No'?left:kind==='Yes'?right:upper;
+    for(const [x,y,dx,dy] of spots){
+      const spark=document.createElement('span');
+      spark.className='tdSparkle';
+      spark.textContent='✦';
+      spark.style.left=x+'%';spark.style.top=y+'%';
+      spark.style.setProperty('--spark-x',dx+'px');
+      spark.style.setProperty('--spark-y',dy+'px');
+      layer.append(spark);
     }
+    deck.append(layer);
     return ()=>{
-      deck.classList.remove('tdFeedbackYes','tdFeedbackNo','tdFeedbackSuper');
-      deck.querySelector('.tdFeedbackParticles')?.remove();
+      deck.classList.remove('tdShineYes','tdShineNo','tdShineSuper');
+      layer.remove();
     };
   };
   const commit=(p,status,vector)=>{
     if(animating)return;
     animating=true;
+    dismissHints();
     const card=$('tinderActiveCard');
     const finish=()=>{
       const prev=prefs()?.marks?.[p.id] ? structuredClone(prefs().marks[p.id]):null;
@@ -216,6 +227,7 @@
     // The next real programme is already in the deck. Reveal it while the
     // current card flies off, never a blurred empty gradient.
     $('tinderCardSlot')?.classList.add('tdShowingNext');
+    const clearShine=shine(status);
     card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
     const distance=Math.max(680,window.innerWidth*.7);
     const slide=vector*distance;
@@ -230,7 +242,7 @@
     };
     // Start the transition from the card's last drag position, avoiding a jump.
     requestAnimationFrame(departure);
-    setTimeout(finish,EXIT_MS+35);
+    setTimeout(()=>{clearShine();finish();},EXIT_MS+35);
   };
   const undo=()=>{
     if(animating)return;
@@ -271,6 +283,9 @@
       const dx=e.clientX-startX,dy=e.clientY-startY;
       if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>14)return;
       deltaX=dx;
+      card.classList.toggle('tdDragNo',dx< -18);
+      card.classList.toggle('tdDragYes',dx>18);
+      card.style.setProperty('--td-drag-strength',String(Math.min(1,Math.abs(dx)/130)));
       card.style.transform='translate3d('+dx+'px,'+Math.min(Math.abs(dx)*.07,12)+'px,0) rotate('+(dx/23)+'deg)';
       const no=card.querySelector('.tdStampNo'),yes=card.querySelector('.tdStampYes');
       no?.classList.toggle('tdStampShow',dx< -50);
@@ -281,6 +296,8 @@
       tracking=false;
       if(deltaX>85){commit(p,'yes',1);return;}
       if(deltaX< -85){commit(p,'no',-1);return;}
+      card.classList.remove('tdDragNo','tdDragYes');
+      card.style.removeProperty('--td-drag-strength');
       card.style.transition='transform .28s cubic-bezier(.22,1,.36,1)';
       card.style.transform='';
       card.querySelectorAll('.tdStamp').forEach(x=>x.classList.remove('tdStampShow'));
@@ -292,6 +309,179 @@
   const button=(kind,caption,fn)=>{
     const b=document.createElement('button');b.type='button';b.className='tdAction tdAction-'+kind;b.title=caption;b.setAttribute('aria-label',caption);
     b.innerHTML=icon[kind];b.addEventListener('click',fn);return b;
+  };
+
+  // Tinder-only drawers use the shared canonical marks, never a second
+  // shortlist/rejection store. They include every region, not only the round.
+  const savedLists=()=>{
+    const all=getData(),marks=prefs()?.marks||{};
+    const liked=all.filter(p=>['love','yes','maybe','backup'].includes(marks[p.id]?.status));
+    const rejected=all.filter(p=>['no','never'].includes(marks[p.id]?.status));
+    const order=typeof ranked==='function'?ranked().map(p=>p.id):[];
+    const positions=new Map(order.map((id,i)=>[id,i]));
+    liked.sort((a,b)=>(positions.get(a.id)??999999)-(positions.get(b.id)??999999)||
+      assessed(b).score-assessed(a).score||a.title.localeCompare(b.title));
+    rejected.sort((a,b)=>assessed(b).score-assessed(a).score||a.title.localeCompare(b.title));
+    return {liked,rejected};
+  };
+  const refreshDrawerCounts=()=>{
+    const lists=savedLists();
+    const heart=$('tdShortlistedCount'),cross=$('tdRejectedCount');
+    if(heart)heart.textContent='('+lists.liked.length+')';
+    if(cross)cross.textContent='('+lists.rejected.length+')';
+  };
+  const closeDecisionDrawer=()=>{
+    const drawer=$('tdDecisionDrawer'),shade=$('tdDecisionShade');
+    if(!drawer||!shade||drawerMode===null)return;
+    drawerMode=null;
+    drawer.hidden=true;drawer.inert=true;drawer.setAttribute('aria-hidden','true');
+    shade.hidden=true;delete document.body.dataset.tdDrawerActive;
+    $('tdDrawerSearch').value='';
+    drawerOpener?.focus?.();drawerOpener=null;
+  };
+  const renderDecisionDrawer=()=>{
+    const list=$('tdDrawerItems'),header=$('tdDrawerHeading'),subtitle=$('tdDrawerSubtitle');
+    if(!list||drawerMode===null)return;
+    const {liked,rejected}=savedLists();
+    const inLiked=drawerMode==='liked',all=inLiked?liked:rejected;
+    const search=$('tdDrawerSearch')?.value.toLowerCase().trim()||'';
+    const matches=all.filter(p=>[p.title,p.employer,p.id,p.region,...(p.postcodes||[])]
+      .join(' ').toLowerCase().includes(search));
+    header.textContent=inLiked?'Shortlisted programmes':'Like No · Rejected';
+    subtitle.textContent=all.length+' saved '+(inLiked?'to your shortlist':'as Like No')+
+      ' · Tap a programme title for full details and your personalised fit.';
+    $('tdDrawerSearch').placeholder=inLiked?'Search shortlisted programmes':'Search rejected programmes';
+    list.replaceChildren();
+    if(!matches.length){
+      const empty=document.createElement('p');
+      empty.className='tdDrawerEmpty';
+      empty.textContent=search?'No matching programmes.':
+        inLiked?'Your shortlist is empty. Like a programme to see it here.':
+          'No rejected programmes yet. Swipe a card left to add one.';
+      list.append(empty);return;
+    }
+    const rows=document.createDocumentFragment();
+    matches.forEach((p,i)=>{
+      const row=document.createElement('article');row.className='tdDrawerItem';
+      row.dataset.programmeId=p.id;
+      const details=document.createElement('details');details.className='tdDrawerDetails';
+      const summary=document.createElement('summary');summary.className='tdDrawerSummary';
+      const text=document.createElement('span');text.className='tdDrawerSummaryText';
+      const title=document.createElement('strong');title.className='tdDrawerProgrammeTitle';
+      title.textContent=p.title||p.employer||'Unnamed programme';
+      const sub=document.createElement('span');sub.className='tdDrawerProgrammeSub';
+      sub.textContent=(p.region||'Region not listed')+' · '+money(p.salary)+
+        (p.hours?' · '+p.hours+'h/week':'');
+      text.append(title,sub);
+      const score=document.createElement('span');score.className='tdDrawerFit';
+      const fit=assessed(p);
+      score.textContent='Fit '+fit.score+'/100';
+      const chevron=document.createElement('span');chevron.className='tdDrawerChevron';
+      chevron.textContent='⌄';chevron.setAttribute('aria-hidden','true');
+      summary.append(text,score,chevron);
+      const previewSlot=document.createElement('div');previewSlot.className='tdDrawerPreview';
+      details.append(summary,previewSlot);
+      const populatePreview=()=>{
+        if(previewSlot.childElementCount)return;
+        const preview=build(p,true);
+        preview.classList.remove('tdNextCard');
+        preview.classList.add('tdDrawerCard');
+        preview.removeAttribute('aria-hidden');preview.inert=false;
+        previewSlot.append(preview);
+        void resolvePlaces(p,p.id,preview.querySelector('.tdLocationText'));
+      };
+      // Populate before the opening animation, not after the delayed toggle.
+      summary.addEventListener('click',()=>{if(!details.open)populatePreview()});
+      details.addEventListener('toggle',()=>{if(details.open)populatePreview()});
+      const action=document.createElement('button');
+      action.type='button';action.className='tdDrawerMove';
+      action.setAttribute('aria-label',inLiked?
+        'Like No — remove '+(p.title||p.employer)+' from shortlist':
+        'Take '+(p.title||p.employer)+' to shortlist');
+      action.innerHTML=inLiked?
+        '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg><span>Like No</span>':
+        '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg><span>Take to shortlist</span>';
+      action.addEventListener('click',()=>{
+        if(animating)return;
+        const status=inLiked?'no':'yes';
+        const old=prefs()?.marks?.[p.id]?structuredClone(prefs().marks[p.id]):null;
+        if(game.history.length>=150)game.history.shift();
+        game.history.push({id:p.id,prev:old,at:Date.now(),action:status});
+        if(!game.seen.includes(p.id))game.seen.push(p.id);
+        if(forced===p.id)forced=null;
+        if(typeof setMark==='function')setMark(p,{status,priority:''},false);
+        saveGame();
+        render();
+        renderDecisionDrawer();
+        note(inLiked?'Moved to rejected programmes.':'Moved to your shortlist.');
+        $('tdDrawerSearch')?.focus();
+      });
+      row.append(details,action);rows.append(row);
+    });
+    list.append(rows);
+  };
+  const openDecisionDrawer=(mode,opener)=>{
+    if(!['liked','rejected'].includes(mode))return;
+    if($('uxDrawer')?.classList.contains('uxOpen'))$('uxDrawerClose')?.click();
+    drawerOpener=opener||document.activeElement;
+    drawerMode=mode;
+    const drawer=$('tdDecisionDrawer'),shade=$('tdDecisionShade');
+    drawer.hidden=false;drawer.inert=false;drawer.setAttribute('aria-hidden','false');
+    shade.hidden=false;document.body.dataset.tdDrawerActive='true';
+    renderDecisionDrawer();
+    $('tdDrawerClose')?.focus();
+  };
+  const mountDecisionDrawers=()=>{
+    if($('tdFloatingDecisions'))return;
+    const float=document.createElement('div');
+    float.className='tdFloatingDecisions';float.id='tdFloatingDecisions';
+    float.setAttribute('aria-label','Tinder Mode saved decisions');
+    float.innerHTML='<button type="button" class="tdLauncher tdLauncherRejected" id="tdOpenRejected" aria-label="View rejected programmes">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>'+
+      '<span id="tdRejectedCount">(0)</span></button>'+
+      '<button type="button" class="tdLauncher tdLauncherLiked" id="tdOpenLiked" aria-label="View shortlisted programmes">'+
+      '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg>'+
+      '<span id="tdShortlistedCount">(0)</span></button>';
+    const shade=document.createElement('div');
+    shade.id='tdDecisionShade';shade.className='tdDecisionShade';shade.hidden=true;
+    const drawer=document.createElement('aside');
+    drawer.id='tdDecisionDrawer';drawer.className='tdDecisionDrawer';
+    drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');
+    drawer.setAttribute('aria-hidden','true');drawer.setAttribute('aria-labelledby','tdDrawerHeading');
+    drawer.hidden=true;drawer.inert=true;
+    drawer.innerHTML='<div class="tdDrawerHeader"><div>'+
+      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · TINDER MODE</div>'+
+      '<h2 id="tdDrawerHeading">Saved programmes</h2>'+
+      '<p id="tdDrawerSubtitle"></p></div>'+
+      '<button type="button" id="tdDrawerClose" class="tdDrawerClose" aria-label="Close saved programmes">×</button></div>'+
+      '<label class="tdDrawerSearchLabel" for="tdDrawerSearch">Find a programme</label>'+
+      '<input type="search" id="tdDrawerSearch" placeholder="Search programmes" autocomplete="off">'+
+      '<div class="tdDrawerItems" id="tdDrawerItems"></div>';
+    document.body.append(float,shade,drawer);
+    $('tdOpenRejected').addEventListener('click',e=>openDecisionDrawer('rejected',e.currentTarget));
+    $('tdOpenLiked').addEventListener('click',e=>openDecisionDrawer('liked',e.currentTarget));
+    $('tdDrawerClose').addEventListener('click',closeDecisionDrawer);
+    shade.addEventListener('click',closeDecisionDrawer);
+    $('tdDrawerSearch').addEventListener('input',renderDecisionDrawer);
+    document.addEventListener('keydown',e=>{
+      if(drawerMode===null)return;
+      if(e.key==='Escape'){e.preventDefault();closeDecisionDrawer();return;}
+      if(e.key!=='Tab')return;
+      const focus=[...drawer.querySelectorAll('button:not([disabled]),input:not([disabled]),summary')]
+        .filter(el=>el.getClientRects().length>0);
+      if(!focus.length)return;
+      const first=focus[0],last=focus[focus.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    });
+    document.addEventListener('desk:state-saved',()=>{
+      refreshDrawerCounts();
+      if(drawerMode!==null)renderDecisionDrawer();
+    });
+    document.addEventListener('desk:after-navigation',()=>{
+      if(drawerMode!==null&&!$('tinderMode')?.classList.contains('active'))closeDecisionDrawer();
+    });
+    refreshDrawerCounts();
   };
   const render=()=>{
     if(!initialized)return;
@@ -349,6 +539,8 @@
       const status=$('tinderExisting');status.textContent=existing?'Current decision: '+({love:'Love',yes:'Strong yes',maybe:'Maybe',backup:'Only if needed',no:'No',never:'Absolutely not'}[existing]||'Unmarked'):'Not yet decided';
       void resolvePlaces(p,p.id);
     }
+    refreshHints();
+    refreshDrawerCounts();
     $('tinderUndo').disabled=!game.history.length||animating;
     for(const id of ['tinderNo','tinderYes','tinderSuper'])$(id).disabled=!p||animating;
     if(!p)$('tinderExisting').textContent='Round complete';
@@ -365,12 +557,13 @@
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
     section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label><div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
-     '<div class="tdBoard"><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
+     '<div class="tdBoard"><div id="tinderSwipeHints" class="tdSwipeHints" hidden><span class="tdSwipeHint tdSwipeHintLeft"><span class="tdHintArrow" aria-hidden="true">←</span><span>Swipe left to exclude a programme</span></span><span class="tdSwipeHint tdSwipeHintRight"><span>Swipe right to shortlist a programme</span><span class="tdHintArrow" aria-hidden="true">→</span></span></div><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
      '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
      '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
      '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
      '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel CSV. Training areas are postcode-based approximations. Cheeky pros and cons are suggestions, not verified employer promises.</p></div>';
     $('simulator')?.after(section);
+    mountDecisionDrawers();
     const region=$('tinderRegion');if(region){
       const all=document.createElement('option');all.value='all';all.textContent='All regions — England & Wales';region.append(all);
       for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=r;region.append(option)}
@@ -383,7 +576,7 @@
     $('tinderYes').onclick=()=>{const p=nextProgramme();if(p)commit(p,'yes',1)};
     $('tinderSuper').onclick=()=>{const p=nextProgramme();if(p)commit(p,'love',0)};
     document.addEventListener('keydown',e=>{
-      if(!$('#tinderMode')?.classList.contains('active')||e.altKey||e.metaKey||e.ctrlKey)return;
+      if(drawerMode!==null||!$('#tinderMode')?.classList.contains('active')||e.altKey||e.metaKey||e.ctrlKey)return;
       if(['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)||e.target?.isContentEditable)return;
       const p=nextProgramme();
       if(e.key==='ArrowLeft'&&p){e.preventDefault();commit(p,'no',-1)}
