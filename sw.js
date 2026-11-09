@@ -1,10 +1,10 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v19';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v20';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'app-base.js?v=20261109national1','app-product.js?v=20261109national1','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261109national1','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261106g',
-  'map-basemap.js?v=20261109national1','workspace-ux.js?v=20261109national1','rail-stations.js?v=20261109national1',
+  'app-base.js?v=20261109fix1','app-product.js?v=20261109fix1','generic-public.js?v=20261108atlas3',
+  'sector-map.js?v=20261109fix1','onboarding.js?v=20261108atlas1','deadline-dates.js?v=20261106g',
+  'map-basemap.js?v=20261109fix1','workspace-ux.js?v=20261109fix1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
   'desk-enhancements.js?v=20261108atlas1','tinder-mode.js?v=20261108atlas1',
