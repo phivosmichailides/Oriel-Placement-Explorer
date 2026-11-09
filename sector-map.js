@@ -271,7 +271,7 @@
         if(delta>0&&currentZoom>=maxZoom-0.001)return;
         if(delta<0&&currentZoom<=minZoom+0.001)return;
         // Use the exact fractional target. Leaflet's zoomIn/zoomOut methods
-        // snap around integer zoom levels and can fail to reverse a 10.4 start.
+        // snap around integer zoom levels and can fail to reverse a 9.4 start.
         // Animate the current tile level while fetching the next one.
         const target=Math.round((currentZoom+delta)*10)/10;
         requestedZoom=target;
