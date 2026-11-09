@@ -439,7 +439,7 @@ const STYLES=Object.freeze({
     const vectorPane=map.getPane('orielVectorBasemap')||map.createPane('orielVectorBasemap');
     vectorPane.style.zIndex='250';
     vectorPane.style.pointerEvents='none';
-    let layer,glMap,loaded=false,ready=false,ended=false,timeout,tileErrorCount=0;
+    let layer,glMap,loaded=false,ready=false,ended=false,timeout,tileErrorCount=0,syncVectorViewport=()=>{};
     const record={map:null,leaflet:map,layer:null,attribution:styleAttribution(),replaceFallback};
     map._orielBasemapRecord=record;
     const fail=(reason='MapTiler vector rendering did not produce a usable map.',forceOsm=false)=>{
@@ -447,6 +447,7 @@ const STYLES=Object.freeze({
       ready=false;
       ended=true;
       if(timeout)clearTimeout(timeout);
+      map.off?.('moveend zoomend resize',syncVectorViewport);
       instances.delete(record);
       if(map._orielBasemapRecord===record)delete map._orielBasemapRecord;
       if(record.replaceFallback){removeFallbackRecord(record.replaceFallback);record.replaceFallback=null;}
@@ -486,7 +487,7 @@ const STYLES=Object.freeze({
       // Keep the GL canvas explicitly aligned with Leaflet's canonical view.
       // This also repairs the first paint if the adapter creates its GL map
       // before Leaflet's initial setView has propagated.
-      const syncVectorViewport=()=>{
+      syncVectorViewport=()=>{
         if(!glMap||!map.getCenter||!Number.isFinite(map.getZoom()))return;
         const centre=map.getCenter(),zoom=map.getZoom();
         const current=glMap.getCenter?.();
