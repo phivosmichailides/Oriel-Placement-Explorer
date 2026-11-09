@@ -157,9 +157,22 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     console.log('PWA/BRANDING AUDIT:',JSON.stringify(pwaAudit));
     await page.locator('#results .placement').first().waitFor({state:'attached',timeout:70000});
     await page.waitForFunction(()=>window.OrielMapStats?.programmes===placements.length&&placementMap?.getZoom()>=10,null,{timeout:30000});
-    const initialMapView=await page.evaluate(()=>({center:placementMap.getCenter(),zoom:placementMap.getZoom()}));
+    await page.waitForFunction(()=>{
+      const gl=placementMap?._orielBasemapRecord?.map;
+      if(!gl?.isStyleLoaded?.())return false;
+      const leaf=placementMap.getCenter(),vector=gl.getCenter();
+      return Math.abs(gl.getZoom()-placementMap.getZoom())<.05&&
+        Math.abs(vector.lat-leaf.lat)<.02&&Math.abs(vector.lng-leaf.lng)<.02;
+    },null,{timeout:30000});
+    const initialMapView=await page.evaluate(()=>{
+      const vector=placementMap._orielBasemapRecord?.map,center=placementMap.getCenter(),glCenter=vector?.getCenter();
+      return {center,zoom:placementMap.getZoom(),vectorCenter:glCenter?{lat:glCenter.lat,lng:glCenter.lng}:null,vectorZoom:vector?.getZoom()??null};
+    });
     assert(initialMapView.zoom>=10&&initialMapView.zoom<=11.5&&Math.abs(initialMapView.center.lat-51.5074)<.15&&Math.abs(initialMapView.center.lng+.1278)<.2,
-      'The map should open on a useful London-wide view instead of automatically fitting England & Wales: '+JSON.stringify(initialMapView));
+      'The Leaflet map should open on a useful London-wide view instead of automatically fitting England & Wales: '+JSON.stringify(initialMapView));
+    assert(initialMapView.vectorZoom>=10&&initialMapView.vectorZoom<=11.5&&
+      Math.abs(initialMapView.vectorCenter.lat-51.5074)<.15&&Math.abs(initialMapView.vectorCenter.lng+.1278)<.2,
+      'The MapLibre vector canvas must start on the same London-wide view as the Leaflet markers: '+JSON.stringify(initialMapView));
     await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
     // Verify both the actual runtime script and the final rendered footer.
     const productScript=await page.waitForFunction(()=>{
