@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-09-v17';
+const CACHE_NAME='placement-atlas-shell-2026-11-09-v18';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'app-base.js?v=20261109national1','app-product.js?v=20261109national1','generic-public.js?v=20261108atlas3',
@@ -18,8 +18,8 @@ const EXTRA_ASSETS=[
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
   'data/london-borough-labels.geojson','data/tube-stations.json','data/rail-stations-ew.json?v=20261109national1',
   'data/rail-stations-ew-ODbL.txt','data/rail-stations-ew-ATTRIBUTION.md',
-  'locations.json','map-styles/editorial-light.json?v=20261109roads2',
-  'map-styles/editorial-dark.json?v=20261109roads2',
+  'locations.json','map-styles/editorial-light.json?v=20261109roads3',
+  'map-styles/editorial-dark.json?v=20261109roads3',
   'vendor/leaflet.js','vendor/leaflet.css','icons/placement-atlas-192.png?v=20261108atlas2','icons/placement-atlas-512.png?v=20261108atlas2'
 ];
 const localURL=value=>new URL(value,ROOT).href;

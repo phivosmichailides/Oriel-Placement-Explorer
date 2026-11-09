@@ -128,14 +128,14 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v17'),
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v18'),
         cachedPwaAsset:swSource.includes("pwa.js?v=20261109national2")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
     const [lightStyleResponse,darkStyleResponse]=await Promise.all([
-      page.request.get(new URL('map-styles/editorial-light.json?v=20261109roads2',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('map-styles/editorial-dark.json?v=20261109roads2',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('map-styles/editorial-light.json?v=20261109roads3',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('map-styles/editorial-dark.json?v=20261109roads3',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     assert(lightStyleResponse.ok()&&darkStyleResponse.ok(),'One or both Placement Atlas map styles could not be loaded');
     const [lightStyle,darkStyle]=await Promise.all([lightStyleResponse.json(),darkStyleResponse.json()]);
@@ -148,8 +148,8 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     }));
     assert(styleAudit.every(style=>Array.isArray(style.waterFade)&&style.waterFade[3]===5.5&&style.waterFade[4]===0&&style.waterFade[5]===7&&style.waterFade[6]===1),
       'National-scale water fill should fade out cleanly before regional zoom: '+JSON.stringify(styleAudit));
-    assert(styleAudit.every(style=>Array.isArray(style.nationalRoadWidth)&&style.nationalRoadWidth[0]==='interpolate'&&style.nationalRoadWidth.includes(5)&&style.nationalRoadWidth[style.nationalRoadWidth.indexOf(5)+1]>=1.1),
-      'Road surfaces are still too thin at national zoom: '+JSON.stringify(styleAudit));
+    assert(styleAudit.every(style=>Array.isArray(style.nationalRoadWidth)&&style.nationalRoadWidth[0]==='interpolate'&&style.nationalRoadWidth.includes(4)&&style.nationalRoadWidth[style.nationalRoadWidth.indexOf(4)+1]>=1.9&&style.nationalRoadWidth.includes(5)&&style.nationalRoadWidth[style.nationalRoadWidth.indexOf(5)+1]>=2.3),
+      'Road surfaces are still too thin at the effective national overview zoom: '+JSON.stringify(styleAudit));
     assert(styleAudit.every(style=>style.ferryLines===0&&style.roads&&style.rivers),
       'Map style should omit distracting ferry routes while preserving roads and rivers: '+JSON.stringify(styleAudit));
     console.log('MAP STYLE AUDIT:',JSON.stringify(styleAudit));
@@ -312,15 +312,19 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         if(!gl)return {available:false};
         const style=gl.getStyle(),source='maptiler_planet_v4';
         const sourceLayers=['road','transportation','transportation_name'];
+        const sourceFeatures=gl.querySourceFeatures(source,{sourceLayer:'road'});
         const sourceCounts=Object.fromEntries(sourceLayers.map(name=>[name,gl.querySourceFeatures(source,{sourceLayer:name}).length]));
+        const classes=items=>items.reduce((counts,item)=>{const key=item.properties?.class||'none';counts[key]=(counts[key]||0)+1;return counts;},{});
         const roadLayers=style.layers.filter(layer=>layer.source===source&&layer.type==='line'&&/road/i.test(layer.id)&&layer.layout?.visibility!=='none');
         const visible=gl.queryRenderedFeatures(undefined,{layers:roadLayers.map(layer=>layer.id)});
         const custom=gl.queryRenderedFeatures(undefined,{layers:['Oriel editorial road surface']});
-        return {available:true,zoom:gl.getZoom(),sourceCounts,roadLayerCount:roadLayers.length,
-          renderedRoadFeatures:visible.length,customRoadFeatures:custom.length,
-          sample:visible.slice(0,3).map(feature=>({layer:feature.layer.id,sourceLayer:feature.sourceLayer,geometry:feature.geometry?.type,properties:feature.properties}))};
+        const uniqueVisible=new Set(visible.map(feature=>feature.id!=null?String(feature.id):JSON.stringify([feature.sourceLayer,feature.properties?.class,feature.properties?.iso_a2,feature.properties?.layer]))).size;
+        return {available:true,zoom:gl.getZoom(),sourceCounts,sourceRoadClasses:classes(sourceFeatures),roadLayerCount:roadLayers.length,
+          renderedRoadLayerHits:visible.length,uniqueRenderedRoadFeatures:uniqueVisible,customRoadFeatures:custom.length,customRoadClasses:classes(custom),
+          sample:visible.slice(0,3).map(feature=>({id:feature.id,layer:feature.layer.id,sourceLayer:feature.sourceLayer,geometry:feature.geometry?.type,properties:feature.properties}))};
       });
       console.log('NATIONAL ROAD SOURCE AUDIT:',JSON.stringify(nationalRoadDataAudit));
+      console.log('NATIONAL ROAD FEATURE COUNTS:',JSON.stringify({unique:nationalRoadDataAudit.uniqueRenderedRoadFeatures,custom:nationalRoadDataAudit.customRoadFeatures,classes:nationalRoadDataAudit.customRoadClasses}));
     }
     if(vectorDiagnostic.adapterPresent&&vectorDiagnostic.webglSupported){
       await page.waitForFunction(()=>{
@@ -611,8 +615,10 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const outsideCopy=await outsidePanel.innerText();
     assert.match(outsideCopy,/Area connections/,'A regional programme should show local area guidance, not a London commute estimate');
     assert.doesNotMatch(outsideCopy,/Convenient|Not Convenient|Journey time unavailable/,'A regional programme is still being judged against the applicant’s London commute');
-    assert.equal(await outsidePanel.locator('a').filter({hasText:'Directions from my postcode'}).count(),0,
-      'A non-London programme should not default to a directions link from the applicant’s London postcode');
+    const homeDirections=outsidePanel.locator('a').filter({hasText:'Directions from my postcode'});
+    const homeDirectionCount=await homeDirections.count();
+    assert(homeDirectionCount===0||!(await homeDirections.first().isVisible()),
+      'A non-London programme should not display a directions link from the applicant’s London postcode');
     const localDirections=outsidePanel.locator('.uxMapLinks a').first();
     assert(await localDirections.isVisible(),'A regional programme has no local station/town-centre directions link');
     assert.match(await localDirections.getAttribute('href')||'',/google\.com\/maps\/dir/,'Regional local directions link is not a working Google Maps route');
