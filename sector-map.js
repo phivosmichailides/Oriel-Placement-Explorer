@@ -240,8 +240,11 @@
         const button=event.target.closest('[data-atlas-zoom]');if(!button)return;
         event.preventDefault();event.stopPropagation();
         const delta=button.dataset.atlasZoom==='in'?1:-1;
-        const currentZoom=Number.isFinite(pendingZoomTarget)?pendingZoomTarget:Math.round(placementMap.getZoom());
-        const target=Math.max(placementMap.getMinZoom(),Math.min(placementMap.getMaxZoom(),currentZoom+delta));
+        const currentZoom=Number.isFinite(pendingZoomTarget)?pendingZoomTarget:placementMap.getZoom();
+        const minZoom=Number.isFinite(placementMap.getMinZoom())?placementMap.getMinZoom():3;
+        const maxZoom=Number.isFinite(placementMap.getMaxZoom())?placementMap.getMaxZoom():19;
+        const target=Math.max(minZoom,Math.min(maxZoom,currentZoom+delta));
+        if(Math.abs(target-placementMap.getZoom())<0.001)return;
         placementMap.stop();pendingZoomTarget=target;
         placementMap.setZoom(target,{animate:true});
       });

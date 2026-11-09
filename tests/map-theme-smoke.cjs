@@ -128,22 +128,28 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
         controllerChange:pwaSource.includes('controllerchange'),
        reloadOnControllerChange:pwaSource.includes('window.location.reload()'),
         uncachedWorkerUpdate:pwaSource.includes("updateViaCache:'none'"),
-        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v16'),
+        versionedCache:swSource.includes('placement-atlas-shell-2026-11-09-v17'),
         cachedPwaAsset:swSource.includes("pwa.js?v=20261109national2")};
     assert(pwaUpdateAudit.pwaStatus===200&&pwaUpdateAudit.swStatus===200&&pwaUpdateAudit.controllerChange&&pwaUpdateAudit.reloadOnControllerChange&&pwaUpdateAudit.uncachedWorkerUpdate&&pwaUpdateAudit.versionedCache&&pwaUpdateAudit.cachedPwaAsset,
       'Placement Atlas automatic update / cache invalidation checks failed: '+JSON.stringify(pwaUpdateAudit));
     console.log('PWA UPDATE AUDIT:',JSON.stringify(pwaUpdateAudit));
     const [lightStyleResponse,darkStyleResponse]=await Promise.all([
-      page.request.get(new URL('map-styles/editorial-light.json?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
-      page.request.get(new URL('map-styles/editorial-dark.json?v=20261109roads1',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
+      page.request.get(new URL('map-styles/editorial-light.json?v=20261109roads2',page.url()).toString(),{headers:{'cache-control':'no-cache'}}),
+      page.request.get(new URL('map-styles/editorial-dark.json?v=20261109roads2',page.url()).toString(),{headers:{'cache-control':'no-cache'}})
     ]);
     assert(lightStyleResponse.ok()&&darkStyleResponse.ok(),'One or both Placement Atlas map styles could not be loaded');
     const [lightStyle,darkStyle]=await Promise.all([lightStyleResponse.json(),darkStyleResponse.json()]);
     const styleAudit=[['light',lightStyle],['dark',darkStyle]].map(([name,style])=>({
       name,ferryLines:style.layers.filter(layer=>layer.id==='Ferry line'||(layer.type==='line'&&layer['source-layer']==='ferry')).length,
+      waterFade:style.layers.find(layer=>layer.id==='Water')?.paint?.['fill-opacity'],
+      nationalRoadWidth:style.layers.find(layer=>layer.id==='Oriel editorial road surface')?.paint?.['line-width'],
       roads:style.layers.some(layer=>layer.id==='Oriel editorial road surface'),
       rivers:style.layers.some(layer=>layer.id==='River')
     }));
+    assert(styleAudit.every(style=>Array.isArray(style.waterFade)&&style.waterFade[3]===5.5&&style.waterFade[4]===0&&style.waterFade[5]===7&&style.waterFade[6]===1),
+      'National-scale water fill should fade out cleanly before regional zoom: '+JSON.stringify(styleAudit));
+    assert(styleAudit.every(style=>Array.isArray(style.nationalRoadWidth)&&style.nationalRoadWidth[0]==='interpolate'&&style.nationalRoadWidth.includes(5)&&style.nationalRoadWidth[style.nationalRoadWidth.indexOf(5)+1]>=1.1),
+      'Road surfaces are still too thin at national zoom: '+JSON.stringify(styleAudit));
     assert(styleAudit.every(style=>style.ferryLines===0&&style.roads&&style.rivers),
       'Map style should omit distracting ferry routes while preserving roads and rivers: '+JSON.stringify(styleAudit));
     console.log('MAP STYLE AUDIT:',JSON.stringify(styleAudit));
@@ -769,11 +775,14 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     assert.equal(zoomAudit.defaultControls,0,'The ugly default Leaflet zoom buttons are still visible');
     assert(zoomAudit.customVisible&&zoomAudit.flexDirection==='column'&&zoomAudit.rightOffset<=4&&zoomAudit.expandGap>=6&&zoomAudit.expandGap<=18,
       'Rounded Placement Atlas zoom control should sit vertically above fullscreen at the lower-right edge: '+JSON.stringify(zoomAudit));
-    const startingZoom=await page.evaluate(()=>placementMap.getZoom());
+    const zoomStart=await page.evaluate(()=>({zoom:placementMap.getZoom(),min:placementMap.getMinZoom(),max:placementMap.getMaxZoom()}));
+    console.log('MAP ZOOM CONTROL BEFORE:',JSON.stringify(zoomStart));
     await page.locator('#atlasMapZoom [data-atlas-zoom="in"]').click();
-    await page.waitForFunction(z=>placementMap.getZoom()>z,startingZoom);
+    await page.waitForFunction(z=>placementMap.getZoom()>z,zoomStart.zoom,null,{timeout:8000});
+    const zoomAfterIn=await page.evaluate(()=>placementMap.getZoom());
     await page.locator('#atlasMapZoom [data-atlas-zoom="out"]').click();
-    await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<0.01,startingZoom);
+    await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<0.01,zoomStart.zoom,null,{timeout:8000});
+    console.log('MAP ZOOM CONTROL AUDIT:',JSON.stringify({before:zoomStart.zoom,afterIn:zoomAfterIn,afterOut:await page.evaluate(()=>placementMap.getZoom())}));
     await page.evaluate(()=>placementMap.setView([0,0],15,{animate:false}));
     await page.waitForFunction(()=>{const hint=document.getElementById('atlasMapEmptyHint');return !!hint&&!hint.hidden;},null,{timeout:12000});
     assert.match(await page.locator('#atlasMapEmptyHint').innerText(),/No programme sites in this view/,
