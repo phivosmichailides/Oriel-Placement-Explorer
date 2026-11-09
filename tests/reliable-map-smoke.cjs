@@ -44,7 +44,14 @@ fs.mkdirSync(output,{recursive:true});
     'Main map should retain previous tiles while zooming: '+JSON.stringify(mainRasterOptions));
   assert(initial.tiles.some(x=>/maptiler\.com|openstreetmap\.org/.test(x)),'Map has no real street tile provider');
   // Sticky app navigation reuses the original page controllers.
-  await page.waitForFunction(()=>!!document.querySelector('header.top nav.tabs [data-tab=tinderMode]')&&!!document.getElementById('atlasDataTools'),null,{timeout:12000});
+  await page.waitForFunction(()=>!!document.querySelector('header.top nav.tabs')&&!!document.getElementById('atlasDataTools'),null,{timeout:12000}).catch(async error=>{
+    const detail=await page.evaluate(()=>({header:!!document.querySelector('header.top'),navParent:document.querySelector('nav.tabs')?.parentElement?.tagName,footer:!!document.getElementById('atlasDataTools'),scripts:[...document.scripts].filter(el=>el.src.includes('atlas-navigation')).map(el=>el.src),message:document.body.dataset.atlasView}));
+    throw new Error('Persistent navigation did not mount: '+JSON.stringify(detail)+'; '+error.message);
+  });
+  await page.waitForFunction(()=>!!document.querySelector('header.top nav.tabs [data-tab=tinderMode]'),null,{timeout:20000}).catch(async error=>{
+    const detail=await page.evaluate(()=>({tabs:[...document.querySelectorAll('nav.tabs .tab')].map(el=>el.dataset.tab),placements:typeof placements==='undefined'?'undefined':placements.length,simPanel:!!document.getElementById('simulator'),tinderPanel:!!document.getElementById('tinderMode')}));
+    throw new Error('Dynamic navigation not ready: '+JSON.stringify(detail)+'; '+error.message);
+  });
   assert.equal(await page.locator('header.top nav.tabs').count(),1,'Main navigation is not in the persistent header');
   assert.equal(await page.locator('header.top #exportBtn').count(),0,'Export decisions still occupies the top toolbar');
   assert.equal(await page.locator('#atlasDataTools #exportBtn').count(),1,'Export decisions is missing from footer');
