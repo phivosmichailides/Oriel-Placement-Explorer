@@ -531,6 +531,16 @@
        panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
        return;
      }
+     const isLondonSite=String(p.region||'').toLowerCase()==='london'||/^(EC|WC|N|NW|E|SE|SW|W)\\d/i.test(String(site.pc||''));
+     if(!isLondonSite){
+       captionStatus('general');
+       personalisedHint.textContent='This training site is outside London. Local rail, bus and area connections are shown above; use the separate postcode directions link if you want to plan the longer journey.';
+       personalisedHint.hidden=false;
+       commuteAdvice.hidden=true;commuteAdvice.className='uxCommuteAdvice';
+       commuteLabel.textContent='';commuteSummary.textContent='';commuteDetails.textContent='';commuteMeta.textContent='';
+       panel.dataset.uxCommuteKey='';panel.dataset.uxCommuteLoadedKey='';panel._uxRunCommute=null;
+       return;
+     }
      const area=window.OrielCommuteProfile?.areaLabel?.(origin)||guides?.describePostcode?.(origin)?.headline||origin;
      const originLabel=area===origin?origin:area+' ('+origin+')';
      const key=origin+'|'+site.pc;
