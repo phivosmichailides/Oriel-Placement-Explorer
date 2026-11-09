@@ -65,7 +65,7 @@ test('public files document historical provenance, not a fictional authorship cl
 
 test('Placement Atlas branding and install assets are complete', () => {
   const html=read('index.html');
-  assert.match(html,/<title>Placement Atlas<\/title>/);
+  assert.match(html,/<title>Placement Atlas(?: \| Foundation Pharmacist Training Explorer)?<\/title>/);
   assert.match(html,/rel="icon"[^>]+favicon\.svg/);
   assert.match(html,/rel="manifest"[^>]+manifest\.webmanifest/);
   assert.match(html,/id="installAppBtn"/);
