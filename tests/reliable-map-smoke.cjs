@@ -62,9 +62,13 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(await controls.locator('button').last().getAttribute('data-atlas-zoom'),'out','Minus must be below plus');
   const z=await page.evaluate(()=>placementMap.getZoom());
   await controls.locator('[data-atlas-zoom=in]').click();
-  await page.waitForFunction(z=>placementMap.getZoom()>z,z,{timeout:10000});
+  await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-(z+1))<.05&&!placementMap._animatingZoom,z,{timeout:10000});
   await controls.locator('[data-atlas-zoom=out]').click();
-  await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<.05,z,{timeout:10000});
+  await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<.05&&!placementMap._animatingZoom,z,{timeout:10000});
+  // Rapid taps should also reverse cleanly without a fractional-zoom drift.
+  await controls.locator('[data-atlas-zoom=in]').click();
+  await controls.locator('[data-atlas-zoom=out]').click();
+  await page.waitForFunction(z=>Math.abs(placementMap.getZoom()-z)<.05&&!placementMap._animatingZoom,z,{timeout:10000});
   await page.locator('#atlasMapExpand').click();
   await page.waitForFunction(()=>!document.getElementById('atlasMapFocus')?.hidden,null,{timeout:10000});
   assert.equal(await page.locator('#atlasMapFocus #placementMap').count(),1,'Focus opened a duplicate map');
