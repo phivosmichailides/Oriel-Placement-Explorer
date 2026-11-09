@@ -58,3 +58,5 @@ body.atlasMapFocusOpen .atlasMapExpand{display:none}
  .atlasMapExpand{right:12px;bottom:12px;width:39px;height:39px}
  .atlasProgrammePopup .leaflet-popup-content{width:min(300px,calc(100vw - 62px))!important;margin:10px}
 }
+/* On phones, native pinch-to-zoom is preferable to a floating dock that can cover programme actions. */
+@media(max-width:680px){#uxPageZoomDock{display:none!important}}
