@@ -53,3 +53,8 @@ explorer was removed on 7 November 2026 as the deployed application shifted to
 its own programme dataset, interface and map integration. Historical Git
 commits may still preserve earlier versions. A detached GitHub repository
 does not automatically rewrite or extinguish pre-existing copyright rights.
+
+
+## National rail station locations
+
+The England and Wales rail-station lookup is a filtered subset of [davwheat/uk-railway-stations](https://github.com/davwheat/uk-railway-stations), originally derived from [Trainline EU's station database](https://github.com/trainline-eu/stations) and the upstream sources listed there. The subset is distributed under the [Open Database License 1.0](https://opendatacommons.org/licenses/odbl/1-0/); see `data/rail-stations-ew-ODbL.txt` and `data/rail-stations-ew-ATTRIBUTION.md`.

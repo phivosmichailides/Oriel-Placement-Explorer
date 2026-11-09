@@ -509,7 +509,7 @@ const STYLES=Object.freeze({
   };
   const ensureMapLibraries=async()=>{
     if(navigator.onLine===false)throw Error('The browser is offline.');
-    if(!document.querySelector('link[data-oriel-map-asset]')){
+    if(![...document.querySelectorAll('link[rel=stylesheet]')].some(link=>link.href===MAPLIBRE_CSS)){
       const link=document.createElement('link');link.rel='stylesheet';link.href=MAPLIBRE_CSS;
       link.crossOrigin='anonymous';link.dataset.orielMapAsset=MAPLIBRE_CSS;document.head.appendChild(link);
     }
