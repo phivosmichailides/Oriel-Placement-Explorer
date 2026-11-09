@@ -154,7 +154,7 @@ test('Tinder refines its own programme pool and keeps outgoing stars independent
 test('Unpersonalised profiles cannot claim a calibrated fit',()=>{
   const base=read('app-base.js'),product=read('app-product.js'),game=read('tinder-mode.js');
   assert.match(base,/window\.OrielHasPersonalProfile=hasPersonalProfile/);
-  assert.match(product,/data-fit-tone="\\$\{tone\}"/);
+  assert(product.includes('data-fit-tone="${tone}"'));
   assert.match(product,/Not personalised/);
   assert.match(product,/a\.score>=35\?'mixed':'poor'/);
   assert.match(product,/data-start-fit-quiz/);
