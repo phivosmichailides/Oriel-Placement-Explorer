@@ -381,15 +381,18 @@
       summary.append(text,score,chevron);
       const previewSlot=document.createElement('div');previewSlot.className='tdDrawerPreview';
       details.append(summary,previewSlot);
-      details.addEventListener('toggle',()=>{
-        if(!details.open||previewSlot.childElementCount)return;
+      const populatePreview=()=>{
+        if(previewSlot.childElementCount)return;
         const preview=build(p,true);
         preview.classList.remove('tdNextCard');
         preview.classList.add('tdDrawerCard');
         preview.removeAttribute('aria-hidden');preview.inert=false;
         previewSlot.append(preview);
         void resolvePlaces(p,p.id,preview.querySelector('.tdLocationText'));
-      });
+      };
+      // Populate before the opening animation, not after the delayed toggle.
+      summary.addEventListener('click',()=>{if(!details.open)populatePreview()});
+      details.addEventListener('toggle',()=>{if(details.open)populatePreview()});
       const action=document.createElement('button');
       action.type='button';action.className='tdDrawerMove';
       action.setAttribute('aria-label',inLiked?
