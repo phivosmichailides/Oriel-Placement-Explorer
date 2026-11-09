@@ -10,7 +10,7 @@
     const activateCloud=()=>{try{window.OrielCloud?.activateSync?.()}catch(error){console.warn('Oriel cloud sync could not start.',error)}};
     const loadDeadlineDates=()=>{
       const extra=document.createElement('script');
-      extra.src='deadline-dates.js?v=20261106g';
+      extra.src='deadline-dates.js?v=20261109header2';
       extra.onload=activateCloud;
       extra.onerror=activateCloud;
       document.body.appendChild(extra);
@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261109fix3';
+    product.src='app-product.js?v=20261109header2';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');

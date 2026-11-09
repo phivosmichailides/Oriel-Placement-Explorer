@@ -51,7 +51,7 @@
 
   const installCountdown=()=>{
     if(document.getElementById('orielDeadline'))return;
-    const actions=document.querySelector('header.top .actions');
+    const actions=document.querySelector('#atlasHeaderTools .actions')||document.querySelector('header.top .actions');
     if(!actions)return;
     const box=document.createElement('div');
     box.id='orielDeadline';
