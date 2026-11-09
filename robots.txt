@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://placementatlas.co.uk/sitemap.xml
