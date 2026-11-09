@@ -565,7 +565,7 @@ const sleep = t=>new Promise(resolve=>setTimeout(resolve,t));
     const fallbackPanel=card.locator('.uxLocationPanel');
     assert(await fallbackPanel.locator('a').filter({hasText:'Directions from my postcode'}).isVisible(),
       'A failed live journey lookup did not retain the home-to-site directions link');
-    assert(/google\.com\/maps\/dir/.test(await fallbackPanel.locator('a').first().getAttribute('href')||''),
+    assert(/google\.com\/maps\/dir/.test(await fallbackPanel.locator('.uxMapLinks a').first().getAttribute('href')||''),
       'Local station directions link is missing');
     assert.doesNotMatch(await fallbackPanel.innerText(),/Journey time unavailable|Transport corridor not verified/i,
       'A dead-end transport warning is still shown after a live planner failure');
