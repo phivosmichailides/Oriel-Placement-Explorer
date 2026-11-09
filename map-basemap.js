@@ -196,6 +196,7 @@ const STYLES=Object.freeze({
     return {layer,kind:'osm',record};
   };
   const raster=(map,reason='Vector rendering is unavailable; the MapTiler raster map is being tried as a fallback.')=>{
+    const intentional=reason==='Reliable Streets basemap';
     const previous=map._orielBasemapRecord;
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
     setMapBackdrop(map);
@@ -203,7 +204,7 @@ const STYLES=Object.freeze({
       maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
       attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
-    const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR};
+    const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR,intentional};
     map._orielBasemapRecord=record;
     rasterInstances.add(record);
     fallbackInstances.add(record);
@@ -228,7 +229,12 @@ const STYLES=Object.freeze({
     holder.dataset.basemapReason=reason;
     if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='raster-fallback';
     reportMainRenderer(map,true,reason);
-    scheduleFallbackRetry();
+    if(intentional){
+      holder.dataset.basemap='streets-'+activeStyleName();
+      delete holder.dataset.basemapReason;
+      if(holder.classList.contains('uxMiniMap'))holder.dataset.miniStatus='rendered';
+      reportMainRenderer(map,false);
+    }else scheduleFallbackRetry();
     return {layer,kind:'raster',record};
   };
   const waitForMiniEvent=(target,event,timeoutMs=12000)=>new Promise((resolve,reject)=>{
@@ -412,6 +418,10 @@ const STYLES=Object.freeze({
     // Keep the legally required MapTiler and OpenStreetMap credits, but avoid
     // repeating the "Leaflet" label on every map and programme mini-map.
     map.attributionControl?.setPrefix(false);
+    // In reliable Streets mode, both the main map and mini-maps use the same
+    // full-detail MapTiler raster tiles. The bespoke vector style remains
+    // available internally for diagnosing its incomplete road rendering.
+    if(!window.ATLAS_DIAGNOSTIC_VECTOR)return raster(map,'Reliable Streets basemap');
     // Mini-maps render snapshots from the same selected Editorial vector style.
     // Leaflet still owns their site/Tube markers, attribution and click target,
     // while a single shared MapLibre context avoids WebGL-context exhaustion.
@@ -600,6 +610,7 @@ const STYLES=Object.freeze({
       try{await ensureMapLibraries();}catch(error){console.warn('MapLibre retry is not ready yet.',error);return false;}
       let recovered=0;
       for(const old of [...fallbackInstances]){
+        if(old.intentional)continue;
         const map=old.leaflet,holder=map?.getContainer?.();
         if(!holder?.isConnected){fallbackInstances.delete(old);rasterInstances.delete(old);continue;}
         const reason=String(holder.dataset.basemapReason||'');
@@ -618,7 +629,7 @@ const STYLES=Object.freeze({
   let fallbackRetryAttempt=0,fallbackRetryTimer=null;
   const scheduleFallbackRetry=()=>{
     if(fallbackRetryTimer||!fallbackInstances.size||navigator.onLine===false)return;
-    const retryable=[...fallbackInstances].some(record=>{const holder=record.leaflet?.getContainer?.(),reason=String(holder?.dataset.basemapReason||'');return !!holder?.isConnected&&!/webgl.{0,30}unavailable|renderer limit|HTTP 403|forbidden|unauthori/i.test(reason);});
+    const retryable=[...fallbackInstances].some(record=>{if(record.intentional)return false;const holder=record.leaflet?.getContainer?.(),reason=String(holder?.dataset.basemapReason||'');return !!holder?.isConnected&&!/webgl.{0,30}unavailable|renderer limit|HTTP 403|forbidden|unauthori/i.test(reason);});
     if(!retryable){fallbackRetryAttempt=0;return;}
     const delays=[3000,9000,20000,40000];
     if(fallbackRetryAttempt>=delays.length)return;
