@@ -97,6 +97,65 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(()=>window.scrollY>250,null,{timeout:10000});
   assert(await page.locator('header.top').evaluate(el=>{const y=el.getBoundingClientRect().top;return y>=-2&&y<=12}),'Navigation disappeared on scroll');
   await page.evaluate(()=>window.scrollTo(0,0));
+
+  // Tinder swipes reveal a real upcoming programme, not an empty gradient.
+  await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
+  await page.waitForFunction(()=>document.getElementById('tinderActiveCard')&&
+    document.querySelector('#tinderCardSlot > .tdNextCard'),null,{timeout:20000});
+  const initialDeck=await page.evaluate(()=>{
+    const top=document.querySelector('#tinderActiveCard');
+    const below=document.querySelector('#tinderCardSlot > .tdNextCard');
+    const title=card=>card?.querySelector('.tdProgrammeName')?.textContent.trim();
+    return {top:title(top),next:title(below),hidden:below?.getAttribute('aria-hidden'),
+      duplicateIds:document.querySelectorAll('#tinderActiveCard').length,
+      underFilter:getComputedStyle(below).filter};
+  });
+  assert(initialDeck.top&&initialDeck.next&&initialDeck.top!==initialDeck.next,
+    'Next programme was not pre-rendered: '+JSON.stringify(initialDeck));
+  assert.equal(initialDeck.hidden,'true','Preview should not be an interactive screen-reader duplicate');
+  assert.equal(initialDeck.duplicateIds,1,'Duplicate active-card IDs');
+  assert.equal(initialDeck.underFilter,'none','Next card blurred before swiping');
+  await page.locator('#tinderYes').click();
+  await page.waitForFunction(()=>!!document.querySelector('#tinderActiveCard.tdLeaving')&&
+    !!document.querySelector('#tinderCardSlot.tdShowingNext > .tdNextCard'),null,{timeout:4000});
+  const flight=await page.evaluate(()=>{
+    const top=document.querySelector('#tinderActiveCard');
+    const below=document.querySelector('#tinderCardSlot > .tdNextCard');
+    const deck=document.querySelector('#tinderMode .tdCardDeck');
+    return {next:below?.querySelector('.tdProgrammeName')?.textContent.trim(),
+      width:below?.getBoundingClientRect().width,height:below?.getBoundingClientRect().height,
+      opacity:getComputedStyle(below).opacity,filter:getComputedStyle(below).filter,
+      topOpacity:getComputedStyle(top).opacity,feedback:deck?.classList.contains('tdFeedbackYes')||
+        deck?.classList.contains('tdFeedbackNo')||deck?.classList.contains('tdFeedbackSuper')};
+  });
+  assert.equal(flight.next,initialDeck.next,'Underlying card changed mid-flight');
+  assert(flight.width>200&&flight.height>300,'Underlying card was not fully rendered');
+  assert.equal(flight.opacity,'1','Underlying card faded');
+  assert.equal(flight.filter,'none','Underlying card blurred');
+  assert.equal(flight.topOpacity,'1','Departing card became transparent');
+  assert.equal(flight.feedback,false,'Blurred feedback overlay still active');
+  await page.waitForFunction(expected=>document.querySelector('#tinderActiveCard .tdProgrammeName')?.textContent.trim()===expected,
+    initialDeck.next,{timeout:10000});
+  assert(await page.locator('#tinderCardSlot > .tdNextCard').count()>0,'New programme is not preloaded');
+  const dragBox=await page.locator('#tinderActiveCard').boundingBox();
+  assert(dragBox,'Next active card absent for drag');
+  const dragX=dragBox.x+dragBox.width*.5,dragY=dragBox.y+Math.min(70,dragBox.height*.3);
+  await page.mouse.move(dragX,dragY);
+  await page.mouse.down();
+  await page.mouse.move(dragX-60,dragY+4,{steps:5});
+  const dragging=await page.evaluate(()=>({
+    next:document.querySelector('#tinderCardSlot > .tdNextCard .tdProgrammeName')?.textContent.trim(),
+    transform:document.querySelector('#tinderActiveCard')?.style.transform,
+    filter:getComputedStyle(document.querySelector('#tinderCardSlot > .tdNextCard')).filter
+  }));
+  assert(dragging.next&&dragging.transform?.includes('translate3d(-'),
+    'Following programme missing during pointer drag: '+JSON.stringify(dragging));
+  assert.equal(dragging.filter,'none','Drag blurred upcoming card');
+  await page.mouse.move(dragX-125,dragY+5,{steps:5});
+  await page.mouse.up();
+  await page.waitForFunction(expected=>document.querySelector('#tinderActiveCard .tdProgrammeName')?.textContent.trim()===expected,
+    dragging.next,{timeout:10000});
+  await page.locator('nav.tabs [data-tab=explore]').click();
   await page.locator('#placementMap').screenshot({path:output+'/map-initial-london.png'});
   // Tube markers must be absent until close street-level zoom.
   await page.waitForFunction(()=>Array.isArray(window.ORIEL_TUBE_STATIONS)&&window.ORIEL_TUBE_STATIONS.length>=250,null,{timeout:20000});

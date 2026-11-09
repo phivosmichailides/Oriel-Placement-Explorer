@@ -220,3 +220,26 @@
  #tinderMode .tdUndoReturning::after,
  #tinderMode .tdUndoTwinkles i{animation:none!important}
 }
+
+/* A true two-programme stack. The next card is real, readable, and already
+   loaded before the front card is dragged or dismissed. No blurred placeholder. */
+#tinderMode .tdCardSlot{position:relative;isolation:isolate}
+#tinderMode .tdCardSlot > .tdNextCard,
+#tinderMode .tdCardSlot > .tdNextFinished{
+  position:absolute;inset:0 0 auto;z-index:0;
+  pointer-events:none;opacity:1;filter:none!important;
+  transform:translate3d(0,7px,0) scale(.987);
+  transform-origin:center top;
+  transition:transform .42s cubic-bezier(.22,1,.36,1);
+}
+#tinderMode .tdCardSlot > .tdSwipeCard:not(.tdNextCard){
+  position:relative;z-index:1;filter:none!important;
+}
+#tinderMode .tdCardSlot.tdShowingNext > .tdNextCard,
+#tinderMode .tdCardSlot.tdShowingNext > .tdNextFinished{
+  transform:translate3d(0,0,0) scale(1);
+}
+#tinderMode .tdSwipeCard.tdLeaving{opacity:1!important;filter:none!important}
+@media(prefers-reduced-motion:reduce){
+  #tinderMode .tdNextCard,#tinderMode .tdNextFinished{transition:none!important}
+}
