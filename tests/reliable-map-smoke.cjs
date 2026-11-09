@@ -322,6 +322,15 @@ fs.mkdirSync(output,{recursive:true});
     'Compare selected extends outside mobile viewport');
   await page.setViewportSize({width:1440,height:900});
 
+  // Earlier map tests intentionally preload a completed quiz profile. Remove
+  // it for this separate, genuinely unpersonalised-user scenario.
+  await page.evaluate(()=>{
+    delete state.prefs.onboarding;
+    localStorage.removeItem('phivos-onboarding-v1');
+    localStorage.removeItem('phivos-onboarding-profile-v1');
+    save();
+    renderAll();
+  });
   // A visitor who has not completed a quiz must never see a claimed fit score.
   await page.waitForFunction(()=>document.querySelector('#results .score[data-fit-tone=unpersonalised]'),null,{timeout:12000}).catch(async error=>{
     const diagnostic=await page.evaluate(()=>({
