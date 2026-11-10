@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261109header2/);
+  assert.match(html,/app\.js\?v=20261110fitinsights1/);
   assert.match(read('app.js'),/app-product\.js\?v=20261109fit1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -66,7 +66,9 @@ test('public files document historical provenance, not a fictional authorship cl
 test('Placement Atlas branding and install assets are complete', () => {
   const html=read('index.html');
   assert.match(html,/<title>Placement Atlas(?: \| Foundation Pharmacist Training Explorer)?<\/title>/);
-  assert.match(html,/rel="icon"[^>]+favicon\.svg/);
+  assert.match(html,/name="description" content="Compare 4,064 foundation pharmacist training programmes across England and Wales\\./);
+  assert.match(html,/rel="icon" type="image\\/png" sizes="192x192" href="\\/icons\\/placement-atlas-192\\.png/);
+  assert.doesNotMatch(html,/rel="icon"[^>]+favicon\\.svg/);
   assert.match(html,/rel="manifest"[^>]+manifest\.webmanifest/);
   assert.match(html,/id="installAppBtn"/);
   assert.match(html,/pwa\.js\?v=/);
