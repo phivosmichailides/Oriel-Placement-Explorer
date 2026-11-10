@@ -26,7 +26,7 @@ Placement Atlas turns that process into an interactive workspace. Applicants can
 | --- | --- | --- | --- |
 | **4,064 programmes** | **12 regions** across England and Wales | Explore, personalise, shortlist, compare and simulate | Responsive, installable web app |
 
-The built-in catalogue is based on an **October 2026 Oriel data export**. It is a dated snapshot, not a live vacancy feed or a statement of current offer availability.
+The built-in catalogue is based on an **Oriel data export supplied to the project on 7 November 2026**. It is a dated snapshot, not a live vacancy feed or a statement of current offer availability.
 
 ## What you can do
 
