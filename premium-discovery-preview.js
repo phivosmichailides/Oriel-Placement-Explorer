@@ -215,6 +215,10 @@
     window.setTimeout(()=>{if(typeof window.OrielFitMapToScope==='function')window.OrielFitMapToScope()},420);
   };
   const activate=()=>{
+    // Only install after the base, product, map, and card-enhancement scripts finish.
+    // Earlier installation can race with programme-card and filter initialization.
+    if(typeof placements==='undefined'||!Array.isArray(placements)||!placements.length||
+       !document.querySelector('.productIntro')||!window.OrielEnhanceProgrammeCards)return false;
     const hero=enhanceHero();
     const stats=enhanceStats();
     const filters=organiseFilters();
