@@ -253,3 +253,29 @@ test('professional footer stays navigation-friendly and keeps existing data tool
   assert.match(css,/atlasFooterBottom/);
   assert.match(sw,/atlas-footer\.css\?v=20261110footer1/);
 });
+
+
+test('premium discovery prototype is reversible and keeps the original programme logic',()=>{
+  const html=read('index.html');
+  const css=read('premium-discovery-preview.css');
+  const js=read('premium-discovery-preview.js');
+  const sw=read('sw.js');
+  const app=read('app-base.js');
+  const product=read('app-product.js');
+  assert.match(html,/premium-discovery-preview\.js\?v=20261110prototype1/);
+  assert.match(html,/premium-discovery-preview\.css\?v=20261110prototype1/);
+  assert.match(sw,/premium-discovery-preview\.js\?v=20261110prototype1/);
+  assert.match(sw,/premium-discovery-preview\.css\?v=20261110prototype1/);
+  assert.match(js,/atlasClassic/,'Prototype has a simple off switch');
+  assert.match(js,/atlasPremiumPreview/,'Prototype is scoped to its opt-in class');
+  assert.match(css,/html\.atlasPremiumPreview/);
+  assert.match(js,/\.atlasCompactSummary/,'Compact summaries are additive');
+  assert.match(js,/const cleanTitle=/,'Raw source titles remain preserved');
+  assert.match(js,/const details=document\.createElement\('details'\)/,'Advanced controls remain accessible');
+  assert.match(js,/for\(const node of advanced\)/,'Controls are moved intact, not duplicated');
+  assert.match(js,/region'\)\?\.addEventListener\('change',syncMapToRegion/);
+  assert.match(app,/function card\(p,compact=false\)/);
+  assert.match(product,/card=\(p,compact=false\)=>/);
+  assert.doesNotMatch(js,/state\.marks\s*=/,'Prototype must not overwrite decisions');
+  assert.doesNotMatch(js,/localStorage\.clear\s*\(/);
+});
