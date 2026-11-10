@@ -300,6 +300,19 @@ html.atlasPremiumPreview #results .placement:not(.uxExpanded) .uxMetadata{
 html.atlasPremiumPreview #results .placement.uxExpanded .atlasCompactSummary{
   display:none!important;
 }
+html.atlasPremiumPreview #results .atlasCompactPrompt{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;
+  color:var(--mut);font-size:11.8px;
+  margin:1px 0 2px;
+}
+html.atlasPremiumPreview #results .atlasCompactPrompt .atlasCompactQuizCta{
+  background:transparent!important;border:0!important;padding:3px 2px!important;
+  color:var(--ux-accent-ink)!important;font:inherit!important;font-weight:750!important;
+  cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+}
+html.atlasPremiumPreview #results .placement.uxExpanded .atlasCompactPrompt{
+  display:none!important;
+}
 html.atlasPremiumPreview #results .placement.atlasDiscoveryCard .decision-quick{
   display:flex!important;
   align-items:center!important;gap:9px!important;
