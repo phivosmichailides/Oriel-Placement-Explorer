@@ -107,26 +107,29 @@ test('theme-aware header and muted map remain purely visual changes', () => {
   assert.match(read('map-basemap.js'),/keepBuffer:mainMap\?6:3/);
 });
 
-test('Tinder Mode preloads real next card without blurred gradient', () => {
+test('Tinder Mode preloads the next card but conceals it until promotion', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261109fit1/);
-  assert.match(html,/tinder-mode\.css\?v=20261109fit1/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109fit1/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109fit1/);
+  assert.match(html,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(html,/tinder-mode\.css\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.css\?v=20261110deckfix1/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
-  assert.match(js,/tdShowingNext/);
-  assert.match(css,/\.tdNextCard/);
+  assert.doesNotMatch(js,/tdShowingNext/);
+  assert.match(css,/#tinderMode \.tdCardSlot > \.tdNextCard,[\s\S]*?#tinderMode \.tdCardSlot > \.tdNextFinished\{\s*display:none!important/);
+  assert.match(css,/\.tdCardDeck\{position:relative;z-index:0/);
+  assert.match(css,/\.tdActions\{position:relative;z-index:1/);
+  assert.match(css,/\.tdActionLegend\{position:relative;z-index:1/);
   assert.match(css,/tdSwipeCard\.tdLeaving\{opacity:1/);
 });
 
 test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
   const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
-  assert.match(html,/tinder-mode\.js\?v=20261109fit1/);
-  assert.match(html,/tinder-mode\.css\?v=20261109fit1/);
-  assert.match(sw,/tinder-mode\.js\?v=20261109fit1/);
-  assert.match(sw,/tinder-mode\.css\?v=20261109fit1/);
+  assert.match(html,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(html,/tinder-mode\.css\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.css\?v=20261110deckfix1/);
   assert.match(js,/const shine=\(status\)=>/);
   assert.match(js,/tdDirectionalParticles/);
   assert.match(js,/tdSwipeHints/);
