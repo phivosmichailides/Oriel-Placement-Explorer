@@ -294,6 +294,7 @@
     };
 
     renderAppliedProfile(loadAnswers()||{homePostcode:window.OrielCommuteProfile?.read?.()||''});
+    document.addEventListener('desk:personalisation-removed',()=>renderAppliedProfile({}));
     document.addEventListener('desk:commute-origin-changed',()=>{const profile=loadAnswers()||{};profile.homePostcode=window.OrielCommuteProfile?.read?.()||'';renderAppliedProfile(profile)});
     window.openOrielPersonalisation=()=>openSetup(true);
     document.getElementById('personaliseAgain')?.addEventListener('click',()=>openSetup(true));
