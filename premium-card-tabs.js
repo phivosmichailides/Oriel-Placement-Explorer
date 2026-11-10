@@ -137,7 +137,7 @@
       tabs.append(tab);
       const pane=make('div','atlasCardPage');
       pane.dataset.atlasCardPage=key;
-      pane.id=tab.id.replace('-tab','-panel');
+      pane.id=tab.id.replace(/-tab$/,'-panel');
       pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',tab.id);
       pane.hidden=key!=='overview';
       panels[key]=pane;
