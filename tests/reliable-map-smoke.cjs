@@ -98,7 +98,7 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('header.top').evaluate(el=>{const y=el.getBoundingClientRect().top;return y>=-2&&y<=12}),'Navigation disappeared on scroll');
   await page.evaluate(()=>window.scrollTo(0,0));
 
-  // Tinder swipes reveal a real upcoming programme, not an empty gradient.
+  // Tinder preloads the next programme, but only one card is ever visible.
   await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderActiveCard')&&
     document.querySelector('#tinderCardSlot > .tdNextCard'),null,{timeout:20000});
@@ -106,15 +106,48 @@ fs.mkdirSync(output,{recursive:true});
     const top=document.querySelector('#tinderActiveCard');
     const below=document.querySelector('#tinderCardSlot > .tdNextCard');
     const title=card=>card?.querySelector('.tdProgrammeName')?.textContent.trim();
+    const nextRect=below?.getBoundingClientRect();
     return {top:title(top),next:title(below),hidden:below?.getAttribute('aria-hidden'),
       duplicateIds:document.querySelectorAll('#tinderActiveCard').length,
+      nextDisplay:getComputedStyle(below).display,nextWidth:nextRect?.width,nextHeight:nextRect?.height,
       underFilter:getComputedStyle(below).filter};
   });
   assert(initialDeck.top&&initialDeck.next&&initialDeck.top!==initialDeck.next,
     'Next programme was not pre-rendered: '+JSON.stringify(initialDeck));
   assert.equal(initialDeck.hidden,'true','Preview should not be an interactive screen-reader duplicate');
   assert.equal(initialDeck.duplicateIds,1,'Duplicate active-card IDs');
-  assert.equal(initialDeck.underFilter,'none','Next card blurred before swiping');
+  assert.equal(initialDeck.underFilter,'none','Preloaded next card should not be blurred');
+  assert.equal(initialDeck.nextDisplay,'none','Preloaded next card must remain completely concealed');
+  assert.equal(initialDeck.nextWidth,0,'Hidden next card must not paint beyond the active card');
+  assert.equal(initialDeck.nextHeight,0,'Hidden next card must not extend into the action area');
+  const initialActionLayout=await page.evaluate(()=>{
+    const rect=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null};
+    return {
+      card:rect(document.querySelector('#tinderActiveCard')),
+      actions:rect(document.querySelector('#tinderMode .tdActions')),
+      legend:rect(document.querySelector('#tinderMode .tdActionLegend')),
+      existing:rect(document.querySelector('#tinderExisting')),
+      notice:rect(document.querySelector('#tinderNotice')),
+      buttons:[...document.querySelectorAll('#tinderMode .tdActions button')].map(rect),
+      actionLayer:getComputedStyle(document.querySelector('#tinderMode .tdActions')).zIndex,
+      legendLayer:getComputedStyle(document.querySelector('#tinderMode .tdActionLegend')).zIndex
+    };
+  });
+  assert(initialActionLayout.card&&initialActionLayout.actions&&initialActionLayout.legend&&initialActionLayout.existing,
+    'Card/action layout elements are missing: '+JSON.stringify(initialActionLayout));
+  assert(initialActionLayout.actions.top>=initialActionLayout.card.bottom-1,
+    'Action buttons overlap the active card: '+JSON.stringify(initialActionLayout));
+  assert(initialActionLayout.legend.top>=initialActionLayout.actions.bottom-1,
+    'Action labels overlap the buttons: '+JSON.stringify(initialActionLayout));
+  assert(initialActionLayout.existing.top>=initialActionLayout.legend.bottom-1,
+    'Current-decision text overlaps the action labels: '+JSON.stringify(initialActionLayout));
+  assert(initialActionLayout.notice.top>=initialActionLayout.existing.bottom-1,
+    'Keyboard guidance overlaps the current-decision text: '+JSON.stringify(initialActionLayout));
+  assert.equal(initialActionLayout.buttons.length,4,'All four Tinder action buttons must be present');
+  assert(initialActionLayout.buttons.every(r=>r&&r.width>0&&r.height>0),
+    'One or more Tinder action buttons are hidden: '+JSON.stringify(initialActionLayout));
+  assert.equal(initialActionLayout.actionLayer,'1','Action buttons must have their own layer above the card deck');
+  assert.equal(initialActionLayout.legendLayer,'1','Action labels must have their own layer above the card deck');
   assert.equal(await page.locator('#tinderFilterPanel').isVisible(),false,'Tinder filter controls should begin closed');
   await page.locator('#tinderFilterToggle').click();
   assert(await page.locator('#tinderFilterPanel').isVisible(),'Tinder filter popover did not open');
@@ -130,22 +163,23 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('#tdOpenRejected').isVisible(),'Tinder-only rejected launcher is missing');
   assert.equal(await page.locator('#uxDrawerLauncher').isVisible(),false,'Ordinary shortlist launcher must be hidden only inside Tinder');
   await page.locator('#tinderYes').click();
-  await page.waitForFunction(()=>!!document.querySelector('#tinderActiveCard.tdLeaving')&&
-    !!document.querySelector('#tinderCardSlot.tdShowingNext > .tdNextCard'),null,{timeout:4000});
+  await page.waitForFunction(()=>!!document.querySelector('#tinderActiveCard.tdLeaving'),null,{timeout:4000});
   const flight=await page.evaluate(()=>{
     const top=document.querySelector('#tinderActiveCard');
     const below=document.querySelector('#tinderCardSlot > .tdNextCard');
     const deck=document.querySelector('#tinderMode .tdCardDeck');
+    const nextRect=below?.getBoundingClientRect();
     return {next:below?.querySelector('.tdProgrammeName')?.textContent.trim(),
-      width:below?.getBoundingClientRect().width,height:below?.getBoundingClientRect().height,
-      opacity:getComputedStyle(below).opacity,filter:getComputedStyle(below).filter,
-      topOpacity:getComputedStyle(top).opacity,feedback:deck?.classList.contains('tdFeedbackYes')||
+      display:getComputedStyle(below).display,width:nextRect?.width,height:nextRect?.height,
+      filter:getComputedStyle(below).filter,topOpacity:getComputedStyle(top).opacity,
+      feedback:deck?.classList.contains('tdFeedbackYes')||
         deck?.classList.contains('tdFeedbackNo')||deck?.classList.contains('tdFeedbackSuper')};
   });
-  assert.equal(flight.next,initialDeck.next,'Underlying card changed mid-flight');
-  assert(flight.width>200&&flight.height>300,'Underlying card was not fully rendered');
-  assert.equal(flight.opacity,'1','Underlying card faded');
-  assert.equal(flight.filter,'none','Underlying card blurred');
+  assert.equal(flight.next,initialDeck.next,'Preloaded next programme changed mid-flight');
+  assert.equal(flight.display,'none','Next programme became visible during the outgoing animation');
+  assert.equal(flight.width,0,'Hidden next programme painted over the action area');
+  assert.equal(flight.height,0,'Hidden next programme extended below the active card');
+  assert.equal(flight.filter,'none','Preloaded next programme should not be blurred');
   assert.equal(flight.topOpacity,'1','Departing card became transparent');
   assert.equal(flight.feedback,false,'Blurred feedback overlay still active');
   assert(await page.locator('#tinderActiveCard .tdExitTwinkles-Yes i').count()>=6,
@@ -193,14 +227,17 @@ fs.mkdirSync(output,{recursive:true});
   assert.equal(hitCard,'tinderActiveCard','Simulated drag start is not on the active card');
   await page.mouse.down();
   await page.mouse.move(dragX-60,dragY+4,{steps:5});
-  const dragging=await page.evaluate(()=>({
-    next:document.querySelector('#tinderCardSlot > .tdNextCard .tdProgrammeName')?.textContent.trim(),
-    transform:document.querySelector('#tinderActiveCard')?.style.transform,
-    filter:getComputedStyle(document.querySelector('#tinderCardSlot > .tdNextCard')).filter
-  }));
+  const dragging=await page.evaluate(()=>{
+    const next=document.querySelector('#tinderCardSlot > .tdNextCard');
+    return {next:next?.querySelector('.tdProgrammeName')?.textContent.trim(),
+      display:getComputedStyle(next).display,
+      transform:document.querySelector('#tinderActiveCard')?.style.transform,
+      filter:getComputedStyle(next).filter};
+  });
   assert(dragging.next&&dragging.transform?.includes('translate3d(-'),
-    'Following programme missing during pointer drag: '+JSON.stringify(dragging));
-  assert.equal(dragging.filter,'none','Drag blurred upcoming card');
+    'Preloaded next programme missing during pointer drag: '+JSON.stringify(dragging));
+  assert.equal(dragging.display,'none','Next programme became visible during pointer drag');
+  assert.equal(dragging.filter,'none','Preloaded next programme should not be blurred');
   assert(await page.locator('#tinderActiveCard.tdDragNo').count()===1,
     'Red directional shine should activate during a left drag');
   await page.mouse.move(dragX-125,dragY+5,{steps:5});
@@ -214,13 +251,14 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(()=>
     /translate3d\(\s*0px\s*,\s*-\d+(?:\.\d+)?px\s*,/.test(document.querySelector('#tinderActiveCard')?.style.transform||''),
     null,{timeout:3000});
-  const superFlight=await page.evaluate(()=>({
-    transform:document.querySelector('#tinderActiveCard')?.style.transform,
-    blue:getComputedStyle(document.querySelector('#tinderActiveCard')).boxShadow,
-    underOpacity:getComputedStyle(document.querySelector('#tinderCardSlot>.tdNextCard')).opacity
-  }));
+  const superFlight=await page.evaluate(()=>{
+    const next=document.querySelector('#tinderCardSlot>.tdNextCard');
+    return {transform:document.querySelector('#tinderActiveCard')?.style.transform,
+      blue:getComputedStyle(document.querySelector('#tinderActiveCard')).boxShadow,
+      nextDisplay:getComputedStyle(next).display};
+  });
   assert(/translate3d\(\s*0px\s*,\s*-\d+(?:\.\d+)?px\s*,/.test(superFlight.transform),'Super Like should send the card upward: '+superFlight.transform);
-  assert.equal(superFlight.underOpacity,'1','Blue shine blurred the next programme');
+  assert.equal(superFlight.nextDisplay,'none','Super Like exposed the preloaded next programme');
   assert(await page.locator('#tinderActiveCard .tdExitTwinkles-Super i').count()>=6,
     'Blue card-attached exit stars should appear on Super Like');
   await page.waitForFunction(()=>!document.querySelector('#tinderActiveCard.tdLeavingSuper'),null,{timeout:10000});
