@@ -310,7 +310,21 @@
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncActive&&currentUser){if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}flush();}});
   window.addEventListener('online',()=>{if(syncActive&&currentUser)flush()});
 
-  window.OrielCloud={activateSync:activateSync,signIn:showAuthModal,getClient:()=>client};
+  // Explicit flush for operations that must survive an immediate page reload,
+  // such as clearing the quiz. A normal debounced save can be cancelled by reload.
+  const saveNow=async()=>{
+    if(!currentUser)return true; // Visitors using only local storage.
+    if(!client||conflictBlocked)return false;
+    if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+    syncActive=true;
+    const until=Date.now()+12000;
+    while(saving&&Date.now()<until){
+      await new Promise(resolve=>setTimeout(resolve,100));
+    }
+    if(saving)return false;
+    return await flush();
+  };
+  window.OrielCloud={activateSync:activateSync,signIn:showAuthModal,getClient:()=>client,saveNow};
   window.OrielCloudReady=(async()=>{
     renderAccount();
     if(!configured){bootstrappingDone();return null;}
