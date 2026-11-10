@@ -143,6 +143,40 @@ html.atlasPremiumPreview[data-theme="light"][data-palette="mono"]{
   --ui-action-hover:#2E393E;
 }
 
+/*
+ * Give the neutral canvas the same selector specificity as the older
+ * Forest and Monochrome theme rules. Otherwise their former green/grey
+ * background values would win despite this stylesheet loading last.
+ */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="forest"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="copper"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mauve"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="amber"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="cocoa"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mono"]{
+  --bg:#141719;
+  --panel:#22272A;
+  --soft:#2C3235;
+  --line:#373E42;
+  --ink:#F1F1EE;
+  --mut:#B8C0BF;
+  --dark:#101315;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="forest"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="copper"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="mauve"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="amber"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="cocoa"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="mono"]{
+  --bg:#F5F5F2;
+  --panel:#FDFDFB;
+  --soft:#EEEFEA;
+  --line:#D8DEDA;
+  --ink:#252C2D;
+  --mut:#5D6869;
+  --dark:#22282B;
+}
+
 /* Existing palettes still drive selection and action colour. */
 html.atlasPremiumPreview[data-theme="dark"] .btn.primary,
 html.atlasPremiumPreview[data-theme="dark"] .chip.on{
