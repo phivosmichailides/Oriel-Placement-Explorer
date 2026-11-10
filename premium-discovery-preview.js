@@ -111,6 +111,21 @@
     }
     const top=card.querySelector('.placementTop');
     if(top)top.insertAdjacentElement('afterend',row);
+    // Keep a discoverable fit-quiz action without showing a big empty score
+    // panel to visitors who have not personalised the app yet.
+    if(!profileExists()&&card===card.parentElement?.querySelector('.placement')){
+      const hint=document.createElement('div');
+      hint.className='atlasCompactPrompt';
+      const label=document.createElement('span');
+      label.textContent='Personal fit not yet assessed';
+      const action=document.createElement('button');
+      action.type='button';
+      action.className='atlasFitQuizLink atlasCompactQuizCta';
+      action.setAttribute('data-atlas-start-quiz','');
+      action.textContent='Check my fit';
+      hint.append(label,action);
+      row.insertAdjacentElement('afterend',hint);
+    }
     const title=top?.querySelector('h3');
     if(title){
       const full=title.textContent.trim();
@@ -137,6 +152,18 @@
       const p=data.get(card.dataset.id);
       if(!p)continue;
       prototypeMeta(p,card);
+      if(!profileExists()){
+        for(const item of card.querySelectorAll('.fitColumn.caution .fitPoint')){
+          if(item.textContent.trim()==='No major trade-offs.'){
+            item.textContent='Trade-offs depend on your priorities and the source data may be incomplete.';
+          }
+        }
+        for(const item of card.querySelectorAll('.fitColumn.positive .fitPoint')){
+          if(item.textContent.trim()==='Strong pay'&&Number(p.salary)>0){
+            item.textContent='Stated gross salary: £'+Number(p.salary).toLocaleString('en-GB')+' per year';
+          }
+        }
+      }
       const details=card.querySelector('[data-ux-expand]');
       if(details){
         details.classList.add('atlasDetailsButtonPremium');
