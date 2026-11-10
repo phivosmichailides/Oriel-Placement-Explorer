@@ -237,7 +237,7 @@
     };
   };
   // A few coloured stars follow the outgoing physical card, echoing the
-  // familiar gold Undo return without ever covering the card underneath.
+  // familiar gold Undo return without covering the action controls.
   const exitTwinkles=(card,status)=>{
     if(!card||reduced())return ()=>{};
     const layer=document.createElement('span');
@@ -279,9 +279,8 @@
       note(status==='love'?'Super liked. Excellent taste.':status==='yes'?'Liked. Keep the good ones coming.':'Like No. Next contestant.');
     };
     if(!card||reduced()){finish();return;}
-    // The next real programme is already in the deck. Reveal it while the
-    // current card flies off, never a blurred empty gradient.
-    $('tinderCardSlot')?.classList.add('tdShowingNext');
+    // Keep the preloaded next programme concealed until this exit completes.
+    // render() then promotes it as the only visible card.
     const clearShine=shine(status);
     const clearStars=exitTwinkles(card,status);
     card.classList.add('tdLeaving','tdLeaving'+(status==='no'?'No':status==='yes'?'Yes':'Super'));
@@ -553,9 +552,8 @@
       done.innerHTML='<span aria-hidden="true">♡</span><h3>That’s everyone in this round.</h3><p>You’ve reviewed every available programme in this region. Switch regions to continue, or undo your last decision.</p>';
       cardSlot.append(done);
     }else{
-      // Render an actual second card *before* the active one. It stays visible
-      // during a drag and exit animation, so there is no intermediate blank
-      // frame or placeholder. The last card reveals the completion message.
+      // Preload the next programme in a concealed layer. Only the active card
+      // is visible; the next card becomes visible only after it is promoted.
       const seenIds=new Set(game.seen);
       const following=pool.find(candidate=>candidate.id!==p.id&&!seenIds.has(candidate.id))||null;
       if(following){

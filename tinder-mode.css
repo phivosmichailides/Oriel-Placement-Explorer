@@ -13,7 +13,7 @@
 .tdRoundStats{display:flex;align-items:baseline;gap:10px;font-size:12px}
 .tdRoundStats strong{font-weight:850;color:var(--ux-accent-ink)}.tdRoundStats span{color:var(--mut)}
 .tdBoard{max-width:640px;margin:3px auto 30px;text-align:center}
-.tdCardDeck{position:relative;margin:0 auto;min-height:500px;padding:0 10px 8px;max-width:590px}
+.tdCardDeck{position:relative;z-index:0;margin:0 auto;min-height:500px;padding:0 10px 8px;max-width:590px}
 .tdCardSlot{position:relative;min-height:480px}
 .tdSwipeCard{position:relative;isolation:isolate;touch-action:pan-y;user-select:none;text-align:left;cursor:grab;border:1px solid var(--line);background:var(--panel);border-radius:26px;padding:25px;box-shadow:0 16px 50px #00000016;will-change:transform;overflow:hidden}
 .tdSwipeCard:active{cursor:grabbing}.tdSwipeCard:focus-visible{outline:3px solid var(--ux-accent);outline-offset:4px}
@@ -44,18 +44,18 @@
 .tdStampYes{left:auto;right:25px;color:var(--td-green);transform:rotate(14deg)}
 .tdStampSuper{left:50%;top:30px;transform:translateX(-50%) rotate(-6deg);white-space:nowrap;font-size:23px;color:var(--td-blue)}
 .tdStampShow{opacity:.98}
-.tdActions{display:flex;align-items:center;justify-content:center;gap:16px;margin:15px 0 7px}
+.tdActions{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:16px;margin:15px 0 7px}
 .tdAction{border:2px solid currentColor;background:var(--panel);color:var(--ink);width:66px;height:66px;border-radius:50%;padding:17px;display:inline-grid;place-items:center;cursor:pointer;box-shadow:0 7px 20px #00000010;transition:transform .22s cubic-bezier(.22,1,.36,1),background .2s ease,box-shadow .2s}
 .tdAction svg{width:100%;height:100%}.tdAction-undo{color:var(--td-orange);width:52px;height:52px;padding:13px}
 .tdAction-no{color:var(--td-red)}.tdAction-yes{color:var(--td-green)}.tdAction-super{color:var(--td-blue)}
 .tdAction:hover:not(:disabled){transform:translateY(-4px) scale(1.06);box-shadow:0 10px 24px #0002}
 .tdAction:active:not(:disabled){transform:scale(.94)}.tdAction:disabled{opacity:.4;cursor:not-allowed}
 .tdAction:focus-visible{outline:3px solid var(--ux-accent);outline-offset:5px}
-.tdActionLegend{display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--mut);font-weight:750}
+.tdActionLegend{position:relative;z-index:1;display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--mut);font-weight:750}
 .tdActionLegend span{width:66px}.tdActionLegend span:first-child{width:52px}
-.tdExisting{font-size:12px;font-weight:750;margin:12px 0 0;color:var(--mut)}
-.tdNotice{font-size:11px;color:var(--mut);margin:8px 0 10px}
-.tdDisclosure{font-size:11px;color:var(--mut);max-width:530px;line-height:1.6;margin:18px auto 0}
+.tdExisting{position:relative;z-index:1;font-size:12px;font-weight:750;margin:12px 0 0;color:var(--mut)}
+.tdNotice{position:relative;z-index:1;font-size:11px;color:var(--mut);margin:8px 0 10px}
+.tdDisclosure{position:relative;z-index:1;font-size:11px;color:var(--mut);max-width:530px;line-height:1.6;margin:18px auto 0}
 .tdFinished{padding:60px 25px;background:var(--panel);border:1px solid var(--line);border-radius:24px;text-align:center;color:var(--mut)}
 .tdFinished>span{font-size:65px;color:var(--ux-accent)}.tdFinished h3{font-size:23px;color:var(--ink);margin:12px 0 7px}.tdFinished p{font-size:13px;max-width:340px;margin:auto}
 @media(max-width:690px){
@@ -221,32 +221,21 @@
  #tinderMode .tdUndoTwinkles i{animation:none!important}
 }
 
-/* A true two-programme stack. The next card is real, readable, and already
-   loaded before the front card is dragged or dismissed. No blurred placeholder. */
+/* Preload the next programme for a fast hand-off, but keep it completely
+   concealed until it becomes the active card. Only one card is ever visible. */
 #tinderMode .tdCardSlot{position:relative;isolation:isolate}
 #tinderMode .tdCardSlot > .tdNextCard,
 #tinderMode .tdCardSlot > .tdNextFinished{
-  position:absolute;inset:0 0 auto;z-index:0;
-  pointer-events:none;opacity:1;filter:none!important;
-  transform:translate3d(0,7px,0) scale(.987);
-  transform-origin:center top;
-  transition:transform .42s cubic-bezier(.22,1,.36,1);
+  display:none!important;
 }
 #tinderMode .tdCardSlot > .tdSwipeCard:not(.tdNextCard){
   position:relative;z-index:1;filter:none!important;
 }
-#tinderMode .tdCardSlot.tdShowingNext > .tdNextCard,
-#tinderMode .tdCardSlot.tdShowingNext > .tdNextFinished{
-  transform:translate3d(0,0,0) scale(1);
-}
 #tinderMode .tdSwipeCard.tdLeaving{opacity:1!important;filter:none!important}
-@media(prefers-reduced-motion:reduce){
-  #tinderMode .tdNextCard,#tinderMode .tdNextFinished{transition:none!important}
-}
 
 
-/* Directional, immediate shine without a blurred full-card overlay.
-   The NEXT real programme remains fully opaque and readable underneath. */
+/* Directional, immediate shine on the outgoing card without a blurred
+   full-card overlay. The next programme stays concealed until promoted. */
 #tinderMode .tdSwipeCard.tdDragNo,
 #tinderMode .tdSwipeCard.tdLeavingNo{
   border-color:var(--td-red)!important;
@@ -278,7 +267,7 @@
 }
 /* The original gradient feedback classes remain unused. They must not be
    reactivated over real programme text. */
-#tinderMode .tdCardSlot > .tdNextCard{filter:none!important;opacity:1!important}
+
 
 /* First-time guidance beside the deck, not over the programme details. */
 #tinderMode .tdBoard{position:relative}
@@ -495,8 +484,8 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
  outline:2px solid var(--ux-accent-ink);outline-offset:3px;
 }
 
-/* Direction-matched exit stars are physically attached to the outgoing
-   card, echoing gold Undo stars. The following card remains fully visible. */
+/* Direction-matched exit stars are attached to the outgoing card, echoing
+   the gold Undo stars. The next programme stays concealed until promoted. */
 #tinderMode .tdExitTwinkles{
  position:absolute;inset:0;z-index:10;pointer-events:none;overflow:visible;
  border-radius:inherit;
