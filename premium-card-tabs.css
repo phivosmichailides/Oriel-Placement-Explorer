@@ -26,6 +26,18 @@ html.atlasPremiumPreview #results .placement.atlasSampleCard{
   overflow:hidden!important;
   position:relative;
 }
+html.atlasPremiumPreview #results .placement.atlasSampleCard:not(.uxExpanded){
+  gap:0!important;
+}
+html.atlasPremiumPreview #results .placement.atlasSampleCard .salary-value::after{
+  content:'GROSS ANNUAL SALARY';
+  display:block;
+  font-size:10px;line-height:1.4;letter-spacing:.04em;
+  font-weight:650;color:var(--mut);margin-top:5px;
+}
+html.atlasPremiumPreview #results .placement.atlasSampleCard:not(.uxExpanded) .hourly{
+  display:none!important;
+}
 html.atlasPremiumPreview #results .placement.atlasSampleCard .placementTop{
   padding:23px 24px 0!important;
   margin:0!important;
