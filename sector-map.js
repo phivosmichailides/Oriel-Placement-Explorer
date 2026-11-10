@@ -491,7 +491,7 @@
             const salary=Number(p.salary)>0?'£'+Number(p.salary).toLocaleString('en-GB'):'Salary not stated';
             const hours=Number(p.hours)>0?Number(p.hours)+' h/week':'Hours not stated';
             const place=[p.region,(p.postcodes||[]).join(' · ')||p.area].filter(Boolean).join(' · ');
-            return '<article class="atlasPopupProgramme"><div class="atlasPopupCopy"><b>'+safeText(p.title||p.employer)+'</b><small>'+safeText(p.employer||'')+'</small><span>'+salary+' · '+hours+'</span><small>'+safeText(place)+'</small></div><button type="button" class="atlasPopupOpen" data-open="'+safeText(p.id)+'">Open</button></article>';
+            return '<article class="atlasPopupProgramme"><div class="atlasPopupCopy"><button type="button" class="atlasPopupTitle" data-open="'+safeText(p.id)+'" title="View this programme in Explore" aria-label="Open programme: '+safeText(p.title||p.employer)+'">'+safeText(p.title||p.employer)+'</button><small>'+safeText(p.employer||'')+'</small><span>'+salary+' · '+hours+'</span><small>'+safeText(place)+'</small></div><button type="button" class="atlasPopupOpen" data-open="'+safeText(p.id)+'">Open</button></article>';
           }).join('');
           const more=entries.length>shown.length?'<p class="atlasPopupMore">Showing '+shown.length+' of '+entries.length+' programmes at this location. Refine your filters to narrow the list.</p>':'';
           const approx=group.approximate?'<p class="map-approx-note">This marker includes an approximate postcode-district centre because a full postcode was not available.</p>':'';

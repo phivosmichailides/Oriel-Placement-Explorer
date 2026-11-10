@@ -39,8 +39,8 @@
   utilities.className='atlasDataTools';
   utilities.setAttribute('aria-labelledby','atlasDataToolsTitle');
   utilities.innerHTML='<div class="atlasDataToolsHeading">'+
-    '<div><div class="eyebrow">YOUR DATA & APP</div><h2 id="atlasDataToolsTitle">Manage your Placement Atlas</h2>'+
-    '<p>Install the app, save your choices or import a newer Oriel catalogue.</p></div></div>'+
+    '<div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="atlasDataToolsTitle">Save & manage your choices</h2>'+
+    '<p>Export or back up your shortlist. Install the app or import an updated programme list.</p></div></div>'+
     '<div class="atlasDataToolsButtons" id="atlasDataToolsButtons"></div>';
   const buttons=utilities.querySelector('#atlasDataToolsButtons');
   for(const id of ['installAppBtn','exportBtn','backupBtn','restoreBtn','restoreInput','uploadBtn','fileInput']){
@@ -48,14 +48,28 @@
     if(control)buttons.append(control);
   }
   const savedHelp=document.getElementById('saveHelp');
-  if(savedHelp)utilities.append(savedHelp);
+  if(savedHelp){
+    const help=document.createElement('details');
+    help.className='atlasSaveHelp';
+    const summary=document.createElement('summary');
+    summary.textContent='How saving and backups work';
+    help.append(summary,savedHelp);
+    utilities.append(help);
+  }
   // Keep the management panel inside the same bounded workspace as page content.
-  root.append(utilities);
+  footer.insertAdjacentElement('beforebegin',utilities);
 
   const navigate=target=>{
     if(typeof switchTab==='function')switchTab(target);
     else nav.querySelector('[data-tab="'+target+'"]')?.click();
   };
+  // Footer destinations use the same in-app navigation, never a reload.
+  footer.querySelectorAll('[data-atlas-footer-tab]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      navigate(button.dataset.atlasFooterTab);
+      window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
+  });
 
   // "For You" is a subview of Explore, not another top-level app destination.
   const addExploreSubnav=(panelId,title,description)=>{

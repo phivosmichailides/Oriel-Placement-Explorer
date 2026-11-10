@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261110ux1/);
+  assert.match(html,/app\.js\?v=20261110footer1/);
   assert.match(read('app.js'),/app-product\.js\?v=20261110fitinsights1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -89,11 +89,11 @@ test('primary navigation and footer management use separate, cache-versioned ass
   const html=read('index.html');
   const sw=read('sw.js');
   assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(html,/atlas-navigation\.js\?v=20261109nav2/);
+  assert.match(html,/atlas-navigation\.js\?v=20261110footer1/);
   assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261109nav2/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261110footer1/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
-  assert.match(read('atlas-navigation.js'),/root\.append\(utilities\)/);
+  assert.match(read('atlas-navigation.js'),/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
 });
 
 test('theme-aware header and muted map remain purely visual changes', () => {
@@ -184,11 +184,11 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
 test('contextual dashboard actions and compact filters are wired to the live app',()=>{
   const html=read('index.html'),ui=read('atlas-interactions.js'),css=read('atlas-interactions.css');
   const session=read('session-ui.js'),app=read('app.js'),sw=read('sw.js');
-  assert.match(html,/atlas-interactions\.js\?v=20261110ux1/);
+  assert.match(html,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(sw,/atlas-interactions\.js\?v=20261110ux1/);
+  assert.match(sw,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(app,/sector-map\.js\?v=20261110legend1/);
+  assert.match(app,/sector-map\.js\?v=20261110popup1/);
   for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
     assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
   assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
@@ -208,4 +208,48 @@ test('map legend reflects rendered markers and does not duplicate old status dot
   assert.match(map,/renderLegend\(displayGroups\)/);
   assert.match(map,/palette\[key\]/);
   assert.match(map,/hasExcluded=groups\.some/);
+});
+
+
+test('preference removal refreshes safely and keeps the shortlist',()=>{
+  const js=read('atlas-interactions.js');
+  const cloud=read('supabase-cloud.js');
+  assert.match(js,/const clearPersonalisation=async\(\)=>/);
+  assert.match(js,/state\.prefs=.*DEFAULT/);
+  assert.match(js,/state\.filters=.*FILTER_DEFAULTS/);
+  assert.match(js,/window\.OrielCommuteProfile\?\.save\?\.\('',\{silent:true\}\)/);
+  assert.match(js,/window\.OrielCloud\.saveNow\(\)/);
+  assert.match(js,/sessionStorage\.removeItem\('oriel-desk-last-view-v1'\)/);
+  assert.match(js,/window\.location\.reload\(\)/);
+  assert.match(cloud,/const saveNow=async\(\)=>/);
+  assert.match(cloud,/return await flush\(\)/);
+  assert.match(cloud,/saveNow\};/);
+  assert.doesNotMatch(js,/state\.marks\s*=\s*\{\}/);
+});
+
+test('map popup titles open the exact programme without removing Open actions',()=>{
+  const map=read('sector-map.js');
+  const app=read('app-base.js');
+  const css=read('atlas-footer.css');
+  assert.match(map,/class="atlasPopupTitle" data-open/);
+  assert.match(map,/class="atlasPopupOpen" data-open/);
+  assert.match(app,/closest\('\[data-open\]'\)/);
+  assert.match(css,/atlasPopupProgramme \.atlasPopupTitle/);
+});
+
+test('professional footer stays navigation-friendly and keeps existing data tools',()=>{
+  const html=read('index.html'),nav=read('atlas-navigation.js');
+  const css=read('atlas-footer.css'),sw=read('sw.js');
+  assert.match(html,/class="app-footer atlasFooter"/);
+  assert.match(html,/atlasFooterGrid/);
+  for(const tab of ['explore','foryou','shortlist','compare','simulator','outcome','prefs'])
+    assert(html.includes('data-atlas-footer-tab="'+tab+'"'));
+  assert.match(html,/guide\.html/);
+  assert.match(html,/Feedback &amp; ideas/);
+  assert.match(html,/2026 Oriel CSV snapshot/);
+  assert.match(nav,/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
+  assert.match(nav,/footer\.querySelectorAll\('\[data-atlas-footer-tab\]'\)/);
+  assert.match(nav,/atlasSaveHelp/);
+  assert.match(css,/atlasFooterBottom/);
+  assert.match(sw,/atlas-footer\.css\?v=20261110footer1/);
 });

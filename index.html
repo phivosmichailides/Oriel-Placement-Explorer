@@ -173,6 +173,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <link rel="stylesheet" href="atlas-navigation.css?v=20261109mobile5">
 <link rel="stylesheet" href="atlas-map-tones.css?v=20261109tone1">
 <link rel="stylesheet" href="atlas-interactions.css?v=20261110ux1">
+<link rel="stylesheet" href="atlas-footer.css?v=20261110footer1">
 </head>
 <body>
 <div class="shell">
@@ -301,8 +302,40 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
   <div class="uxDrawerItems" id="uxDrawerItems"></div>
 </aside><div class="uxFloatingTools" id="uxFloatingTools" aria-label="Quick filtering and navigation"><button class="uxFloatHandle" type="button" id="uxFloatToggle" title="Toggle quick filters" aria-label="Toggle quick filter controls" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg></button><div class="uxFloatInner" id="uxFloatInner" hidden><button class="uxFloatRow" type="button" id="uxOpenFilters">☷ <span>Show all filters</span></button><label class="uxFloatRow"><input id="uxFloatHideShortlisted" type="checkbox"><span>Hide shortlisted</span></label><label class="uxFloatRow"><span>Salary from</span><select id="uxFloatSalary"><option value="">Any</option><option value="28000">£28k</option><option value="30000">£30k</option><option value="32000">£32k</option><option value="36000">£36k</option></select></label><label class="uxFloatRow"><span>Sort</span><select id="uxFloatSort"><option value="fit">Fit</option><option value="salary">Pay</option><option value="hourly">Hourly</option><option value="hours">Hours</option><option value="name">Name</option></select></label></div></div>
 <button class="uxBackTop" type="button" id="uxBackTop" aria-label="Scroll to the top" title="Back to top">↑ <span>Top</span></button>
-<footer class="app-footer">Placement Atlas · Pharmacy Foundation Programme catalogue: owner-supplied 2026 Oriel CSV snapshot, not live recruitment data. Independent project, not affiliated with Oriel or the NHS. Upload a newer CSV to refresh details. Fit scores are suggestions, not verified working conditions. <a href="guide.html">How to compare foundation pharmacist training programmes</a>.</footer><div class="toast" role="status" id="toast"></div>
-<script src="atlas-navigation.js?v=20261109nav2"></script>
+<footer class="app-footer atlasFooter" aria-label="Placement Atlas site information">
+  <div class="atlasFooterGrid">
+    <div class="atlasFooterIdentity">
+      <div class="atlasFooterBrand"><span class="atlasFooterCross" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M22.4 4.8h19.2v17.6h17.6v19.2H41.6v17.6H22.4V41.6H4.8V22.4h17.6z"/></svg></span><strong>Placement Atlas</strong></div>
+      <p>Explore clearly. Compare what matters.<br>Choose your foundation training with confidence.</p>
+      <span class="atlasFooterIdentityNote">Independent · Built for pharmacy applicants</span>
+    </div>
+    <nav class="atlasFooterGroup" aria-label="Explore Placement Atlas">
+      <h2>Explore</h2>
+      <button type="button" data-atlas-footer-tab="explore">All programmes</button>
+      <button type="button" data-atlas-footer-tab="foryou">For You</button>
+      <button type="button" data-atlas-footer-tab="shortlist">My shortlist</button>
+    </nav>
+    <nav class="atlasFooterGroup" aria-label="Planning tools">
+      <h2>Plan &amp; compare</h2>
+      <button type="button" data-atlas-footer-tab="compare">Compare programmes</button>
+      <button type="button" data-atlas-footer-tab="simulator">Oriel Simulation</button>
+      <button type="button" data-atlas-footer-tab="outcome">My Outcome</button>
+      <button type="button" data-atlas-footer-tab="prefs">Preferences</button>
+    </nav>
+    <nav class="atlasFooterGroup" aria-label="Project information and support">
+      <h2>About &amp; support</h2>
+      <a href="guide.html">How to compare programmes</a>
+      <a href="https://github.com/phivosmichailides/Placement_Atlas" target="_blank" rel="noopener noreferrer">Project on GitHub</a>
+      <a href="https://github.com/phivosmichailides/Placement_Atlas/discussions" target="_blank" rel="noopener noreferrer">Feedback &amp; ideas</a>
+      <a href="https://www.linkedin.com/in/phivos-michailides-601b0329b/" target="_blank" rel="noopener noreferrer">About the creator</a>
+    </nav>
+  </div>
+  <div class="atlasFooterBottom">
+    <p><strong>© 2026 Placement Atlas</strong> · Created by Phivos Michailides</p>
+    <p>Independent of Oriel, the NHS and GPhC. Programme information comes from a dated 2026 Oriel CSV snapshot, not a live recruitment feed. Verify current information with official sources; fit scores are guidance, not verified working conditions.</p>
+  </div>
+</footer><div class="toast" role="status" id="toast"></div>
+<script src="atlas-navigation.js?v=20261110footer1"></script>
 <script src="vendor/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js" crossorigin="anonymous"></script>
@@ -319,12 +352,12 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <script src="specialist-settings.js?v=20261106a"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
 <script src="supabase-config.js?v=20261106a"></script>
-<script src="supabase-cloud.js?v=20261109header2"></script>
+<script src="supabase-cloud.js?v=20261110reset1"></script>
 <script src="locations-bundled.js?v=20261106a"></script>
 <script src="tube-stations.js?v=20261108tfl2"></script>
 <script src="rail-stations.js?v=20261109national1"></script>
 <script src="location-blacklist.js?v=20261108atlas1"></script>
-<script src="app.js?v=20261110ux1"></script>
+<script src="app.js?v=20261110footer1"></script>
 <script src="preferences-ui.js?v=20261107segmented1"></script>
 <script src="theme-outcome.js?v=20261106i"></script>
 <script src="workspace-ux.js?v=20261110ux1"></script>
@@ -333,7 +366,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <script src="motion-effects.js?v=20261107a"></script>
 <script src="session-ui.js?v=20261110ux1"></script>
 <script src="interface-polish.js?v=20261107responsive2"></script>
-<script src="atlas-interactions.js?v=20261110ux1"></script>
-<script src="pwa.js?v=20261110ux1"></script>
+<script src="atlas-interactions.js?v=20261110reset1"></script>
+<script src="pwa.js?v=20261110footer1"></script>
 </body>
 </html>
