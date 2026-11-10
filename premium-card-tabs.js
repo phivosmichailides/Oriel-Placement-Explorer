@@ -156,7 +156,6 @@
         // Existing lazy mini-map and commute observer are tied to visibility.
         requestAnimationFrame(()=>{
           window.dispatchEvent(new Event('resize'));
-          card.querySelector('.uxMiniMap')?.scrollIntoView?.({block:'nearest',behavior:'instant'});
         });
       }
     };
