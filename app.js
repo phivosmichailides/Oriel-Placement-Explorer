@@ -17,14 +17,14 @@
     };
     const loadOnboarding=()=>{
       const onboarding=document.createElement('script');
-      onboarding.src='onboarding.js?v=20261109copperswatch1';
+      onboarding.src='onboarding.js?v=20261110ux1';
       onboarding.onload=loadDeadlineDates;
       onboarding.onerror=loadDeadlineDates;
       document.body.appendChild(onboarding);
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261109tubezoom1';
+      sectors.src='sector-map.js?v=20261110legend1';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);

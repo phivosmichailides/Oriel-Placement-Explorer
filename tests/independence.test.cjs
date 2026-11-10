@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261110fitinsights1/);
+  assert.match(html,/app\.js\?v=20261110ux1/);
   assert.match(read('app.js'),/app-product\.js\?v=20261110fitinsights1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -169,7 +169,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261109copperswatch1/);
+  assert.match(sw,/onboarding\.js\?v=20261110ux1/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,5 +177,35 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261109copperswatch1/);
+  assert.match(app,/onboarding\.js\?v=20261110ux1/);
+});
+
+
+test('contextual dashboard actions and compact filters are wired to the live app',()=>{
+  const html=read('index.html'),ui=read('atlas-interactions.js'),css=read('atlas-interactions.css');
+  const session=read('session-ui.js'),app=read('app.js'),sw=read('sw.js');
+  assert.match(html,/atlas-interactions\.js\?v=20261110ux1/);
+  assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
+  assert.match(sw,/atlas-interactions\.js\?v=20261110ux1/);
+  assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
+  assert.match(app,/sector-map\.js\?v=20261110legend1/);
+  for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
+    assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
+  assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
+  assert.match(ui,/window\.OrielReleaseProgrammeCards/);
+  assert.match(ui,/Remove preferences/);
+  assert.match(ui,/state\.prefs=.*DEFAULT/);
+  assert.match(ui,/brand\.addEventListener\('click',goHome\)/);
+  assert.match(session,/max-width: 1180px/);
+  assert.match(css,/#atlasRefinePill/);
+  assert.match(css,/#explore\.uxFiltersCollapsed #uxFilterSidebar/);
+});
+
+test('map legend reflects rendered markers and does not duplicate old status dots',()=>{
+  const html=read('index.html'),map=read('sector-map.js');
+  assert.doesNotMatch(html,/<i class="dot green"><\/i> Shortlisted/);
+  assert.doesNotMatch(map,/Muted burgundy ring = shortlisted/);
+  assert.match(map,/renderLegend\(displayGroups\)/);
+  assert.match(map,/palette\[key\]/);
+  assert.match(map,/hasExcluded=groups\.some/);
 });

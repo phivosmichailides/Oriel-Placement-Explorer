@@ -10,9 +10,9 @@
  const ids=['search','sector','region','hours','salary','sort','decision','visa','specialistView'];
  const getTab=()=>document.querySelector('.tab.active')?.dataset.tab||'explore';
  let lastTab=getTab(),restoreDone=false,restoreInProgress=false;
- // On a phone the map and programme results must appear before the long
+ // In narrow windows and phones the map and results must appear before the long
  // filter sidebar. The visitor can reveal it whenever they want.
- const mobileFirst=window.matchMedia?.('(max-width: 720px)').matches;
+ const mobileFirst=window.matchMedia?.('(max-width: 1180px)').matches;
  let collapsed=mobileFirst?true:storage.get(L,COLLAPSE)==='1';
  let zoom=Number(storage.get(L,ZOOM)||100);
  if(!Number.isFinite(zoom)||zoom<70||zoom>130)zoom=100;
@@ -102,10 +102,10 @@
    if(topBtn)topBtn.classList.toggle('uxTopVisible',y>420);
  }
  setCollapsed(collapsed,false);
- // A desktop window narrowed to phone size should behave like a new phone
+ // A desktop split-screen should behave like a compact phone
  // visit: start with the map and programme cards, not the long filter form.
  // Keep the user's saved desktop choice when leaving the mobile breakpoint.
- const mobileQuery=window.matchMedia?.('(max-width: 720px)');
+ const mobileQuery=window.matchMedia?.('(max-width: 1180px)');
  mobileQuery?.addEventListener('change',event=>{
    if(event.matches)setCollapsed(true,false);
    else setCollapsed(storage.get(L,COLLAPSE)==='1',false);
