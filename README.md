@@ -2,7 +2,7 @@
 
 **Explore more clearly. Compare what matters. Rank with confidence.**
 
-A personalised, independent decision-support web app for applicants comparing **England & Wales Foundation Pharmacist Training programmes**. Built around the real challenges of choosing between thousands of placements—not just displaying a spreadsheet.
+Placement Atlas is an **independent pharmacy foundation training explorer** for applicants comparing **4,064 Foundation Pharmacist Training programmes across England and Wales**. It brings interactive maps, salary and hours comparisons, explainable fit scores, programme comparisons and personalised shortlisting together in one web app.
 
 **[Open the live app](https://placementatlas.co.uk/)** · [Foundation training comparison guide](https://placementatlas.co.uk/guide.html) · [How it works](#how-it-works) · [Data and limitations](#data-and-limitations) · [Technical overview](#technical-overview)
 
