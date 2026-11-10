@@ -289,7 +289,15 @@ test('editorial palette prototype keeps neutral surfaces and six distinct access
   assert.match(css,/--panel:#22272A/);
   assert.match(css,/--line:#373E42/);
   assert.match(css,/--ux-accent:#9EBEAD/);
+  const stableCanvas=css.split('Give the neutral canvas')[1]?.split('/* Existing palettes')[0]||'';
+  assert.match(stableCanvas,/--bg:#141719/,'Exact charcoal canvas must override older palette rules');
+  assert.match(stableCanvas,/--panel:#22272A/,'Neutral surfaces must override old green tint');
+  assert.match(stableCanvas,/--line:#373E42/,'Neutral border contrast must override legacy palettes');
   for(const palette of ['forest','copper','mauve','amber','cocoa','mono']){
+    assert(stableCanvas.includes('data-theme="dark"][data-palette="'+palette+'"]'),
+      'Explicit high-specificity dark neutral canvas missing for '+palette);
+    assert(stableCanvas.includes('data-theme="light"][data-palette="'+palette+'"]'),
+      'Explicit high-specificity light neutral canvas missing for '+palette);
     assert(css.includes('data-theme="dark"][data-palette="'+palette+'"]'),
       'Missing dark palette '+palette);
     assert(css.includes('data-theme="light"][data-palette="'+palette+'"]'),
