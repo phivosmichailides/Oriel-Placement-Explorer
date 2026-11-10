@@ -112,6 +112,8 @@
     row?.insertAdjacentElement('afterend',summary);
 
     const sections=make('section','atlasCardSections');
+    const key='atlas-card-'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,'-');
+    sections.id=key+'-sections';
     sections.setAttribute('aria-label','Expanded programme information');
     const tabs=make('div','atlasCardTabs');
     tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Programme detail sections');
@@ -120,7 +122,7 @@
     for(const [key,label] of tabLabels){
       const tab=make('button','atlasCardTab',label);
       tab.type='button';tab.dataset.atlasCardTab=key;
-      tab.id='atlas-'+CSS.escape(String(p.id)).replace(/[^a-zA-Z0-9_-]/g,'-')+'-'+key+'-tab';
+      tab.id='atlas-'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,'-')+'-'+key+'-tab';
       tab.setAttribute('role','tab');tab.setAttribute('aria-selected',String(key==='overview'));
       tab.tabIndex=key==='overview'?0:-1;
       tab.addEventListener('click',()=>activateTab(key,true));
@@ -164,6 +166,13 @@
     const originalLocation=fit.querySelector(':scope > .uxLocationPanel');
     fit.classList.add('atlasTabbedFit');
     panels.overview.append(fit);
+    const allBadges=card.querySelector(':scope > .badges');
+    if(allBadges){
+      const extras=make('details','atlasCardExtraLabels');
+      const summary=make('summary','','All supplied programme labels');
+      extras.append(summary,allBadges);
+      panels.overview.append(extras);
+    }
     const sourceNote=make('p','atlasCardSourceNote',
       'Source fields come from the supplied Oriel catalogue. Fit signals are inferred or personalised and may not reflect actual working conditions.');
     panels.overview.append(sourceNote);
@@ -190,7 +199,7 @@
     const payGrid=make('div','atlasCardFactGrid');
     payGrid.append(
       field('Gross annual salary',salary?money(salary):'Not stated'),
-      field('Gross hourly rate',salary&&hours?money(salary/(52*hours))+' / hour':'Not available'),
+      field('Gross hourly rate',salary&&hours?'£'+(salary/(52*hours)).toFixed(2)+' / hour (calculated)':'Not available'),
       field('Contracted week',hours?hours+' hours':'Not stated'),
       field('Visa sponsorship',p.visa===true?'Offered':p.visa===false?'Not offered':'Not stated')
     );
@@ -236,7 +245,7 @@
     expand.classList.add('atlasSampleExpandButton');
     quick.append(expand);
     expand.textContent='View all details ↓';
-    expand.setAttribute('aria-controls',sections.className);
+    expand.setAttribute('aria-controls',sections.id);
     // Preserve product's delegated event handler and its single source of truth.
     // The button only toggles uxExpanded; tab content is revealed by CSS.
     activateTab('overview',false);
