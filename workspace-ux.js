@@ -745,6 +745,17 @@
    updateCounts();
    if(drawer?.classList.contains('uxOpen'))renderDrawer();
  }
+ // Reuse the same real card mini-maps in the dashboard's focused programme directory.
+ window.OrielEnhanceProgrammeCards=scope=>enhanceCards(scope);
+ window.OrielReleaseProgrammeCards=scope=>{
+   if(!scope)return;
+   for(const [holder,map] of miniMaps){
+     if(!scope.contains(holder))continue;
+     try{map.remove()}catch{}
+     miniMaps.delete(holder);
+     miniObserver?.unobserve(holder);
+   }
+ };
  function refreshAllPay(){
    document.querySelectorAll('.placement').forEach(article=>{const p=byId().get(article.dataset.id);if(p)addTakeHome(article,p)});
    enhanceRecommendations();
