@@ -89,17 +89,35 @@
     legend.id='sectorMapLegend';
     legend.setAttribute('aria-label','Map pin colour legend');
     legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:var(--panel)';
-    const renderLegend=()=>{refreshPalette();legend.innerHTML=[
-      ['Hospital','Hospital'],
-      ['General Practice','GP'],
-      ['Community Pharmacy','Community'],
-      ['Industry','Industry'],
-      ['Mixed','Mixed / split'],
-      ['Other','Other']
-    ].map(([s,t])=>`<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:${palette[s]};display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)"></i>${t}</span>`).join('')+
-    '<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i> Underground stations (close zoom)</span>'+
-    '<span class="oriel-tube-attribution">Station data provided by Transport for London</span>'+
-    '<span>Numbered clusters zoom in · single-location pins open programme details</span><span style="margin-left:auto">Muted burgundy ring = shortlisted · red ring = excluded</span>';};
+    // Show only categories that have rendered pins; the colours are the active
+    // palette values, not a hard-coded screenshot or historical legend.
+    const renderLegend=(rendered=null)=>{
+      refreshPalette();
+      const visible=Array.isArray(rendered)
+        ?new Set(rendered.map(g=>groupMapSector(g.entries)))
+        :new Set(placements.filter(matches).map(programmeMapSector));
+      const all=[
+        ['Hospital','Hospital'],
+        ['General Practice','GP'],
+        ['Community Pharmacy','Community'],
+        ['Industry','Industry'],
+        ['Mixed','Mixed / split'],
+        ['Other','Other']
+      ];
+      const sectors=all.filter(([key])=>visible.has(key)).map(([key,text])=>
+        '<span class="atlasLegendItem"><i class="atlasLegendDot" style="background:'+palette[key]+'" aria-hidden="true"></i>'+text+'</span>').join('');
+      const groups=Array.isArray(rendered)?rendered:[];
+      const hasShortlisted=groups.some(g=>g.entries.some(p=>SHORT.has(mark(p).status)));
+      const hasExcluded=groups.some(g=>g.entries.every(isExcluded));
+      const statuses=(hasShortlisted?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendShortlisted" aria-hidden="true"></i>Shortlisted</span>':'')+
+        (hasExcluded?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendExcluded" aria-hidden="true"></i>Excluded</span>':'');
+      const tubeVisible=placementMap?.getZoom?.()>=15.5&&tubeLayer.getLayers().length>0;
+      const tube=tubeVisible?'<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i>Underground station</span><span class="oriel-tube-attribution">Station data: TfL</span>':'';
+      const clusters=Array.isArray(rendered)&&rendered.some(group=>group.cluster)
+        ?'<span class="atlasLegendHelp">Tap a numbered cluster to zoom in</span>':'';
+      legend.innerHTML=sectors+statuses+tube+clusters;
+      legend.hidden=!(sectors||statuses||tube);
+    };
     renderLegend();
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
@@ -282,7 +300,7 @@
       document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!dialog.hidden)closeFocus();});
     };
     installMapControls();
-    drawMap=requestedList=>{const list=Array.isArray(requestedList)?requestedList:placements.filter(matches);currentMapList=list;refreshPalette();renderLegend();
+    drawMap=requestedList=>{const list=Array.isArray(requestedList)?requestedList:placements.filter(matches);currentMapList=list;refreshPalette();
       if(!placementMap)return;
       placementMap.closePopup();
       $('mapSelection').innerHTML='';
@@ -413,6 +431,7 @@
       }
       window.OrielMapClusterCount=displayGroups.filter(group=>group.cluster).length;
       window.OrielMapRenderedMarkerCount=displayGroups.length;
+      renderLegend(displayGroups);
 
       for(const group of displayGroups){
         const {c,entries}=group;
