@@ -248,9 +248,95 @@
       return true;
     };
 
-    const fitDetail=(title,items,tone,empty)=>{
+
+    // Cards explain the saved quiz and adjustable preferences without changing scores.
+    const personalisedFitInsights=(p,a)=>{
+      const profile=state.prefs.onboarding;
+      if(!profile)return {good:a.good.slice(0,4),bad:a.bad.slice(0,3)};
+      const w=state.prefs.weights||{},env=profile.environment||'unsure';
+      const weight=key=>Number.isFinite(Number(w[key]))?Number(w[key]):3;
+      const h=weeks(p,'hospital'),g=weeks(p,'general practice'),c=weeks(p,'community'),i=weeks(p,'industry');
+      const known=Array.isArray(p.settings)&&p.settings.length>0;
+      const good=[],bad=[];
+      const positive=s=>{if(s&&!good.includes(s))good.push(s)};
+      const caution=s=>{if(s&&!bad.includes(s))bad.push(s)};
+      const preferHospital=(['hospital','mixed','unsure'].includes(env)&&weight('hospital')>=2)||weight('hospital')>=4;
+      const preferGP=(['gp','mixed','unsure'].includes(env)&&weight('gp')>=2)||weight('gp')>=4;
+      const preferCommunity=env==='community'||profile.community==='happy';
+      const minSalary=Number(profile.salary)||0,maxHours=Number(profile.hours)||0;
+
+      // Respect hard-ish limits: below-minimum pay is never called strong pay.
+      if(minSalary&&p.salary){
+        if(p.salary<minSalary)caution('Pay below your £'+minSalary.toLocaleString('en-GB')+' minimum');
+        else positive('Meets your £'+minSalary.toLocaleString('en-GB')+' pay minimum');
+      }else if(!minSalary&&p.salary>=32000&&weight('money')>=3)positive('Strong pay');
+      if(maxHours&&p.hours){
+        if(p.hours>maxHours)caution(p.hours+'h/week exceeds your '+maxHours+'h limit');
+        else positive(p.hours+'h/week is within your limit');
+      }else if(!maxHours&&p.hours&&p.hours<=37.5&&weight('lifestyle')>=3)positive(p.hours+'h week');
+
+      // Show sector exposure as a benefit only when it matches that applicant.
+      if(preferHospital){
+        if(h>=26)positive('Major hospital exposure');
+        else if(h>=13)positive('Hospital rotation');
+      }
+      if(preferGP){
+        if(g>=26)positive('Major GP exposure');
+        else if(g>=13)positive('GP rotation');
+      }
+      if(preferCommunity&&c>=26)positive('Substantial community exposure');
+      if(env==='industry'&&i>=13)positive('Industry placement exposure');
+      if(env==='mixed'&&[h,g,c,i].filter(n=>n>=13).length>=2)positive('Meaningful exposure across settings');
+
+      // Warn about the opposite setting, without inventing restrictions not in the quiz.
+      if(known){
+        if(env==='hospital'&&h<13)caution('Limited hospital exposure for your chosen setting');
+        if(env==='gp'&&g<13)caution('Limited GP exposure for your chosen setting');
+        if(env==='community'&&c<13)caution('Limited community exposure for your chosen setting');
+        if(env==='industry'&&i<13)caution('Little or no industry rotation listed');
+        if(env==='mixed'&&[h,g,c,i].filter(n=>n>=13).length<2)caution('Mostly one setting rather than a meaningful mix');
+      }
+      if(env==='hospital'&&g>=26&&weight('gp')<4)caution('Significant GP exposure, while you prefer hospital');
+      if(env==='gp'&&h>=26&&weight('hospital')<4)caution('Hospital-heavy, while you prefer GP');
+      if(env==='community'&&h>=26&&weight('hospital')<4)caution('Hospital-heavy, while you prefer community');
+      if(env==='community'&&g>=26&&weight('gp')<4)caution('GP-heavy, while you prefer community');
+      if(env==='industry'&&h>=26)caution('Hospital-led rather than industry-based');
+      if(env==='industry'&&g>=26)caution('GP-led rather than industry-based');
+      if(profile.community==='avoid'&&c>=26)caution('Community-heavy despite your preference to avoid it');
+      else if(profile.community==='less'&&c>=26)caution('More community exposure than you prefer');
+      else if(profile.community==='some'&&c>=39&&env!=='community')caution('Mostly community rather than a mixed placement');
+
+      if(profile.region){
+        if(p.region===profile.region)positive('In your chosen region');
+        else caution('Outside your chosen region ('+profile.region+')');
+      }else if(a.good.some(x=>/Area matches your preferences/i.test(x)))positive('Area matches your preferences');
+      for(const value of a.good){
+        const signal=value.trim();
+        if((/^(Excellent CV|Strong progression)/.test(signal)&&weight('progression')>=3)||
+           (/^More independent\/desk-work/.test(signal)&&weight('independence')>=3)||
+           /^Protected study time/.test(signal)||
+           (/^Better schedule wording/.test(signal)&&weight('lifestyle')>=3))positive(signal);
+      }
+      for(const value of a.bad){
+        const signal=value.trim();
+        if(signal==='Mostly community-facing'){
+          if(env!=='community'&&profile.community!=='happy'&&c>=26)caution(signal);
+        }else if(signal==='Salary not stated'||signal==='Late/weekend working mentioned'||
+                 /h\/week$/.test(signal)||signal==='Area you said you would rather avoid')caution(signal);
+      }
+      if(maxHours&&!p.hours)caution('Weekly hours not stated');
+
+      // Preference-specific factors lead; general programme advantages follow.
+      const settingBenefit=/^(Meaningful exposure across settings|Major hospital exposure|Hospital rotation|Major GP exposure|GP rotation|Substantial community exposure|Industry placement exposure)/;
+      const settingCaution=/^(Limited (hospital|GP|community) exposure|Little or no industry rotation|Mostly one setting|Significant GP exposure|Hospital-heavy|GP-heavy|Hospital-led rather|GP-led rather|Community-heavy|More community exposure|Mostly community rather)/;
+      const preferredGood=good.filter(s=>settingBenefit.test(s));
+      const preferredBad=bad.filter(s=>settingCaution.test(s));
+      return {good:[...new Set([...preferredGood,...good])].slice(0,4),bad:[...new Set([...bad.filter(s=>/below your|exceeds your/i.test(s)),...preferredBad,...bad])].slice(0,3)};
+    };
+
+    const fitDetail=(title,items,tone,empty,prompt='')=>{
       const values=items.length?items:[empty];
-      return `<div class="fitColumn ${tone}"><div class="fitLabel">${title}</div>${values.map(x=>`<div class="fitPoint">${esc(x)}</div>`).join('')}</div>`;
+      return `<div class="fitColumn ${tone}"><div class="fitLabel">${title}</div>${values.map(x=>`<div class="fitPoint">${esc(x)}</div>`).join('')}${prompt?`<button type="button" class="atlasFitQuizLink" data-atlas-start-quiz style="display:block;width:100%;margin-top:9px;padding:4px 0 0;border:0;background:transparent;color:inherit;opacity:.75;font-size:11px;line-height:1.4;text-align:center;text-decoration:underline;text-underline-offset:2px">${esc(prompt)}</button>`:''}</div>`;
     };
 
     card=(p,compact=false)=>{
@@ -268,9 +354,10 @@
       };
       const specialised=window.OrielSpecialist?.classify(p)||[];
       const tags=[...specialised.map(x=>'Specialist: '+window.OrielSpecialist.labelOf(x)),p.places&&` ${p.places} training ${p.places===1?'place':'places'}`,`Sponsorship: ${p.visa===true?'offered':p.visa===false?'not offered':'not stated'}`,p.region&&` ${p.region}`,`${icon} ${sector(p)}`,p.hours&&` ${p.hours}h/week`,p.settings.length>1&&' Split',h&&`Hospital: ${h}w`,g&&`GP: ${g}w`,c&&`Community: ${c}w`,i&&`Industry: ${i}w`].filter(Boolean);
+      const fitCopy=personalisedFitInsights(p,a);
       const code=p.id.split('/').pop();
       const orielState=m.priority?`Your shortlist priority #${m.priority}`:SHORT.has(m.status)?'Saved to your shortlist':'Not shortlisted';
-      return `<article class="placement card" data-id="${esc(p.id)}"><div class="placementTop"><div><div class="eyebrow">${esc(p.postcodes.join(' · ')||p.area||p.region)}</div><h3>${esc(p.title||p.employer)}</h3><div class="employer">${esc(p.employer)}</div></div><div><div class="salary ${p.salary?'salary-value':''}">${p.salary?'£'+p.salary.toLocaleString():'Salary n/a'}</div><div class="hourly">${hourly(p)?'≈ £'+hourly(p).toFixed(2)+'/hr gross':''}</div></div></div><div class="badges">${tags.map(x=>`<span class="badge ${badgeClass(x)}">${esc(x)}</span>`).join('')}</div><div class="fit fitExpanded"><div class="score" data-fit-tone="${!state.prefs.onboarding?'unpersonalised':a.score>=65?'excellent':a.score>=35?'mixed':'poor'}"><span>Personal fit</span>${state.prefs.onboarding?`<b>${a.score}</b><small>${esc(a.band)}</small><em>Based on your preferences</em>`:`<b>—</b><small>Not personalised</small><button type="button" class="atlasFitQuizLink" data-atlas-start-quiz>See if you're a fit — take the quiz</button>`}</div><div class="fitBreakdown">${fitDetail('Why it could fit',a.good.slice(0,4),'positive','No strong positive signals found yet.')}${fitDetail('Trade-offs to check',a.bad.slice(0,3),'caution','No major trade-offs.')}</div></div>${compact?'':`<p class="desc">${esc(p.desc||'No programme description supplied.')}</p><button class="more" data-action="more">Read more</button>`}<div class="decision-quick"><button class="btn ${SHORT.has(m.status)?'selected':''}" data-action="prefer">${SHORT.has(m.status)?'Remove from shortlist':'Add to shortlist'}</button><button class="btn ${isExcluded(p)?'excluded':''}" data-action="exclude">${isExcluded(p)?'Excluded — undo':'Exclude'}</button><span class="smallnote">Programme ${esc(code)} · ${esc(orielState)}</span></div><div class="controls">${decisionPicker(m.status)}<input class="manualPriority" type="number" min="1" step="1" data-action="priority" inputmode="numeric" value="${esc(m.priority||'')}" placeholder="#" title="Manual priority"><input data-action="note" value="${esc(m.note||'')}" placeholder=" Your note…"><button class="btn compare ${inComp?'on':''}" data-action="compare">${inComp?' Comparing':' Compare'}</button></div></article>`;
+      return `<article class="placement card" data-id="${esc(p.id)}"><div class="placementTop"><div><div class="eyebrow">${esc(p.postcodes.join(' · ')||p.area||p.region)}</div><h3>${esc(p.title||p.employer)}</h3><div class="employer">${esc(p.employer)}</div></div><div><div class="salary ${p.salary?'salary-value':''}">${p.salary?'£'+p.salary.toLocaleString():'Salary n/a'}</div><div class="hourly">${hourly(p)?'≈ £'+hourly(p).toFixed(2)+'/hr gross':''}</div></div></div><div class="badges">${tags.map(x=>`<span class="badge ${badgeClass(x)}">${esc(x)}</span>`).join('')}</div><div class="fit fitExpanded"><div class="score" data-fit-tone="${!state.prefs.onboarding?'unpersonalised':a.score>=65?'excellent':a.score>=35?'mixed':'poor'}"><span>Personal fit</span>${state.prefs.onboarding?`<b>${a.score}</b><small>${esc(a.band)}</small><em>Based on your preferences</em>`:`<b>—</b><small>Not personalised</small><button type="button" class="atlasFitQuizLink" data-atlas-start-quiz>See if you're a fit — take the quiz</button>`}</div><div class="fitBreakdown">${fitDetail(state.prefs.onboarding?'Why it fits you':'Programme highlights',fitCopy.good,'positive',state.prefs.onboarding?'No clear match to your selected preferences.':'No strong positive signals found yet.',state.prefs.onboarding?'':'Personalise to find your strengths')}${fitDetail(state.prefs.onboarding?'Trade-offs for you':'Potential trade-offs',fitCopy.bad,'caution',state.prefs.onboarding?'No clear trade-offs in the available data.':'No major trade-offs.',state.prefs.onboarding?'':'See your personal trade-offs · Take the quiz')}</div></div>${compact?'':`<p class="desc">${esc(p.desc||'No programme description supplied.')}</p><button class="more" data-action="more">Read more</button>`}<div class="decision-quick"><button class="btn ${SHORT.has(m.status)?'selected':''}" data-action="prefer">${SHORT.has(m.status)?'Remove from shortlist':'Add to shortlist'}</button><button class="btn ${isExcluded(p)?'excluded':''}" data-action="exclude">${isExcluded(p)?'Excluded — undo':'Exclude'}</button><span class="smallnote">Programme ${esc(code)} · ${esc(orielState)}</span></div><div class="controls">${decisionPicker(m.status)}<input class="manualPriority" type="number" min="1" step="1" data-action="priority" inputmode="numeric" value="${esc(m.priority||'')}" placeholder="#" title="Manual priority"><input data-action="note" value="${esc(m.note||'')}" placeholder=" Your note…"><button class="btn compare ${inComp?'on':''}" data-action="compare">${inComp?' Comparing':' Compare'}</button></div></article>`;
     };
 
     stats=()=>{
