@@ -224,3 +224,15 @@ html.atlasPremiumPreview[data-theme="dark"] .atlasFooterIdentityNote{
   color:var(--mut);
   border-color:var(--line);
 }
+
+
+/* The appearance questionnaire should preview the same *restrained* accents. */
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="forest"] .onboardPaletteSwatch{background:#9EBEAD!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="copper"] .onboardPaletteSwatch{background:#A6BACB!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="mauve"] .onboardPaletteSwatch{background:#C4ADC3!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="amber"] .onboardPaletteSwatch{background:#D1B78E!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="cocoa"] .onboardPaletteSwatch{background:#C6B3A5!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="mono"] .onboardPaletteSwatch{background:#CFD6D4!important}
+html.atlasPremiumPreview .onboardPaletteSwatch{
+  border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);
+}
