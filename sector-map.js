@@ -111,7 +111,7 @@
       const hasExcluded=groups.some(g=>g.entries.every(isExcluded));
       const statuses=(hasShortlisted?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendShortlisted" aria-hidden="true"></i>Shortlisted</span>':'')+
         (hasExcluded?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendExcluded" aria-hidden="true"></i>Excluded</span>':'');
-      const tubeVisible=placementMap?.getZoom?.()>=15.5&&tubeLayer.getLayers().length>0;
+      const tubeVisible=placementMap?.getZoom?.()>=15.5&&document.querySelectorAll('#placementMap .oriel-tube-marker').length>0;
       const tube=tubeVisible?'<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i>Underground station</span><span class="oriel-tube-attribution">Station data: TfL</span>':'';
       const clusters=Array.isArray(rendered)&&rendered.some(group=>group.cluster)
         ?'<span class="atlasLegendHelp">Tap a numbered cluster to zoom in</span>':'';
