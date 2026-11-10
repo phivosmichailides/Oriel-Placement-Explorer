@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Placement Atlas",
   "short_name": "Placement Atlas",
-  "description": "Explore and compare pharmacy foundation programmes across England and Wales.",
+  "description": "Independent pharmacy foundation training explorer for comparing 4,064 programmes across England and Wales.",
   "lang": "en-GB",
   "start_url": "./?source=pwa",
   "scope": "./",
