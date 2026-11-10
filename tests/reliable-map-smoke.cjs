@@ -317,6 +317,31 @@ fs.mkdirSync(output,{recursive:true});
   await page.locator('#placementMap').screenshot({path:output+'/map-neighbourhood.png'});
   assert(await page.locator('#results .placement').count()>0,'Explore programme cards disappeared');
   assert(await page.locator('#results .uxMiniMap').count()>0,'Programme mini maps missing');
+  if(await page.locator('html.atlasPremiumPreview').count()){
+    // The imported sample must be backed by real existing controls rather
+    // than an independent mock state. All five detail categories are reusable.
+    await page.waitForFunction(()=>document.querySelector('#results .placement.atlasSampleCard')?.dataset.atlasDetailTabs==='1',null,{timeout:15000});
+    const previewCard=page.locator('#results .placement.atlasSampleCard').first();
+    assert.equal(await previewCard.locator('[role=tab]').count(),5,'Five progressive-disclosure tabs missing');
+    assert.equal(await previewCard.locator('.atlasCardSections').isVisible(),false,'Compact card should begin collapsed');
+    await previewCard.locator('[data-ux-expand]').click();
+    assert(await previewCard.locator('.atlasCardSections').isVisible(),'Detailed card did not expand');
+    await previewCard.locator('[data-atlas-card-tab=training]').click();
+    assert(await previewCard.locator('[data-atlas-card-page=training]').isVisible(),'Training panel did not show');
+    await previewCard.locator('[data-atlas-card-tab=pay]').click();
+    assert(await previewCard.locator('.atlasPayEstimateValue').isVisible(),'Real pay estimate missing from Pay tab');
+    await previewCard.locator('[data-atlas-card-tab=locations]').click();
+    assert(await previewCard.locator('.uxMiniMap').isVisible(),'Existing mini-map missing from Locations tab');
+    await previewCard.locator('[data-atlas-card-tab=assessment]').click();
+    assert(await previewCard.locator('[data-action=note]').isVisible(),'Existing notes editor missing from My assessment');
+    await previewCard.locator('[data-atlas-card-tab=overview]').click();
+    assert(await previewCard.locator('.fit').isVisible(),'Existing personalised assessment missing from Overview');
+    await previewCard.locator('[data-ux-expand]').click();
+    assert.equal(await previewCard.locator('.atlasCardSections').isVisible(),false,'Card could not collapse');
+    assert(await previewCard.locator('[data-action=prefer]').isVisible(),'Shortlist action missing after collapse');
+    assert(await previewCard.locator('[data-action=compare]').isVisible(),'Compare action missing after collapse');
+  }
+
   // PWA metadata, install assets and shortlist interactions remain available.
   assert.equal(await page.locator('link[rel=manifest]').count(),1);
   assert.equal(await page.locator('link[rel=icon]').count()>=1,true);
