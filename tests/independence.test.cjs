@@ -279,3 +279,27 @@ test('premium discovery prototype is reversible and keeps the original programme
   assert.doesNotMatch(js,/state\.marks\s*=/,'Prototype must not overwrite decisions');
   assert.doesNotMatch(js,/localStorage\.clear\s*\(/);
 });
+
+
+test('editorial palette prototype keeps neutral surfaces and six distinct accessible accents',()=>{
+  const html=read('index.html'),pwa=read('sw.js'),css=read('premium-editorial-palettes.css');
+  assert.match(html,/premium-editorial-palettes\.css\?v=20261110palette1/);
+  assert.match(pwa,/premium-editorial-palettes\.css\?v=20261110palette1/);
+  assert.match(css,/--bg:#141719/);
+  assert.match(css,/--panel:#22272A/);
+  assert.match(css,/--line:#373E42/);
+  assert.match(css,/--ux-accent:#9EBEAD/);
+  for(const palette of ['forest','copper','mauve','amber','cocoa','mono']){
+    assert(css.includes('data-theme="dark"][data-palette="'+palette+'"]'),
+      'Missing dark palette '+palette);
+    assert(css.includes('data-theme="light"][data-palette="'+palette+'"]'),
+      'Missing light palette '+palette);
+    assert(css.includes('[data-ob-palette="'+palette+'"]'),
+      'Missing updated onboarding swatch '+palette);
+  }
+  assert.match(css,/\.atlasSummaryChipPrimary/,'Informational setting chips must be neutral');
+  assert.match(css,/\.salary-value/,'Salary values are read-only information');
+  assert.match(css,/\.atlasSummaryChipCaution/,'Warnings keep distinct semantic colour');
+  assert.match(css,/\.productIntro\.card/,'Hero should have a neutral surface');
+  assert.match(css,/html\.atlasPremiumPreview/,'Palette changes must remain prototype-scoped');
+});
