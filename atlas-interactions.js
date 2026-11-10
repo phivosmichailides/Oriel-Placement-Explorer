@@ -188,31 +188,62 @@
   }
 
   // Clear matching preferences only after an explicit confirmation.
-  const clearPersonalisation=()=>{
+  const clearPersonalisation=async()=>{
     if(!hasProfile())return;
     const accepted=window.confirm('Remove your personalisation and return to a general programme view?\n\nThis clears quiz answers, personalised fit weights, area preferences and temporary Explore filters. Your shortlist, notes, ranks, account, colour theme and map colours are kept.');
     if(!accepted)return;
+    const removeButtons=[profileButton,...topButtons];
+    removeButtons.forEach(button=>{button.disabled=true;button.setAttribute('aria-busy','true');});
+    document.body.classList.add('atlasProfileResetting');
+    // Keep appearance and programme decisions, but return filters and fit
+    // inputs to the non-personalised defaults.
     const colours=state.prefs.mapColours?{...state.prefs.mapColours}:null;
     state.prefs=typeof clone==='function'?clone(DEFAULT):{...DEFAULT};
     if(colours)state.prefs.mapColours=colours;
     state.filters=typeof clone==='function'?clone(FILTER_DEFAULTS):{...FILTER_DEFAULTS};
-    if(typeof quick!=='undefined')quick.clear();
     try{
-      for(const key of ['phivos-onboarding-v1','phivos-onboarding-profile-v1','oriel-onboarding-applied-quick-v1'])localStorage.removeItem(key);
+      for(const key of ['phivos-onboarding-v1','phivos-onboarding-profile-v1','oriel-onboarding-applied-quick-v1']){
+        localStorage.removeItem(key);
+      }
+      // Don't launch the questionnaire automatically immediately after reset.
       sessionStorage.setItem('phivos-onboarding-skip-session','1');
-      sessionStorage.removeItem('oriel-desk-last-view-v1');
     }catch{}
-    window.OrielCommuteProfile?.save?.('',{silent:true});
+    try{window.OrielCommuteProfile?.save?.('',{silent:true});}catch{}
+    // Invoke the same reset control that Explore uses, so all visible fields
+    // and the persistent filter snapshot are brought into alignment.
     $('resetBtn')?.click();
-    for(const id of ['search','sector','region','hours','salary','visa']){const input=$(id);if(input)input.value='';}
-    document.querySelectorAll('.chip[data-q]').forEach(chip=>chip.classList.remove('on'));
+    if(typeof applySavedFilters==='function')applySavedFilters();
     document.body.classList.remove('deskPersonalised');
     if(typeof save==='function')save();
     if(typeof renderAll==='function')renderAll();
     document.dispatchEvent(new CustomEvent('desk:personalisation-removed'));
     syncPreferencesButtons();
     navigate('explore');
-    if(typeof toast==='function')toast('Personalisation cleared. Your shortlist is safe.');
+    window.scrollTo({top:0,behavior:'instant'});
+    if(typeof toast==='function')toast('Preferences removed · refreshing your view…');
+    // Cloud saves are debounced normally. Flush explicitly before reloading,
+    // otherwise the old quiz could rehydrate from an account on the next boot.
+    let synced=true;
+    try{
+      if(typeof window.OrielCloud?.saveNow==='function'){
+        synced=await window.OrielCloud.saveNow();
+      }
+      if(synced){
+        const raw=localStorage.getItem('phivos-desk-v2');
+        const saved=raw?JSON.parse(raw):{};
+        if(saved.prefs?.onboarding||localStorage.getItem('phivos-onboarding-v1')||localStorage.getItem('phivos-onboarding-profile-v1'))synced=false;
+      }
+    }catch{synced=false;}
+    document.body.classList.remove('atlasProfileResetting');
+    if(!synced){
+      // The local view is already neutral; never reload and silently restore
+      // stale cloud preferences while the account sync is unresolved.
+      removeButtons.forEach(button=>{button.disabled=false;button.removeAttribute('aria-busy');});
+      if(typeof toast==='function')toast('General view updated. Cloud sync needs attention before refreshing.');
+      return;
+    }
+    try{sessionStorage.removeItem('oriel-desk-last-view-v1');}catch{}
+    window.location.reload();
   };
   const profileButton=document.createElement('button');
   profileButton.type='button';profileButton.className='atlasRemovePreferences';
