@@ -1,11 +1,12 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-10-v42';
+const CACHE_NAME='placement-atlas-shell-2026-11-10-v43';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261109nav2','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
+  'atlas-interactions.js?v=20261110ux1','atlas-interactions.css?v=20261110ux1',
   'supabase-cloud.js?v=20261109header2','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261109tubezoom1','onboarding.js?v=20261109copperswatch1','deadline-dates.js?v=20261109header2',
-  'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261109fix2','rail-stations.js?v=20261109national1',
+  'sector-map.js?v=20261110legend1','onboarding.js?v=20261110ux1','deadline-dates.js?v=20261109header2',
+  'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
   'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261110deckfix1','tinder-mode.css?v=20261110deckfix1',
@@ -14,7 +15,7 @@ const EXTRA_ASSETS=[
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
   'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
   'simulator.js?v=20261109brand1','motion-effects.js?v=20261107a',
-  'session-ui.js?v=20261109mobile5','interface-polish.js?v=20261107responsive2',
+  'session-ui.js?v=20261110ux1','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
   'data/oriel-2026.part-04.txt','data/oriel-2026.part-05.txt',
   'data/london-borough-labels.geojson','data/tube-stations.json','data/rail-stations-ew.json?v=20261109national1',
