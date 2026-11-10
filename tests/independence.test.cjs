@@ -269,7 +269,7 @@ test('premium discovery prototype is reversible and keeps the original programme
   assert.match(js,/atlasClassic/,'Prototype has a simple off switch');
   assert.match(js,/atlasPremiumPreview/,'Prototype is scoped to its opt-in class');
   assert.match(css,/html\.atlasPremiumPreview/);
-  assert.match(js,/\.atlasCompactSummary/,'Compact summaries are additive');
+  assert.match(js,/className='atlasCompactSummary'/,'Compact summaries are additive');
   assert.match(js,/const cleanTitle=/,'Raw source titles remain preserved');
   assert.match(js,/const details=document\.createElement\('details'\)/,'Advanced controls remain accessible');
   assert.match(js,/for\(const node of advanced\)/,'Controls are moved intact, not duplicated');
