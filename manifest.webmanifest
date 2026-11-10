@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Placement Atlas",
   "short_name": "Placement Atlas",
-  "description": "Independent pharmacy foundation training explorer for comparing 4,064 programmes across England and Wales.",
+  "description": "Compare 4,064 foundation pharmacist training programmes across England and Wales. Explore interactive maps, pay, hours and settings, then build a personalised shortlist.",
   "lang": "en-GB",
   "start_url": "./?source=pwa",
   "scope": "./",
@@ -22,13 +22,13 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icons/placement-atlas-192.png?v=20261108atlas2",
+      "src": "icons/placement-atlas-192.png?v=20261110favicon1",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/placement-atlas-512.png?v=20261108atlas2",
+      "src": "icons/placement-atlas-512.png?v=20261110favicon1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
