@@ -107,7 +107,7 @@ html.atlasPremiumPreview .atlasStatToolbarPremium span{
 html.atlasPremiumPreview .atlasStatTogglePremium{
   appearance:none;background:transparent;border:0;
   padding:8px;color:var(--ux-accent-ink);
-  font:700 12px/1.3 inherit;cursor:pointer;
+  font-family:inherit;font-size:12px;line-height:1.3;font-weight:700;cursor:pointer;
   border-radius:8px;
 }
 html.atlasPremiumPreview #stats{
