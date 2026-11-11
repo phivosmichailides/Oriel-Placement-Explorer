@@ -10,13 +10,15 @@
     if(!ready() || window.__sectorPinsInstalled)return false;
     window.__sectorPinsInstalled=true;
 
+    // Muted but distinct editorial colours. Users' saved custom pin colours
+    // still override these defaults through the existing preference editor.
     const palette={
-      Hospital:'#57799c',
-      'General Practice':'#4e8d80',
-      'Community Pharmacy':'#9076a6',
-      Industry:'#b5895b',
-      Mixed:'#af7187',
-      Other:'#8c969e'
+      Hospital:'#526F90',
+      'General Practice':'#4C806F',
+      'Community Pharmacy':'#93734F',
+      Industry:'#75668B',
+      Mixed:'#94647D',
+      Other:'#647680'
     };
 
     const defaults={...palette};
@@ -71,9 +73,15 @@
       return palette[s]?s:'Other';
     };
 
+    // Colour clusters by their predominant listed training setting rather
+    // than painting every geographically heterogeneous cluster as "Mixed".
+    // Ties remain mixed. The legend and pins use this exact same resolver.
     const groupMapSector=entries=>{
-      const types=[...new Set(entries.map(programmeMapSector))];
-      return types.length===1?types[0]:'Mixed';
+      if(!entries.length)return'Other';
+      const counts=new Map();
+      entries.forEach(p=>{const type=programmeMapSector(p);counts.set(type,(counts.get(type)||0)+1)});
+      const ordered=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
+      return ordered.length===1||ordered[0][1]>ordered[1][1]?ordered[0][0]:'Mixed';
     };
 
     const groupSectorSummary=entries=>{
@@ -348,9 +356,11 @@
       // become a regular-looking carpet of tiny numbered cells. Tighten the
       // screen-space radius progressively as the user zooms into regions,
       // boroughs and neighbourhoods; individual sites appear at street level.
-      const cellSize=zoom<=5?22:zoom<=6?24:zoom<=7?26:zoom<=8?27:
-        zoom<=9?26:zoom<=10?24:zoom<=11?20:zoom<=12?16:
-        zoom<=13?12:zoom<=14?9:zoom<=15?6:0;
+      // Slightly broader spatial grouping reduces the marker carpet without
+      // hiding individual locations at close zoom levels.
+      const cellSize=zoom<=5?27:zoom<=6?30:zoom<=7?32:zoom<=8?33:
+        zoom<=9?32:zoom<=10?30:zoom<=11?27:zoom<=12?21:
+        zoom<=13?16:zoom<=14?11:zoom<=15?7:0;
       const visibleBounds=zoom>=16?placementMap.getBounds().pad(.55):null;
       const displayGroups=[];
       if(cellSize>0){
@@ -438,14 +448,14 @@
         const mapSector=groupMapSector(entries);
         const preferred=entries.some(p=>SHORT.has(mark(p).status));
         const excluded=entries.every(isExcluded);
-        const stroke=excluded?'#ac515e':preferred?'#82505d':'#ffffff';
+        const stroke=excluded?'#B06B72':preferred?'#D7A5C1':'#F1EFEB';
         const fillColor=palette[mapSector]||palette.Other;
-        const radius=(entries.length>1?4.3:2.9)+(preferred?.55:0);
+        const radius=(entries.length>1?3.6:2.8)+(preferred?.5:0);
         const needsBadge=group.cluster||entries.length>1;
         let pin;
         if(needsBadge){
-          const size=group.cluster?(entries.length>=100?34:entries.length>=10?28:24):(entries.length>=100?30:entries.length>=10?26:23);
-          const fontSize=entries.length>=100?9:10;
+          const size=group.cluster?(entries.length>=100?29:entries.length>=10?24:20):(entries.length>=100?27:entries.length>=10?22:19);
+          const fontSize=entries.length>=100?9.2:9.5;
           const countLabel=entries.length>999?'999+':String(entries.length);
           pin=L.marker(c,{
             icon:L.divIcon({
@@ -457,12 +467,12 @@
           }).addTo(mapLayer);
         }else{
           pin=L.circleMarker(c,{
-            radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,
+            radius,color:stroke,weight:preferred?2.2:excluded?2:1.3,
             fillColor,fillOpacity:excluded?.38:.94,opacity:excluded?.9:1
           }).addTo(mapLayer);
         }
 
-        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.7:excluded?2.4:1.6,fillOpacity:excluded?.38:.94,fillColor});
+        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.2:excluded?2:1.3,fillOpacity:excluded?.38:.94,fillColor});
         for(const p of entries){if(!programmePins.has(p.id))programmePins.set(p.id,[]);programmePins.get(p.id).push(pin)}
         pin.on('mouseover',()=>{
           hoveredProgramme=entries[0]?.id||null;syncMap();
