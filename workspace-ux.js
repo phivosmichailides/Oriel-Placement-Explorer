@@ -20,7 +20,7 @@
  const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const money=n=>window.OrielPay?.money(n)||'£'+Math.round(Number(n)||0).toLocaleString('en-GB');
  let layout=read(KEYS.layout,'list')==='grid'?'grid':'list';
- let palette=palettes.has(read(KEYS.palette,'forest'))?read(KEYS.palette,'forest'):'forest';
+ let palette=palettes.has(read(KEYS.palette,'mono'))?read(KEYS.palette,'mono'):'mono';
  const setLayout=(next,rerender=true)=>{
    layout=next==='grid'?'grid':'list';root.setAttribute('data-layout',layout);write(KEYS.layout,layout);
    document.querySelectorAll('[data-ux-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxLayout===layout)));
@@ -152,16 +152,38 @@
  },true);
 
  let page=1,lastFilterKey='',skipResetOnce=false;
+ const PAGE_SIZE_KEY='placement-atlas-results-page-size-v1';
+ const savedPageSize=read(PAGE_SIZE_KEY,'100');
+ let pageSize=savedPageSize==='all'?0:([100,200,500].includes(Number(savedPageSize))?Number(savedPageSize):100);
  window.uxGetExplorePage=()=>page;
  window.uxSetExplorePage=value=>{const n=Number(value);if(!Number.isInteger(n)||n<1)return;page=n;skipResetOnce=true;if(typeof explore==='function')explore()};
  const pagination=$('uxExplorePager');
+ const effectivePageSize=total=>pageSize||Math.max(1,total);
+ const pageCount=total=>Math.max(1,Math.ceil(total/effectivePageSize(total)));
+ const mountPageSize=()=>{
+   const toolbar=$('uxExploreToolbar');
+   if(!toolbar||$('uxResultsPageSize'))return;
+   const label=document.createElement('label');label.className='uxResultsPageSizeControl';label.htmlFor='uxResultsPageSize';
+   label.innerHTML='<span>Per page</span><select id="uxResultsPageSize" aria-label="Programmes per page"><option value="100">100</option><option value="200">200</option><option value="500">500</option><option value="all">All</option></select>';
+   const select=label.querySelector('select');select.value=pageSize===0?'all':String(pageSize);
+   select.addEventListener('change',()=>{
+     pageSize=select.value==='all'?0:Number(select.value);
+     write(PAGE_SIZE_KEY,pageSize===0?'all':String(pageSize));
+     page=1;skipResetOnce=true;
+     if(typeof explore==='function')explore();
+   });
+   const before=toolbar.querySelector('.uxLayoutControls');
+   if(before)toolbar.insertBefore(label,before);else toolbar.append(label);
+ };
+ mountPageSize();
  const pager=(count,total)=>{
    if(!pagination)return;
    pagination.replaceChildren();
-   const pages=Math.max(1,Math.ceil(total/20));
+   const size=effectivePageSize(total),pages=pageCount(total);
    if(!total){pagination.textContent='No matching results.';return}
+   const from=count?((page-1)*size+1):0,to=Math.min(page*size,total);
    const info=document.createElement('span');
-   info.textContent='Showing '+(count?((page-1)*20+1):0)+'–'+(Math.min(page*20,total))+' of '+total.toLocaleString('en-GB')+' · Page '+page+'/'+pages;
+   info.textContent='Showing '+from+'–'+to.toLocaleString('en-GB')+' of '+total.toLocaleString('en-GB')+(pages>1?' · Page '+page+'/'+pages:'');
    pagination.append(info);
    if(pages===1)return;
    const controls=document.createElement('div');controls.className='uxPagerButtons';
@@ -186,10 +208,10 @@
    const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
-   const total=options.length,catalogueTotal=getData().length,pages=Math.max(1,Math.ceil(total/20));
+   const total=options.length,catalogueTotal=getData().length,pages=pageCount(total),size=effectivePageSize(total);
    window.OrielFilteredProgrammes=options;
    page=Math.min(Math.max(1,page),pages);
-   const shown=options.slice((page-1)*20,page*20);
+   const shown=pageSize===0?options:options.slice((page-1)*size,page*size);
    $('count').textContent=catalogueTotal.toLocaleString('en-GB')+' total programmes · '+total.toLocaleString('en-GB')+' shown';
    cleanupMiniMaps();
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
