@@ -13,15 +13,43 @@
     if(typeof switchTab==='function')switchTab(tab);
     else document.querySelector('[data-tab="'+tab+'"]')?.click();
   };
-  const cleanTitle=(title)=>{
-    let value=String(title||'').trim().replace(/\s+/g,' ');
-    // Strip only a recognised slash-location suffix containing a UK postcode;
-    // keep programme labels intact when no recognisable suffix is present.
-    const slashLocation=value.search(/\/\s*(?:[A-Za-z][A-Za-z .'-]{1,45}\/\s*)?[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
-    if(slashLocation>10)value=value.slice(0,slashLocation);
-    value=value.replace(/\bHosp\b/g,'Hospital').replace(/\bMed\b(?=\s|$)/g,'Medical')
-      .replace(/\bNHS FT\b/g,'NHS Foundation Trust');
-    return value.trim()||String(title||'Programme');
+  const cleanTitle=(title,programme={})=>{
+    // Keep the unmodified source title separately for "Full name". This
+    // function is presentation-only and never modifies Oriel identifiers.
+    const raw=String(title||'').trim();
+    let value=raw.replace(/\s+/g,' ').replace(/\s*\+\s*/g,' + ');
+    const parts=value.split('/').map(x=>x.trim()).filter(Boolean);
+    const postcode=/\b(?:GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})\b/i;
+    if(parts.length>1){
+      const last=parts[parts.length-1];
+      if(postcode.test(last)){
+        parts.pop();
+        const place=parts[parts.length-1]||'';
+        // Remove an area-only source suffix, not a named training site.
+        if(parts.length>1&&place.length<60&&!/[+()]/.test(place)&&
+          !/\b(?:hospital|hosp|practice|pharmacy|medical|med|surgery|nhs|trust|pcn|clinic|health|gp)\b/i.test(place)){
+          parts.pop();
+        }
+      }else{
+        const region=String(programme.region||'').toLowerCase();
+        const area=String(programme.area||'').toLowerCase();
+        if(parts.length>1&&(last.toLowerCase()===region||last.toLowerCase()===area))parts.pop();
+      }
+      value=parts.join(' / ');
+    }
+    // Residual trailing postcode text on records that omit slash separators.
+    value=value.replace(/(?:\s*[,;|-]\s*|\s{2,})(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})(?:\s*[+,;]\s*[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})*\s*$/i,'');
+    value=value
+      .replace(/\bHosp\b/gi,'Hospital')
+      .replace(/\bMed\b(?=\s|$|[+&])/gi,'Medical')
+      .replace(/\bPrac\b(?=\s|$|[+&])/gi,'Practice')
+      .replace(/\bGen\s*Prac\b/gi,'General Practice')
+      .replace(/\bPharm\b(?=\s|$|[+&])/gi,'Pharmacy')
+      .replace(/\s*\+\s*/g,' + ')
+      .replace(/\s*\/\s*/g,' / ')
+      .replace(/\s{2,}/g,' ')
+      .trim().replace(/[+/,\s-]+$/,'');
+    return value||raw||'Programme';
   };
   window.AtlasPrototypeCleanTitle=cleanTitle;
 
@@ -187,7 +215,7 @@
     const title=top?.querySelector('h3');
     if(title){
       const full=title.textContent.trim();
-      const concise=cleanTitle(full);
+      const concise=cleanTitle(full,p);
       if(concise!==full){
         title.dataset.atlasFullTitle=full;
         title.replaceChildren();
