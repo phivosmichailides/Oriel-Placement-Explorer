@@ -372,3 +372,14 @@ html body .atlasFooterMark{
 .progPeekResearchLinks a{font-size:11px;font-weight:750;color:var(--ux-accent-ink);text-decoration:underline;text-underline-offset:3px}
 
 html body #atlasHeaderTools:empty,html body #atlasHeaderTools>.actions:empty{display:none!important}
+
+/* Preferences: a calm two-column appearance row, with reset below it. */
+#prefs .settings>.uxAppearanceSettings,#prefs .settings>.atlasMapColourSettings{min-width:0}
+#prefs .atlasMapColourSettings .paMapColourDetails{width:100%}
+#prefs .atlasMapColourSettings .paMapColourBody{display:flex;flex-direction:column;gap:12px}
+#prefs .atlasMapColourSettings .paMapColourChoices{display:flex;flex-wrap:wrap;align-items:center;gap:9px 12px}
+#prefs .atlasMapColourSettings .paMapColourChoices .colourChoice{flex:0 1 auto;min-width:0;margin:0}
+#prefs .atlasMapColourSettings .paMapColourReset{display:flex;justify-content:flex-end;align-items:center;border-top:1px solid var(--line);margin-top:5px;padding-top:14px}
+#prefs .atlasMapColourSettings .paMapColourReset .btn{background:transparent;color:var(--mut);border-color:var(--line);padding:7px 11px;font-size:11px;font-weight:650;border-radius:10px}
+#prefs .atlasMapColourSettings .paMapColourReset .btn:hover,#prefs .atlasMapColourSettings .paMapColourReset .btn:focus-visible{color:var(--ink);background:var(--soft)}
+@media(max-width:760px){#prefs .settings>.uxAppearanceSettings,#prefs .settings>.atlasMapColourSettings{grid-column:1/-1}}
