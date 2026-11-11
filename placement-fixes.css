@@ -365,3 +365,78 @@ html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickRead
 html[data-layout="grid"] #results .placement.atlasSampleCard .atlasNoQuickFacts .atlasCardCompactFit{
  border-left:0!important;padding-left:0!important;
 }
+
+/* Only the six useful destinations live in the main navigation. For You and
+   Compare remain available inside Explore; More is not used. */
+html .atlasStickyHeader>nav.tabs>[data-tab="foryou"],
+html .atlasStickyHeader>nav.tabs>[data-tab="compare"],
+html .atlasStickyHeader>nav.tabs>.atlasMoreNav{display:none!important}
+html[data-theme="light"] .atlasHeaderUtilities #themeToggle .themeIconMoon{
+ fill:none!important;stroke:currentColor!important;stroke-width:1.65!important;
+ stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+html[data-theme="dark"] .atlasHeaderUtilities #themeToggle .themeIconMoon{
+ fill:currentColor!important;stroke:none!important;
+}
+
+/* The initial setup should read clearly, not look like disabled helper text. */
+html .onboardLead{color:var(--ink)!important;opacity:1!important;font-size:14px!important;line-height:1.55!important}
+html .onboardReassure{color:var(--ink)!important;opacity:1!important}
+html .onboardReassure b{color:var(--ink)!important}
+html .onboardChoice small{color:var(--mut)!important;opacity:1!important}
+html .onboardFine{color:var(--mut)!important;opacity:1!important}
+
+/* No redundant legacy save action: these preferences now save as changed. */
+html.atlasPremiumPreview #prefs #savePrefs,
+html.atlasPremiumPreview #prefs #savePrefs[hidden]{display:none!important}
+html.atlasPremiumPreview #prefs .paMapColourDetails{
+ border:1px solid var(--line);border-radius:13px;background:var(--soft);
+ overflow:hidden;
+}
+html.atlasPremiumPreview #prefs .paMapColourDetails>summary{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ list-style:none;cursor:pointer;padding:13px 14px;
+ font-size:15px;font-weight:760;color:var(--ink);
+}
+html.atlasPremiumPreview #prefs .paMapColourDetails>summary::-webkit-details-marker{display:none}
+html.atlasPremiumPreview #prefs .paMapColourDetails>summary::after{
+ content:'+';font-size:18px;line-height:1;color:var(--mut);font-weight:500;
+}
+html.atlasPremiumPreview #prefs .paMapColourDetails[open]>summary::after{content:'−'}
+html.atlasPremiumPreview #prefs .paMapColourDetails>summary small{
+ color:var(--mut);font-size:10.5px;font-weight:550;margin-left:auto;
+}
+html.atlasPremiumPreview #prefs .paMapColourBody{padding:0 14px 14px}
+html.atlasPremiumPreview #prefs .paMapColourBody>p{font-size:11.5px!important;margin:2px 0 10px!important}
+html.atlasPremiumPreview #prefs .paMapColourBody .colourChoice{
+ display:inline-flex;align-items:center;gap:8px;margin:4px 10px 4px 0;
+ font-size:11.5px!important;
+}
+
+/* The map key is the only legend; no old close affordance on card maps. */
+html.atlasPremiumPreview #results .placement .uxLocationPanel .leaflet-popup-close-button,
+html.atlasPremiumPreview #results .placement .uxLocationPanel .mapboxgl-popup-close-button,
+html.atlasPremiumPreview #results .placement .uxLocationPanel button[aria-label*="Close" i],
+html.atlasPremiumPreview #results .placement .uxLocationPanel button[title*="Close" i],
+html.atlasPremiumPreview #results .placement .miniMap .leaflet-popup-close-button,
+html.atlasPremiumPreview #results .placement .mini-map .leaflet-popup-close-button{
+ display:none!important;pointer-events:none!important;
+}
+
+/* Grid quick facts read across the card instead of forming a narrow stack. */
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickSignals{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;
+ align-items:start!important;gap:7px 10px!important;
+}
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickFact{
+ min-width:0!important;align-items:baseline!important;
+}
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickFact b,
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickFact>span:last-child{
+ overflow-wrap:break-word!important;
+}
+
+/* Remove low-value microcopy from the shortlist toolbar while retaining its
+   export, backup and display-order controls. */
+html.atlasPremiumPreview #shortlist .shortlist-toolbar>.muted,
+html.atlasPremiumPreview #shortlist .shortlistViewHint{display:none!important}
