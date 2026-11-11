@@ -262,3 +262,16 @@ html.atlasPremiumPreview .atlasOutcomeMoreMenu .btn{
   html.atlasPremiumPreview .atlasHistoryActions .smallnote{display:none}
   html.atlasPremiumPreview .atlasOutcomeMoreMenu{left:auto;right:0}
 }
+
+/* Keep the floating shortlist shortcut useful but visually secondary. */
+html.atlasPremiumPreview .uxDrawerLauncher{
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  border:1px solid var(--line)!important;
+  box-shadow:0 5px 20px rgba(0,0,0,.13)!important;
+  font-size:12px!important;
+}
+html.atlasPremiumPreview .uxDrawerLauncher:hover{
+  background:var(--soft)!important;
+  border-color:var(--ux-accent-border)!important;
+}
