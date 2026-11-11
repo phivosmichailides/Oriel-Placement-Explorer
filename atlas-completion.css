@@ -232,3 +232,11 @@ html body .atlasFooterMark{
   .atlasLearnTimeline{grid-template-columns:minmax(0,1fr)}
   .atlasLearnHeroActions .btn{flex:1}
 }
+
+/* Programme preview window: keep the title readable and public research links quiet. */
+.progPeekTitle{letter-spacing:-.012em!important;line-height:1.28!important;overflow-wrap:anywhere}
+.progPeekFullName{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft)}
+.progPeekFullName summary{cursor:pointer;font-size:11px;font-weight:750;color:var(--ux-accent-ink);text-decoration:underline;text-underline-offset:3px}
+.progPeekFullName p{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--mut);overflow-wrap:anywhere}
+.progPeekResearchLinks{display:flex;flex-wrap:wrap;gap:8px 14px;margin:8px 0 5px}
+.progPeekResearchLinks a{font-size:11px;font-weight:750;color:var(--ux-accent-ink);text-decoration:underline;text-underline-offset:3px}
