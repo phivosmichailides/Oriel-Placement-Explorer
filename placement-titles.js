@@ -10,10 +10,12 @@
  const concise=(title,p)=>typeof window.AtlasPrototypeCleanTitle==='function'
    ?window.AtlasPrototypeCleanTitle(title,p):String(title||'').trim();
  const enhance=(card)=>{
-   if(!card?.dataset?.id)return;
-   const programme=getProgramme(card.dataset.id);
+   if(!card)return;
+   const id=card.dataset?.id||card.querySelector('[data-open]')?.getAttribute('data-open');
+   if(!id)return;
+   const programme=getProgramme(id);
    if(!programme)return;
-   const title=card.querySelector('.placementTop h3');
+   const title=card.querySelector('.placementTop h3')||card.querySelector('h3');
    if(!title||title.dataset.paReadableTitle==='1')return;
    // Existing Explore cards have their own equivalent "Full name" button.
    if(title.querySelector('.atlasTitleConcise')){title.dataset.paReadableTitle='1';return;}
@@ -37,11 +39,11 @@
    title.append(short,raw,toggle);
  };
  const refresh=()=>{
-   for(const selector of ['#results .placement','#shortlistList .placement','#mapSelection .placement']){
+   for(const selector of ['#results .placement','#shortlistList .placement','#mapSelection .placement','#reco .reco']){
      document.querySelectorAll(selector).forEach(enhance);
    }
  };
- for(const id of ['results','shortlistList','mapSelection']){
+ for(const id of ['results','shortlistList','mapSelection','reco']){
    const host=document.getElementById(id);
    if(host)new MutationObserver(()=>requestAnimationFrame(refresh)).observe(host,{childList:true,subtree:false});
  }
