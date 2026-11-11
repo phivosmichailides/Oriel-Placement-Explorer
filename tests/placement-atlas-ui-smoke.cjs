@@ -136,7 +136,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   // Swipe Mode: fresh visitors start across all regions with no filters; chosen filters remain visible.
   await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderMode')?.classList.contains('active')&&
-    !!document.querySelector('#tinderCardSlot .tdCard'),null,{timeout:30000});
+    !!document.querySelector('#tinderCardSlot .tdSwipeCard'),null,{timeout:30000});
   const refine=page.locator('#tinderFilterToggle');
   assert.equal((await refine.innerText()).trim(),'Refine','Fresh Swipe Mode should not silently select a region or other filters');
   assert.equal(await page.locator('#tdSoundToggle').innerText().then(x=>x.trim()),'Sound off','Optional sound control should default to off');
