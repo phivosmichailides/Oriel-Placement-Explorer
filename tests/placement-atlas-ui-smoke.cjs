@@ -84,7 +84,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   // Profile benefits are concrete and the learning library is a separate destination.
   await page.locator('header.top nav.tabs [data-tab=outcome]').click();
   await page.waitForFunction(()=>document.getElementById('outcome')?.classList.contains('active'),null,{timeout:12000});
-  assert.equal(await page.locator('#paJoinBenefits span').count(),3,'Free account benefits are missing');
+  assert.equal(await page.locator('.paJoinBenefits span').count(),3,'Free account benefits are missing');
   assert((await page.locator('#paJoinBanner').innerText()).includes('Free to join'));
   await page.locator('header.top nav.tabs [data-tab=learn]').click();
   await page.waitForFunction(()=>document.getElementById('learn')?.classList.contains('active'),null,{timeout:12000});
@@ -108,7 +108,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   // Swipe Mode: default filters are empty; active filters remain visible when collapsed.
   await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderMode')?.classList.contains('active')&&
-    !!document.getElementById('tinderActiveCard'),null,{timeout:30000});
+    !!document.querySelector('#tinderCardSlot .tdCard'),null,{timeout:30000});
   const refine=page.locator('#tinderFilterToggle');
   assert.equal((await refine.innerText()).trim(),'Refine','New Swipe Mode sessions should start without refined filters');
   assert.equal(await page.locator('#tdSoundToggle').innerText().then(x=>x.trim()),'Sound on','Sound control is missing');
@@ -124,20 +124,20 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal((await refine.innerText()).trim(),'Refine','Clear game filters did not reset the indicator');
   await refine.click();
 
-  const detailsButton=page.locator('#tinderActiveCard .tdShowDetails');
+  const detailsButton=page.locator('#tinderCardSlot .tdShowDetails');
   assert.equal((await detailsButton.innerText()).trim(),'Show details','Swipe card details disclosure is missing');
   await detailsButton.click();
-  assert(await page.locator('#tinderActiveCard .tdDetailsPanel').isVisible(),'Swipe programme details did not expand');
-  assert.equal(await page.locator('#tinderActiveCard .tdResearchLinks a').count(),3,'Swipe details should include public research links');
-  await page.locator('#tinderActiveCard .tdShowDetails').click();
-  assert.equal((await page.locator('#tinderActiveCard .tdShowDetails').innerText()).trim(),'Show details');
+  assert(await page.locator('#tinderCardSlot .tdDetailsPanel').isVisible(),'Swipe programme details did not expand');
+  assert.equal(await page.locator('#tinderCardSlot .tdResearchLinks a').count(),3,'Swipe details should include public research links');
+  await page.locator('#tinderCardSlot .tdShowDetails').click();
+  assert.equal((await page.locator('#tinderCardSlot .tdShowDetails').innerText()).trim(),'Show details');
 
   const sound=page.locator('#tdSoundToggle');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound off');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound on');
-  assert.equal((await page.locator('#tinderActiveCard .tdStampNo').innerText()).trim(),'LIKE NO');
+  assert.equal((await page.locator('#tinderCardSlot .tdStampNo').innerText()).trim(),'LIKE NO');
   await page.locator('#tdOpenRejected').click();
-  await page.waitForFunction(()=>document.getElementById('tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
+  await page.waitForFunction(()=>document.querySelector('.tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
   assert.equal((await page.locator('#tdDrawerHeading').innerText()).trim(),'Like No','Like No drawer heading should not include "Rejected"');
   await page.locator('#tdDrawerClose').click();
 
