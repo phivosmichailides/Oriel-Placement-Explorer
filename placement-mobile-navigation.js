@@ -9,8 +9,10 @@
  if(!utility){
    utility=document.createElement('div');
    utility.className='atlasHeaderUtilities';
-   header.append(utility);
  }
+ // Keep the small account/theme controls between the brand and navigation.
+ // Preferences remains the final item on the right-hand side of the banner.
+ if(utility.parentNode!==header||utility.nextElementSibling!==nav)header.insertBefore(utility,nav);
  const tools=document.getElementById('atlasHeaderTools');
  let avatar={url:'',initials:'PA',name:''};
  const ensureThemeIcon=button=>{
@@ -56,24 +58,33 @@
  };
  const tidyTabs=()=>{
    const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',prefs:'Preferences'};
-   nav.querySelectorAll(':scope > .tab').forEach(tab=>{
-     const key=tab.dataset.tab;
-     if(!names[key])return;
-     // Keep decorative icon spans intact. Earlier code renamed the first
-     // span, which duplicated labels for Simulator and Swipe Mode.
-     let label=[...tab.querySelectorAll(':scope > span')].find(span=>
-       !span.classList.contains('simNavIcon')&&
-       !span.classList.contains('tdNavFlame')&&
-       !span.classList.contains('tab-icon')
+   const normalise=value=>String(value||'').replace(/\\s+/g,' ').trim().toLowerCase();
+   const tabs=[...nav.querySelectorAll(':scope > .tab')];
+   const keyed=new Set(tabs.map(tab=>tab.dataset.tab).filter(Boolean));
+   const seenKeys=new Set(),seenLabels=new Set();
+   tabs.forEach(tab=>{
+     const key=tab.dataset.tab||'';
+     const raw=normalise(tab.textContent);
+     let label=names[key]||'';
+     if(key==='simulator'||/oriel simulation/.test(raw))label='Oriel Simulation';
+     if(key==='tinderMode'||/swipe mode|tinder mode/.test(raw))label='Swipe Mode';
+     if(!label)return;
+     const inferredKey=label==='Oriel Simulation'?'simulator':label==='Swipe Mode'?'tinderMode':key;
+     // A legacy label-only button must never displace the working data-tab button.
+     if(!key&&keyed.has(inferredKey)){tab.remove();return;}
+     if((key&&seenKeys.has(key))||seenLabels.has(label.toLowerCase())){tab.remove();return;}
+     if(key)seenKeys.add(key);
+     seenLabels.add(label.toLowerCase());
+     // Preserve only the icon. Rebuild the label so stale text nodes and
+     // duplicate "Tinder Mode" / "Oriel Simulation" text cannot survive.
+     const icons=[...tab.children].filter(child=>
+       child.matches('svg.tab-icon,.simNavIcon,.tdNavFlame')
      );
-     if(!label){
-       label=document.createElement('span');
-       label.className='atlasTabLabel';
-       tab.append(label);
-     }
-     label.classList.add('atlasTabLabel');
-     label.textContent=names[key];
-     tab.setAttribute('aria-label',names[key]);
+     const text=document.createElement('span');
+     text.className='atlasTabLabel';
+     text.textContent=label;
+     tab.replaceChildren(...icons,text);
+     tab.setAttribute('aria-label',label);
    });
    const more=nav.querySelector(':scope > .atlasMoreNav');
    if(more){
