@@ -95,51 +95,181 @@ html.atlasPremiumPreview #mapSelection .placement .placementTop h3{
   #uxExplorePager .uxPagerInfo{flex-basis:100%}
 }
 
-/* Map attribution remains present and legible, without dominating the map. */
-.leaflet-container{background:var(--panel,#f5f5f2)!important}
-.leaflet-control-attribution{
-  max-width:min(78vw,480px);
-  padding:2px 6px!important;
-  border-radius:6px!important;
-  background:color-mix(in srgb,var(--panel,#fff) 82%,transparent)!important;
-  color:var(--mut,#667)!important;
-  font-size:8px!important;line-height:1.25!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
-}
-.leaflet-control-attribution a{color:var(--mut,#667)!important;text-decoration:underline;text-underline-offset:2px}
-.placement .leaflet-control-attribution{max-width:calc(100% - 8px);font-size:7px!important}
-#placementMap .leaflet-tile,
-.placement .leaflet-tile{
-  border:0!important;outline:0!important;box-shadow:none!important;
-  backface-visibility:hidden;
-}
+/* Map surfaces and legal credits: retain all required providers, but keep the
+   attribution quiet and integrated rather than looking like a second caption. */
+html[data-theme="light"]{--atlas-map-backdrop:#f7f3e9}
+html[data-theme="dark"]{--atlas-map-backdrop:#1b2520}
+.leaflet-container,
+#placementMap .leaflet-map-pane,
 #placementMap .leaflet-tile-pane,
-#placementMap .leaflet-map-pane{background:var(--panel,#f5f5f2)}
+.uxMiniMap .leaflet-map-pane,
+.uxMiniMap .leaflet-tile-pane{
+  background:var(--atlas-map-backdrop,#f7f3e9)!important;
+}
+#placementMap .leaflet-tile,
+.uxMiniMap .leaflet-tile{
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;backface-visibility:hidden;
+  transform:translateZ(0);
+}
+.leaflet-control-attribution,
+.maplibregl-ctrl-attrib{
+  max-width:min(72vw,420px);
+  padding:2px 6px!important;
+  border:0!important;border-radius:7px!important;
+  background:color-mix(in srgb,var(--panel) 82%,transparent)!important;
+  color:var(--mut)!important;
+  font-size:7px!important;line-height:1.25!important;
+  box-shadow:none!important;opacity:.82;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.maplibregl-ctrl-attrib-inner{font-size:7px!important;line-height:1.25!important}
+.leaflet-control-attribution a,
+.maplibregl-ctrl-attrib a{
+  color:var(--mut)!important;text-decoration:none!important;
+  border-bottom:1px solid color-mix(in srgb,var(--mut) 36%,transparent);
+}
+.uxMiniMap .leaflet-control-attribution,
+.uxMiniMap .maplibregl-ctrl-attrib,
+.placement .leaflet-control-attribution{font-size:6px!important;max-width:72%}
+@media(max-width:600px){
+  .leaflet-control-attribution,.maplibregl-ctrl-attrib{font-size:6px!important;max-width:70vw}
+}
 
+/* One compact brand banner: identity left, utility controls, then navigation.
+   Preferences stays the final tab on the right. */
+html body .shell>.top.atlasStickyHeader{
+  display:grid!important;
+  grid-template-columns:max-content auto minmax(0,1fr)!important;
+  grid-template-areas:"brand utility nav"!important;
+  align-items:center!important;
+  column-gap:clamp(9px,1.2vw,19px)!important;row-gap:0!important;
+  min-height:66px!important;padding:7px clamp(10px,1.35vw,19px)!important;
+  margin:0!important;border-radius:16px!important;
+}
+html body .atlasStickyHeader>.brand{
+  grid-area:brand!important;display:flex!important;align-items:center!important;
+  gap:10px!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.brand .eyebrow{display:none!important}
+html body .atlasStickyHeader>.brand h1{
+  margin:0!important;font-size:clamp(22px,2vw,29px)!important;
+  line-height:1.05!important;font-weight:850!important;
+  letter-spacing:-.045em!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.brand p{
+  display:block!important;margin:3px 0 0!important;
+  color:var(--mut)!important;font-size:10px!important;
+  line-height:1.2!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.brand .logo{
+  width:42px!important;height:42px!important;min-width:42px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  border-radius:0!important;overflow:visible!important;
+}
+html body .atlasStickyHeader>.brand .logo img{
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities{
+  grid-area:utility!important;display:flex!important;align-items:center!important;
+  justify-content:flex-end!important;gap:6px!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccount{
+  display:flex!important;align-items:center!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountMain{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  flex-wrap:nowrap!important;gap:5px!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountStatus,
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountHint{display:none!important}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountButton{
+  min-height:35px!important;padding:7px 9px!important;
+  font-size:11px!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 36px!important;width:36px!important;min-width:36px!important;
+  height:36px!important;min-height:36px!important;padding:0!important;margin:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle .themeGlyph,
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle .themeIcon{
+  display:block!important;width:19px!important;height:19px!important;
+}
+html body .atlasStickyHeader>nav.tabs{
+  grid-area:nav!important;display:flex!important;align-items:center!important;
+  justify-content:flex-end!important;min-width:0!important;width:100%!important;
+  margin:0!important;padding:0!important;gap:2px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  scrollbar-width:none!important;overscroll-behavior-x:contain;
+}
+html body .atlasStickyHeader>nav.tabs::-webkit-scrollbar{display:none!important}
+html body .atlasStickyHeader>nav.tabs>.tab{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;gap:5px!important;min-height:39px!important;
+  padding:8px clamp(7px,.65vw,11px)!important;
+  border-radius:10px!important;white-space:nowrap!important;
+  font-size:clamp(11px,.88vw,13px)!important;font-weight:780!important;
+  line-height:1.2!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab .atlasTabLabel{display:inline-block!important;white-space:nowrap!important}
+html body .atlasStickyHeader>nav.tabs>.tab svg.tab-icon,
+html body .atlasStickyHeader>nav.tabs>.tab .tdNavFlame svg{
+  display:block!important;width:16px!important;height:16px!important;flex:none!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab .simNavIcon,
+html body .atlasStickyHeader>nav.tabs>.tab .tdNavFlame{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:none!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab[data-tab="foryou"],
+html body .atlasStickyHeader>nav.tabs>.tab[data-tab="compare"]{display:none!important}
+html body .atlasStickyHeader>nav.tabs>.tab.active,
+html body .atlasStickyHeader>nav.tabs>.tab.atlasParentActive{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+  box-shadow:inset 0 0 0 1px var(--ux-accent-border)!important;
+}
+
+/* The export/backup controls live below the brand banner, not inside it. */
+html body .shell>#atlasHeaderTools{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:5px!important;min-height:0!important;margin:7px 2px 12px!important;padding:0 2px!important;
+}
+html body #atlasHeaderTools>.actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  flex-wrap:wrap!important;gap:6px!important;width:100%!important;
+}
+html body #atlasHeaderTools>.actions>.btn{
+  min-height:33px!important;padding:6px 10px!important;
+  border-radius:10px!important;font-size:10px!important;
+}
+html body #atlasHeaderTools #saveHelp{
+  margin:0!important;padding:0!important;border:0!important;
+  max-width:none!important;text-align:right!important;
+  color:var(--mut)!important;font-size:10px!important;line-height:1.35!important;
+}
+@media(max-width:960px){
+  html body .shell>.top.atlasStickyHeader{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:"brand utility" "nav nav"!important;
+    row-gap:3px!important;min-height:0!important;padding:8px 11px!important;
+  }
+  html body .atlasStickyHeader>nav.tabs{justify-content:flex-start!important}
+  html body .atlasStickyHeader>nav.tabs>.tab{font-size:12px!important;padding:8px 10px!important}
+}
+@media(max-width:600px){
+  html body .atlasStickyHeader>.brand .logo{width:34px!important;height:34px!important;min-width:34px!important}
+  html body .atlasStickyHeader>.brand h1{font-size:21px!important}
+  html body .atlasStickyHeader>.brand p{font-size:9px!important}
+  html body .atlasStickyHeader>.atlasHeaderUtilities{gap:4px!important}
+  html body #atlasHeaderTools>.actions>.btn{flex:1 1 auto}
+  html body #atlasHeaderTools #saveHelp{text-align:left!important}
+}
 /* Footer uses the same compass-pin mark as the application header. */
 html body .atlasFooterMark{
   display:block;flex:0 0 36px;width:36px;height:36px;
   object-fit:contain;object-position:center;
-}
-
-/* Profile: make the free account value clear without promising unavailable perks. */
-#outcome .paJoinBanner{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;
-  align-items:center;gap:18px;
-}
-#outcome .paJoinCopy{min-width:0}
-#outcome .paJoinBenefits{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:8px 14px;margin:13px 0 8px;
-}
-#outcome .paJoinBenefits span{display:grid;gap:2px;min-width:0}
-#outcome .paJoinBenefits b{font-size:11px;color:var(--ink)}
-#outcome .paJoinBenefits small{font-size:10px;line-height:1.4;color:var(--mut)}
-#outcome .paJoinFreeNote{display:block;color:var(--mut);font-size:10px;font-weight:700}
-@media(max-width:760px){
-  #outcome .paJoinBanner{grid-template-columns:minmax(0,1fr)}
-  #outcome .paJoinBenefits{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 /* Oriel Simulation category explanations. */
