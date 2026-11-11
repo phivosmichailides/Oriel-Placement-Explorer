@@ -96,14 +96,20 @@
     const legend=document.createElement('div');
     legend.id='sectorMapLegend';
     legend.setAttribute('aria-label','Map pin colour legend');
-    legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:var(--panel)';
+    legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 16px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--mut);background:var(--panel)';
     // Show only categories that have rendered pins; the colours are the active
     // palette values, not a hard-coded screenshot or historical legend.
     const renderLegend=(rendered=null)=>{
       refreshPalette();
-      const visible=Array.isArray(rendered)
-        ?new Set(rendered.map(g=>groupMapSector(g.entries)))
-        :new Set(placements.filter(matches).map(programmeMapSector));
+      const visible=new Set();
+      if(Array.isArray(rendered)){
+        rendered.forEach(group=>{
+          (group.entries||[]).forEach(programme=>visible.add(programmeMapSector(programme)));
+          if(group.cluster&&groupMapSector(group.entries)==='Mixed')visible.add('Mixed');
+        });
+      }else{
+        (window.OrielFilteredProgrammes||placements.filter(matches)).forEach(programme=>visible.add(programmeMapSector(programme)));
+      }
       const all=[
         ['Hospital','Hospital'],
         ['General Practice','GP'],
@@ -114,24 +120,17 @@
       ];
       const sectors=all.filter(([key])=>visible.has(key)).map(([key,text])=>
         '<span class="atlasLegendItem"><i class="atlasLegendDot" style="background:'+palette[key]+'" aria-hidden="true"></i>'+text+'</span>').join('');
-      const groups=Array.isArray(rendered)?rendered:[];
-      const hasShortlisted=groups.some(g=>g.entries.some(p=>SHORT.has(mark(p).status)));
-      const hasExcluded=groups.some(g=>g.entries.every(isExcluded));
-      const statuses=(hasShortlisted?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendShortlisted" aria-hidden="true"></i>Shortlisted</span>':'')+
-        (hasExcluded?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendExcluded" aria-hidden="true"></i>Excluded</span>':'');
       const tubeVisible=placementMap?.getZoom?.()>=15.5&&document.querySelectorAll('#placementMap .oriel-tube-marker').length>0;
-      const tube=tubeVisible?'<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i>Underground station</span><span class="oriel-tube-attribution">Station data: TfL</span>':'';
-      const clusters=Array.isArray(rendered)&&rendered.some(group=>group.cluster)
-        ?'<span class="atlasLegendHelp">Tap a numbered cluster to zoom in</span>':'';
-      legend.innerHTML=sectors+statuses+tube+clusters;
-      legend.hidden=!(sectors||statuses||tube);
+      const tube=tubeVisible?'<span class="oriel-tube-legend"><i class="oriel-tube-legend-mark" aria-hidden="true"></i>Underground</span>':'';
+      legend.innerHTML=sectors+tube;
+      legend.hidden=!(sectors||tube);
     };
     renderLegend();
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
     const settings=document.createElement('div');settings.className='settingsCard card';
-    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><h2>Map colours</h2><p class="muted">Choose colours for each setting. Text labels remain available on the legend and pins.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button>';
+    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><h2>Map colours</h2><p class="muted">Choose a colour for each setting. The map legend updates to match.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button>';
     document.querySelector('#prefs .settings').appendChild(settings);
     settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
