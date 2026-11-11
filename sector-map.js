@@ -13,12 +13,12 @@
     // Muted but distinct editorial colours. Users' saved custom pin colours
     // still override these defaults through the existing preference editor.
     const palette={
-      Hospital:'#526F90',
-      'General Practice':'#4C806F',
-      'Community Pharmacy':'#93734F',
-      Industry:'#75668B',
-      Mixed:'#94647D',
-      Other:'#647680'
+      Hospital:'#71869A',
+      'General Practice':'#719184',
+      'Community Pharmacy':'#A0876B',
+      Industry:'#877B9A',
+      Mixed:'#A27F91',
+      Other:'#7C898E'
     };
 
     const defaults={...palette};
@@ -141,7 +141,7 @@
     if(!document.getElementById('oriel-group-pin-style')){
       const pinStyle=document.createElement('style');
       pinStyle.id='oriel-group-pin-style';
-      pinStyle.textContent='.oriel-group-marker{background:transparent;border:0}.oriel-group-count{display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--group-ring,#fff);border-radius:50%;background:var(--group-fill,#9076a6);color:#fff;font:800 10px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 7px rgba(20,25,30,.32);transition:transform .16s ease,box-shadow .16s ease;user-select:none}.oriel-group-marker:focus-visible .oriel-group-count{outline:3px solid #f5d68a;outline-offset:2px}.map-approx-note{display:block;margin:6px 0 10px;color:var(--mut);font-size:12px}';
+      pinStyle.textContent='.oriel-group-marker{background:transparent;border:0}.oriel-group-count{display:grid;place-items:center;box-sizing:border-box;border:1.5px solid var(--group-ring,#fff);border-radius:50%;background:var(--group-fill,#9076a6);color:#fff;font:800 10px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 7px rgba(20,25,30,.32);transition:transform .16s ease,box-shadow .16s ease;user-select:none}.oriel-group-marker:focus-visible .oriel-group-count{outline:3px solid #f5d68a;outline-offset:2px}.map-approx-note{display:block;margin:6px 0 10px;color:var(--mut);font-size:12px}';
       document.head.appendChild(pinStyle);
     }
 
@@ -201,7 +201,7 @@
       const hovered=!!hoveredProgramme&&base.ids.includes(hoveredProgramme);
       const active=selected||hovered;
       if(typeof pin.setRadius==='function'){
-        pin.setRadius(active?base.radius*(selected?1.8:1.52):base.radius);
+        pin.setRadius(active?base.radius*(selected?1.58:1.34):base.radius);
         pin.setStyle({
           color:selected?'#fff2cf':hovered?'#eee0ce':base.color,
           weight:selected?4:hovered?3.3:base.weight,
@@ -449,12 +449,12 @@
         const excluded=entries.every(isExcluded);
         const stroke=excluded?'#B06B72':preferred?'#D7A5C1':'#F1EFEB';
         const fillColor=palette[mapSector]||palette.Other;
-        const radius=(entries.length>1?3.6:2.8)+(preferred?.5:0);
+        const radius=(entries.length>1?3.1:2.4)+(preferred?.35:0);
         const needsBadge=group.cluster||entries.length>1;
         let pin;
         if(needsBadge){
-          const size=group.cluster?(entries.length>=100?29:entries.length>=10?24:20):(entries.length>=100?27:entries.length>=10?22:19);
-          const fontSize=entries.length>=100?9.2:9.5;
+          const size=group.cluster?(entries.length>=100?25:entries.length>=10?21:18):(entries.length>=100?23:entries.length>=10?20:17);
+          const fontSize=entries.length>=100?8.5:8.8;
           const countLabel=entries.length>999?'999+':String(entries.length);
           pin=L.marker(c,{
             icon:L.divIcon({
@@ -466,12 +466,12 @@
           }).addTo(mapLayer);
         }else{
           pin=L.circleMarker(c,{
-            radius,color:stroke,weight:preferred?2.2:excluded?2:1.3,
+            radius,color:stroke,weight:preferred?1.8:excluded?1.6:1.1,
             fillColor,fillOpacity:excluded?.38:.94,opacity:excluded?.9:1
           }).addTo(mapLayer);
         }
 
-        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?2.2:excluded?2:1.3,fillOpacity:excluded?.38:.94,fillColor});
+        pinBases.set(pin,{ids:entries.map(p=>p.id),radius,color:stroke,weight:preferred?1.8:excluded?1.6:1.1,fillOpacity:excluded?.38:.94,fillColor});
         for(const p of entries){if(!programmePins.has(p.id))programmePins.set(p.id,[]);programmePins.get(p.id).push(pin)}
         pin.on('mouseover',()=>{
           hoveredProgramme=entries[0]?.id||null;syncMap();
