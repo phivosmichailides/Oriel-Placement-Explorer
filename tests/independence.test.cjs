@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261111quiet1/);
+  assert.match(html,/app\.js\?v=20261111quiet2/);
   assert.match(read('app.js'),/app-product\.js\?v=20261111notes1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261111quiz1/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -89,9 +89,9 @@ test('primary navigation and footer management use separate, cache-versioned ass
   const html=read('index.html');
   const sw=read('sw.js');
   assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(html,/atlas-navigation\.js\?v=20261111quiet1/);
+  assert.match(html,/atlas-navigation\.js\?v=20261111quiet2/);
   assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261111quiet1/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261111quiet2/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
 });
@@ -169,7 +169,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261111quiz1/);
+  assert.match(sw,/onboarding\.js\?v=20261111quiz2/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,7 +177,7 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261111quiz1/);
+  assert.match(app,/onboarding\.js\?v=20261111quiz2/);
 });
 
 
@@ -404,7 +404,7 @@ test('map legend is sourced from rendered pins rather than the unfiltered catalo
 
 test('quiet interface stylesheet and refreshed application assets are cache-busted',()=>{
   const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
-  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet1/);
-  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet1/);
-  assert.match(pwa,/sw\.js\?v=20261111quiet1/);
+  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet2/);
+  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet2/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet2/);
 });
