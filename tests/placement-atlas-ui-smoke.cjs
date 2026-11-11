@@ -50,7 +50,15 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   }
   assert.equal(await page.locator('header.top nav.tabs [data-tab=learn]').count(),1,'Learn navigation tab is missing');
   assert.equal(await page.locator('.atlasFooterMark').count(),1,'Footer compass-pin logo is missing');
-  assert((await page.locator('.atlasFooterMark').getAttribute('src')).includes('placement-atlas-compass-pin.webp'));
+  const footerLogo=await page.locator('.atlasFooterMark').getAttribute('src');
+  const headerLogo=await page.locator('.brand .logo img').getAttribute('src');
+  assert(footerLogo.includes('placement-atlas-compass-pin.webp'));
+  assert(headerLogo.includes('placement-atlas-compass-pin.webp'),'Header and footer must use the same compass-pin mark');
+  const strayMiniMapCloses=await page.locator('#results .placement').evaluateAll(cards=>cards.reduce((total,card)=>total+[...card.querySelectorAll('button')].filter(button=>{
+   const text=button.textContent.trim(),label=((button.getAttribute('aria-label')||'')+' '+(button.className||'')).toLowerCase();
+   return ['×','x','✕','✖'].includes(text)||/map[-_ ]close|close[-_ ]map|popup-close-button/.test(label);
+  }).length,0));
+  assert.equal(strayMiniMapCloses,0,'Stray close buttons should not float over programme mini-maps');
 
   // The live map must render, retain its credits and use a compact attribution treatment.
   await page.waitForFunction(()=>{
@@ -71,6 +79,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert(parseFloat(mapInfo.creditFont)<=9,'Map attribution is still visually oversized: '+mapInfo.creditFont);
   if(mapInfo.keepBuffer!==undefined)assert(mapInfo.keepBuffer>=6&&mapInfo.updateWhenZooming===false,
     'Main raster fallback should retain tiles during zoom: '+JSON.stringify(mapInfo));
+  await page.locator('#placementMap').screenshot({path:output+'/placement-atlas-map.png'});
   await page.screenshot({path:output+'/placement-atlas-desktop.png',fullPage:true});
   if(typeof placementMap!=='undefined'){
    const before=await page.evaluate(()=>placementMap.getZoom());
