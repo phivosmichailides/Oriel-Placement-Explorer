@@ -79,7 +79,7 @@
 
 
     const loadAnswers=()=>{
-      try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
+      try{if(localStorage.getItem(DONE_KEY)!=='1')return null;return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
     };
 
     const paletteValues=['forest','copper','mauve','amber','cocoa','mono'];
@@ -114,6 +114,9 @@
       const startingAppearance=getAppearance();
       let appearanceSaved=false;
       let answers={...defaultAnswers(),...(loadAnswers()||{})};
+      // Re-taking the quiz starts the preference choices fresh; only appearance
+      // and practical fields remain prefilled. The final appearance step is intentional.
+      answers.region='';answers.environment='';answers.priorities=[];answers.community='';
       answers.palette=paletteValues.includes(answers.palette)?answers.palette:startingAppearance.palette;
       answers.theme=['light','dark'].includes(answers.theme)?answers.theme:startingAppearance.theme;
       const applyAppearance=()=>{
@@ -127,7 +130,7 @@
       };
       if(!answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.read?.()||'';
       answers.priorities=Array.isArray(answers.priorities)?answers.priorities:[];
-      let step=-1,regionChosen=Boolean(answers.region);
+      let step=-1,regionChosen=false;
       const overlay=document.createElement('div');overlay.className='onboardOverlay';overlay.setAttribute('role','presentation');
       const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise Placement Atlas');overlay.appendChild(card);document.body.appendChild(overlay);
       const close=()=>{
