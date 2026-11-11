@@ -253,8 +253,8 @@
   const playUndoSound=()=>{playTones([[392,0,.2,'sine',.02,784],[587,.11,.2,'triangle',.018,880]]);if(soundEnabled)setTimeout(()=>playTones([[175,0,.09,'sine',.012,120]]),800)};
   const syncFilterToggle=()=>{
     const toggle=$('tinderFilterToggle');if(!toggle)return;
-    const count=Number(game.filters.setting!=='all')+Number(Boolean(game.filters.minSalary))+Number(Boolean(game.filters.maxHours))+Number(Boolean(game.filters.splitOnly))+Number(Boolean(game.filters.hideDecided));
-    const label=count?'Refine · '+count+' selected':'Refine';
+    const count=Number(game.region!=='all')+Number(game.filters.setting!=='all')+Number(Boolean(game.filters.minSalary))+Number(Boolean(game.filters.maxHours))+Number(Boolean(game.filters.splitOnly))+Number(Boolean(game.filters.hideDecided));
+    const label=count?'Refine ('+count+' selected)':'Refine';
     const text=toggle.querySelector('span');if(text)text.textContent=label;
     toggle.setAttribute('aria-label',count?'Refine programmes; '+count+' filters selected':'Refine programmes');
     toggle.title=count?count+' active filters · Open to review or change':'No additional filters selected';
@@ -531,7 +531,7 @@
         saveGame();
         render();
         renderDecisionDrawer();
-        note(inLiked?'Moved to rejected programmes.':'Moved to your shortlist.');
+        note(inLiked?'Moved to Like No.':'Moved to your shortlist.');
         $('tdDrawerSearch')?.focus();
       });
       row.append(details,action);rows.append(row);
@@ -673,7 +673,7 @@
     sim.after(tab);
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
-    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
+    section.innerHTML=
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
      '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine</span></button>'+
      '<button type="button" id="tdSoundToggle" class="tdSoundToggle" aria-pressed="true" aria-label="Mute swipe sound effects"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg><span>Sound on</span></button>'+
