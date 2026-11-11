@@ -404,9 +404,9 @@ test('map legend is sourced from rendered pins rather than the unfiltered catalo
 
 test('quiet interface stylesheet and refreshed application assets are cache-busted',()=>{
   const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
-  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet3/);
-  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet3/);
-  assert.match(pwa,/sw\.js\?v=20261111quiet3/);
+  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet4/);
+  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet4/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet4/);
 });
 
 
@@ -421,5 +421,6 @@ test('history and offer maintenance controls are progressively disclosed',()=>{
   assert.match(html,/id="outcomeImportBtn"/);
   assert.match(html,/id="outcomeClearBtn"/);
   assert.match(css,/atlasOutcomeMoreMenu/);
+  assert.match(css,/#prefs \.settingsCard\.card/);
   assert.match(html,/Save outcome/);
 });
