@@ -9,9 +9,10 @@
  const old=[...outcome.children];
  const wrap=document.createElement('div');wrap.className='paProfileHero';
  wrap.innerHTML='<div class="paProfileHeading"><div class="eyebrow">YOUR ACCOUNT & WORKSPACE</div><h2>Profile</h2><p>Your personal space for Placement Atlas.</p></div>'+
+ '<section class="paJoinBanner" id="paJoinBanner" aria-label="Join Placement Atlas"><div><div class="eyebrow">PLACEMENT ATLAS COMMUNITY</div><h3>Join the pharmacy community</h3><p>Save your shortlist, preferences and notes, and pick up where you left off on any device.</p></div><div class="paJoinActions"><button class="btn primary" type="button" data-pa-join="create">Create account</button><button class="btn" type="button" data-pa-join="signin">Sign in</button></div></section>'+
  '<section class="paProfileCard" aria-label="Account information">'+
  '<div class="paAvatarArea"><button class="paAvatarButton" id="paAvatarButton" type="button" aria-label="Upload profile picture"><span id="paAvatarLetters">PA</span><span class="paCamera">'+cameraSvg+'</span></button><span class="paAvatarCaption" id="paAvatarCaption">Not signed in</span></div>'+
- '<div class="paProfileIdentity"><div class="paDisplayName" id="paProfileName">Guest</div><div class="paEmail" id="paProfileEmail">Sign in to save your workspace across devices.</div>'+
+ '<div class="paProfileIdentity"><div class="paDisplayName" id="paProfileName">Pharmacist</div><div class="paEmail" id="paProfileEmail">Create an account to save your workspace across devices.</div>'+
  '<div class="paProfileActions"><button class="btn primary" type="button" id="paProfileAuth">Sign in</button><button class="btn" type="button" id="paNameEdit" hidden>Edit name</button><button class="btn" type="button" id="paAvatarRemove" hidden>Remove photo</button></div>'+
  '<div class="paEditName" id="paEditName"><input id="paNameInput" maxlength="80" autocomplete="name" aria-label="Display name"><button class="btn primary" type="button" id="paNameSave">Save name</button><button class="btn" type="button" id="paNameCancel">Cancel</button></div>'+
  '<div role="status" aria-live="polite" class="paProfileMessage" id="paProfileMessage"></div></div></section>'+
@@ -30,6 +31,7 @@
  const file=document.createElement('input');file.type='file';file.accept='image/jpeg,image/png,image/webp';file.hidden=true;file.id='paAvatarFile';
  outcome.append(file);
  const photo=$('paAvatarButton'),letters=$('paAvatarLetters'),caption=$('paAvatarCaption');
+ const joinBanner=$('paJoinBanner');
  const name=$('paProfileName'),email=$('paProfileEmail'),message=$('paProfileMessage');
  const authBtn=$('paProfileAuth'),editBtn=$('paNameEdit'),removeBtn=$('paAvatarRemove');
  let activeId='',avatarObjectUrl='',busy=false,photoLoadedFor='';
@@ -57,9 +59,10 @@
    const label=String(user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'Your account');
    const newId=user?.id||'';
    if(activeId!==newId){releaseAvatar();photoLoadedFor='';activeId=newId;say('');}
-   name.textContent=user?label:'Guest';
+   name.textContent=user?label:'Pharmacist';
    caption.textContent=user?label:'Not signed in';
-   email.textContent=user?.email||'Sign in to save your workspace across devices.';
+   email.textContent=user?.email||'Create an account to save your shortlist and preferences across devices.';
+   if(joinBanner)joinBanner.hidden=Boolean(user);
    letters.textContent=initials(label);
    photo.disabled=!user;photo.setAttribute('aria-label',user?'Change profile photo':'Sign in before uploading a photo');
    authBtn.textContent=user?'Sign out':'Sign in';
@@ -88,6 +91,7 @@
  const system=window.matchMedia?.('(prefers-color-scheme: dark)');
  system?.addEventListener?.('change',()=>{if(currentMode()==='auto')applyMode('auto')});
  authBtn.addEventListener('click',()=>{const api=bridge();if(api.getUser?.())api.signOut?.();else api.openSignIn?.()});
+ wrap.querySelectorAll('[data-pa-join]').forEach(button=>button.addEventListener('click',()=>bridge().openSignIn?.()));
  photo.addEventListener('click',()=>{if(bridge().getUser?.()&&!busy)file.click()});
  const edit=$('paEditName'),input=$('paNameInput');
  editBtn.addEventListener('click',()=>{edit.classList.add('is-open');input.value=name.textContent;input.focus()});
