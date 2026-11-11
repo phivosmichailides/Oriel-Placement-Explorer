@@ -72,7 +72,16 @@
 
 
     const loadAnswers=()=>{
-      try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
+      try{
+        if(localStorage.getItem(DONE_KEY)!=='1')return null;
+        const saved=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
+        // Ignore the neutral placeholder created by older public builds. It was
+        // never a completed quiz and must not preselect answers for a new visitor.
+        if(saved&&saved.environment==='unsure'&&saved.community==='some'&&
+          (!Array.isArray(saved.priorities)||saved.priorities.length===0)&&
+          !saved.region&&!saved.salary&&!saved.hours)return null;
+        return saved||null;
+      }catch{return null}
     };
 
     const paletteValues=['forest','copper','mauve','amber','cocoa','mono'];
