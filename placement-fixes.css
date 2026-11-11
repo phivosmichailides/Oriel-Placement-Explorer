@@ -500,3 +500,27 @@ html.atlasPremiumPreview #prefs .settingsCard>p.muted{font-size:11px!important;l
 html .weightSlider{transition:background-size .08s linear!important}
 html .weightSlider::-webkit-slider-thumb{transition:transform .08s linear!important}
 html .weightSlider::-moz-range-thumb{transition:transform .08s linear!important}
+
+/* Final grid readability: two concise facts side by side, natural word wrapping,
+   and button labels that wrap at spaces rather than splitting words. */
+html[data-layout="grid"] #results .atlasDiscoveryCard .atlasCardQuickSignals{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-content:start!important;align-items:start!important;gap:8px 12px!important;
+}
+html[data-layout="grid"] #results .atlasDiscoveryCard .atlasCardQuickFact{
+ min-width:0!important;overflow-wrap:break-word!important;
+}
+html[data-layout="grid"] #results .atlasDiscoveryCard .placementTop h3,
+html[data-layout="grid"] #results .atlasDiscoveryCard .placementTop .employer,
+html[data-layout="grid"] #results .atlasDiscoveryCard .placementTop .eyebrow{
+ overflow-wrap:break-word!important;word-break:normal!important;hyphens:none!important;
+}
+html[data-layout="grid"] #results .atlasDiscoveryCard .atlasCardFooter>*{
+ overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
+}
+html[data-layout="grid"] #results .atlasDiscoveryCard .atlasTitleExpand{
+ display:inline-flex!important;align-items:center!important;
+ white-space:nowrap!important;font-size:10.5px!important;
+}
+html.atlasPremiumPreview .uxToolbarLead small{display:none!important}
+html.atlasPremiumPreview #shortlist .shortlist-toolbar>.muted{display:none!important}
