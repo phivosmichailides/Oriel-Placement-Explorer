@@ -59,13 +59,20 @@
    nav.querySelectorAll(':scope > .tab').forEach(tab=>{
      const key=tab.dataset.tab;
      if(!names[key])return;
-     const span=tab.querySelector('span');
-     if(span)span.textContent=names[key];
-     else{
-       const icon=tab.querySelector('svg');
-       if(icon){const label=document.createElement('span');label.textContent=names[key];tab.append(label);}
-       else tab.textContent=names[key];
+     // Keep decorative icon spans intact. Earlier code renamed the first
+     // span, which duplicated labels for Simulator and Swipe Mode.
+     let label=[...tab.querySelectorAll(':scope > span')].find(span=>
+       !span.classList.contains('simNavIcon')&&
+       !span.classList.contains('tdNavFlame')&&
+       !span.classList.contains('tab-icon')
+     );
+     if(!label){
+       label=document.createElement('span');
+       label.className='atlasTabLabel';
+       tab.append(label);
      }
+     label.classList.add('atlasTabLabel');
+     label.textContent=names[key];
      tab.setAttribute('aria-label',names[key]);
    });
    const more=nav.querySelector(':scope > .atlasMoreNav');
