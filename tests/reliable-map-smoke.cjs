@@ -78,9 +78,12 @@ fs.mkdirSync(output,{recursive:true});
   const tileFilter=await page.evaluate(()=>getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter);
   assert.notEqual(tileFilter,'none','MapTiler Streets raster colour treatment did not apply');
   assert(await page.locator('header.top').evaluate(el=>getComputedStyle(el).position==='sticky'),'Main header must remain sticky');
-  const visibleNav=await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs .tab')]
+  const visibleNav=await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs > .tab')]
     .filter(el=>getComputedStyle(el).display!=='none').map(el=>el.dataset.tab));
-  assert.deepEqual(visibleNav,['explore','shortlist','simulator','tinderMode','outcome','prefs'],'Unexpected main navigation order');
+  assert.deepEqual(visibleNav,['explore','shortlist','outcome'],'Primary navigation should contain only the main decision paths');
+  assert(await page.locator('header.top nav.tabs > .atlasMoreNav > summary').isVisible(),'Secondary navigation disclosure is missing');
+  assert.deepEqual(await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs .atlasMoreMenu .tab')].map(el=>el.dataset.tab)),
+    ['simulator','tinderMode','prefs'],'Advanced tools should remain available under More');
   await page.locator('#atlasExploreSubnav [data-atlas-subtab=foryou]').click();
   assert(await page.locator('#foryou .historyControls').count()===1,'Undo/redo should follow For You view');
   await page.waitForFunction(()=>document.getElementById('foryou')?.classList.contains('active'),null,{timeout:10000});
