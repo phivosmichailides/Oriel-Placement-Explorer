@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v57-headerlogo';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v58-globefavicon';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261111logo1','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
