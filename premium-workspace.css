@@ -1,0 +1,293 @@
+/*
+ * Placement Atlas · workspace refinement, phase 2
+ * Scoped to the reversible premium presentation layer.
+ * No programme data, decision state or account storage is changed here.
+ */
+
+/* A consistent editorial section heading across every workspace. */
+html.atlasPremiumPreview .sectionHero.card{
+  padding:17px 19px!important;
+  margin-bottom:13px!important;
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  border:1px solid var(--line)!important;
+  border-radius:16px!important;
+  box-shadow:none!important;
+}
+html.atlasPremiumPreview .sectionHero h2{
+  margin:2px 0 5px!important;
+  font-size:20px!important;
+  line-height:1.28!important;
+  letter-spacing:-.025em!important;
+}
+html.atlasPremiumPreview .sectionHero p{
+  max-width:760px!important;
+  color:var(--mut)!important;
+  font-size:13px!important;
+  line-height:1.55!important;
+}
+html.atlasPremiumPreview .sectionHero .eyebrow{
+  color:var(--mut)!important;
+  font-size:10px!important;
+  letter-spacing:.12em!important;
+}
+
+/* Semantic colour: quiet by default, meaningful when it signals a fit or risk. */
+html.atlasPremiumPreview .badge{
+  background:var(--soft)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+}
+html.atlasPremiumPreview .badge.good{
+  background:#e7efe9!important;border-color:#c4d4c9!important;color:#365b48!important;
+}
+html.atlasPremiumPreview .badge.warn{
+  background:#f4eee3!important;border-color:#dfcfb5!important;color:#765529!important;
+}
+html.atlasPremiumPreview .badge.bad{
+  background:#f4e8e8!important;border-color:#e1c6c6!important;color:#7d4646!important;
+}
+html.atlasPremiumPreview[data-theme="dark"] .badge.good{
+  background:#24352e!important;border-color:#496354!important;color:#b9d6c6!important;
+}
+html.atlasPremiumPreview[data-theme="dark"] .badge.warn{
+  background:#3a3226!important;border-color:#6b5637!important;color:#e6d1b1!important;
+}
+html.atlasPremiumPreview[data-theme="dark"] .badge.bad{
+  background:#3a2929!important;border-color:#684040!important;color:#e1b2b2!important;
+}
+html.atlasPremiumPreview .reason{
+  background:var(--soft)!important;
+  border:1px solid var(--line)!important;
+  color:var(--ink)!important;
+}
+
+/* Keep form controls neutral in every theme, including older green-tinted rules. */
+html.atlasPremiumPreview[data-theme="dark"] .field input,
+html.atlasPremiumPreview[data-theme="dark"] .field select,
+html.atlasPremiumPreview[data-theme="dark"] .field textarea,
+html.atlasPremiumPreview[data-theme="dark"] .controls input,
+html.atlasPremiumPreview[data-theme="dark"] .controls select,
+html.atlasPremiumPreview[data-theme="dark"] .outcomeForm .field>input,
+html.atlasPremiumPreview[data-theme="dark"] .outcomeForm .field>select,
+html.atlasPremiumPreview[data-theme="dark"] .outcomeForm .field>textarea{
+  background:#1A2022!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+html.atlasPremiumPreview[data-theme="light"] .field input,
+html.atlasPremiumPreview[data-theme="light"] .field select,
+html.atlasPremiumPreview[data-theme="light"] .field textarea,
+html.atlasPremiumPreview[data-theme="light"] .controls input,
+html.atlasPremiumPreview[data-theme="light"] .controls select,
+html.atlasPremiumPreview[data-theme="light"] .outcomeForm .field>input,
+html.atlasPremiumPreview[data-theme="light"] .outcomeForm .field>select,
+html.atlasPremiumPreview[data-theme="light"] .outcomeForm .field>textarea{
+  background:#FDFDFB!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+html.atlasPremiumPreview .field input:focus,
+html.atlasPremiumPreview .field select:focus,
+html.atlasPremiumPreview .field textarea:focus,
+html.atlasPremiumPreview .controls input:focus,
+html.atlasPremiumPreview .controls select:focus{
+  border-color:var(--ux-accent)!important;
+  outline:2px solid color-mix(in srgb,var(--ux-accent) 24%,transparent)!important;
+  outline-offset:1px;
+}
+html.atlasPremiumPreview .btn.selected{
+  background:var(--ux-accent-soft)!important;
+  border-color:var(--ux-accent-border)!important;
+  color:var(--ux-accent-ink)!important;
+}
+
+/* For You: calmer, scannable recommendations. */
+html.atlasPremiumPreview #foryou .uxRecommendationsTools{
+  display:flex;flex-wrap:wrap;gap:8px;margin:0 0 13px;
+}
+html.atlasPremiumPreview #foryou .recoGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+html.atlasPremiumPreview #foryou .reco{
+  min-width:0;padding:16px!important;
+  background:var(--panel)!important;color:var(--ink)!important;
+  border:1px solid var(--line)!important;border-radius:15px!important;
+  box-shadow:none!important;
+}
+html.atlasPremiumPreview #foryou .reco h3{
+  margin:6px 0 8px!important;font-size:16px!important;line-height:1.32!important;
+}
+html.atlasPremiumPreview #foryou .reco p{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+  overflow:hidden;margin:8px 0 12px!important;
+  color:var(--mut)!important;font-size:12.5px!important;line-height:1.55!important;
+}
+html.atlasPremiumPreview #foryou .reco [data-open]{
+  background:var(--ux-accent-soft)!important;
+  border-color:var(--ux-accent-border)!important;
+  color:var(--ux-accent-ink)!important;
+}
+html.atlasPremiumPreview #foryou .recoEmpty{
+  grid-column:1/-1;padding:24px!important;
+}
+html.atlasPremiumPreview #foryou .recoEmpty p{
+  display:block;-webkit-line-clamp:unset;overflow:visible;
+}
+
+/* Shortlist: preserve rank, status, notes and actions while reducing repeated detail. */
+html.atlasPremiumPreview #shortlist .shortlist-toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding:12px 14px!important;
+  background:var(--soft)!important;border:1px solid var(--line)!important;
+  border-radius:14px!important;
+}
+html.atlasPremiumPreview #shortlistList .rank-row{
+  display:grid;grid-template-columns:44px minmax(0,1fr);
+  gap:9px;align-items:start;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls{
+  position:sticky;top:105px;display:grid;gap:5px;
+  justify-items:center;padding-top:7px;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls strong{
+  min-width:34px;text-align:center;padding:6px 5px;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--soft);color:var(--ink);font-size:13px;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls .btn{
+  min-width:32px;min-height:31px;padding:4px 7px;border-radius:9px;
+}
+html.atlasPremiumPreview #shortlistList .placement{
+  min-width:0;padding:14px 16px!important;
+  border-radius:14px!important;box-shadow:none!important;
+}
+html.atlasPremiumPreview #shortlistList .placement h3{
+  font-size:16px!important;line-height:1.3!important;
+}
+html.atlasPremiumPreview #shortlistList .placement .badges{
+  margin:8px 0!important;gap:5px!important;
+}
+html.atlasPremiumPreview #shortlistList .placement .badge{
+  font-size:10.5px!important;padding:4px 7px!important;
+}
+html.atlasPremiumPreview #shortlistList .placement .fit{
+  grid-template-columns:88px minmax(0,1fr)!important;
+  gap:9px!important;margin:8px 0!important;
+}
+html.atlasPremiumPreview #shortlistList .placement .score{
+  background:var(--dark)!important;color:#fff!important;
+  border:1px solid var(--line)!important;padding:8px 9px!important;
+  border-radius:11px!important;
+}
+html.atlasPremiumPreview #shortlistList .placement .score b{font-size:22px!important}
+html.atlasPremiumPreview #shortlistList .placement .why{gap:4px!important}
+html.atlasPremiumPreview #shortlistList .placement .reason{
+  font-size:11px!important;padding:4px 7px!important;
+}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts,
+html.atlasPremiumPreview #shortlistList .atlasShortlistWhy{
+  min-width:0;border:1px solid var(--line);border-radius:10px;
+  background:var(--soft);padding:7px 10px;margin:7px 0;
+}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts>summary,
+html.atlasPremiumPreview #shortlistList .atlasShortlistWhy>summary{
+  cursor:pointer;color:var(--ux-accent-ink);font-size:11.5px;font-weight:750;
+  list-style-position:inside;
+}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts[open],
+html.atlasPremiumPreview #shortlistList .atlasShortlistWhy[open]{padding-bottom:10px}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts .badge{margin:5px 3px 0 0}
+html.atlasPremiumPreview #shortlistList .atlasShortlistWhy .why{margin-top:8px}
+html.atlasPremiumPreview #shortlistList .atlasWorkspaceTitleExpand,
+html.atlasPremiumPreview #foryou .atlasWorkspaceTitleExpand{
+  display:inline-flex;align-items:center;vertical-align:baseline;
+  margin-left:7px;padding:1px 0;border:0;background:transparent;
+  color:var(--ux-accent-ink);font-family:inherit;font-size:10.5px;
+  font-weight:700;line-height:1.35;text-decoration:underline;
+  text-underline-offset:2px;cursor:pointer;white-space:nowrap;
+}
+html.atlasPremiumPreview .atlasWorkspaceTitleExpand:focus-visible{
+  outline:2px solid var(--ux-accent);outline-offset:3px;border-radius:3px;
+}
+html.atlasPremiumPreview .atlasWorkspaceTitleOriginal{display:none}
+html.atlasPremiumPreview .atlasWorkspaceTitleOpen .atlasWorkspaceTitleConcise{display:none}
+html.atlasPremiumPreview .atlasWorkspaceTitleOpen .atlasWorkspaceTitleOriginal{display:inline}
+
+/* Compare: remove the legacy white/green table surfaces and make long comparisons readable. */
+html.atlasPremiumPreview #compare .compareWrap{
+  max-height:72vh;overflow:auto;border:1px solid var(--line);
+  border-radius:14px;background:var(--panel);
+}
+html.atlasPremiumPreview #compare .compareTable{
+  min-width:780px;background:var(--panel)!important;color:var(--ink)!important;
+  border-collapse:separate;border-spacing:0;
+}
+html.atlasPremiumPreview #compare .compareTable th,
+html.atlasPremiumPreview #compare .compareTable td{
+  padding:11px 12px!important;border-color:var(--line)!important;
+  color:var(--ink)!important;background:var(--panel)!important;
+}
+html.atlasPremiumPreview #compare .compareTable thead th{
+  position:sticky;top:0;z-index:3;background:var(--soft)!important;
+  font-size:12px!important;font-weight:800!important;
+}
+html.atlasPremiumPreview #compare .compareTable thead th:first-child{
+  left:0;z-index:5;
+}
+html.atlasPremiumPreview #compare .compareTable tbody th{
+  position:sticky;left:0;z-index:2;width:155px;
+  background:var(--soft)!important;font-weight:750!important;
+}
+html.atlasPremiumPreview #compare .compareTable tbody tr:nth-child(even) td{
+  background:color-mix(in srgb,var(--soft) 38%,var(--panel))!important;
+}
+
+/* Preferences and outcome pages use the same calmer surface hierarchy. */
+html.atlasPremiumPreview #prefs .settingsCard,
+html.atlasPremiumPreview #outcome .outcomeForm,
+html.atlasPremiumPreview #outcome .outcomeInfo,
+html.atlasPremiumPreview #outcome .outcomeDetails,
+html.atlasPremiumPreview #outcome .outcomeComparison{
+  background:var(--panel)!important;border-color:var(--line)!important;
+  box-shadow:none!important;border-radius:15px!important;
+}
+html.atlasPremiumPreview #prefs .settingsCard{padding:17px!important}
+html.atlasPremiumPreview #prefs .settingsCard h2{font-size:18px!important}
+html.atlasPremiumPreview #prefs .weight{gap:12px}
+html.atlasPremiumPreview #prefs input[type="range"]{accent-color:var(--ux-accent)}
+html.atlasPremiumPreview #simulator .simSummary,
+html.atlasPremiumPreview #simulator .simFoot{
+  background:var(--panel)!important;color:var(--ink)!important;
+  border-color:var(--line)!important;box-shadow:none!important;
+}
+html.atlasPremiumPreview #simulator .simHint{
+  padding:11px 13px!important;border-radius:11px!important;
+  background:var(--soft)!important;color:var(--mut)!important;
+  border:1px solid var(--line)!important;line-height:1.5!important;
+}
+
+/* Mobile: no side-by-side squeeze in For You or Shortlist. */
+@media(max-width:780px){
+  html.atlasPremiumPreview #foryou .recoGrid{grid-template-columns:minmax(0,1fr)!important}
+  html.atlasPremiumPreview #shortlistList .rank-row{grid-template-columns:minmax(0,1fr)}
+  html.atlasPremiumPreview #shortlistList .rank-controls{
+    position:static;display:flex;align-items:center;justify-content:flex-start;
+    padding:0 0 5px;gap:6px;
+  }
+  html.atlasPremiumPreview #shortlistList .placement .fit{
+    grid-template-columns:76px minmax(0,1fr)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placement .controls{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placement .controls input[data-action="note"]{
+    grid-column:1/-1;
+  }
+  html.atlasPremiumPreview #compare .compareWrap{max-height:65vh}
+}
+@media(prefers-reduced-motion:reduce){
+  html.atlasPremiumPreview #foryou .reco,
+  html.atlasPremiumPreview #shortlistList .placement{transition:none!important}
+}
