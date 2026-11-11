@@ -53,6 +53,10 @@
 #outcome .paJoinBanner p{margin:0;color:var(--mut);font-size:12px;line-height:1.5}
 #outcome .paJoinActions{display:flex;flex:0 0 auto;gap:7px;flex-wrap:wrap}
 #outcome .paJoinActions .btn{min-height:39px;padding:9px 13px;border-radius:10px}
+#outcome .paJoinBenefits{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+#outcome .paJoinBenefits span{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid var(--ux-accent-border,var(--line));border-radius:999px;color:var(--ux-accent-ink,var(--mut));font-size:10px;font-weight:720;line-height:1.2}
+#outcome .paJoinBanner h3{font-size:19px;letter-spacing:-.015em}
+#outcome .paJoinBanner p{max-width:58ch;font-size:12.5px;line-height:1.55}
 @media(max-width:620px){
  #outcome .paJoinBanner{align-items:flex-start;flex-direction:column;padding:16px}
  #outcome .paJoinActions{width:100%}
