@@ -40,8 +40,21 @@
     close.type='button';close.setAttribute('aria-label','Close programme preview');
     close.addEventListener('click',dismiss);
     dialog.append(close,el('div','progPeekEyebrow','PROGRAMME AT A GLANCE'));
-    const title=el('h2','progPeekTitle',p.title||p.employer||'Programme');
-    title.id='progPeekTitle';dialog.append(title);
+    const fullTitle=String(p.title||p.employer||'Programme');
+    const shortTitle=window.AtlasPrototypeCleanTitle?.(fullTitle,p)||fullTitle;
+    const title=el('h2','progPeekTitle',shortTitle);
+    title.id='progPeekTitle';title.title=fullTitle;dialog.append(title);
+    if(shortTitle!==fullTitle){
+      const fullName=el('button','progPeekFullName','Full name');
+      fullName.type='button';fullName.setAttribute('aria-expanded','false');
+      fullName.addEventListener('click',()=>{
+        const expanded=fullName.getAttribute('aria-expanded')==='true';
+        title.textContent=expanded?shortTitle:fullTitle;
+        fullName.textContent=expanded?'Full name':'Less';
+        fullName.setAttribute('aria-expanded',String(!expanded));
+      });
+      dialog.append(fullName);
+    }
     const sub=el('div','progPeekSub',[(p.region||'Region not stated'),p.area,p.employer].filter(Boolean).join(' · '));
     dialog.append(sub);
     const stats=el('div','progPeekGrid');
