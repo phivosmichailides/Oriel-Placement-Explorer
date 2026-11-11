@@ -210,16 +210,32 @@
       const p=data.get(card.dataset.id);
       if(!p)continue;
       prototypeMeta(p,card);
-      if(!profileExists()){
-        for(const item of card.querySelectorAll('.fitColumn.caution .fitPoint')){
-          if(item.textContent.trim()==='No major trade-offs.'){
-            item.textContent='Trade-offs depend on your priorities and the source data may be incomplete.';
-          }
+      for(const item of card.querySelectorAll('.fitColumn.caution .fitPoint')){
+        if(!profileExists()&&item.textContent.trim()==='No major trade-offs.'){
+          item.textContent='Trade-offs depend on your priorities and the source data may be incomplete.';
         }
-        for(const item of card.querySelectorAll('.fitColumn.positive .fitPoint')){
-          if(item.textContent.trim()==='Strong pay'&&Number(p.salary)>0){
-            item.textContent='Stated gross salary: £'+Number(p.salary).toLocaleString('en-GB')+' per year';
-          }
+      }
+      const rotation=key=>{try{return Math.max(0,Number(weeks(p,key))||0)}catch{return 0}};
+      const h=rotation('hospital'),g=rotation('general practice');
+      const c=rotation('community'),i=rotation('industry');
+      const rotations=[
+        h?'Hospital '+h+' weeks':null,g?'GP '+g+' weeks':null,
+        c?'Community '+c+' weeks':null,i?'Industry '+i+' weeks':null
+      ].filter(Boolean).join(' · ');
+      for(const item of card.querySelectorAll('.fitColumn.positive .fitPoint')){
+        const label=item.textContent.trim();
+        if((label==='Strong pay'||label==='Strong salary')&&Number(p.salary)>0){
+          item.textContent='Stated gross salary: £'+Number(p.salary).toLocaleString('en-GB')+' per year';
+        }else if(label==='Major hospital exposure'&&h){
+          item.textContent='Hospital rotation: '+h+' weeks';
+        }else if(label==='Major GP exposure'&&g){
+          item.textContent='GP rotation: '+g+' weeks';
+        }else if(label==='Substantial community exposure'&&c){
+          item.textContent='Community rotation: '+c+' weeks';
+        }else if(label==='Industry placement exposure'&&i){
+          item.textContent='Industry rotation: '+i+' weeks';
+        }else if(label==='Meaningful exposure across settings'&&rotations){
+          item.textContent='Recorded rotations: '+rotations;
         }
       }
       const details=card.querySelector('[data-ux-expand]');
