@@ -52,6 +52,17 @@ html.atlasPremiumPreview #results .placement.atlasSampleCard .placementTop .eyeb
   margin-bottom:9px!important;
   letter-spacing:.05em!important;
 }
+html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasCompactTakeHome{
+  margin-top:4px!important;
+  color:var(--mut)!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+  font-weight:590!important;
+  white-space:nowrap;
+}
+html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasCompactTakeHome::before{
+  content:'';
+}
 html.atlasPremiumPreview #results .placement.atlasSampleCard .placementTop .salary{
   font-size:clamp(22px,1.8vw,27px)!important;
   line-height:1.1!important;
@@ -115,7 +126,7 @@ html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasCardSignalDot
   margin-right:2px;
 }
 html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasCardQuickFact-good .atlasCardSignalDot{
-  background:var(--fit-green-ink,#8dbba6);
+  background:var(--mut);
 }
 html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasCardQuickFact-caution .atlasCardSignalDot{
   background:var(--fit-mixed-ink,#cfa77c);
