@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261111quiet2/);
+  assert.match(html,/app\.js\?v=20261111quiet3/);
   assert.match(read('app.js'),/app-product\.js\?v=20261111notes1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261111quiz1/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -188,7 +188,7 @@ test('contextual dashboard actions and compact filters are wired to the live app
   assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
   assert.match(sw,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(app,/sector-map\.js\?v=20261111legend1/);
+  assert.match(app,/sector-map\.js\?v=20261111legend2/);
   for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
     assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
   assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
@@ -406,7 +406,7 @@ test('quiet interface stylesheet and refreshed application assets are cache-bust
   const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
   assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet4/);
   assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet4/);
-  assert.match(pwa,/sw\.js\?v=20261111quiet4/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet5/);
 });
 
 
