@@ -105,11 +105,11 @@
     if(personalised){
       if(eyebrow)eyebrow.textContent='BASED ON YOUR PRIORITIES';
       if(heading)heading.textContent='Your strongest matches';
-      if(paragraph)paragraph.textContent='Based on your saved priorities. Use the reasons and trade-offs as guidance, not an Oriel ranking.';
+      if(paragraph)paragraph.textContent='Ranked against the preferences you saved across England and Wales. Review the reasons and trade-offs; these are guidance, not an Oriel ranking.';
     }else{
       if(eyebrow)eyebrow.textContent='START HERE';
       if(heading)heading.textContent='Programmes worth a closer look';
-      if(paragraph)paragraph.textContent='Set your priorities to tailor these suggestions. Until then, they are a general starting point.';
+      if(paragraph)paragraph.textContent='Complete the short personalisation quiz to rank programmes against your location, salary, training and work-style priorities. Until then, treat these suggestions as a general starting point.';
     }
   };
 

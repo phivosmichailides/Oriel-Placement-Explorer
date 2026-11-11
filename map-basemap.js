@@ -8,7 +8,7 @@
     const MAPTILER_KEY = 'JDEneNwTjuuyOGnlUckz';
 
 const STYLE_ID='01a1b7cf-4ca7-7662-9861-84b5b44c218c';
-const styleUrl=file=>new URL(file+'?v=20261111muted1',document.baseURI).toString();
+const styleUrl=file=>new URL(file+'?v=20261109roads3',document.baseURI).toString();
 const STYLES=Object.freeze({
   'editorial-light':styleUrl('map-styles/editorial-light.json'),
   'editorial-dark':styleUrl('map-styles/editorial-dark.json')
@@ -37,9 +37,9 @@ const STYLES=Object.freeze({
   // Automatic switches between two coordinated versions of the same map design.
   const activeStyleName=()=>preference==='auto'?(mode()==='dark'?'editorial-dark':'editorial-light'):preference;
   const style=()=>STYLES[activeStyleName()];
-  // A raster fallback remains available on browsers without WebGL. The local
-  // vector styles use the muted Editorial palette; raster fallback stays on
-  // MapTiler Streets unless the hosted custom style is verified and available.
+  // A raster fallback remains available on browsers without WebGL. The light
+  // version uses the owner's hosted Editorial style; the dark fallback uses
+  // MapTiler's native dark streets tiles until a custom raster style is hosted.
   const RASTER_STYLE_IDS={'editorial-light':'streets-v4','editorial-dark':'streets-v4-dark'};
   const rasterTileUrl=()=>`https://api.maptiler.com/maps/${RASTER_STYLE_IDS[activeStyleName()]}/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`;
   // Empty tile areas use the style's real canvas colour; no tile-shaped blue overlay.
@@ -74,8 +74,8 @@ const STYLES=Object.freeze({
     const surfaceWidth=roadWidthAtZoom(0),casingWidth=roadWidthAtZoom(1.15);
     const casingColour=dark?'#1b2520':'#f7f3e9';
     const roadColour=dark
-      ?['match',['get','class'],'motorway','#a98f73','trunk','#a08f79','primary','#928f80','secondary','#858f84','tertiary','#78867d','minor','#6f7e75','service','#66766e','track','#5d6d65','#68786f']
-      :['match',['get','class'],'motorway','#bba487','trunk','#c3af95','primary','#cbbba3','secondary','#d3c6b3','tertiary','#dbd1c2','minor','#e0d8cc','service','#e5dfd6','track','#ded5c5','#e1d8ca'];
+      ?['match',['get','class'],'motorway','#c79a70','trunk','#b88f68','primary','#a98361','secondary','#8e8d78','tertiary','#78867c','minor','#6f7d74','service','#64746c','track','#596b63','#65746c']
+      :['match',['get','class'],'motorway','#9f7654','trunk','#a9825e','primary','#b48f68','secondary','#bea17c','tertiary','#c8b18f','minor','#cdbb9f','service','#d4c5ad','track','#d0c0a7','#d2c4ad'];
     const layout={'line-cap':'round','line-join':'round'};
     const layers=[
       {id:'atlas-road-casing',type:'line',source:'maptiler_planet_v4','source-layer':'road',minzoom:3,filter,layout,paint:{'line-color':casingColour,'line-opacity':1,'line-width':casingWidth}},
@@ -179,12 +179,8 @@ const STYLES=Object.freeze({
     map.attributionControl?.removeAttribution(MAPTILER_ATTR);
     map.attributionControl?.removeAttribution(RASTER_ATTR);
     setMapBackdrop(map);
-    const mainMap=map.getContainer()?.id==='placementMap';
     const layer=L.tileLayer(OSM_TILE_URL,{
-      maxZoom:19,keepBuffer:mainMap?6:3,updateWhenIdle:false,
-      // Preserve the current main-map tiles while zooming; refresh once the
-      // gesture settles rather than exposing a blank tile grid mid-zoom.
-      updateWhenZooming:!mainMap,updateInterval:200,
+      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
       attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'osm',attribution:OSM_ATTR};

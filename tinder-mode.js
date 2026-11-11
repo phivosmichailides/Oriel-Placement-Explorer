@@ -39,9 +39,7 @@
   const prefs=()=>typeof state!=='undefined'&&state?.marks?state:null;
   const assessed=p=>{try{return analyse(p)}catch{return{score:50,good:[],bad:[],band:'Not yet assessed'}}};
   const blacklisted=p=>window.OrielGeoBlacklist?.shouldHide?.(p)||false;
-  const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
-  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'Region not listed').replace(/\b[a-z]/g,c=>c.toUpperCase());
-  const regionList=()=>[...new Set(getData().map(p=>p.region).filter(Boolean))].sort((a,b)=>formatRegion(a).localeCompare(formatRegion(b)));
+  const regionList=()=>[...new Set(getData().map(p=>p.region).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   let poolSignature='',poolData=[];
   const selectedPool=()=>{
     const data=getData();
@@ -104,7 +102,7 @@
   const south=new Set(['Croydon','Lambeth','Southwark','Greenwich','Lewisham','Merton','Sutton','Wandsworth','Bexley','Bromley']);
   const zone=d=>west.has(d)?'West London':east.has(d)?'East London':north.has(d)?'North London':south.has(d)?'South London':'London';
   const locTitle=(p,data,pc)=>{
-    if(!data)return 'Postcode '+pc+' · '+formatRegion(p.region||'UK');
+    if(!data)return 'Postcode '+pc+' · '+(p.region||'UK');
     const d=data.admin_district||'',county=data.admin_county||data.region||p.region||'UK';
     if(data.region==='London')return d+' ('+zone(d)+')';
     return d+(county&&county!==d?' ('+county+')':'');
@@ -163,7 +161,7 @@
       card.inert=true;
     }else{
       card.id='tinderActiveCard';card.tabIndex=0;
-      card.setAttribute('aria-label','Programme '+(window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||p.title||p.employer||'Programme')+'. Swipe right to like, left for Like No; buttons below for other actions.');
+      card.setAttribute('aria-label','Programme '+p.title+'. Swipe right to like, left to reject; buttons below for other actions.');
     }
     const top=document.createElement('div');top.className='tdCardTop';
     const tag=document.createElement('span');tag.className='tdCardCode';tag.textContent='PROGRAMME '+code(p);
@@ -179,8 +177,7 @@
       }
     }
     top.append(tag,score);
-    const displayTitle=window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Untitled programme',p)||p.title||p.employer||'Untitled programme';
-    const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=displayTitle;name.title=p.title||displayTitle;
+    const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=p.title||p.employer||'Untitled programme';
     const employer=document.createElement('p');employer.className='tdEmployer';employer.textContent=p.employer||'Employer not specified';
     const metrics=document.createElement('div');metrics.className='tdMetrics';
     for(const [label,value] of [['SALARY',money(p.salary)],['HOURS',p.hours?p.hours+' / week':'Not stated'],['PLACES',p.places||'—']]){
@@ -202,69 +199,12 @@
       else for(const s of items){const li=document.createElement('li');li.textContent=s;ul.append(li)}
       block.append(ul);pros.append(block);
     }
-    const detailsButton=document.createElement('button');detailsButton.type='button';detailsButton.className='tdShowDetails';
-    detailsButton.textContent='Show details';detailsButton.setAttribute('aria-expanded','false');
-    const detailsPanel=document.createElement('div');detailsPanel.className='tdDetailsPanel';detailsPanel.hidden=true;
-    const detailRows=[
-      ['Full programme name',p.title||displayTitle],['Employer',p.employer||'Not stated'],['Region',formatRegion(p.region)],
-      ['Training site postcodes',(p.postcodes||[]).filter(Boolean).join(' · ')||'Not supplied'],
-      ['Training mix',(p.settings||[]).map(x=>String(x[0])+' · '+Number(x[1]||0)+' weeks').join(' / ')||'Not specified'],
-      ['Gross annual salary',money(p.salary)],['Weekly hours',p.hours?String(p.hours)+' hours':'Not stated']
-    ];
-    const definition=document.createElement('dl');definition.className='tdDetailsFacts';
-    for(const [label,value] of detailRows){if(!value)continue;const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=String(value);row.append(dt,dd);definition.append(row)}
-    detailsPanel.append(definition);
-    const research=document.createElement('div');research.className='tdResearchLinks';
-    const researchQuery=(p.employer||displayTitle)+' '+(p.region||'')+' foundation pharmacist training';
-    for(const [label,url] of [['Google reviews','https://www.google.com/search?q='+encodeURIComponent((p.employer||displayTitle)+' '+(p.region||'')+' reviews')],['Reddit discussions','https://www.reddit.com/search/?q='+encodeURIComponent(researchQuery)],['Google Maps','https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.employer||displayTitle)+' '+(p.postcodes||[]).join(' '))]]){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;research.append(link)}
-    detailsPanel.append(research);
-    detailsButton.addEventListener('click',()=>{const open=detailsPanel.hidden;detailsPanel.hidden=!open;detailsButton.setAttribute('aria-expanded',String(open));detailsButton.textContent=open?'Hide details':'Show details'});
-    const stamps=document.createElement('div');stamps.className='tdStamps';stamps.innerHTML='<span class="tdStamp tdStampNo">LIKE NO</span><span class="tdStamp tdStampYes">LIKE</span><span class="tdStamp tdStampSuper">SUPER LIKE</span>';
-    card.append(top,name,employer,metrics,sites,rotations,pros,detailsButton,detailsPanel,stamps);
+    const stamps=document.createElement('div');stamps.className='tdStamps';stamps.innerHTML='<span class="tdStamp tdStampNo">NOPE</span><span class="tdStamp tdStampYes">LIKE</span><span class="tdStamp tdStampSuper">SUPER LIKE</span>';
+    card.append(top,name,employer,metrics,sites,rotations,pros,stamps);
     if(!underlay)bindGesture(card,p);
     return card;
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const SOUND_KEY='oriel-tinder-sounds-v1';
-  let soundEnabled=true,audioContext=null;
-  try{soundEnabled=localStorage.getItem(SOUND_KEY)!=='off'}catch{}
-  const playTones=(tones)=>{
-    if(!soundEnabled)return;
-    const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
-    try{
-      audioContext=audioContext||new Audio();
-      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
-      const now=audioContext.currentTime+.012;
-      for(const tone of tones){
-        const [frequency,offset,duration,wave='sine',volume=.025,endFrequency]=tone;
-        const oscillator=audioContext.createOscillator(),gain=audioContext.createGain(),start=now+offset;
-        oscillator.type=wave;oscillator.frequency.setValueAtTime(frequency,start);
-        if(endFrequency)oscillator.frequency.exponentialRampToValueAtTime(endFrequency,start+duration);
-        gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(volume,start+.014);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
-        oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(start);oscillator.stop(start+duration+.025);
-      }
-    }catch{}
-  };
-  const playDecisionSound=status=>{
-    if(status==='no')playTones([[310,0,.16,'sine',.018,235],[235,.09,.18,'triangle',.014,175]]);
-    else if(status==='love')playTones([[520,0,.22,'triangle',.022,880],[784,.075,.22,'sine',.022,1175],[1046,.15,.24,'triangle',.018,1568],[1397,.23,.3,'sine',.014,1900]]);
-    else playTones([[880,0,.13,'sine',.021,1175],[1175,.075,.18,'triangle',.018,1480]]);
-  };
-  const playUndoSound=()=>{playTones([[392,0,.2,'sine',.02,784],[587,.11,.2,'triangle',.018,880]]);if(soundEnabled)setTimeout(()=>playTones([[175,0,.09,'sine',.012,120]]),800)};
-  const syncFilterToggle=()=>{
-    const toggle=$('tinderFilterToggle');if(!toggle)return;
-    const count=Number(game.region!=='all')+Number(game.filters.setting!=='all')+Number(Boolean(game.filters.minSalary))+Number(Boolean(game.filters.maxHours))+Number(Boolean(game.filters.splitOnly))+Number(Boolean(game.filters.hideDecided));
-    const label=count?'Refine ('+count+' selected)':'Refine';
-    const text=toggle.querySelector('span');if(text)text.textContent=label;
-    toggle.setAttribute('aria-label',count?'Refine programmes; '+count+' filters selected':'Refine programmes');
-    toggle.title=count?count+' active filters · Open to review or change':'No additional filters selected';
-  };
-  const syncSoundToggle=()=>{
-    const toggle=$('tdSoundToggle');if(!toggle)return;
-    const text=toggle.querySelector('span');if(text)text.textContent=soundEnabled?'Sound on':'Sound off';
-    toggle.setAttribute('aria-pressed',String(soundEnabled));toggle.setAttribute('aria-label',soundEnabled?'Mute swipe sound effects':'Enable swipe sound effects');
-    toggle.title=soundEnabled?'Sound effects are on':'Sound effects are off';
-  };
   const EXIT_MS=560;
   // Small directional sparkle bursts: no full-deck gradient or blurred frame.
   const shine=(status)=>{
@@ -319,7 +259,6 @@
   };
   const commit=(p,status,vector)=>{
     if(animating)return;
-    playDecisionSound(status);
     animating=true;
     dismissHints();
     const card=$('tinderActiveCard');
@@ -364,7 +303,6 @@
     if(animating)return;
     const last=game.history.pop();
     if(!last){note('Nothing to undo yet.');return;}
-    playUndoSound();
     const s=prefs();if(s){if(last.prev)s.marks[last.id]=last.prev;else delete s.marks[last.id];save();}
     document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'tinder_undo'}}));
     game.seen=game.seen.filter(x=>x!==last.id);
@@ -464,17 +402,17 @@
     const search=$('tdDrawerSearch')?.value.toLowerCase().trim()||'';
     const matches=all.filter(p=>[p.title,p.employer,p.id,p.region,...(p.postcodes||[])]
       .join(' ').toLowerCase().includes(search));
-    header.textContent=inLiked?'Shortlisted programmes':'Like No';
+    header.textContent=inLiked?'Shortlisted programmes':'Like No · Rejected';
     subtitle.textContent=all.length+' saved '+(inLiked?'to your shortlist':'as Like No')+
       ' · Tap a programme title for full details and your personalised fit.';
-    $('tdDrawerSearch').placeholder=inLiked?'Search shortlisted programmes':'Search Like No programmes';
+    $('tdDrawerSearch').placeholder=inLiked?'Search shortlisted programmes':'Search rejected programmes';
     list.replaceChildren();
     if(!matches.length){
       const empty=document.createElement('p');
       empty.className='tdDrawerEmpty';
       empty.textContent=search?'No matching programmes.':
         inLiked?'Your shortlist is empty. Like a programme to see it here.':
-          'No Like No programmes yet. Swipe a card left to add one.';
+          'No rejected programmes yet. Swipe a card left to add one.';
       list.append(empty);return;
     }
     const rows=document.createDocumentFragment();
@@ -485,9 +423,9 @@
       const summary=document.createElement('summary');summary.className='tdDrawerSummary';
       const text=document.createElement('span');text.className='tdDrawerSummaryText';
       const title=document.createElement('strong');title.className='tdDrawerProgrammeTitle';
-      title.textContent=window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Unnamed programme',p)||p.title||p.employer||'Unnamed programme';
+      title.textContent=p.title||p.employer||'Unnamed programme';
       const sub=document.createElement('span');sub.className='tdDrawerProgrammeSub';
-      sub.textContent=formatRegion(p.region)+' · '+money(p.salary)+
+      sub.textContent=(p.region||'Region not listed')+' · '+money(p.salary)+
         (p.hours?' · '+p.hours+'h/week':'');
       text.append(title,sub);
       const score=document.createElement('span');score.className='tdDrawerFit';
@@ -512,10 +450,9 @@
       details.addEventListener('toggle',()=>{if(details.open)populatePreview()});
       const action=document.createElement('button');
       action.type='button';action.className='tdDrawerMove';
-      const readable=window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'programme',p)||p.title||p.employer||'programme';
       action.setAttribute('aria-label',inLiked?
-        'Like No — remove '+readable+' from shortlist':
-        'Take '+readable+' to shortlist');
+        'Like No — remove '+(p.title||p.employer)+' from shortlist':
+        'Take '+(p.title||p.employer)+' to shortlist');
       action.innerHTML=inLiked?
         '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg><span>Like No</span>':
         '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg><span>Take to shortlist</span>';
@@ -531,7 +468,7 @@
         saveGame();
         render();
         renderDecisionDrawer();
-        note(inLiked?'Moved to Like No.':'Moved to your shortlist.');
+        note(inLiked?'Moved to rejected programmes.':'Moved to your shortlist.');
         $('tdDrawerSearch')?.focus();
       });
       row.append(details,action);rows.append(row);
@@ -553,8 +490,8 @@
     if($('tdFloatingDecisions'))return;
     const float=document.createElement('div');
     float.className='tdFloatingDecisions';float.id='tdFloatingDecisions';
-    float.setAttribute('aria-label','Swipe Mode saved decisions');
-    float.innerHTML='<button type="button" class="tdLauncher tdLauncherRejected" id="tdOpenRejected" aria-label="View Like No programmes">'+
+    float.setAttribute('aria-label','Tinder Mode saved decisions');
+    float.innerHTML='<button type="button" class="tdLauncher tdLauncherRejected" id="tdOpenRejected" aria-label="View rejected programmes">'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>'+
       '<span id="tdRejectedCount">(0)</span></button>'+
       '<button type="button" class="tdLauncher tdLauncherLiked" id="tdOpenLiked" aria-label="View shortlisted programmes">'+
@@ -568,7 +505,7 @@
     drawer.setAttribute('aria-hidden','true');drawer.setAttribute('aria-labelledby','tdDrawerHeading');
     drawer.hidden=true;drawer.inert=true;
     drawer.innerHTML='<div class="tdDrawerHeader"><div>'+
-      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · SWIPE MODE</div>'+
+      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · TINDER MODE</div>'+
       '<h2 id="tdDrawerHeading">Saved programmes</h2>'+
       '<p id="tdDrawerSubtitle"></p></div>'+
       '<button type="button" id="tdDrawerClose" class="tdDrawerClose" aria-label="Close saved programmes">×</button></div>'+
@@ -603,11 +540,10 @@
   };
   const render=()=>{
     if(!initialized)return;
-    syncFilterToggle();
     const pool=available(),ids=new Set(pool.map(p=>p.id));
     const seen=game.seen.filter(id=>ids.has(id)).length;
     const count=$('tinderProgress');if(count)count.textContent=seen.toLocaleString('en-GB')+' / '+pool.length.toLocaleString('en-GB')+' reviewed';
-    const remaining=$('tinderRemaining');if(remaining)remaining.textContent=(pool.length-seen)+' remaining in '+(game.region==='all'?'all regions':formatRegion(game.region));
+    const remaining=$('tinderRemaining');if(remaining)remaining.textContent=(pool.length-seen)+' remaining in this region';
     const cardSlot=$('tinderCardSlot');if(!cardSlot)return;
     cardSlot.replaceChildren();
     const p=nextProgramme();activeId=p?.id||'';
@@ -669,16 +605,15 @@
     const nav=document.querySelector('nav.tabs'),sim=nav?.querySelector('[data-tab="simulator"]');
     if(!sim)return;
     const tab=document.createElement('button');tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
-    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Swipe Mode</span>';
+    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Tinder Mode</span>';
     sim.after(tab);
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
-    section.innerHTML=
+    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
-     '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine</span></button>'+
-     '<button type="button" id="tdSoundToggle" class="tdSoundToggle" aria-pressed="true" aria-label="Mute swipe sound effects"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg><span>Sound on</span></button>'+
+     '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine cards</span></button>'+
      '<div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
-     '<div id="tinderFilterPanel" class="tdFilterPanel" hidden aria-label="Swipe Mode programme filters">'+
+     '<div id="tinderFilterPanel" class="tdFilterPanel" hidden aria-label="Tinder Mode programme filters">'+
      '<label>Training setting<select id="tdSetting"><option value="all">All settings</option><option value="hospital">Hospital-led</option><option value="gp">GP-led</option><option value="mixed">Split training</option><option value="community">Community-led</option><option value="industry">Industry</option></select></label>'+
      '<label>Minimum salary<select id="tdMinSalary"><option value="">Any salary</option><option value="26000">£26k+</option><option value="28000">£28k+</option><option value="30000">£30k+</option><option value="32000">£32k+</option><option value="36000">£36k+</option></select></label>'+
      '<label>Maximum weekly hours<select id="tdMaxHours"><option value="">Any hours</option><option value="35">35h</option><option value="37.5">37.5h</option><option value="40">40h</option><option value="42.5">42.5h</option></select></label>'+
@@ -686,7 +621,7 @@
      '<label class="tdFilterCheck"><input id="tdHideDecided" type="checkbox"><span>Hide already-decided programmes</span></label>'+
      '<button type="button" id="tdFiltersReset" class="tdFilterReset">Clear game filters</button></div>'+
      '<div class="tdBoard"><div id="tinderSwipeHints" class="tdSwipeHints" hidden><span class="tdSwipeHint tdSwipeHintLeft"><span class="tdHintArrow" aria-hidden="true">←</span><span>Swipe left to exclude a programme</span></span><span class="tdSwipeHint tdSwipeHintRight"><span>Swipe right to shortlist a programme</span><span class="tdHintArrow" aria-hidden="true">→</span></span></div><div class="tdCardDeck"><div id="tinderCardSlot" class="tdCardSlot" aria-live="polite"></div></div>'+
-     '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — not for me" aria-label="Like No — not for me">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
+     '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
      '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
      '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
      '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel CSV. Training areas are postcode-based approximations. Cheeky pros and cons are suggestions, not verified employer promises.</p></div>';
@@ -694,7 +629,7 @@
     mountDecisionDrawers();
     const region=$('tinderRegion');if(region){
       const all=document.createElement('option');all.value='all';all.textContent='All regions — England & Wales';region.append(all);
-      for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=formatRegion(r);region.append(option)}
+      for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=r;region.append(option)}
       if(![...region.options].some(x=>x.value===game.region))game.region='London';
       region.value=game.region;
       region.addEventListener('change',()=>{game.region=region.value;forced=null;saveGame();render()});
@@ -712,22 +647,19 @@
         $('tdMaxHours').value=game.filters.maxHours;
         $('tdSplitOnly').checked=game.filters.splitOnly;
         $('tdHideDecided').checked=game.filters.hideDecided;
-        syncFilterToggle();
       };
       updateFields();
       filterPanel.addEventListener('change',()=>{
         game.filters={setting:$('tdSetting').value,minSalary:$('tdMinSalary').value,
           maxHours:$('tdMaxHours').value,splitOnly:$('tdSplitOnly').checked,
           hideDecided:$('tdHideDecided').checked};
-        forced=null;saveGame();syncFilterToggle();render();
+        forced=null;saveGame();render();
       });
       $('tdFiltersReset').addEventListener('click',()=>{
         game.filters=defaultFilters();forced=null;saveGame();
         updateFields();render();
       });
     }
-    const soundToggle=$('tdSoundToggle');if(soundToggle)soundToggle.addEventListener('click',()=>{soundEnabled=!soundEnabled;try{localStorage.setItem(SOUND_KEY,soundEnabled?'on':'off')}catch{}syncSoundToggle()});
-    syncSoundToggle();syncFilterToggle();
     $('tinderUndo').onclick=undo;
     $('tinderNo').onclick=()=>{const p=nextProgramme();if(p)commit(p,'no',-1)};
     $('tinderYes').onclick=()=>{const p=nextProgramme();if(p)commit(p,'yes',1)};

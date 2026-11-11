@@ -286,11 +286,11 @@
     quick.classList.add('atlasQuickFilters');
     const toggleQuick=document.createElement('button');
     toggleQuick.type='button';toggleQuick.className='atlasQuickMore';
-    toggleQuick.textContent='More filters';
+    toggleQuick.textContent='More quick filters';
     toggleQuick.setAttribute('aria-expanded','false');
     toggleQuick.addEventListener('click',()=>{
       const expanded=quick.classList.toggle('atlasQuickExpanded');
-      toggleQuick.textContent=expanded?'Fewer filters':'More filters';
+      toggleQuick.textContent=expanded?'Fewer quick filters':'More quick filters';
       toggleQuick.setAttribute('aria-expanded',String(expanded));
     });
     quick.insertAdjacentElement('afterend',toggleQuick);

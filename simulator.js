@@ -4,8 +4,6 @@
  const KEY='oriel-simulator-v1',ZKEY='oriel-simulator-zoom-v1';
  const Z=['preferred','neutral','unwanted'];
  const labels={preferred:'Preference',neutral:'No Preference',unwanted:'Not Wanted'};
- const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
- const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'Region not stated').replace(/\b[a-z]/g,c=>c.toUpperCase());
  const $=id=>document.getElementById(id);
  const el=(tag,cl,value)=>{const e=document.createElement(tag);if(cl)e.className=cl;if(value!==undefined)e.textContent=String(value);return e};
  const codes=p=>String(p.id||'').split('/').pop().trim();
@@ -56,8 +54,6 @@
    msg('Exported your simulation order. This does not update Oriel.');
  }
  function markup(){
-   // The simulator can be re-entered after a live dataset refresh; never add a second tab or panel.
-   if(document.getElementById('simulator')&&document.querySelector('nav.tabs [data-tab="simulator"]'))return;
    const tab=el('button','tab');tab.type='button';tab.dataset.tab='simulator';
    tab.innerHTML='<span class="simNavIcon" aria-hidden="true">▥</span><span>Oriel Simulation</span>';
    document.querySelector('nav.tabs [data-tab="outcome"]').before(tab);
@@ -68,7 +64,7 @@
     '<div class="simSummary card"><div><div class="eyebrow">PROGRAMMES ORGANISED</div><div class="simSummaryBig"><strong id="simCount">0</strong><span> / </span><strong id="simTotal">4,064</strong></div><p id="simRemaining">Loading…</p></div><div class="simTools"><div class="simZoom"><button class="btn" id="simZoomOut" type="button" aria-label="Zoom out">−</button><output id="simZoomValue">100%</output><button class="btn" id="simZoomIn" type="button" aria-label="Zoom in">+</button><button class="btn" id="simZoomReset" type="button">Reset</button></div><button class="btn" id="simImport" type="button">Import my shortlist</button><button class="btn" id="simCSV" type="button">Export ranked CSV</button><button class="btn" id="simBackup" type="button">Backup</button><button class="btn" id="simRestore" type="button">Restore</button><input hidden id="simRestoreFile" type="file" accept=".json,application/json"><button class="btn danger" id="simClear" type="button">Clear simulation</button></div></div>'+
     '<p class="simHint">Search by name, town or code; click a result to add it. Drag a card to another column, use its dropdown to move it, or click its number to change rank. The copy icon copies the four-digit programme code for pasting into Oriel.</p>'+
     '<div class="simViewport"><div class="simColumns" id="simColumns">'+
-     Z.map(z=>'<section class="simCol" data-sim-col="'+z+'"><header><div class="simColHeading"><div><div class="eyebrow">'+(z==='preferred'?'RANKED IN YOUR CHOSEN ORDER':z==='neutral'?'COULD ACCEPT':'WOULD NOT ACCEPT')+'</div><h3>'+labels[z]+' <small data-sim-count="'+z+'">0</small></h3><p class="simColHelp">'+(z==='preferred'?'Your preferred programmes, ranked in order.':z==='neutral'?'You could accept a programme in this group if needed.':'You would not accept an offer in this group.')+'</p></div><span aria-hidden="true">'+(z==='preferred'?'♥':z==='neutral'?'○':'×')+'</span></div><label for="simInput-'+z+'">Add programme</label><input id="simInput-'+z+'" data-sim-input="'+z+'" type="search" autocomplete="off" placeholder="Search name, postcode or code…"><div class="simResults" data-sim-results="'+z+'"></div></header><div class="simList" data-sim-list="'+z+'"></div><div data-sim-more="'+z+'" class="simMore"></div></section>').join('')+
+     Z.map(z=>'<section class="simCol" data-sim-col="'+z+'"><header><div class="simColHeading"><div><div class="eyebrow">'+(z==='preferred'?'RANKED IN YOUR CHOSEN ORDER':z==='neutral'?'ACCEPTABLE UNRANKED':'NOT ACCEPTABLE')+'</div><h3>'+labels[z]+' <small data-sim-count="'+z+'">0</small></h3></div><span aria-hidden="true">'+(z==='preferred'?'♥':z==='neutral'?'○':'×')+'</span></div><label for="simInput-'+z+'">Add programme</label><input id="simInput-'+z+'" data-sim-input="'+z+'" type="search" autocomplete="off" placeholder="Search name, postcode or code…"><div class="simResults" data-sim-results="'+z+'"></div></header><div class="simList" data-sim-list="'+z+'"></div><div data-sim-more="'+z+'" class="simMore"></div></section>').join('')+
     '</div></div><div class="card simFoot"><div><strong>Unassigned is separate from No Preference here.</strong><p>Unassigned programmes have not yet been placed in this simulation. Official Oriel may handle unselected programmes differently.</p></div><button class="btn" id="simAssignAll" type="button">Place all remaining in Not Wanted…</button></div><p class="smallnote" role="status" aria-live="polite" id="simToast">Simulator data is saved locally only.</p>';
    document.getElementById('shortlist').after(section);
  }
@@ -84,7 +80,7 @@
    for(const p of found){
      const b=el('button','simResult');b.type='button';b.draggable=true;
      b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',p.id);e.dataTransfer.effectAllowed='move'});
-     b.append(el('span','simResultCode',codes(p)),el('span','simResultName',window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||p.title||p.employer));
+     b.append(el('span','simResultCode',codes(p)),el('span','simResultName',p.title||p.employer));
      const existing=zoneOf(p.id);if(existing)b.append(el('small','simResultStatus',labels[existing]));
      b.addEventListener('click',()=>{move(p.id,zone);input.value='';results.replaceChildren();msg('Added '+codes(p)+' to '+labels[zone]+'.')});
      results.append(b);
@@ -100,13 +96,12 @@
      const list=state[z];list.splice(list.indexOf(p.id),1);list.splice(number-1,0,p.id);save();render();
    });
    const main=el('div','simItemMain');
-   const readableTitle=window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Untitled programme',p)||p.title||p.employer||'Untitled programme';
-   const name=el('button','simItemName simItemNameButton',readableTitle);
+   const name=el('button','simItemName simItemNameButton',p.title||p.employer||'Untitled programme');
    name.type='button';name.title='View programme pay, hours, settings and locations';
-   name.setAttribute('aria-label','Preview '+readableTitle);
+   name.setAttribute('aria-label','Preview '+(p.title||p.employer||'programme'));
    name.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.OrielProgrammePreview?.open(p.id)});
    main.append(name);
-   main.append(el('small','simItemMeta',codes(p)+' · '+formatRegion(p.region)+(p.salary?' · £'+Number(p.salary).toLocaleString('en-GB'):'')));
+   main.append(el('small','simItemMeta',codes(p)+' · '+(p.region||'Region not stated')+(p.salary?' · £'+Number(p.salary).toLocaleString('en-GB'):'')));
    const actions=el('div','simItemActions');
    const copyBtn=el('button','simIcon simCopy');copyBtn.type='button';
    copyBtn.title='Copy programme code '+codes(p);copyBtn.setAttribute('aria-label',copyBtn.title);

@@ -13,9 +13,6 @@
     if(txt!==undefined)node.textContent=String(txt);
     return node;
   };
-  const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
-  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'Region not stated').replace(/\b[a-z]/g,c=>c.toUpperCase());
-  const readableTitle=p=>window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||p.title||p.employer||'Programme';
   let overlay=null,previousFocus=null;
   const dismiss=()=>{
     if(!overlay)return;
@@ -43,9 +40,9 @@
     close.type='button';close.setAttribute('aria-label','Close programme preview');
     close.addEventListener('click',dismiss);
     dialog.append(close,el('div','progPeekEyebrow','PROGRAMME AT A GLANCE'));
-    const title=el('h2','progPeekTitle',readableTitle(p));
+    const title=el('h2','progPeekTitle',p.title||p.employer||'Programme');
     title.id='progPeekTitle';dialog.append(title);
-    const sub=el('div','progPeekSub',[formatRegion(p.region),p.area,p.employer].filter(Boolean).join(' · '));
+    const sub=el('div','progPeekSub',[(p.region||'Region not stated'),p.area,p.employer].filter(Boolean).join(' · '));
     dialog.append(sub);
     const stats=el('div','progPeekGrid');
     const gross=Number(p.salary)||0,est=window.OrielPay?.estimate?.(gross);
@@ -54,7 +51,7 @@
     kv(stats,'Estimated take-home · yearly',est?money(est.annual):'Not available');
     kv(stats,'Estimated take-home · monthly',est?money(est.monthly):'Not available');
     kv(stats,'Hours per week',p.hours?Number(p.hours)+' hours':'Not stated');
-    kv(stats,'Training region',formatRegion(p.region));
+    kv(stats,'Training region',p.region||'Not stated');
     dialog.append(stats);
     const settings=Array.isArray(p.settings)?p.settings:[];
     const block=el('section','progPeekSection');
@@ -80,22 +77,6 @@
       block.append(sites);
     }else block.append(el('p','progPeekMuted','Training site postcode not stated'));
     dialog.append(block);
-    const fullName=el('details','progPeekFullName');
-    fullName.append(el('summary',null,'Full Oriel programme name'),el('p',null,p.title||p.employer||'Not supplied'));
-    dialog.append(fullName);
-    const insights=el('section','progPeekSection');
-    insights.append(el('h3',null,'Public experiences & reviews'));
-    const researchLinks=el('div','progPeekResearchLinks');
-    const researchBase=(p.employer||readableTitle(p))+' '+(p.region||'')+' foundation pharmacist training';
-    for(const [label,url] of [
-      ['Google reviews','https://www.google.com/search?q='+encodeURIComponent((p.employer||readableTitle(p))+' '+(p.region||'')+' reviews')],
-      ['Reddit discussions','https://www.reddit.com/search/?q='+encodeURIComponent(researchBase)],
-      ['Search trainee experiences','https://www.google.com/search?q='+encodeURIComponent(researchBase+' trainee experience')]
-    ]){
-      const link=el('a',null,label);link.href=url;link.target='_blank';link.rel='noopener noreferrer';researchLinks.append(link);
-    }
-    insights.append(researchLinks,el('p','progPeekMuted','Public reviews may describe patient or customer service rather than training quality. Check the date, exact site and context; individual comments are not representative evidence.'));
-    dialog.append(insights);
     if(est){
       const note=el('p','progPeekFoot','Take-home is an illustrative estimate using your pension and student-loan settings; actual pay depends on payroll circumstances. '+(window.OrielPay?.descriptor?.()||''));
       dialog.append(note);

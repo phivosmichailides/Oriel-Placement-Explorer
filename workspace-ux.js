@@ -20,7 +20,7 @@
  const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const money=n=>window.OrielPay?.money(n)||'£'+Math.round(Number(n)||0).toLocaleString('en-GB');
  let layout=read(KEYS.layout,'list')==='grid'?'grid':'list';
- let palette=palettes.has(read(KEYS.palette,'mono'))?read(KEYS.palette,'mono'):'mono';
+ let palette=palettes.has(read(KEYS.palette,'forest'))?read(KEYS.palette,'forest'):'forest';
  const setLayout=(next,rerender=true)=>{
    layout=next==='grid'?'grid':'list';root.setAttribute('data-layout',layout);write(KEYS.layout,layout);
    document.querySelectorAll('[data-ux-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.uxLayout===layout)));
@@ -151,33 +151,18 @@
    if(open){filterSnapshots.push(snapshotFilters());if(filterSnapshots.length>3)filterSnapshots.shift();backBtn.hidden=false}
  },true);
 
- const PAGE_SIZE_KEY='oriel-desk-page-size-v1';
  let page=1,lastFilterKey='',skipResetOnce=false;
- let pageSize=read(PAGE_SIZE_KEY,'100');
- if(!['100','200','500','all'].includes(pageSize))pageSize='100';
- const pageLimit=total=>pageSize==='all'?Math.max(1,total):Number(pageSize);
  window.uxGetExplorePage=()=>page;
- window.uxGetExplorePageSize=()=>pageSize;
  window.uxSetExplorePage=value=>{const n=Number(value);if(!Number.isInteger(n)||n<1)return;page=n;skipResetOnce=true;if(typeof explore==='function')explore()};
  const pagination=$('uxExplorePager');
  const pager=(count,total)=>{
    if(!pagination)return;
    pagination.replaceChildren();
+   const pages=Math.max(1,Math.ceil(total/20));
    if(!total){pagination.textContent='No matching results.';return}
-   const size=pageLimit(total),pages=Math.max(1,Math.ceil(total/size));
-   const info=document.createElement('span');info.className='uxPagerInfo';
-   info.textContent='Showing '+(count?((page-1)*size+1):0)+'–'+(Math.min(page*size,total))+' of '+total.toLocaleString('en-GB')+' · Page '+page+'/'+pages;
-   const sizeLabel=document.createElement('label');sizeLabel.className='uxPagerSize';
-   sizeLabel.append(document.createTextNode('Per page'));
-   const select=document.createElement('select');select.setAttribute('aria-label','Programmes per page');
-   for(const [value,label] of [['100','100'],['200','200'],['500','500'],['all','All']]){
-     const option=document.createElement('option');option.value=value;option.textContent=label;option.selected=pageSize===value;select.append(option);
-   }
-   select.addEventListener('change',()=>{
-     pageSize=select.value;write(PAGE_SIZE_KEY,pageSize);page=1;
-     if(typeof explore==='function')explore();
-   });
-   sizeLabel.append(select);pagination.append(info,sizeLabel);
+   const info=document.createElement('span');
+   info.textContent='Showing '+(count?((page-1)*20+1):0)+'–'+(Math.min(page*20,total))+' of '+total.toLocaleString('en-GB')+' · Page '+page+'/'+pages;
+   pagination.append(info);
    if(pages===1)return;
    const controls=document.createElement('div');controls.className='uxPagerButtons';
    const make=(label,target,disabled=false,active=false)=>{
@@ -201,10 +186,10 @@
    const newKey=JSON.stringify({s:$('search')?.value,sect:$('sector')?.value,reg:$('region')?.value,hrs:$('hours')?.value,sal:$('salary')?.value,sort:$('sort')?.value,dec:$('decision')?.value,visa:$('visa')?.value,hideAvoid:$('hideAvoid')?.checked,hideExcluded:excludedFilter?.checked,hideOuterLondon:$('hideOuterLondon')?.checked,hideShortlisted:filter?.checked,hideJustice:$('hideJustice')?.checked,hideMental:$('hideMental')?.checked,hideOtherSpecialist:$('hideOtherSpecialist')?.checked,specialistView:$('specialistView')?.value,
     qs:typeof quick!=='undefined'?[...quick]:[]});
    if(newKey!==lastFilterKey){if(!skipResetOnce)page=1;lastFilterKey=newKey}skipResetOnce=false;
-   const total=options.length,catalogueTotal=getData().length,size=pageLimit(total),pages=Math.max(1,Math.ceil(total/size));
+   const total=options.length,catalogueTotal=getData().length,pages=Math.max(1,Math.ceil(total/20));
    window.OrielFilteredProgrammes=options;
    page=Math.min(Math.max(1,page),pages);
-   const shown=options.slice((page-1)*size,page*size);
+   const shown=options.slice((page-1)*20,page*20);
    $('count').textContent=catalogueTotal.toLocaleString('en-GB')+' total programmes · '+total.toLocaleString('en-GB')+' shown';
    cleanupMiniMaps();
    results.innerHTML=shown.length?shown.map(p=>card(p)).join(''):'<div class="card empty uxEmptyState">No placements match those filters. Try broadening your criteria.</div>';
