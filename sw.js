@@ -8,7 +8,7 @@ const EXTRA_ASSETS=[
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
   'premium-workspace.js?v=20261111workspace1','premium-workspace.css?v=20261111workspace1','premium-quiet-interface.css?v=20261111quiet1','app.js?v=20261111quiet1',
-  'supabase-cloud.js?v=20261110reset1','app-base.js?v=20261111notes1','app-product.js?v=20261111notes1','generic-public.js?v=20261108atlas3',
+  'supabase-cloud.js?v=20261110reset1','app-base.js?v=20261111notes1','app-product.js?v=20261111notes1','generic-public.js?v=20261111quiz1',
   'sector-map.js?v=20261111legend1','onboarding.js?v=20261111quiz1','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
