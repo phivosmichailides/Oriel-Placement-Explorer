@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v54-globe';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v55-titles';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261110footer1','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
@@ -8,8 +8,8 @@ const EXTRA_ASSETS=[
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
   'placement-refinements.css?v=20261111mobile1','placement-profile.css?v=20261111profile1',
-  'placement-makeover.css?v=20261111cards1','placement-mobile-navigation.js?v=20261111mobile1',
-  'placement-profile.js?v=20261111profile1','placement-titles.js?v=20261111titles1',
+  'placement-makeover.css?v=20261111cards2','placement-mobile-navigation.js?v=20261111mobile1',
+  'placement-profile.js?v=20261111profile1','placement-titles.js?v=20261111titles2',
   'placement-atlas-globe.svg','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
   'supabase-cloud.js?v=20261111profile1','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
   'sector-map.js?v=20261111pins1','onboarding.js?v=20261110ux1','deadline-dates.js?v=20261109header2',
