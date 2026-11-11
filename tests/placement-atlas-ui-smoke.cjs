@@ -46,7 +46,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   for(const [id,label] of [['simulator','Oriel Simulation'],['tinderMode','Swipe Mode']]){
    const button=page.locator('header.top nav.tabs [data-tab="'+id+'"]');
    assert.equal(await button.getAttribute('aria-label'),label,'Wrong accessible label for '+id);
-   assert.equal((await button.innerText()).replace(/\\s+/g,' ').trim(),label,'Duplicated or overlapping navigation text for '+id);
+   assert.equal((await button.innerText()).replace(/\s+/g,' ').trim(),label,'Duplicated or overlapping navigation text for '+id);
   }
   assert.equal(await page.locator('header.top nav.tabs [data-tab=learn]').count(),1,'Learn navigation tab is missing');
   assert.equal(await page.locator('.atlasFooterMark').count(),1,'Footer compass-pin logo is missing');
