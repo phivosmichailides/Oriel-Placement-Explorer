@@ -125,6 +125,7 @@
       '<button class="btn" type="button" id="atlasShortlistBackup">Backup</button>';
     shortcuts.querySelector('#atlasShortlistExportDecisions').addEventListener('click',()=>document.getElementById('exportBtn')?.click());
     shortcuts.querySelector('#atlasShortlistBackup').addEventListener('click',()=>document.getElementById('backupBtn')?.click());
+    shortcuts.addEventListener('click',event=>{if(event.target.closest('button'))disclosure.open=false;});
     const order=shortlistBar.querySelector('.shortlistViewOrder');
     if(order){order.title='Change the display order without changing saved priority numbers';menu.append(order);}
     menu.append(shortcuts);disclosure.append(summary,menu);shortlistBar.append(disclosure);
