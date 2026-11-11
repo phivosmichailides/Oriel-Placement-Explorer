@@ -105,48 +105,18 @@
   const enhanceNavigation=()=>{
     const nav=document.querySelector('nav.tabs');
     if(!nav)return false;
-    let more=nav.querySelector(':scope > .atlasMoreNav');
-    if(!more){
-      more=document.createElement('details');
-      more.className='atlasMoreNav';
-      const heading=document.createElement('summary');
-      heading.textContent='More';
-      const menu=document.createElement('div');
-      menu.className='atlasMoreMenu';
-      more.append(heading,menu);
-      nav.append(more);
-      more.addEventListener('click',event=>{
-        if(event.target.closest('.atlasMoreMenu .tab')){
-          window.setTimeout(()=>{more.open=false;syncMoreLabel()},0);
-        }
-      });
+    // Keep every destination in the same navigation row. A collapsible
+    // "More" details element was reflowing the header and hiding its menu.
+    const more=nav.querySelector(':scope > .atlasMoreNav');
+    if(more){
+      const menu=more.querySelector('.atlasMoreMenu');
+      if(menu){
+        [...menu.querySelectorAll(':scope > .tab')].forEach(tab=>nav.insertBefore(tab,more));
+      }
+      more.remove();
     }
-    const menu=more.querySelector('.atlasMoreMenu');
-    const secondary=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>{
-      const label=tab.textContent.replace(/\\s+/g,' ').trim();
-      return ['prefs','simulator','tinderMode'].includes(tab.dataset.tab);
-    });
-    secondary.forEach(tab=>menu.append(tab));
-    const syncMoreLabel=()=>{
-      const active=menu.querySelector('.tab.active');
-      const label=active?.querySelector('span')?.textContent?.trim();
-      more.querySelector('summary').textContent=active&&label?'More · '+label:'More';
-    };
-    if(nav.dataset.atlasMoreListener!=='1'){
-      nav.dataset.atlasMoreListener='1';
-      nav.addEventListener('click',()=>window.setTimeout(syncMoreLabel,0));
-      document.addEventListener('desk:after-navigation',syncMoreLabel);
-    }
-    syncMoreLabel();
-    if(!more.dataset.observing){
-      more.dataset.observing='1';
-      new MutationObserver(()=>{
-        const late=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>
-          ['prefs','simulator','tinderMode'].includes(tab.dataset.tab));
-        late.forEach(tab=>menu.append(tab));
-        syncMoreLabel();
-      }).observe(nav,{childList:true});
-    }
+    // If an older render left tabs in a menu, restore them without cloning.
+    nav.querySelectorAll('.atlasMoreMenu > .tab').forEach(tab=>nav.append(tab));
     return true;
   };
 
