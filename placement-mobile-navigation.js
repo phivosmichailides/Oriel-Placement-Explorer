@@ -68,7 +68,13 @@
      }
      tab.setAttribute('aria-label',names[key]);
    });
-   nav.querySelector(':scope > .atlasMoreNav')?.remove();
+   const more=nav.querySelector(':scope > .atlasMoreNav');
+   if(more){
+     const menu=more.querySelector('.atlasMoreMenu');
+     if(menu)[...menu.querySelectorAll(':scope > .tab')].forEach(tab=>nav.insertBefore(tab,more));
+     more.remove();
+   }
+   nav.querySelectorAll('.atlasMoreMenu > .tab').forEach(tab=>nav.append(tab));
  };
  tidyTabs();
  placeUtilities();
