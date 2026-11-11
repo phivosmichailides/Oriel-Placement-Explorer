@@ -7,12 +7,43 @@
  if(!header||!nav)return;
  const utility=document.createElement('div');utility.className='atlasHeaderUtilities';
  header.append(utility);
+ let avatar={url:'',initials:'PA',name:''};
+ const headerAccount=()=>{
+   const user=window.PlacementAtlasAccount?.getUser?.();
+   let control=utility.querySelector('.paHeaderProfile');
+   if(!user){utility.classList.remove('paSignedIn');control?.remove();return;}
+   utility.classList.add('paSignedIn');
+   if(!control){
+     control=document.createElement('button');
+     control.type='button';control.className='paHeaderProfile';
+     control.setAttribute('aria-label','Open profile');
+     control.innerHTML='<span class="paHeaderPhoto"><span>PA</span></span><span class="paHeaderLabel"></span>';
+     control.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('outcome');else document.querySelector('[data-tab="outcome"]')?.click()});
+     utility.prepend(control);
+   }
+   const identity=String(avatar.name||user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'Account');
+   control.querySelector('.paHeaderLabel').textContent=identity;
+   const face=control.querySelector('.paHeaderPhoto');
+   face.replaceChildren();
+   if(avatar.url){
+     const img=document.createElement('img');img.src=avatar.url;img.alt='';face.append(img);
+   }else{
+     const initials=String(avatar.initials||identity.split(' ').map(x=>x[0]).slice(0,2).join('')).toUpperCase();
+     face.textContent=initials||'PA';
+   }
+ };
  const placeUtilities=()=>{
    const theme=document.getElementById('themeToggle');
    const auth=document.getElementById('orielCloudAccount');
    if(auth&&auth.parentNode!==utility)utility.prepend(auth);
    if(theme&&theme.parentNode!==utility)utility.append(theme);
+   if(auth&&auth.dataset.paHeaderObserved!=='1'){
+     auth.dataset.paHeaderObserved='1';
+     new MutationObserver(headerAccount).observe(auth,{childList:true,subtree:true});
+   }
+   headerAccount();
  };
+ window.addEventListener('placement:avatar',e=>{avatar=e.detail||{url:'',initials:'PA',name:''};headerAccount()});
  placeUtilities();
  const tools=document.getElementById('atlasHeaderTools');
  if(tools)new MutationObserver(placeUtilities).observe(tools,{childList:true,subtree:true});
