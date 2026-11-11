@@ -14,7 +14,7 @@
     return node;
   };
   const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
-  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'Region not stated').replace(/\\b[a-z]/g,c=>c.toUpperCase());
+  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'Region not stated').replace(/\b[a-z]/g,c=>c.toUpperCase());
   const readableTitle=p=>window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||p.title||p.employer||'Programme';
   let overlay=null,previousFocus=null;
   const dismiss=()=>{
