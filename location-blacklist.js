@@ -330,7 +330,7 @@
       '<div class="geoChipRow"><div id="geoAreaChips" class="geoAreaChips" aria-label="Saved excluded areas"></div><button class="btn geoViewExcluded" type="button" data-geo-open>See all excluded programmes <span data-geo-count></span></button></div>'+
       '<p class="geoAccuracyNote">Only exact, verified training-site postcode matches are excluded. Unverified locations remain visible.</p>'+
       '<button type="button" class="geoRetry" id="geoRetry">Retry verification</button>';
-    legacyLike?.after(likesPane);original?.after(pane);
+    legacyLike?.after(likesPane);original?.after(pane);saveBtn.hidden=true;saveBtn.setAttribute('aria-hidden','true');
     const bindLocationSearch=(mode)=>{
       const like=mode==='like',input=byId(like?'geoLikeSearch':'geoAreaSearch'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions'),add=byId(like?'geoAddLike':'geoAddArea');
       input?.addEventListener('input',()=>{clearTimeout(searchTimers[mode]);list.replaceChildren();selected[mode]=null;add.disabled=true;searchTimers[mode]=setTimeout(()=>searchLocations(input.value,mode),260);});
