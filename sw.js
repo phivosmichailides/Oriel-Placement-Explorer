@@ -1,14 +1,14 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v56-logo';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v57-headerlogo';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'atlas-navigation.js?v=20261110footer1','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
+  'atlas-navigation.js?v=20261111logo1','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
   'atlas-interactions.js?v=20261110reset1','atlas-interactions.css?v=20261110ux1','atlas-footer.css?v=20261110footer1',
   'premium-discovery-preview.js?v=20261111titles1','premium-discovery-preview.css?v=20261111makeover5',
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
   'placement-refinements.css?v=20261111mobile2','placement-profile.css?v=20261111profile1',
-  'placement-makeover.css?v=20261111cards2','placement-mobile-navigation.js?v=20261111mobile2',
+  'placement-makeover.css?v=20261111cards2','placement-mobile-navigation.js?v=20261111mobile3',
   'placement-profile.js?v=20261111profile1','placement-titles.js?v=20261111titles2',
   'placement-atlas-globe.svg','placement-atlas-compass-pin.webp?v=20261111logo1','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
   'supabase-cloud.js?v=20261111profile1','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
