@@ -70,6 +70,8 @@
      if(key==='tinderMode'||/swipe mode|tinder mode/.test(raw))label='Swipe Mode';
      if(!label)return;
      const inferredKey=label==='Oriel Simulation'?'simulator':label==='Swipe Mode'?'tinderMode':key;
+     // Only the canonical tab IDs may own these two labels.
+     if((label==='Oriel Simulation'&&key&&key!=='simulator')||(label==='Swipe Mode'&&key&&key!=='tinderMode')){tab.remove();return;}
      // A legacy label-only button must never displace the working data-tab button.
      if(!key&&keyed.has(inferredKey)){tab.remove();return;}
      if((key&&seenKeys.has(key))||seenLabels.has(label.toLowerCase())){tab.remove();return;}
