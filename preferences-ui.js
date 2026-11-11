@@ -9,7 +9,7 @@
    if(!host.querySelector('.weightGuide')&&host.querySelector('.weight')){
      const guide=document.createElement('p');
      guide.className='weightGuide';
-     guide.textContent='Fine-tune how strongly each factor affects your matches.';
+     guide.textContent='Your setup answers set the main direction. These sliders make small adjustments to how strongly each factor is considered.';
      host.prepend(guide);
    }
    for(const row of host.querySelectorAll('.weight')){
