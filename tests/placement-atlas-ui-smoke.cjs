@@ -191,7 +191,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.waitForFunction(()=>document.querySelector('.onboardOverlay .onboardStepLabel')?.textContent?.includes('3 of 5'),null,{timeout:5000});
   await assertQuizFits('Priorities step');
   await page.locator('.onboardChoice').first().click();
-  assert((await page.locator('.onboardStepLabel').innerText()).includes('3 of 5'),'Multi-select step should wait for Continue');
+  assert((await page.locator('.onboardOverlay .onboardStepLabel').textContent()).includes('3 of 5'),'Multi-select step should wait for Continue');
   assert(await page.locator('#obNext').isVisible(),'Priorities step needs a visible Continue action');
   await page.locator('#obNext').click();
   await page.waitForFunction(()=>document.querySelector('.onboardOverlay .onboardStepLabel')?.textContent?.includes('4 of 5'),null,{timeout:5000});
