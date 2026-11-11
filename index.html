@@ -62,9 +62,9 @@
   var systemDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme=saved==='dark'||(saved!=='light'&&systemDark)?'dark':'light';
   document.documentElement.setAttribute('data-theme',theme);
-  var palette='forest', layout='list';
-  try{palette=localStorage.getItem('oriel-desk-palette-v1')||'forest';layout=localStorage.getItem('oriel-desk-layout-v1')||'list'}catch(e){}
-  if(!/^(forest|copper|mauve|amber|cocoa|mono)$/.test(palette))palette='forest';
+  var palette='mono', layout='list';
+  try{palette=localStorage.getItem('oriel-desk-palette-v1')||'mono';layout=localStorage.getItem('oriel-desk-layout-v1')||'list'}catch(e){}
+  if(!/^(forest|copper|mauve|amber|cocoa|mono)$/.test(palette))palette='mono';
   document.documentElement.setAttribute('data-palette',palette);
   document.documentElement.setAttribute('data-layout',layout==='grid'?'grid':'list');
   document.querySelector('meta[name="theme-color"]').setAttribute('content',theme==='dark'?'#1b171b':'#f7f6f2');
@@ -288,12 +288,12 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
   <p class="muted">Choose a colour theme for the whole interface. Map pin colours can be adjusted separately.</p>
   <div class="uxThemeRow"><span>Brightness</span><div class="uxLayoutControls" role="group" aria-label="Appearance brightness"><button class="btn" type="button" data-ux-brightness="light" aria-pressed="false"> Light</button><button class="btn" type="button" data-ux-brightness="dark" aria-pressed="false">Dark</button></div></div>
   <div class="uxPaletteOptions" id="uxPaletteOptions" role="group" aria-label="Colour theme">
-    <button type="button" class="uxPaletteOption" data-ux-palette="forest" aria-pressed="true"><span class="uxPaletteSwatches"><i style="--swatch:#536d58"></i><i style="--swatch:#dccdba"></i><i style="--swatch:#2a332c"></i></span><b>Forest</b><small>sage · cream · charcoal</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="forest" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#536d58"></i><i style="--swatch:#dccdba"></i><i style="--swatch:#2a332c"></i></span><b>Forest</b><small>sage · cream · charcoal</small></button>
     <button type="button" class="uxPaletteOption" data-ux-palette="copper" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#3f6589"></i><i style="--swatch:#b3d7de"></i><i style="--swatch:#1e2d40"></i></span><b>Blue</b><small>steel · sky · midnight</small></button>
     <button type="button" class="uxPaletteOption" data-ux-palette="mauve" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#875f85"></i><i style="--swatch:#d5bccc"></i><i style="--swatch:#312436"></i></span><b>Violet</b><small>plum · dusty rose</small></button>
     <button type="button" class="uxPaletteOption" data-ux-palette="amber" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#b67c45"></i><i style="--swatch:#edd7bc"></i><i style="--swatch:#3f3228"></i></span><b>Amber</b><small>clay · ochre · sand</small></button>
     <button type="button" class="uxPaletteOption" data-ux-palette="cocoa" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#77584c"></i><i style="--swatch:#c9ac94"></i><i style="--swatch:#34271f"></i></span><b>Brown</b><small>espresso · cream</small></button>
-    <button type="button" class="uxPaletteOption" data-ux-palette="mono" aria-pressed="false"><span class="uxPaletteSwatches"><i style="--swatch:#282a2c"></i><i style="--swatch:#93999d"></i><i style="--swatch:#f1f2f1"></i></span><b>Monochrome</b><small>black · white · graphite</small></button>
+    <button type="button" class="uxPaletteOption" data-ux-palette="mono" aria-pressed="true"><span class="uxPaletteSwatches"><i style="--swatch:#282a2c"></i><i style="--swatch:#93999d"></i><i style="--swatch:#f1f2f1"></i></span><b>Monochrome</b><small>black · white · graphite</small></button>
   </div>
 </div><div class="settingsCard card"><div class="eyebrow">RESET</div><h2> Start fresh</h2><p class="muted">Clears your ratings, notes and uploaded CSV on this browser only.</p><button class="btn danger" id="clearData">Clear local data</button></div></div></section>
 </div>
