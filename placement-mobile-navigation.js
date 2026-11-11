@@ -58,7 +58,7 @@
  };
  const tidyTabs=()=>{
    const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',prefs:'Preferences'};
-   const normalise=value=>String(value||'').replace(/\\s+/g,' ').trim().toLowerCase();
+   const normalise=value=>String(value||'').replace(/\s+/g,' ').trim().toLowerCase();
    const tabs=[...nav.querySelectorAll(':scope > .tab')];
    const keyed=new Set(tabs.map(tab=>tab.dataset.tab).filter(Boolean));
    const seenKeys=new Set(),seenLabels=new Set();
