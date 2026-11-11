@@ -94,7 +94,7 @@
     const missing=hasAnyArea?allPC().filter(pc=>!has(pc)).length:0;
     if(!areas().length&&!likedAreas().length)status.textContent='Add an area to check listed training sites.';
     else if(scanning)status.textContent='Checking site postcodes · '+scanned+' / '+total+'.';
-    else if(missing)status.textContent=missing+' postcodes are not verified. Affected programmes remain visible in Explore and appear in Needs review; use Retry verification.';
+    else if(missing)status.textContent=missing+' postcodes need verification. Affected programmes remain visible.';
     else status.textContent='Site checks complete. Only exact verified matches are excluded.';
   };
   const scan=async()=>{
