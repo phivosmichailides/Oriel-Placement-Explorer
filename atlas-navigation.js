@@ -24,7 +24,7 @@
   const logo=header.querySelector('.brand .logo');
   if(logo){
     const mark=document.createElement('img');
-    mark.src='placement-atlas-compass-pin.webp?v=20261111logo1';
+    mark.src='placement-atlas-compass-pin.webp?v=20261111logo2';
     mark.alt='';
     mark.setAttribute('aria-hidden','true');
     mark.width=512;mark.height=512;mark.decoding='async';
