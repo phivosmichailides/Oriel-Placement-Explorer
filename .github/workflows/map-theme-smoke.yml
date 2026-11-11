@@ -1,7 +1,7 @@
 name: Placement Atlas map and theme smoke
 on:
   push:
-    branches: [main]
+    branches: [main, release/atlas-restoration-tested-20261111]
     paths:
       - 'index.html'
       - '*.js'
@@ -87,7 +87,7 @@ jobs:
           retention-days: 7
 
   deployed-smoke:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: chromium-smoke
     name: Verify deployed Placement Atlas
     runs-on: ubuntu-24.04
