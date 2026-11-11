@@ -147,6 +147,7 @@
       fitbox.append(quiz);
     }
     if(facts.length)summary.append(signals);
+    else summary.classList.add('atlasNoQuickFacts');
     summary.append(fitbox);
     row?.insertAdjacentElement('afterend',summary);
 
