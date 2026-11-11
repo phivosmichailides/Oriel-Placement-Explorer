@@ -191,15 +191,49 @@
         card.querySelector('#obSkip').onclick=close;
 
         if(step===0){
-          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.region=b.dataset.value;render()});
-          const home=card.querySelector('#obHomePostcode');
-          if(home){home.value=answers.homePostcode||'';home.addEventListener('input',()=>{answers.homePostcode=home.value;const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='';});}
+          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{
+            answers.region=b.dataset.value;regionChosen=true;step++;render();
+          });
           card.querySelector('#obBackIntro').onclick=()=>{step=-1;render()};
         }
-        if(step===1){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.environment=b.dataset.value;render()});}
-        if(step===2){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{const v=b.dataset.value;const i=answers.priorities.indexOf(v);if(i>=0)answers.priorities.splice(i,1);else if(answers.priorities.length<3)answers.priorities.push(v);else{const er=card.querySelector('#obError');if(er)er.textContent='Pick up to three — you can still adjust every weight later.';return;}render()});}
-        if(step===3){const sal=card.querySelector('#obSalary'),hrs=card.querySelector('#obHours');sal.value=answers.salary;hrs.value=answers.hours;sal.onchange=()=>answers.salary=sal.value;hrs.onchange=()=>answers.hours=hrs.value;}
-        if(step===4){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.community=b.dataset.value;render()});}
+        if(step===1){
+          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{
+            answers.environment=b.dataset.value;step++;render();
+          });
+        }
+        if(step===2){
+          const count=card.querySelector('#obPriorityCount'),next=card.querySelector('#obNext'),error=card.querySelector('#obError');
+          const sync=()=>{
+            card.querySelectorAll('.onboardChoice').forEach(button=>{
+              const selected=answers.priorities.includes(button.dataset.value);
+              button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));
+            });
+            if(count)count.textContent=answers.priorities.length+' of 3 selected';
+            if(next)next.disabled=answers.priorities.length===0;
+            if(error)error.textContent='';
+          };
+          card.querySelectorAll('.onboardChoice').forEach(button=>button.onclick=()=>{
+            const value=button.dataset.value,index=answers.priorities.indexOf(value);
+            if(index>=0)answers.priorities.splice(index,1);
+            else if(answers.priorities.length<3)answers.priorities.push(value);
+            else{if(error)error.textContent='You can choose up to three.';return;}
+            sync();
+          });
+          sync();
+        }
+        if(step===3){
+          const sal=card.querySelector('#obSalary'),hrs=card.querySelector('#obHours'),home=card.querySelector('#obHomePostcode');
+          if(sal){sal.value=answers.salary;sal.onchange=()=>answers.salary=sal.value;}
+          if(hrs){hrs.value=answers.hours;hrs.onchange=()=>answers.hours=hrs.value;}
+          if(home){home.value=answers.homePostcode||'';home.addEventListener('input',()=>{
+            answers.homePostcode=home.value;const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='';
+          });}
+        }
+        if(step===4){
+          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{
+            answers.community=b.dataset.value;step++;render();
+          });
+        }
         if(step===5){
           card.querySelectorAll('[data-ob-palette]').forEach(button=>button.addEventListener('click',()=>{
             answers.palette=button.dataset.obPalette;applyAppearance();render();
@@ -211,10 +245,11 @@
         }
         if(card.querySelector('#obBack'))card.querySelector('#obBack').onclick=()=>{step--;render()};
         if(card.querySelector('#obNext'))card.querySelector('#obNext').onclick=()=>{
-          if(step===0&&String(answers.homePostcode||'').trim()&&!window.OrielCommuteProfile?.isValid?.(answers.homePostcode)){
-            const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='Enter a UK postcode or area/station name, for example E16 1RB or Canning Town, or leave it blank.';return;
+          if(step===2&&!answers.priorities.length){const error=card.querySelector('#obError');if(error)error.textContent='Choose at least one priority to continue.';return;}
+          if(step===3&&String(answers.homePostcode||'').trim()&&!window.OrielCommuteProfile?.isValid?.(answers.homePostcode)){
+            const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='Enter a UK postcode or area/station name, or leave it blank.';return;
           }
-          if(step===0&&answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.normalise?.(answers.homePostcode)||answers.homePostcode.trim();
+          if(step===3&&answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.normalise?.(answers.homePostcode)||answers.homePostcode.trim();
           document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_step_completed',step:step+1}}));step++;render();
         };
         if(final)card.querySelector('#obFinish').onclick=()=>finish();
