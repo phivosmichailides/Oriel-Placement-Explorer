@@ -325,6 +325,18 @@ html.atlasPremiumPreview #results .placement.atlasDiscoveryCard .hourly{
 }
 html.atlasPremiumPreview #results .placement .atlasTitleOriginal{display:none}
 html.atlasPremiumPreview #results .placement h3.uxTitleExpanded .atlasTitleOriginal{display:inline}
+html.atlasPremiumPreview #results .placement .atlasTitleExpand{
+  display:inline-flex;align-items:center;vertical-align:baseline;
+  margin:0 0 0 7px!important;padding:1px 0!important;
+  border:0!important;background:transparent!important;
+  color:var(--ux-accent-ink)!important;
+  font:650 10.5px/1.35 inherit!important;
+  text-decoration:underline;text-underline-offset:2px;
+  cursor:pointer;white-space:nowrap;
+}
+html.atlasPremiumPreview #results .placement .atlasTitleExpand:focus-visible{
+  outline:2px solid var(--ux-accent)!important;outline-offset:3px;border-radius:3px;
+}
 html.atlasPremiumPreview #results .placement h3.uxTitleExpanded .atlasTitleConcise{display:none}
 html.atlasPremiumPreview #results .placement .atlasCompactSummary{
   display:flex;align-items:center;flex-wrap:wrap;gap:7px!important;
