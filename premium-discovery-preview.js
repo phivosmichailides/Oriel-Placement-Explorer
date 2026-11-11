@@ -17,7 +17,7 @@
     // Keep the unmodified source title separately for "Full name". This
     // function is presentation-only and never modifies Oriel identifiers.
     const raw=String(title||'').trim();
-    let value=raw.replace(/\s+/g,' ').replace(/\s*\+\s*/g,' + ');
+    let value=raw.replace(/\s+/g,' ').replace(/\s*&\s*/g,' & ').replace(/\s*\+\s*/g,' + ');
     const parts=value.split('/').map(x=>x.trim()).filter(Boolean);
     const postcode=/\b(?:GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})\b/i;
     if(parts.length>1){
@@ -45,6 +45,7 @@
       .replace(/\bPrac\b(?=\s|$|[+&])/gi,'Practice')
       .replace(/\bGen\s*Prac\b/gi,'General Practice')
       .replace(/\bPharm\b(?=\s|$|[+&])/gi,'Pharmacy')
+      .replace(/\s*&\s*/g,' & ')
       .replace(/\s*\+\s*/g,' + ')
       .replace(/\s*\/\s*/g,' / ')
       .replace(/\s{2,}/g,' ')
@@ -286,11 +287,11 @@
     quick.classList.add('atlasQuickFilters');
     const toggleQuick=document.createElement('button');
     toggleQuick.type='button';toggleQuick.className='atlasQuickMore';
-    toggleQuick.textContent='More quick filters';
+    toggleQuick.textContent='More filters';
     toggleQuick.setAttribute('aria-expanded','false');
     toggleQuick.addEventListener('click',()=>{
       const expanded=quick.classList.toggle('atlasQuickExpanded');
-      toggleQuick.textContent=expanded?'Fewer quick filters':'More quick filters';
+      toggleQuick.textContent=expanded?'Fewer filters':'More filters';
       toggleQuick.setAttribute('aria-expanded',String(expanded));
     });
     quick.insertAdjacentElement('afterend',toggleQuick);
