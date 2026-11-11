@@ -28,6 +28,8 @@
     mark.alt='';
     mark.setAttribute('aria-hidden','true');
     mark.width=512;mark.height=512;mark.decoding='async';
+    mark.style.cssText='display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center;visibility:visible;opacity:1';
+    logo.style.cssText='display:grid;place-items:center;flex:none;width:47px;height:47px;min-width:47px;background:none;border:0;box-shadow:none;overflow:visible';
     logo.replaceChildren(mark);
   }
 
