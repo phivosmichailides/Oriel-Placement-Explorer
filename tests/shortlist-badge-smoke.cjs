@@ -45,6 +45,8 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await waitForCount(page,'(1)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(1)',
     'Bottom-right shortlist count did not update after adding a programme');
+  const historyDisclosure=page.locator('.panel.active .historyControls .atlasHistoryDisclosure');
+  await historyDisclosure.locator('summary').click();
   await page.locator('#undoDesk').click();
   await waitForCount(page,'(0)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(0)',
@@ -60,7 +62,11 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await page.locator('nav.tabs [data-tab="shortlist"]').click();
   const desktopRemove=page.locator('#shortlistList .rank-row [data-atlas-remove-shortlist]').first();
   await desktopRemove.waitFor({state:'visible',timeout:15000});
-  assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'1','Desktop shortlist X should remain visible');
+  assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'0',
+    'Desktop remove control should stay quiet until the card is hovered');
+  await desktopRemove.locator('xpath=..').hover();
+  assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'1',
+    'Desktop remove control should appear on hover');
   await desktopRemove.click();
   await waitForCount(page,'(0)');
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
