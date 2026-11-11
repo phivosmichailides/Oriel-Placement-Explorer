@@ -79,7 +79,17 @@
 
 
     const loadAnswers=()=>{
-      try{if(localStorage.getItem(DONE_KEY)!=='1')return null;return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null}catch{return null}
+      try{
+        const local=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
+        const cloud=typeof state!=='undefined'?state.prefs?.onboarding:null;
+        const profile=local||cloud;
+        if(!profile)return null;
+        const completed=localStorage.getItem(DONE_KEY)==='1'||!!cloud;
+        const priorities=Array.isArray(profile.priorities)?profile.priorities:[];
+        const neutralSeed=!profile.region&&['','unsure'].includes(profile.environment||'')&&
+          !priorities.length&&!profile.salary&&!profile.hours&&['','some'].includes(profile.community||'')&&!profile.homePostcode;
+        return !completed&&neutralSeed?null:profile;
+      }catch{return null}
     };
 
     const paletteValues=['forest','copper','mauve','amber','cocoa','mono'];
