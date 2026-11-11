@@ -68,13 +68,15 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    const host=document.getElementById('placementMap'),credit=host.querySelector('.leaflet-control-attribution, .maplibregl-ctrl-attrib');
    const layer=typeof placementMap!=='undefined'&&placementMap?placementMap._orielBasemapRecord?.layer:null;
    return {provider:host.dataset.basemap||'',tileCount:host.querySelectorAll('.leaflet-tile-loaded').length,
-    canvasCount:host.querySelectorAll('canvas').length,credit:credit?.innerText||'',
+    canvasCount:host.querySelectorAll('canvas').length,credit:credit?.innerText||'',creditHtml:credit?.innerHTML||'',
     creditFont:credit?getComputedStyle(credit).fontSize:null,
+    tileFilter:getComputedStyle(host.querySelector('.leaflet-tile-pane')||host).filter,
     keepBuffer:layer?.options?.keepBuffer,updateWhenZooming:layer?.options?.updateWhenZooming};
   });
   assert(mapInfo.provider||mapInfo.canvasCount||mapInfo.tileCount,'Map renderer did not initialise');
-  assert(mapInfo.credit.includes('OpenStreetMap'),'OpenStreetMap attribution is missing');
+  assert(mapInfo.credit.includes('OpenStreetMap')||mapInfo.creditHtml.includes('openstreetmap.org'),'OpenStreetMap attribution is missing');
   assert(parseFloat(mapInfo.creditFont)<=9,'Map attribution is still visually oversized: '+mapInfo.creditFont);
+  if(mapInfo.provider==='raster-fallback')assert(mapInfo.tileFilter!=='none','The actual raster fallback is not receiving the muted editorial colour treatment');
   if(mapInfo.keepBuffer!==undefined)assert(mapInfo.keepBuffer>=6&&mapInfo.updateWhenZooming===false,
     'Main raster fallback should retain tiles during zoom: '+JSON.stringify(mapInfo));
   await page.locator('#placementMap').screenshot({path:output+'/placement-atlas-map.png'});
@@ -98,7 +100,18 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const navLabels=await page.locator('header.top nav.tabs > .tab .atlasTabLabel').allInnerTexts();
   assert.equal(navLabels.filter(x=>x==='Oriel Simulation').length,1,'Oriel Simulation should appear once');
   assert.equal(navLabels.filter(x=>x==='Swipe Mode').length,1,'Swipe Mode should appear once');
+  assert.equal(navLabels.filter(x=>x==='Tinder Mode').length,0,'Legacy Tinder Mode label must not remain');
   assert.equal(navLabels.at(-1),'Preferences','Preferences must remain the final navigation item');
+  await page.setViewportSize({width:1090,height:960});
+  const headerMetrics=await page.locator('.atlasStickyHeader').evaluate(el=>{
+   const box=node=>{const r=node.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width}};
+   const brand=el.querySelector('.brand'),utility=el.querySelector('.atlasHeaderUtilities'),nav=el.querySelector('nav.tabs');
+   return {brand:box(brand),utility:box(utility),nav:box(nav),navScrollWidth:nav.scrollWidth,navClientWidth:nav.clientWidth};
+  });
+  assert(headerMetrics.brand.right<=headerMetrics.utility.left+2,'Brand and utility controls overlap: '+JSON.stringify(headerMetrics));
+  assert(headerMetrics.utility.right<=headerMetrics.nav.left+2,'Utility controls and navigation overlap: '+JSON.stringify(headerMetrics));
+  assert(headerMetrics.navScrollWidth<=headerMetrics.navClientWidth+2,'Navigation labels do not fit the 1090px desktop banner: '+JSON.stringify(headerMetrics));
+  await page.setViewportSize({width:1440,height:960});
   await page.locator('header.top nav.tabs [data-tab=learn]').click();
   await page.waitForFunction(()=>document.getElementById('learn')?.classList.contains('active'),null,{timeout:12000});
   assert(await page.locator('#atlasLearnSettings').isVisible(),'Learning library settings guide did not open');
@@ -118,7 +131,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal(await page.locator('#simulator .simColHelp').count(),3,'Simulation column explanations are missing');
   assert((await page.locator('#simulator').innerText()).includes('You could accept a programme'));
 
-  // Swipe Mode: default filters are empty; active filters remain visible when collapsed.
+  // Swipe Mode: London is counted as the initial location filter; other filters are optional.
   await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderMode')?.classList.contains('active')&&
     !!document.querySelector('#tinderCardSlot .tdCard'),null,{timeout:30000});
