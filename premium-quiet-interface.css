@@ -275,3 +275,35 @@ html.atlasPremiumPreview .uxDrawerLauncher:hover{
   background:var(--soft)!important;
   border-color:var(--ux-accent-border)!important;
 }
+
+/* Preferences are grouped by topic, not wrapped in a stack of identical cards. */
+html.atlasPremiumPreview #prefs .settings{
+  column-gap:30px!important;
+  row-gap:16px!important;
+}
+html.atlasPremiumPreview #prefs .settingsCard.card{
+  min-width:0;
+  padding:14px 0 18px!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid var(--line)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html.atlasPremiumPreview #prefs .settingsCard h2{
+  margin:3px 0 6px!important;
+  font-size:18px!important;
+}
+html.atlasPremiumPreview #prefs .settingsCard>p{
+  margin:5px 0 11px!important;
+  color:var(--mut)!important;
+  font-size:12.5px!important;
+  line-height:1.5!important;
+}
+html.atlasPremiumPreview #prefs .settingsCard.uxAppearanceSettings{
+  grid-column:1/-1;
+}
+@media(max-width:760px){
+  html.atlasPremiumPreview #prefs .settings{grid-template-columns:1fr!important;row-gap:8px!important}
+  html.atlasPremiumPreview #prefs .settingsCard.uxAppearanceSettings{grid-column:auto}
+}
