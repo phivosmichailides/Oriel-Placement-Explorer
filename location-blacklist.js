@@ -327,7 +327,7 @@
     pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Areas to exclude</label>'+
       '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoAreaSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search a town, borough or area…" aria-label="Search UK locations to exclude"><button class="btn primary" id="geoAddArea" type="button" disabled>Exclude area</button></div><div id="geoAreaSuggestions" class="geoSuggestions" role="group" aria-label="Location suggestions"></div></div>'+
       '<p id="geoBlacklistStatus" class="geoBlacklistStatus" role="status"></p>'+
-      '<div class="geoChipRow"><div id="geoAreaChips" class="geoAreaChips" aria-label="Saved excluded areas"></div><button class="btn geoViewExcluded" type="button" data-geo-open>See all excluded programmes <span data-geo-count></span></button></div>'+
+      '<div class="geoChipRow"><div id="geoAreaChips" class="geoAreaChips" aria-label="Saved excluded areas"></div><button class="btn geoViewExcluded" type="button" data-geo-open>View excluded <span data-geo-count></span></button></div>'+
       '<p class="geoAccuracyNote">Only exact, verified training-site postcode matches are excluded. Unverified locations remain visible.</p>'+
       '<button type="button" class="geoRetry" id="geoRetry">Retry verification</button>';
     legacyLike?.after(likesPane);original?.after(pane);saveBtn.hidden=true;saveBtn.setAttribute('aria-hidden','true');
