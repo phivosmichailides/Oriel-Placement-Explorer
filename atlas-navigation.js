@@ -3,22 +3,24 @@
 (()=>{
   const root=document.querySelector('.shell');
   const header=root?.querySelector(':scope > header.top');
-  const headerActions=header?.querySelector('.actions');
-  const nav=root?.querySelector('nav.tabs');
+  const headerActions=header?.querySelector('.actions')||root?.querySelector('#atlasHeaderTools .actions');
+  const nav=header?.querySelector('nav.tabs')||root?.querySelector('nav.tabs');
   const footer=document.querySelector('.app-footer');
   if(!root||!header||!headerActions||!nav||!footer)return;
 
-  // Reuse the original SVG navigation, button IDs, account and theme controls.
-  // The existing switchTab/session handlers remain authoritative.
+  // Accept both the original sibling layout and the unified brand-banner
+  // layout. Reuse the same tab buttons and their existing event handlers.
   header.classList.add('atlasStickyHeader');
   nav.setAttribute('aria-label','Placement Atlas main navigation');
-  header.insertBefore(nav,headerActions);
-  // Account, theme and the recruitment deadline are below the sticky banner.
-  const headerTools=document.createElement('div');
-  headerTools.id='atlasHeaderTools';
-  headerTools.className='atlasHeaderTools';
-  headerTools.append(headerActions);
-  header.insertAdjacentElement('afterend',headerTools);
+  if(nav.parentNode!==header)header.insertBefore(nav,headerActions.parentNode===header?headerActions:null);
+  let headerTools=root.querySelector('#atlasHeaderTools');
+  if(!headerTools){
+    headerTools=document.createElement('div');
+    headerTools.id='atlasHeaderTools';
+    headerTools.className='atlasHeaderTools';
+  }
+  if(headerActions.parentNode!==headerTools)headerTools.append(headerActions);
+  if(headerTools.parentNode!==root)header.insertAdjacentElement('afterend',headerTools);
   // Use the Placement Atlas compass-pin mark in the main header.
   // The simpler globe remains the browser-tab favicon.
   const logo=header.querySelector('.brand .logo');
@@ -117,13 +119,19 @@
   // Add convenient shortcuts without replacing the existing ranked CSV export.
   const shortlistBar=document.querySelector('#shortlist .shortlist-toolbar');
   if(shortlistBar){
-    const shortcuts=document.createElement('div');
-    shortcuts.className='atlasShortlistDataActions';
+    const disclosure=document.createElement('details');
+    disclosure.className='atlasShortlistMore';
+    const summary=document.createElement('summary');summary.textContent='More';
+    const menu=document.createElement('div');menu.className='atlasShortlistMoreMenu';
+    const shortcuts=document.createElement('div');shortcuts.className='atlasShortlistDataActions';
     shortcuts.innerHTML='<button class="btn" type="button" id="atlasShortlistExportDecisions">Export decisions</button>'+
       '<button class="btn" type="button" id="atlasShortlistBackup">Backup</button>';
     shortcuts.querySelector('#atlasShortlistExportDecisions').addEventListener('click',()=>document.getElementById('exportBtn')?.click());
     shortcuts.querySelector('#atlasShortlistBackup').addEventListener('click',()=>document.getElementById('backupBtn')?.click());
-    shortlistBar.append(shortcuts);
+    shortcuts.addEventListener('click',event=>{if(event.target.closest('button'))disclosure.open=false;});
+    const order=shortlistBar.querySelector('.shortlistViewOrder');
+    if(order){order.title='Change display order without changing saved ranks';menu.append(order);}
+    menu.append(shortcuts);disclosure.append(summary,menu);shortlistBar.append(disclosure);
   }
 
   // Keep exactly one undo/redo toolbar, repositioned inside each active page.

@@ -1,11 +1,19 @@
-/* Calm editorial colour treatment for the actual MapTiler Streets raster.
-   Unlike a fallback filter, this applies in normal "Streets Light" and
-   Automatic mode. It affects tile imagery only, never pins or map behaviour. */
+/* Calm the actual MapTiler raster fallback as well as the named Editorial
+   state. The filter affects tile imagery only: pins, clusters, controls and
+   map interaction remain untouched. */
 html #placementMap[data-basemap="streets-editorial-light"] .leaflet-tile-pane,
-html .uxMiniMap[data-basemap="streets-editorial-light"] .leaflet-tile-pane{
-  filter:saturate(.45) contrast(.975) brightness(1.025)!important;
+html #placementMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html #placementMap[data-basemap="raster-standard-fallback"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="streets-editorial-light"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html .uxMiniMap[data-basemap="raster-standard-fallback"] .leaflet-tile-pane{
+  filter:saturate(.46) sepia(.045) contrast(.975) brightness(1.025) hue-rotate(-3deg)!important;
 }
-html #placementMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane,
-html .uxMiniMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane{
-  filter:saturate(.62) contrast(.96) brightness(.81)!important;
+html[data-theme="dark"] #placementMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane,
+html[data-theme="dark"] #placementMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html[data-theme="dark"] #placementMap[data-basemap="raster-standard-fallback"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap="streets-editorial-dark"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap="raster-fallback"] .leaflet-tile-pane,
+html[data-theme="dark"] .uxMiniMap[data-basemap="raster-standard-fallback"] .leaflet-tile-pane{
+  filter:saturate(.58) contrast(.96) brightness(.84)!important;
 }
