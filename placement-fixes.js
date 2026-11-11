@@ -34,4 +34,27 @@
    document.addEventListener('desk:after-navigation',event=>{if(event.detail?.to==='shortlist')schedule()});
    schedule();
  }
+
+ const removeMiniMapClose=()=>{
+   const roots=document.querySelectorAll(
+     '#results .placement .uxLocationPanel,#results .placement .uxMiniMap,'+
+     '#results .placement .miniMap,#results .placement .mini-map,'+
+     '#results .placement .leaflet-container'
+   );
+   roots.forEach(root=>{
+     root.querySelectorAll('button,a,[role="button"]').forEach(control=>{
+       const label=(control.getAttribute('aria-label')||'')+' '+(control.getAttribute('title')||'');
+       const classes=String(control.className||'');
+       const text=String(control.textContent||'').trim();
+       if(/close/i.test(label)||/popup-close-button|map-close|close-map/i.test(classes)||
+          ['×','x','✕','✖'].includes(text.toLowerCase()))control.remove();
+     });
+   });
+ };
+ const results=document.getElementById('results');
+ if(results){
+   removeMiniMapClose();
+   new MutationObserver(()=>requestAnimationFrame(removeMiniMapClose))
+     .observe(results,{childList:true,subtree:true});
+ }
 })();
