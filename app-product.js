@@ -370,7 +370,7 @@
       const region=activeRegion();
       const arr=placements.filter(p=>!window.OrielSpecialist?.filterOut(p)&&(window.deskWithinRadius?.(p)!==false)&&(!region||p.region===region)&&(!$('salary').value||p.salary>=Number($('salary').value))&&(!$('hours').value||(p.hours&&p.hours<=Number($('hours').value)))&&!window.OrielGeoBlacklist?.shouldHide(p)&&!isExcluded(p)&&(!$('hideShortlisted')?.checked||!SHORT.has(mark(p).status))&&(!($('hideOuterLondon')?.checked&&region==='London')||!window.OrielAreaRules?.isOuterTown(p))&&visaMatches(p)).map(p=>({p,a:analyse(p)})).sort((x,y)=>y.a.score-x.a.score||y.p.salary-x.p.salary).slice(0,18);
       const title=document.querySelector('#foryou .sectionHero h2');
-      if(title)title.textContent=state.prefs.onboarding?`✨ Your strongest matches${region?' · '+region:' · England & Wales'}`:'✨ Explore possibilities · personalise to see your matches';
+      if(title)title.textContent=state.prefs.onboarding?`Your strongest matches${region?' · '+region:' · England & Wales'}`:'Explore possibilities · personalise to see your matches';
       if(!state.prefs.onboarding){
         $('reco').innerHTML='<div class="card empty"><h3>Make these recommendations yours</h3><p>Complete the short quiz to unlock personalised fit scores and recommendations based on what you value.</p><button type="button" class="btn primary" data-atlas-start-quiz>Personalise my matches</button></div>';
         return;
