@@ -372,6 +372,7 @@ fs.mkdirSync(output,{recursive:true});
   assert(await x.count()>0,'Shortlist remove action missing');
   const row=x.first().locator('xpath=..');
   await row.hover();
+  await page.waitForFunction(id=>{const el=document.querySelector('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');return el&&getComputedStyle(el).opacity==='1';},id,{timeout:2000});
   assert.equal(await x.first().evaluate(el=>getComputedStyle(el).opacity),'1',
     'Remove action should appear only when its card is hovered');
   await x.first().click();
