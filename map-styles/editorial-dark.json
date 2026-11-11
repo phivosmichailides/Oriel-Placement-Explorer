@@ -880,7 +880,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-dasharray": [
           1,
           1.5
@@ -951,7 +951,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-width": [
           "interpolate",
           [
@@ -1029,7 +1029,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-width": [
           "interpolate",
           [
@@ -1097,7 +1097,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-dasharray": [
           1,
           1.5
@@ -1168,7 +1168,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-width": [
           "interpolate",
           [
@@ -1247,7 +1247,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#56818a",
+        "line-color": "#6c8783",
         "line-width": [
           "interpolate",
           [
@@ -1316,7 +1316,7 @@
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": "#294b53",
+        "fill-color": "#294542",
         "fill-opacity": [
           "interpolate",
           [
@@ -1371,7 +1371,7 @@
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": "#304f55",
+        "fill-color": "#304d48",
         "fill-opacity": [
           "interpolate",
           [
@@ -1434,7 +1434,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": "#37636b"
+        "fill-color": "#3b5d57"
       },
       "filter": [
         "all",
@@ -1770,8 +1770,8 @@
             "trunk",
             "primary"
           ],
-          "hsl(28,72%,69%)",
-          "hsl(40, 6%, 75%)"
+          "#a98f73",
+          "#898f87"
         ],
         "line-opacity": 0.7,
         "line-width": [
@@ -2142,14 +2142,14 @@
               "class"
             ],
             "motorway",
-            "hsl(35, 50%, 80%)",
+            "#c8bba6",
             [
               "trunk",
               "primary",
               "secondary"
             ],
-            "hsl(47, 100%, 70%)",
-            "hsl(0, 0%, 100%)"
+            "#b9ab92",
+            "#b8c0b7"
           ],
           12,
           [
@@ -2159,15 +2159,15 @@
               "class"
             ],
             "motorway",
-            "hsl(35, 50%, 80%)",
+            "#c8bba6",
             [
               "trunk",
               "primary"
             ],
-            "hsl(48, 100%, 78%)",
+            "#c9c0b1",
             "secondary",
-            "hsl(48, 100%, 87%)",
-            "hsl(0, 0%, 100%)"
+            "#d8d2c8",
+            "#b8c0b7"
           ]
         ],
         "line-opacity": 0.7,
@@ -3113,8 +3113,8 @@
             "primary",
             "secondary"
           ],
-          "hsl(28,72%,69%)",
-          "hsl(40, 6%, 75%)"
+          "#a98f73",
+          "#898f87"
         ],
         "line-opacity": [
           "interpolate",
@@ -3542,14 +3542,14 @@
               "class"
             ],
             "motorway",
-            "hsl(35,100%,70%)",
+            "#b3a184",
             [
               "trunk",
               "primary",
               "secondary"
             ],
-            "hsl(47,100%,70%)",
-            "hsl(0,0%,100%)"
+            "#b9ab92",
+            "#b8c0b7"
           ],
           12,
           [
@@ -3559,15 +3559,15 @@
               "class"
             ],
             "motorway",
-            "hsl(35,100%,70%)",
+            "#b3a184",
             [
               "trunk",
               "primary"
             ],
-            "hsl(48,100%,78%)",
+            "#c9c0b1",
             "secondary",
-            "hsl(48, 100%, 87%)",
-            "hsl(0,0%,100%)"
+            "#d8d2c8",
+            "#b8c0b7"
           ]
         ],
         "line-opacity": [
@@ -4024,14 +4024,14 @@
             "class"
           ],
           "motorway",
-          "hsl(0, 0%, 97%)",
+          "#b2bbb2",
           [
             "primary",
             "trunk",
             "secondary"
           ],
-          "hsl(0, 0%, 100%)",
-          "hsl(0, 0%, 80%)"
+          "#b8c0b7",
+          "#87938a"
         ],
         "line-dasharray": [
           2,
@@ -4277,7 +4277,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(30, 24%, 87%)",
+        "line-color": "#a5a99e",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -4520,7 +4520,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(28,72%,69%)",
+        "line-color": "#a98f73",
         "line-opacity": [
           "interpolate",
           [
@@ -4836,7 +4836,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(28, 72%, 69%)",
+        "line-color": "#a98f73",
         "line-opacity": [
           "interpolate",
           [
@@ -5107,7 +5107,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(29, 26%, 65%)",
+        "line-color": "#888d82",
         "line-opacity": [
           "interpolate",
           [
@@ -5495,8 +5495,8 @@
               ]
             ]
           ],
-          "hsl(40, 10%, 95%)",
-          "hsl(0,0%,100%)"
+          "#c8cec5",
+          "#b8c0b7"
         ],
         "line-opacity": 1,
         "line-width": [
@@ -5725,7 +5725,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(29, 25%, 76%)",
+        "line-color": "#a3a89c",
         "line-opacity": [
           "interpolate",
           [
@@ -6034,7 +6034,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(29, 25%, 82%)",
+        "line-color": "#b0b6aa",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -6700,7 +6700,7 @@
       },
       "paint": {
         "line-blur": 0,
-        "line-color": "hsl(0, 0%, 93%)",
+        "line-color": "#c0c8bf",
         "line-opacity": [
           "case",
           [
@@ -7047,10 +7047,10 @@
             "trunk",
             "primary"
           ],
-          "hsl(48,100%,83%)",
+          "#d1c9bc",
           "secondary",
-          "hsl(48, 100%, 87%)",
-          "hsl(0, 0%, 100%)"
+          "#d8d2c8",
+          "#b8c0b7"
         ],
         "line-dasharray": [
           2,
@@ -8064,7 +8064,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(31, 47%, 80%)",
+        "line-color": "#b7a88f",
         "line-opacity": [
           "interpolate",
           [
@@ -9098,7 +9098,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(27, 33%, 77%)",
+        "line-color": "#aeb3a8",
         "line-opacity": [
           "interpolate",
           [
@@ -9355,7 +9355,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(31, 47%, 80%)",
+        "line-color": "#b7a88f",
         "line-opacity": [
           "interpolate",
           [
@@ -10692,8 +10692,8 @@
             "primary",
             "secondary"
           ],
-          "hsl(28,72%,69%)",
-          "hsl(40, 6%, 75%)"
+          "#a98f73",
+          "#898f87"
         ],
         "line-opacity": [
           "interpolate",
@@ -11102,14 +11102,14 @@
               "class"
             ],
             "motorway",
-            "hsl(35,100%,70%)",
+            "#b3a184",
             [
               "trunk",
               "primary",
               "secondary"
             ],
-            "hsl(47,100%,70%)",
-            "hsl(0,0%,100%)"
+            "#b9ab92",
+            "#b8c0b7"
           ],
           12,
           [
@@ -11119,15 +11119,15 @@
               "class"
             ],
             "motorway",
-            "hsl(35,100%,70%)",
+            "#b3a184",
             [
               "trunk",
               "primary"
             ],
-            "hsl(48,100%,78%)",
+            "#c9c0b1",
             "secondary",
-            "hsl(48, 100%, 87%)",
-            "hsl(0,0%,100%)"
+            "#d8d2c8",
+            "#b8c0b7"
           ]
         ],
         "line-opacity": [
@@ -11577,14 +11577,14 @@
             "class"
           ],
           "motorway",
-          "hsl(0, 0%, 97%)",
+          "#b2bbb2",
           [
             "primary",
             "trunk",
             "secondary"
           ],
-          "hsl(0, 0%, 100%)",
-          "hsl(0, 0%, 80%)"
+          "#b8c0b7",
+          "#87938a"
         ],
         "line-dasharray": [
           2,
@@ -11780,7 +11780,7 @@
       },
       "paint": {
         "line-blur": 0,
-        "line-color": "hsl(0, 0%, 94%)",
+        "line-color": "#c7cec5",
         "line-opacity": [
           "case",
           [
@@ -12151,10 +12151,10 @@
             "trunk",
             "primary"
           ],
-          "hsl(48,100%,83%)",
+          "#d1c9bc",
           "secondary",
-          "hsl(48, 100%, 87%)",
-          "hsl(0, 0%, 100%)"
+          "#d8d2c8",
+          "#b8c0b7"
         ],
         "line-dasharray": [
           2,
@@ -12493,8 +12493,8 @@
             ],
             false
           ],
-          "hsl(40, 10%, 95%)",
-          "hsl(0, 0%, 100%)"
+          "#c8cec5",
+          "#b8c0b7"
         ],
         "line-opacity": 1,
         "line-width": [
@@ -12685,8 +12685,8 @@
               false
             ]
           ],
-          "hsl(40, 10%, 95%)",
-          "hsl(0,0%,100%)"
+          "#c8cec5",
+          "#b8c0b7"
         ],
         "line-opacity": 1,
         "line-width": [
@@ -13154,9 +13154,9 @@
             "zoom"
           ],
           6,
-          "hsl(35, 100%, 70%)",
+          "#b3a184",
           7,
-          "hsl(47, 100%, 70%)",
+          "#b9ab92",
           12,
           [
             "match",
@@ -13165,8 +13165,8 @@
               "class"
             ],
             "secondary",
-            "hsl(48, 100%, 87%)",
-            "hsl(48, 100%, 78%)"
+            "#d8d2c8",
+            "#c9c0b1"
           ]
         ],
         "line-opacity": [
@@ -13401,7 +13401,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(35, 100%, 70%)",
+        "line-color": "#b3a184",
         "line-opacity": [
           "interpolate",
           [

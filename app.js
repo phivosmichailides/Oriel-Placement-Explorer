@@ -17,14 +17,14 @@
     };
     const loadOnboarding=()=>{
       const onboarding=document.createElement('script');
-      onboarding.src='onboarding.js?v=20261111setup4';
+      onboarding.src='onboarding.js?v=20261111setup5';
       onboarding.onload=loadDeadlineDates;
       onboarding.onerror=loadDeadlineDates;
       document.body.appendChild(onboarding);
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261111legend4';
+      sectors.src='sector-map.js?v=20261111colours5';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
@@ -37,7 +37,7 @@
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261111fitinsights2';
+    product.src='app-product.js?v=20261111fix4';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');
