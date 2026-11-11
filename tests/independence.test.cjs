@@ -27,9 +27,9 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261110footer1/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261110fitinsights1/);
-  assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
+  assert.match(html,/app\.js\?v=20261111quiet1/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261111notes1/);
+  assert.match(read('app.js'),/generic-public\.js\?v=20261111quiz1/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
@@ -89,9 +89,9 @@ test('primary navigation and footer management use separate, cache-versioned ass
   const html=read('index.html');
   const sw=read('sw.js');
   assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(html,/atlas-navigation\.js\?v=20261110footer1/);
+  assert.match(html,/atlas-navigation\.js\?v=20261111quiet1/);
   assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261110footer1/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261111quiet1/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
 });
@@ -169,7 +169,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261110ux1/);
+  assert.match(sw,/onboarding\.js\?v=20261111quiz1/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,7 +177,7 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261110ux1/);
+  assert.match(app,/onboarding\.js\?v=20261111quiz1/);
 });
 
 
@@ -188,7 +188,7 @@ test('contextual dashboard actions and compact filters are wired to the live app
   assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
   assert.match(sw,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(app,/sector-map\.js\?v=20261110popup1/);
+  assert.match(app,/sector-map\.js\?v=20261111legend1/);
   for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
     assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
   assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
