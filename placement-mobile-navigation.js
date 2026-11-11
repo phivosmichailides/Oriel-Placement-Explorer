@@ -5,6 +5,14 @@
  const header=document.querySelector('.shell > header.top');
  const nav=header?.querySelector('nav.tabs');
  if(!header||!nav)return;
+ const logo=header.querySelector('.brand .logo');
+ if(logo){
+   logo.classList.add('paTransparentLogo');
+   const globe=document.createElement('span');
+   globe.className='atlasBrandGlobe';
+   globe.setAttribute('aria-hidden','true');
+   logo.replaceChildren(globe);
+ }
  const utility=document.createElement('div');utility.className='atlasHeaderUtilities';
  header.append(utility);
  let avatar={url:'',initials:'PA',name:''};
