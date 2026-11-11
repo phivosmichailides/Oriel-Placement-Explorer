@@ -60,7 +60,62 @@
       }
       copy.append(trust);
     }
-    document.querySelector('.productPrinciples')?.setAttribute('aria-hidden','true');
+    // Keep the useful explanation, but let first-time visitors choose when to read it.
+    const principles=document.querySelector('.productPrinciples');
+    if(principles&&!principles.closest('.atlasHowItWorks')){
+      const how=document.createElement('details');
+      how.className='atlasHowItWorks';
+      const heading=document.createElement('summary');
+      heading.textContent='How Placement Atlas helps';
+      principles.removeAttribute('aria-hidden');
+      how.append(heading,principles);
+      copy.append(how);
+    }
+    return true;
+  };
+
+  const enhanceNavigation=()=>{
+    const nav=document.querySelector('nav.tabs');
+    if(!nav)return false;
+    let more=nav.querySelector(':scope > .atlasMoreNav');
+    if(!more){
+      more=document.createElement('details');
+      more.className='atlasMoreNav';
+      const heading=document.createElement('summary');
+      heading.textContent='More';
+      const menu=document.createElement('div');
+      menu.className='atlasMoreMenu';
+      more.append(heading,menu);
+      nav.append(more);
+      more.addEventListener('click',event=>{
+        if(event.target.closest('.atlasMoreMenu .tab')){
+          window.setTimeout(()=>{more.open=false;syncMoreLabel()},0);
+        }
+      });
+    }
+    const menu=more.querySelector('.atlasMoreMenu');
+    const secondary=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>{
+      const label=tab.textContent.replace(/\\s+/g,' ').trim();
+      return tab.dataset.tab==='prefs'||/Oriel Simulation|Tinder Mode/i.test(label);
+    });
+    secondary.forEach(tab=>menu.append(tab));
+    const syncMoreLabel=()=>{
+      const active=menu.querySelector('.tab.active');
+      const label=active?.querySelector('span')?.textContent?.trim();
+      more.querySelector('summary').textContent=active&&label?'More · '+label:'More';
+    };
+    nav.addEventListener('click',()=>window.setTimeout(syncMoreLabel,0));
+    document.addEventListener('desk:after-navigation',syncMoreLabel);
+    syncMoreLabel();
+    if(!more.dataset.observing){
+      more.dataset.observing='1';
+      new MutationObserver(()=>{
+        const late=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>
+          tab.dataset.tab==='prefs'||/Oriel Simulation|Tinder Mode/i.test(tab.textContent));
+        late.forEach(tab=>menu.append(tab));
+        syncMoreLabel();
+      }).observe(nav,{childList:true});
+    }
     return true;
   };
 
@@ -233,12 +288,19 @@
     if(['decision','visa','specialistView','hideAvoid','hideOuterLondon','hideExcluded','hideShortlisted','hideJustice','hideMental','hideOtherSpecialist'].some(k=>{
       const v=current[k];return v===true||(typeof v==='string'&&v&&v!=='all');
     }))details.open=true;
+    const activeAdvanced=[...details.querySelectorAll('input,select,textarea')].some(el=>{
+      if(el.type==='checkbox')return el.checked;
+      if(el.type==='radio')return el.checked;
+      if(el.tagName==='SELECT')return !['','all','fit'].includes(el.value);
+      return Boolean(String(el.value||'').trim());
+    });
+    if(activeAdvanced)details.open=true;
     return true;
   };
 
   const syncMapToRegion=()=>{
-    const region=$('region')?.value||'';
-    if(!region||region.toLowerCase()==='london')return;
+    // The map helper uses the current filtered pin bounds, including the
+    // all-regions and London cases. Do not leave a stale viewport after a change.
     window.setTimeout(()=>{if(typeof window.OrielFitMapToScope==='function')window.OrielFitMapToScope()},420);
   };
   const activate=()=>{
@@ -247,10 +309,11 @@
     if(typeof placements==='undefined'||!Array.isArray(placements)||!placements.length||
        !document.querySelector('.productIntro')||!window.OrielEnhanceProgrammeCards)return false;
     const hero=enhanceHero();
+    const navigation=enhanceNavigation();
     const stats=enhanceStats();
     const filters=organiseFilters();
     enhanceCards();
-    return hero&&stats&&filters;
+    return hero&&navigation&&stats&&filters;
   };
   let checks=0;
   const timer=setInterval(()=>{checks++;if(activate()||checks>130)clearInterval(timer)},100);
