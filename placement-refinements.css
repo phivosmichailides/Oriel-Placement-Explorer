@@ -1,0 +1,120 @@
+/* Placement Atlas — mobile/navigation and map refinements, Nov 2026.
+   Works with the existing premium discovery and all saved layout modes. */
+html body .shell > header.top.atlasStickyHeader{grid-template-columns:auto minmax(0,1fr) auto}
+html .atlasHeaderUtilities{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+html .atlasHeaderUtilities #themeToggle{width:38px;min-width:38px;height:38px;min-height:38px;padding:0}
+html .atlasHeaderUtilities .cloudAccountStatus,html .atlasHeaderUtilities .cloudAccountHint{display:none!important}
+html .atlasHeaderUtilities .paHeaderProfile{display:flex;align-items:center;gap:8px;border:0;border-radius:12px;background:transparent;color:var(--ink);padding:4px 6px;cursor:pointer;max-width:155px}
+html .paHeaderPhoto{width:32px;height:32px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:var(--soft);border:1px solid var(--line);font-size:14px;font-weight:800}
+html .paHeaderPhoto img{width:100%;height:100%;object-fit:cover}
+html .paHeaderLabel{color:var(--mut);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+html .atlasHeaderUtilities .cloudAccount:has(.paHeaderProfile) .cloudAccountMain{display:none!important}
+html .atlasHeaderUtilities .paHeaderProfile:focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+html #atlasHeaderTools .actions{justify-content:flex-end}
+html .atlasHeaderUtilities .cloudAccountButton{white-space:nowrap}
+html .atlasHeaderUtilities .cloudAccountIdentity{display:none}
+/* Map markers: understated, crisp and still distinguishable by setting.
+   Hit-area sizing is handled in sector-map.js, not by shrinking touch targets. */
+html .oriel-group-count{
+  border-width:1.5px!important;
+  box-shadow:0 1px 4px rgba(12,17,20,.20)!important;
+  font-weight:750!important;
+}
+html .oriel-group-marker:focus-visible .oriel-group-count{outline:2px solid var(--ux-accent)!important;outline-offset:3px}
+html .atlasLegendDot{box-shadow:none!important}
+html #sectorMapLegend{gap:8px 14px!important;line-height:1.5}
+html .map-caption{font-size:12px!important;line-height:1.5;color:var(--mut)}
+html[data-theme="light"] .maplibregl-canvas{filter:saturate(.78) contrast(.98)}
+html[data-theme="dark"] .maplibregl-canvas{filter:saturate(.80)}
+@media(max-width:1120px){
+  html body .shell > header.top.atlasStickyHeader{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:"brand utilities" "navigation navigation"!important;
+    align-items:center!important;row-gap:7px!important;
+    padding:10px 12px!important;
+  }
+  html body .atlasStickyHeader>.brand{grid-area:brand;min-width:0}
+  html body .atlasStickyHeader>.atlasHeaderUtilities{grid-area:utilities}
+  html body .atlasStickyHeader>nav.tabs{
+    grid-area:navigation;
+    display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+    justify-content:flex-start!important;min-width:0!important;
+    width:100%!important;max-width:100%!important;
+    margin:0!important;padding:1px 0 0!important;
+    gap:5px!important;overflow-x:auto!important;overflow-y:hidden!important;
+    white-space:nowrap!important;scrollbar-width:none;
+    border:0!important;background:transparent!important;
+  }
+  html body .atlasStickyHeader>nav.tabs::-webkit-scrollbar{display:none}
+  html body .atlasStickyHeader>nav.tabs>.tab{
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    flex:0 0 auto!important;min-height:40px!important;height:auto!important;
+    padding:8px 10px!important;margin:0!important;
+    border-radius:10px!important;font-size:12px!important;
+    white-space:nowrap!important;
+  }
+  html body .atlasStickyHeader>nav.tabs>.tab[data-tab="foryou"],
+  html body .atlasStickyHeader>nav.tabs>.tab[data-tab="compare"]{display:none!important}
+  html body .atlasStickyHeader>nav.tabs>.atlasMoreNav{
+    flex:0 0 auto!important;position:static!important;display:flex!important;
+    min-height:40px!important;margin:0!important;padding:0!important;border:0!important;
+  }
+  html body .atlasStickyHeader>nav.tabs>.atlasMoreNav[open]{
+    flex:0 0 auto!important;min-height:40px!important;display:flex!important;
+    border:0!important;margin:0!important;padding:0!important;
+  }
+  html body .atlasStickyHeader>nav.tabs>.atlasMoreNav>summary{
+    display:inline-flex!important;align-items:center!important;
+    min-height:40px!important;padding:8px 10px!important;border-radius:10px!important;
+    line-height:1.2!important;font-size:12px!important;white-space:nowrap;
+    border:1px solid transparent;
+  }
+  html body .atlasStickyHeader>nav.tabs .tab.active,
+  html body .atlasStickyHeader>nav.tabs .tab.atlasParentActive{
+    min-height:40px!important;box-shadow:none!important;
+    background:var(--soft)!important;color:var(--ink)!important;
+    border:1px solid var(--line)!important;
+  }
+  html body .atlasStickyHeader .brand h1{font-size:clamp(17px,4.3vw,23px)!important}
+  html .atlasStickyHeader .atlasLogoGlyph{width:30px;height:30px}
+  html .atlasStickyHeader .brand .logo{width:30px!important;height:30px!important;min-width:30px!important}
+  html .atlasHeaderUtilities{gap:5px}
+  html .atlasHeaderUtilities #themeToggle{min-width:36px!important;width:36px!important;min-height:36px!important;height:36px!important}
+  /* More opens as an anchored bottom sheet rather than stretching a nav tab.
+     Fixed positioning deliberately escapes the horizontal nav scroller. */
+  html body .atlasStickyHeader .atlasMoreNav[open] .atlasMoreMenu{
+    position:fixed!important;left:12px!important;right:12px!important;top:auto!important;
+    bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
+    display:grid!important;grid-template-columns:1fr!important;gap:5px!important;
+    max-height:min(58vh,420px)!important;overflow-y:auto!important;
+    padding:12px!important;background:var(--panel)!important;
+    border:1px solid var(--line)!important;border-radius:18px!important;
+    box-shadow:0 14px 60px rgba(0,0,0,.35)!important;
+    z-index:9500!important;
+  }
+  html body .atlasStickyHeader .atlasMoreMenu .tab{
+    width:100%!important;display:flex!important;justify-content:flex-start!important;
+    min-height:46px!important;flex:0 0 auto!important;white-space:normal!important;
+    padding:11px 13px!important;border-radius:10px!important;
+  }
+  html body .atlasStickyHeader .atlasMoreNav[open]>summary{
+    background:var(--soft)!important;color:var(--ink)!important;
+  }
+  html #atlasHeaderTools .actions{justify-content:flex-end!important}
+  html #atlasHeaderTools #orielDeadline{margin-top:0!important}
+}
+@media(max-width:480px){
+  html body .shell > header.top.atlasStickyHeader{padding:9px 10px!important;margin-bottom:8px!important}
+  html .atlasHeaderUtilities .cloudAccountButton{min-height:34px!important;padding:7px 9px!important;font-size:0!important}
+  html .atlasHeaderUtilities .cloudAccountButton::after{content:"Sign in";font-size:12px!important}
+  html .atlasHeaderUtilities .paHeaderProfile{max-width:90px;padding:3px}
+  html .atlasHeaderUtilities .paHeaderLabel{max-width:45px;font-size:10px}
+  html body .atlasStickyHeader>nav.tabs{gap:2px!important}
+  html body .atlasStickyHeader>nav.tabs>.tab{gap:5px!important;padding:8px 8px!important;font-size:11.5px!important}
+  html body .atlasStickyHeader>nav.tabs>.tab svg.tab-icon{width:16px!important;height:16px!important}
+  html body .atlasStickyHeader>nav.tabs>.atlasMoreNav>summary{padding:8px 9px!important;font-size:11.5px!important}
+  html #atlasHeaderTools .actions{min-height:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html .atlasStickyHeader>nav.tabs .tab{transition:none!important}
+}
