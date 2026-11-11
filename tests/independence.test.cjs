@@ -342,9 +342,9 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
 test('workspace refinement assets are wired and presentation-only',()=>{
   const html=read('index.html'),sw=read('sw.js'),js=read('premium-workspace.js'),css=read('premium-workspace.css');
   assert.match(html,/premium-workspace\.css\?v=20261111workspace1/);
-  assert.match(html,/premium-workspace\.js\?v=20261111workspace1/);
+  assert.match(html,/premium-workspace\.js\?v=20261111workspace2/);
   assert.match(sw,/premium-workspace\.css\?v=20261111workspace1/);
-  assert.match(sw,/premium-workspace\.js\?v=20261111workspace1/);
+  assert.match(sw,/premium-workspace\.js\?v=20261111workspace2/);
   assert.match(js,/atlasPremiumPreview/,'Workspace refinement must only run inside the makeover');
   assert.match(js,/enhanceShortlist/);
   assert.match(js,/enhanceRecommendations/);
