@@ -236,7 +236,7 @@ html.atlasPremiumPreview .atlasQuickMore{
   appearance:none;
   display:inline-flex;align-items:center;
   background:transparent;border:0;padding:7px 0 11px;
-  color:var(--ux-accent-ink);font:700 12px/1.4 inherit;
+  color:var(--ux-accent-ink);font-family:inherit;font-size:12px;font-weight:700;line-height:1.4;
   cursor:pointer;
 }
 html.atlasPremiumPreview .atlasAdvancedFilters{
@@ -330,7 +330,7 @@ html.atlasPremiumPreview #results .placement .atlasTitleExpand{
   margin:0 0 0 7px!important;padding:1px 0!important;
   border:0!important;background:transparent!important;
   color:var(--ux-accent-ink)!important;
-  font:650 10.5px/1.35 inherit!important;
+  font-family:inherit!important;font-size:10.5px!important;font-weight:650!important;line-height:1.35!important;
   text-decoration:underline;text-underline-offset:2px;
   cursor:pointer;white-space:nowrap;
 }
