@@ -140,7 +140,7 @@
   }));
   const regionSelect=panel.querySelector('#atlasLearnRegion'),regionLinks=panel.querySelector('#atlasLearnRegionLinks');
   const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
-  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'').replace(/\\b[a-z]/g,c=>c.toUpperCase());
+  const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'').replace(/\b[a-z]/g,c=>c.toUpperCase());
   const allPlacements=()=>{try{return Array.isArray(placements)?placements:[]}catch{return []}};
   const cleanTitle=p=>window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||p.title||p.employer||'Programme';
   const populateRegions=()=>{
@@ -184,7 +184,7 @@
     if(!search||!results)return;
     const query=search.value.trim().toLowerCase();results.replaceChildren();
     if(query.length<2){results.hidden=true;return}
-    const terms=query.split(/\\s+/).filter(Boolean);
+    const terms=query.split(/\s+/).filter(Boolean);
     const matches=allPlacements().filter(p=>{
       const haystack=[p.title,p.employer,p.region,p.id,...(p.postcodes||[])].join(' ').toLowerCase();
       return terms.every(term=>haystack.includes(term));
