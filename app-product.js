@@ -2,7 +2,7 @@
 (()=>{
   const hadSaved=(()=>{try{return !!localStorage.getItem('phivos-desk-v2')}catch{return false}})();
   const base=document.createElement('script');
-  base.src='app-base.js?v=20261109fix2';
+  base.src='app-base.js?v=20261111labels1';
   base.onload=()=>{
     const decisions=[['','○','Unmarked'],['love','♡','Love'],['yes','✓','Strong yes'],['maybe','◐','Maybe'],['backup','◇','Only if needed'],['no','−','No'],['never','×','Absolutely not']];
     const decisionPicker=status=>{
