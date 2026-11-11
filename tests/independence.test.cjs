@@ -27,7 +27,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261111quiet4/);
+  assert.match(html,/app\.js\?v=20261111quiet5/);
   assert.match(read('app.js'),/app-product\.js\?v=20261111notes1/);
   assert.match(read('app.js'),/generic-public\.js\?v=20261111quiz1/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
@@ -169,7 +169,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261111quiz3/);
+  assert.match(sw,/onboarding\.js\?v=20261111quiz4/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,7 +177,7 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261111quiz3/);
+  assert.match(app,/onboarding\.js\?v=20261111quiz4/);
 });
 
 
@@ -408,7 +408,7 @@ test('quiet interface stylesheet and refreshed application assets are cache-bust
   const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
   assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet4/);
   assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet4/);
-  assert.match(pwa,/sw\.js\?v=20261111quiet6/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet7/);
 });
 
 
