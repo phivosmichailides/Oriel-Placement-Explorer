@@ -19,17 +19,16 @@
   headerTools.className='atlasHeaderTools';
   headerTools.append(headerActions);
   header.insertAdjacentElement('afterend',headerTools);
-  // A palette-aware cross without the filled square from the favicon.
+  // Use the Placement Atlas compass-pin mark in the main header.
+  // The simpler globe remains the browser-tab favicon.
   const logo=header.querySelector('.brand .logo');
   if(logo){
-    const namespace='http://www.w3.org/2000/svg';
-    const glyph=document.createElementNS(namespace,'svg');
-    glyph.setAttribute('viewBox','0 0 64 64');
-    glyph.setAttribute('class','atlasLogoGlyph');
-    glyph.setAttribute('aria-hidden','true');
-    const cross=document.createElementNS(namespace,'path');
-    cross.setAttribute('d','M22.4 4.8h19.2v17.6h17.6v19.2H41.6v17.6H22.4V41.6H4.8V22.4h17.6z');
-    glyph.append(cross);logo.replaceChildren(glyph);
+    const mark=document.createElement('img');
+    mark.src='placement-atlas-compass-pin.webp?v=20261111logo1';
+    mark.alt='';
+    mark.setAttribute('aria-hidden','true');
+    mark.width=512;mark.height=512;mark.decoding='async';
+    logo.replaceChildren(mark);
   }
 
   // File management is available after the active page's content rather than
