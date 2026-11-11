@@ -30,7 +30,7 @@ html.atlasPremiumPreview #mapSelection .placement .placementTop h3{
   display:inline-flex;align-items:center;gap:5px;
   margin:1px 0 10px;padding:2px 0;
   border:0;background:transparent;color:var(--ux-accent-ink);
-  font:700 12px/1.4 inherit;letter-spacing:.005em;
+  font-family:inherit;font-size:12px;font-weight:700;line-height:1.4;letter-spacing:.005em;
   text-decoration:underline;text-decoration-thickness:1px;
   text-underline-offset:4px;cursor:pointer;
 }
