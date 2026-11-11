@@ -37,7 +37,7 @@
       try{if(typeof ORIEL_SNAPSHOT!=='undefined')state.orielSnapshot=ORIEL_SNAPSHOT.version}catch{}
       try{save()}catch{}
       // Seed neutral answers so the first-time questionnaire itself is not London-biased.
-      try{localStorage.setItem(PROFILE_KEY,JSON.stringify({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some'}))}catch{}
+      try{localStorage.setItem(PROFILE_KEY,JSON.stringify({region:'',environment:'',priorities:[],salary:'',hours:'',community:''}))}catch{}
     }
 
     // Public identity: authored by Phivos, but designed for any applicant.

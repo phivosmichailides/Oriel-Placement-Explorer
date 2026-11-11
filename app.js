@@ -17,27 +17,27 @@
     };
     const loadOnboarding=()=>{
       const onboarding=document.createElement('script');
-      onboarding.src='onboarding.js?v=20261110ux1';
+      onboarding.src='onboarding.js?v=20261111quiz4';
       onboarding.onload=loadDeadlineDates;
       onboarding.onerror=loadDeadlineDates;
       document.body.appendChild(onboarding);
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261110popup1';
+      sectors.src='sector-map.js?v=20261111legend2';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
     };
     const loadGeneric=()=>{
       const generic=document.createElement('script');
-      generic.src='generic-public.js?v=20261108atlas3';
+      generic.src='generic-public.js?v=20261111quiz1';
       generic.onload=loadSectors;
       generic.onerror=loadSectors;
       document.body.appendChild(generic);
     };
     const product=document.createElement('script');
-    product.src='app-product.js?v=20261110fitinsights1';
+    product.src='app-product.js?v=20261111notes1';
     product.onload=loadGeneric;
     product.onerror=()=>{
       const r=document.getElementById('results');

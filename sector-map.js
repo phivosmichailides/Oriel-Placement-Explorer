@@ -89,13 +89,12 @@
     legend.id='sectorMapLegend';
     legend.setAttribute('aria-label','Map pin colour legend');
     legend.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:9px 16px 11px;border-top:1px solid var(--line);font-size:11px;color:var(--mut);background:var(--panel)';
-    // Show only categories that have rendered pins; the colours are the active
-    // palette values, not a hard-coded screenshot or historical legend.
-    const renderLegend=(rendered=null)=>{
+    // The legend is derived only from the marker groups actually rendered
+    // after current filters, preferences, viewport bounds and clustering.
+    const renderLegend=(rendered=[])=>{
       refreshPalette();
-      const visible=Array.isArray(rendered)
-        ?new Set(rendered.map(g=>groupMapSector(g.entries)))
-        :new Set(placements.filter(matches).map(programmeMapSector));
+      if(!Array.isArray(rendered))rendered=[];
+      const visible=new Set(rendered.map(g=>groupMapSector(g.entries)));
       const all=[
         ['Hospital','Hospital'],
         ['General Practice','GP'],
@@ -106,7 +105,7 @@
       ];
       const sectors=all.filter(([key])=>visible.has(key)).map(([key,text])=>
         '<span class="atlasLegendItem"><i class="atlasLegendDot" style="background:'+palette[key]+'" aria-hidden="true"></i>'+text+'</span>').join('');
-      const groups=Array.isArray(rendered)?rendered:[];
+      const groups=rendered;
       const hasShortlisted=groups.some(g=>g.entries.some(p=>SHORT.has(mark(p).status)));
       const hasExcluded=groups.some(g=>g.entries.every(isExcluded));
       const statuses=(hasShortlisted?'<span class="atlasLegendItem"><i class="atlasLegendRing atlasLegendShortlisted" aria-hidden="true"></i>Shortlisted</span>':'')+
@@ -118,16 +117,16 @@
       legend.innerHTML=sectors+statuses+tube+clusters;
       legend.hidden=!(sectors||statuses||tube);
     };
-    renderLegend();
+    legend.hidden=true;
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
     const settings=document.createElement('div');settings.className='settingsCard card';
     settings.innerHTML='<div class="eyebrow">YOUR MAP</div><h2>Map colours</h2><p class="muted">Choose colours for each setting. Text labels remain available on the legend and pins.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button>';
     document.querySelector('#prefs .settings').appendChild(settings);
-    settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
+    settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();drawMap(placements.filter(matches));});
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
-    document.addEventListener('desk:palette',()=>{renderLegend();settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});
+    document.addEventListener('desk:palette',()=>{settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});
 
     // Numbered pins make shared programme locations visible and clickable.
     // One numbered marker opens every programme that shares those coordinates.

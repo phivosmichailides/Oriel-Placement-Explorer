@@ -359,11 +359,22 @@ fs.mkdirSync(output,{recursive:true});
   await page.waitForFunction(count=>ranked().length===count+1,countBefore,{timeout:10000});
   await page.locator('nav.tabs [data-tab=shortlist]').click();
   assert.equal(await page.locator('#shortlist .historyControls').count(),1,'Undo/redo should appear inside shortlist content');
-  assert(await page.locator('#atlasShortlistExportDecisions').isVisible(),'Shortlist decision export shortcut missing');
-  assert(await page.locator('#atlasShortlistBackup').isVisible(),'Shortlist backup shortcut missing');
+  const shortlistMore=page.locator('#shortlist .atlasShortlistMore');
+  assert(await shortlistMore.locator('summary').isVisible(),'Secondary shortlist actions need a More disclosure');
+  assert.equal(await page.locator('#atlasShortlistExportDecisions').isVisible(),false,'Decision export should be tucked away until requested');
+  await shortlistMore.locator('summary').click();
+  assert(await page.locator('#atlasShortlistExportDecisions').isVisible(),'Shortlist decision export shortcut missing from More');
+  assert(await page.locator('#atlasShortlistBackup').isVisible(),'Shortlist backup shortcut missing from More');
+  assert(await page.locator('#shortlistViewOrder').isVisible(),'Display order should remain available inside More');
+  await shortlistMore.locator('summary').click();
   await page.waitForFunction(id=>!![...document.querySelectorAll('#shortlistList>.rank-row .placement')].find(el=>el.dataset.id===id),id,{timeout:12000});
   const x=page.locator('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');
-  assert(await x.count()>0,'Desktop red X missing');
+  assert(await x.count()>0,'Shortlist remove action missing');
+  const row=x.first().locator('xpath=..');
+  await row.hover();
+  await page.waitForFunction(id=>{const el=document.querySelector('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');return el&&getComputedStyle(el).opacity==='1';},id,{timeout:2000});
+  assert.equal(await x.first().evaluate(el=>getComputedStyle(el).opacity),'1',
+    'Remove action should appear only when its card is hovered');
   await x.first().click();
   await page.waitForFunction(count=>ranked().length===count,countBefore,{timeout:12000});
   await page.setViewportSize({width:390,height:844});
@@ -416,11 +427,56 @@ fs.mkdirSync(output,{recursive:true});
   await page.locator('#results .atlasFitQuizLink').first().click();
   await page.locator('.onboardOverlay #obStart').waitFor({state:'visible',timeout:12000});
   await page.locator('#obStart').click();
-  for(let i=0;i<5;i++)await page.locator('#obNext').click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('1 / 6'));
+  const firstQuizPage=await page.evaluate(()=>{
+    const card=document.querySelector('.onboardCard');
+    return {selected:card.querySelectorAll('.onboardChoice[aria-pressed="true"]').length,
+      scrollHeight:card.scrollHeight,clientHeight:card.clientHeight};
+  });
+  assert.equal(firstQuizPage.selected,0,'A fresh quiz must not preselect a region');
+  assert(firstQuizPage.scrollHeight<=firstQuizPage.clientHeight,
+    'Desktop region step should fit without scrolling: '+JSON.stringify(firstQuizPage));
+  await page.setViewportSize({width:390,height:844});
+  const mobileQuizPage=await page.evaluate(()=>{
+    const card=document.querySelector('.onboardCard');
+    return {scrollHeight:card.scrollHeight,clientHeight:card.clientHeight};
+  });
+  assert(mobileQuizPage.scrollHeight<=mobileQuizPage.clientHeight,
+    'Mobile region step should fit without scrolling: '+JSON.stringify(mobileQuizPage));
+  await page.setViewportSize({width:1440,height:900});
+  await page.locator('.onboardChoice').filter({hasText:'All regions'}).click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('2 / 6'));
+  assert.equal(await page.locator('#obNext').count(),0,'Single-choice location should advance immediately');
+  assert.equal(await page.locator('.onboardChoice[aria-pressed="true"]').count(),0,
+    'Setting choice should start unselected');
+  await page.locator('.onboardChoice').filter({hasText:'Not sure yet'}).click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('3 / 6'));
+  assert.equal(await page.locator('.onboardChoice[aria-pressed="true"]').count(),0,
+    'Priorities should start unselected');
+  assert.equal(await page.locator('#obNext').isEnabled(),false,
+    'Priorities should require at least one choice');
+  await page.locator('.onboardChoice').filter({hasText:'Pay'}).click();
+  await page.locator('.onboardChoice').filter({hasText:'Work-life balance'}).click();
+  await page.locator('.onboardChoice').filter({hasText:'Career progression'}).click();
+  assert(await page.locator('#obNext').isEnabled(),'One to three priorities should enable Continue');
+  await page.locator('.onboardChoice').filter({hasText:'Location'}).click();
+  assert.equal(await page.locator('.onboardChoice[aria-pressed="true"]').count(),3,
+    'The priorities step must cap selections at three');
+  await page.locator('#obNext').click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('4 / 6'));
+  await page.locator('#obNext').click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('5 / 6'));
+  assert.equal(await page.locator('#obNext').count(),0,'Single-choice community step should advance immediately');
+  await page.locator('.onboardChoice').filter({hasText:'Some is fine'}).click();
+  await page.waitForFunction(()=>document.querySelector('.onboardStepLabel')?.textContent.includes('6 / 6'));
   assert(await page.locator('[data-ob-palette]').count()===6,
     'Appearance screen should present six real palettes');
   assert.equal(await page.locator('[data-ob-mode]').count(),2,
     'Appearance step should have light and dark controls');
+  assert.equal(await page.locator('[data-ob-palette][aria-pressed="true"]').count(),1,
+    'Appearance palette should be preselected');
+  assert.equal(await page.locator('[data-ob-mode][aria-pressed="true"]').count(),1,
+    'Appearance brightness should be preselected');
   await page.locator('[data-ob-palette=mauve]').click();
   assert.equal(await page.locator('html').getAttribute('data-palette'),'mauve',
     'Quiz palette should immediately recolour the app');

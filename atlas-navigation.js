@@ -113,16 +113,22 @@
     comparePanel.prepend(back);
   }
 
-  // Add convenient shortcuts without replacing the existing ranked CSV export.
+  // Keep secondary data tools available without giving every action equal weight.
   const shortlistBar=document.querySelector('#shortlist .shortlist-toolbar');
   if(shortlistBar){
-    const shortcuts=document.createElement('div');
-    shortcuts.className='atlasShortlistDataActions';
+    const disclosure=document.createElement('details');
+    disclosure.className='atlasShortlistMore';
+    const summary=document.createElement('summary');summary.textContent='More';
+    const menu=document.createElement('div');menu.className='atlasShortlistMoreMenu';
+    const shortcuts=document.createElement('div');shortcuts.className='atlasShortlistDataActions';
     shortcuts.innerHTML='<button class="btn" type="button" id="atlasShortlistExportDecisions">Export decisions</button>'+
       '<button class="btn" type="button" id="atlasShortlistBackup">Backup</button>';
     shortcuts.querySelector('#atlasShortlistExportDecisions').addEventListener('click',()=>document.getElementById('exportBtn')?.click());
     shortcuts.querySelector('#atlasShortlistBackup').addEventListener('click',()=>document.getElementById('backupBtn')?.click());
-    shortlistBar.append(shortcuts);
+    shortcuts.addEventListener('click',event=>{if(event.target.closest('button'))disclosure.open=false;});
+    const order=shortlistBar.querySelector('.shortlistViewOrder');
+    if(order){order.title='Change the display order without changing saved priority numbers';menu.append(order);}
+    menu.append(shortcuts);disclosure.append(summary,menu);shortlistBar.append(disclosure);
   }
 
   // Keep exactly one undo/redo toolbar, repositioned inside each active page.

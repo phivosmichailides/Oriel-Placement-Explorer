@@ -27,9 +27,9 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261110footer1/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261110fitinsights1/);
-  assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
+  assert.match(html,/app\.js\?v=20261111quiet5/);
+  assert.match(read('app.js'),/app-product\.js\?v=20261111notes1/);
+  assert.match(read('app.js'),/generic-public\.js\?v=20261111quiz1/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
@@ -89,9 +89,9 @@ test('primary navigation and footer management use separate, cache-versioned ass
   const html=read('index.html');
   const sw=read('sw.js');
   assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(html,/atlas-navigation\.js\?v=20261110footer1/);
+  assert.match(html,/atlas-navigation\.js\?v=20261111quiet2/);
   assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261110footer1/);
+  assert.match(sw,/atlas-navigation\.js\?v=20261111quiet2/);
   assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
   assert.match(read('atlas-navigation.js'),/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
 });
@@ -169,7 +169,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261110ux1/);
+  assert.match(sw,/onboarding\.js\?v=20261111quiz4/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,7 +177,7 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261110ux1/);
+  assert.match(app,/onboarding\.js\?v=20261111quiz4/);
 });
 
 
@@ -188,7 +188,7 @@ test('contextual dashboard actions and compact filters are wired to the live app
   assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
   assert.match(sw,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(app,/sector-map\.js\?v=20261110popup1/);
+  assert.match(app,/sector-map\.js\?v=20261111legend2/);
   for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
     assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
   assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
@@ -336,4 +336,93 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
   assert.doesNotMatch(cards,/facts\.push\(\['good','Hospital \+ GP'/,
     'A training setting is factual, not inherently a positive recommendation');
   assert.match(cardCss,/atlasCompactTakeHome/,'Compact take-home needs a readable secondary style');
+});
+
+
+test('workspace refinement assets are wired and presentation-only',()=>{
+  const html=read('index.html'),sw=read('sw.js'),js=read('premium-workspace.js'),css=read('premium-workspace.css');
+  assert.match(html,/premium-workspace\.css\?v=20261111workspace1/);
+  assert.match(html,/premium-workspace\.js\?v=20261111workspace2/);
+  assert.match(sw,/premium-workspace\.css\?v=20261111workspace1/);
+  assert.match(sw,/premium-workspace\.js\?v=20261111workspace2/);
+  assert.match(js,/atlasPremiumPreview/,'Workspace refinement must only run inside the makeover');
+  assert.match(js,/enhanceShortlist/);
+  assert.match(js,/enhanceRecommendations/);
+  assert.match(js,/updateForYouIntro/);
+  assert.match(js,/atlasShortlistFacts/);
+  assert.match(css,/#shortlistList/);
+  assert.match(css,/#foryou/);
+  assert.match(css,/#compare/);
+  assert.doesNotMatch(js,/localStorage\.clear\s*\(/,'Must not clear user data');
+  assert.doesNotMatch(js,/state\.marks\s*=/,'Must not rewrite programme decisions');
+});
+
+
+test('onboarding is compact, unselected by default and advances according to choice type',()=>{
+  const quiz=read('onboarding.js');
+  assert.match(quiz,/overflow:hidden/,'The setup should fit without a scrolling modal');
+  assert.match(quiz,/regionChosen&&answers\.region===''/,'All regions must not be preselected for a new visitor');
+  assert.match(quiz,/environment:''/,'A first-time visitor must choose a setting');
+  assert.match(quiz,/community:''/,'A first-time visitor must choose community exposure');
+  assert.match(quiz,/answers\.region=b\.dataset\.value;regionChosen=true;step\+\+;render\(\)/);
+  assert.match(quiz,/answers\.environment=b\.dataset\.value;step\+\+;render\(\)/);
+  assert.match(quiz,/answers\.community=b\.dataset\.value;step\+\+;render\(\)/);
+  assert.match(quiz,/if\(step===2&&!answers\.priorities\.length\)/,'At least one priority is required');
+  assert.match(quiz,/answers\.priorities\.length===0/,'Continue is disabled until a priority is selected');
+  assert.match(quiz,/step===2\|\|step===3/,'Only multi-select and practical pages require Continue');
+  assert.match(quiz,/id="obFinish">Done/);
+  assert.match(quiz,/onboardSkip/);
+  assert.doesNotMatch(quiz,/onboardClose/,'The oversized close control should be removed');
+});
+
+test('shortlist interface keeps secondary actions optional and note labels concise',()=>{
+  const html=read('index.html'),nav=read('atlas-navigation.js');
+  const css=read('premium-quiet-interface.css'),base=read('app-base.js'),product=read('app-product.js');
+  assert.match(html,/<h2>Shortlist<\/h2>/);
+  assert.doesNotMatch(html,/❤️ Shortlist|♥ My shortlist/);
+  assert.match(nav,/atlasShortlistMore/);
+  assert.match(nav,/menu\.append\(order\)/);
+  assert.match(css,/atlasShortlistMoreMenu/);
+  assert.match(css,/atlasRemoveShortlist/);
+  assert.match(css,/atlasSwipeOpen/);
+  assert.match(base,/placeholder="Note"/);
+  assert.match(product,/placeholder="Note"/);
+  assert.doesNotMatch(base,/placeholder=" Your note/);
+  assert.doesNotMatch(product,/placeholder=" Your note/);
+});
+
+test('map legend is sourced from rendered pins rather than the unfiltered catalogue',()=>{
+  const map=read('sector-map.js');
+  assert.match(map,/const renderLegend=\(rendered=\[\]\)/);
+  assert.match(map,/new Set\(rendered\.map\(g=>groupMapSector\(g\.entries\)\)\)/);
+  assert.match(map,/legend\.hidden=true/);
+  assert.match(map,/renderLegend\(displayGroups\)/);
+  assert.equal((map.match(/renderLegend\(/g)||[]).length,1,
+    'The legend should refresh only as part of an actual map redraw');
+  assert.doesNotMatch(map,/new Set\(placements\.filter\(matches\)\.map\(programmeMapSector\)\)/);
+  assert.match(map,/hasShortlisted=groups\.some/);
+  assert.match(map,/hasExcluded=groups\.some/);
+});
+
+test('quiet interface stylesheet and refreshed application assets are cache-busted',()=>{
+  const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
+  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet4/);
+  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet4/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet7/);
+});
+
+
+test('history and offer maintenance controls are progressively disclosed',()=>{
+  const desk=read('desk-enhancements.js'),html=read('index.html'),css=read('premium-quiet-interface.css');
+  assert.match(desk,/atlasHistoryDisclosure/);
+  assert.match(desk,/id="undoDesk"/);
+  assert.match(desk,/id="redoDesk"/);
+  assert.match(css,/atlasHistoryActions/);
+  assert.match(html,/atlasOutcomeMore/);
+  assert.match(html,/id="outcomeExportBtn"/);
+  assert.match(html,/id="outcomeImportBtn"/);
+  assert.match(html,/id="outcomeClearBtn"/);
+  assert.match(css,/atlasOutcomeMoreMenu/);
+  assert.match(css,/#prefs \.settingsCard\.card/);
+  assert.match(html,/Save outcome/);
 });
