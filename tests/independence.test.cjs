@@ -337,3 +337,26 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
     'A training setting is factual, not inherently a positive recommendation');
   assert.match(cardCss,/atlasCompactTakeHome/,'Compact take-home needs a readable secondary style');
 });
+
+
+test('secondary workspaces use the same editorial design without rewriting decisions',()=>{
+  const html=read('index.html'),workspace=read('premium-workspace.js');
+  const workspaceCss=read('premium-workspace.css'),base=read('app-base.js');
+  const simulator=read('simulator.js');
+  assert.match(html,/premium-workspace\.css\?v=20261111workspace1/);
+  assert.match(html,/premium-workspace\.js\?v=20261111workspace1/);
+  assert.match(workspace,/atlasShortlistWhy/,'Shortlist fit reasons should be progressively disclosed');
+  assert.match(workspace,/atlasShortlistFacts/,'Long rotation badges should be progressively disclosed');
+  assert.match(workspace,/AtlasPrototypeCleanTitle/,'Shortlist and For You should reuse the concise-title helper');
+  assert.match(workspace,/BASED ON YOUR PRIORITIES/,'For You should identify personalised recommendations accurately');
+  assert.match(workspace,/START HERE/,'For You should not claim personalisation before the quiz');
+  assert.match(base,/placements\.filter\(p=>!isExcluded\(p\)/,
+    'For You recommendations must not be hard-coded to London');
+  assert.match(base,/No close matches yet/,'For You needs a useful empty state');
+  assert.match(base,/Your shortlist is empty/,'Shortlist needs a clear empty state');
+  assert.match(base,/Remove a filter or widen your search/,'Explore empty state should offer a next action');
+  assert.match(workspaceCss,/compareTable thead th/,'Compare table needs a consistent sticky header');
+  assert.match(workspaceCss,/#shortlistList \\.rank-row/,'Shortlist cards need a compact responsive layout');
+  assert.match(workspaceCss,/field input/,'Workspace controls should use the neutral theme surfaces');
+  assert.match(simulator,/Practise arranging programmes in the three official Oriel categories/);
+});
