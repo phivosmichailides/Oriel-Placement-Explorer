@@ -311,3 +311,25 @@ test('editorial palette prototype keeps neutral surfaces and six distinct access
   assert.match(css,/\.productIntro\.card/,'Hero should have a neutral surface');
   assert.match(css,/html\.atlasPremiumPreview/,'Palette changes must remain prototype-scoped');
 });
+
+
+test('discovery redesign uses progressive disclosure and concise, evidence-led summaries',()=>{
+  const html=read('index.html');
+  const hero=read('premium-discovery-preview.js');
+  const heroCss=read('premium-discovery-preview.css');
+  const cards=read('premium-card-tabs.js');
+  const cardCss=read('premium-card-tabs.css');
+  assert.match(html,/premium-discovery-preview\.js\?v=20261110prototype1/);
+  assert.match(hero,/className='atlasHowItWorks'/,'Introductory explanations should remain accessible behind disclosure');
+  assert.match(hero,/enhanceNavigation/,'Secondary navigation should be grouped');
+  assert.match(hero,/activeAdvanced/,'Active advanced filters should reopen automatically');
+  assert.match(hero,/OrielFitMapToScope/,'Region changes should fit the filtered map bounds');
+  assert.match(heroCss,/atlasMoreNav/,'Secondary navigation needs a visible More disclosure');
+  assert.match(heroCss,/atlasHowItWorks/,'How it works disclosure needs a clear presentation');
+  assert.match(cards,/atlasCompactTakeHome/,'Compact cards should show the estimated monthly take-home');
+  assert.match(cards,/Travel to check/,'Multi-postcode programmes should surface a travel check');
+  assert.match(cards,/Sponsorship not stated/,'Unknown eligibility must remain unknown');
+  assert.doesNotMatch(cards,/facts\.push\(\['good','Hospital \+ GP'/,
+    'A training setting is factual, not inherently a positive recommendation');
+  assert.match(cardCss,/atlasCompactTakeHome/,'Compact take-home needs a readable secondary style');
+});
