@@ -62,7 +62,8 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   const desktopRemove=page.locator('#shortlistList .rank-row [data-atlas-remove-shortlist]').first();
   await page.locator('#shortlistList .rank-row').first().hover();
   await desktopRemove.waitFor({state:'visible',timeout:15000});
-  assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'1','Desktop shortlist X should be revealed on hover or focus');
+  await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('#shortlistList .rank-row [data-atlas-remove-shortlist]')).opacity)>0.99,null,{timeout:3000});
+  assert(Number(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity))>0.99,'Desktop shortlist X should be revealed on hover or focus');
   await desktopRemove.click();
   await waitForCount(page,'(0)');
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
