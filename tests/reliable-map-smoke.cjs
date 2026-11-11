@@ -101,8 +101,10 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('header.top').evaluate(el=>{const y=el.getBoundingClientRect().top;return y>=-2&&y<=12}),'Navigation disappeared on scroll');
   await page.evaluate(()=>window.scrollTo(0,0));
 
+  // Secondary tools remain available in the compact More menu.
+  await page.locator('header.top nav.tabs > .atlasMoreNav > summary').click();
   // Tinder preloads the next programme, but only one card is ever visible.
-  await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
+  await page.locator('header.top nav.tabs .atlasMoreMenu [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderActiveCard')&&
     document.querySelector('#tinderCardSlot > .tdNextCard'),null,{timeout:20000});
   const initialDeck=await page.evaluate(()=>{
