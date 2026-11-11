@@ -149,6 +149,8 @@
       overlay.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...card.querySelectorAll('button,select,input')].filter(x=>!x.disabled);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}});
 
       const regions=[...new Set(placements.map(p=>p.region).filter(Boolean))].sort((a,b)=>a==='London'?-1:b==='London'?1:a.localeCompare(b));
+      const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
+      const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'').replace(/\\b[a-z]/g,c=>c.toUpperCase());
       const choice=(value,_symbol,title,desc,selected,wide=false)=>`<button type="button" class="onboardChoice ${selected?'selected':''} ${wide?'wide':''}" data-value="${esc(value)}" aria-pressed="${selected}"><span><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span></button>`;
       const progress=()=>step<0?0:Math.min(100,(step+1)/6*100);
 
@@ -163,7 +165,7 @@
 
         let body='';
         if(step===0){
-          body=`<div class="onboardStepLabel">1 of 5 · Location</div><h3>Where are you looking?</h3><p class="onboardLead">Choose a region. You can broaden or change this later in Preferences.</p><div class="onboardChoices">${regions.map(r=>choice(r,'',r,'',answers.region===r)).join('')}${choice('','','Show me all regions','Start broad and narrow it down later.',false,true)}</div>`;
+          body=`<div class="onboardStepLabel">1 of 5 · Location</div><h3>Where are you looking?</h3><p class="onboardLead">Choose a region. You can broaden or change this later in Preferences.</p><div class="onboardChoices">${regions.map(r=>choice(r,'',formatRegion(r),'',answers.region===r)).join('')}${choice('','','Show me all regions','Start broad and narrow it down later.',false,true)}</div>`;
         }else if(step===1){
           const opts=[['hospital','','Hospital','Clinical exposure, wards and specialist services.'],['gp','','General Practice','Primary care, medicines optimisation and more independent work.'],['mixed','','A good mix','I want meaningful exposure across more than one setting.'],['industry','','Industry / research / data','Transferable experience, research, digital or industry exposure.'],['community','','Community','Patient-facing community pharmacy is genuinely my thing.'],['unsure','','I’m not sure yet','Keep the recommendations broad while I figure it out.']];
           body=`<div class="onboardStepLabel">2 of 5 · Pharmacy</div><h3> What kind of environment sounds most like you?</h3><p class="onboardLead">This changes the weighting — it won’t completely hide the other options.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.environment===x[0])).join('')}</div>`;
