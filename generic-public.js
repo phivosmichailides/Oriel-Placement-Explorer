@@ -19,7 +19,10 @@
     window.__genericPublicInstalled=true;
 
     const profile=state.prefs.onboarding||readJSON(PROFILE_KEY);
-    if(profile&&has(DONE_KEY))state.prefs.onboarding=profile;
+    const neutralPlaceholder=profile&&profile.environment==='unsure'&&profile.community==='some'&&
+      (!Array.isArray(profile.priorities)||profile.priorities.length===0)&&
+      !profile.region&&!profile.salary&&!profile.hours;
+    if(profile&&has(DONE_KEY)&&!neutralPlaceholder)state.prefs.onboarding=profile;
     const onboardingDone=has(DONE_KEY);
     const uploaded=has(DATAKEY);
     const wasFresh=window.__placementDeskWasFresh===true;
@@ -36,8 +39,6 @@
       // Mark the old embedded snapshot as handled so app-base does not re-import it next visit.
       try{if(typeof ORIEL_SNAPSHOT!=='undefined')state.orielSnapshot=ORIEL_SNAPSHOT.version}catch{}
       try{save()}catch{}
-      // Seed neutral answers so the first-time questionnaire itself is not London-biased.
-      try{localStorage.setItem(PROFILE_KEY,JSON.stringify({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some'}))}catch{}
     }
 
     // Public identity: authored by Phivos, but designed for any applicant.
@@ -80,7 +81,7 @@
     if(!preserveSavedFilters){
       quick.clear();
       document.querySelectorAll('.chip[data-q]').forEach(x=>x.classList.remove('on'));
-      if(region)region.value=profile?.region||'';
+      if(region)region.value=profile?.region==='all'?'':profile?.region||'';
       if(decision)decision.value='all';
       if(salary)salary.value=profile?.salary||'';
       if(hours)hours.value=profile?.hours||'';
