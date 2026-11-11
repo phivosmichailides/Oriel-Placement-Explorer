@@ -5,49 +5,56 @@
   const SESSION_SKIP='phivos-onboarding-skip-session';
 
   const css=`
-  .onboardOverlay{position:fixed;inset:0;z-index:5000;background:rgba(20,27,23,.48);backdrop-filter:blur(9px);display:grid;place-items:center;padding:18px;animation:obFade .18s ease-out}
-  .onboardCard{width:min(680px,100%);max-height:min(760px,92vh);overflow:auto;background:#fff;border:1px solid #dfe7e1;border-radius:26px;box-shadow:0 30px 90px rgba(18,32,24,.22);padding:26px;position:relative}
-  .onboardClose{position:absolute;right:16px;top:14px;border:0;background:#f1f4f1;width:35px;height:35px;border-radius:50%;font-size:18px;color:#626963}
-  .onboardSpark{font-size:34px;margin-bottom:8px}.onboardCard h2{font-size:31px;line-height:1.08;letter-spacing:-.035em;margin:4px 42px 10px 0}.onboardCard h3{font-size:23px;letter-spacing:-.025em;margin:8px 0}.onboardLead{font-size:15px;line-height:1.65;color:#56605a;max-width:570px;margin:0 0 18px}.onboardReassure{display:flex;gap:8px;align-items:flex-start;background:#f3f8f5;border:1px solid #dceae1;color:#405148;padding:11px 13px;border-radius:14px;font-size:12px;line-height:1.5;margin:15px 0}
-  .onboardProgress{height:6px;background:#edf1ed;border-radius:999px;overflow:hidden;margin:4px 0 22px}.onboardProgress>span{display:block;height:100%;background:#164d3d;border-radius:999px;transition:width .2s ease}.onboardStepLabel{font-size:10px;font-weight:850;letter-spacing:.1em;color:#778078;text-transform:uppercase}
-  .onboardChoices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.onboardChoice{border:1px solid #dfe5e0;background:#fbfcfb;border-radius:15px;padding:13px;text-align:left;min-height:66px;transition:.15s;display:flex;gap:10px;align-items:flex-start}.onboardChoice:hover{border-color:#9db8a8;background:#f6faf7}.onboardChoice.selected{border-color:#164d3d;background:#edf6f1;box-shadow:inset 0 0 0 1px #164d3d}.onboardChoice .emoji{font-size:21px;line-height:1.2}.onboardChoice b{display:block;font-size:13px}.onboardChoice small{display:block;color:#6c746f;font-size:11px;line-height:1.4;margin-top:3px}.onboardChoice.wide{grid-column:1/-1}
-  .onboardFields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.onboardField{display:block}.onboardField span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#69716c;margin:0 0 6px 2px}.onboardField select{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px}
-  .onboardField input{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px;color:#29332d}.onboardHomeBase{margin:15px 0 4px;padding:14px 15px;border:1px solid #dce7df;background:#f7faf7;border-radius:16px}.onboardHomeBase>p{font-size:11px;line-height:1.5;color:#647169;margin:8px 2px 0}.onboardHomeBase .onboardError{margin-top:5px}
-  .onboardActions{display:flex;align-items:center;gap:8px;margin-top:22px}.onboardActions .spacer{flex:1}.onboardFine{font-size:11px;color:#7a817d;margin-top:9px}.onboardError{font-size:12px;color:#9a3e3e;margin-top:9px;min-height:17px}.onboardFinal{padding:10px 0 3px}.onboardSummary{display:flex;flex-wrap:wrap;gap:7px;margin:17px 0}.onboardSummary span{background:#eff5f1;border:1px solid #dce8df;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;color:#46554c}
-  .personaliseAgain{margin-top:13px}.phivosSignature{margin-top:14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,sans-serif;font-size:10px;line-height:1.5;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--mut)}.phivosSignature i{width:4px;height:4px;border-radius:50%;background:var(--ux-accent);display:inline-block}
-
-  /* Palette and brightness choices follow the same six app themes. */
-  .onboardCard{background:var(--panel);color:var(--ink);border-color:var(--line)}
-  .onboardCard h2,.onboardCard h3{color:var(--ink)}
-  .onboardLead,.onboardFine{color:var(--mut)}
-  .onboardChoice,.onboardField input,.onboardField select,.onboardHomeBase,.onboardReassure{
-    background:var(--soft);color:var(--ink);border-color:var(--line)
-  }
-  .onboardChoice small,.onboardHomeBase>p{color:var(--mut)}
+  .onboardOverlay{position:fixed;inset:0;z-index:5000;background:rgba(12,16,18,.58);backdrop-filter:blur(8px);display:grid;place-items:center;padding:14px;animation:obFade .18s ease-out}
+  .onboardCard{width:min(760px,100%);max-height:calc(100dvh - 28px);overflow:hidden;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 72px rgba(0,0,0,.24);padding:22px 24px;position:relative}
+  .onboardSkip{position:absolute;right:22px;top:17px;border:0;background:transparent;color:var(--mut);font-size:12px;font-weight:650;padding:5px 2px;cursor:pointer}
+  .onboardSkip:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .onboardProgress{height:3px;background:var(--soft);border-radius:999px;overflow:hidden;margin:7px 66px 15px 0}
+  .onboardProgress>span{display:block;height:100%;background:var(--ux-accent);border-radius:999px;transition:width .2s ease}
+  .onboardStepLabel{font-size:10px;font-weight:800;letter-spacing:.11em;color:var(--mut);text-transform:uppercase;margin:0 0 5px}
+  .onboardCard h2{font-size:27px;line-height:1.13;letter-spacing:-.035em;margin:5px 50px 8px 0;color:var(--ink)}
+  .onboardCard h3{font-size:21px;line-height:1.2;letter-spacing:-.025em;margin:3px 0 6px;color:var(--ink)}
+  .onboardLead{font-size:13px;line-height:1.5;color:var(--mut);max-width:650px;margin:0 0 12px}
+  .onboardChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 4px}
+  .onboardChoice{appearance:none;min-width:0;min-height:44px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 11px;text-align:left;transition:border-color .14s ease,background .14s ease;display:flex;align-items:center;gap:8px}
+  .onboardChoice:hover{border-color:var(--ux-accent-border);background:var(--soft)}
   .onboardChoice.selected{border-color:var(--ux-accent);background:var(--ux-accent-soft);box-shadow:inset 0 0 0 1px var(--ux-accent)}
-  .onboardClose{background:var(--soft);color:var(--ink)}
-  .onboardProgress{background:var(--soft)}
-  .onboardProgress>span{background:var(--ux-accent)}
-  .onboardLookLabel{font-size:12px;font-weight:850;margin:20px 0 9px;color:var(--ink)}
-  .onboardPaletteChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-  .onboardPaletteChoice,.onboardModeChoices button{
-    min-height:64px;display:flex;align-items:center;justify-content:center;gap:9px;
-    padding:10px;border:1px solid var(--line);border-radius:14px;
-    background:var(--soft);color:var(--ink);font-size:13px;cursor:pointer
-  }
-  .onboardPaletteChoice[aria-pressed="true"],.onboardModeChoices button[aria-pressed="true"]{
-    border:2px solid var(--ux-accent);background:var(--ux-accent-soft);
-  }
-  .onboardPaletteSwatch{width:23px;height:23px;border-radius:50%;background:var(--ob-swatch);flex:none}
-  .onboardModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .onboardChoice .emoji{display:none}
+  .onboardChoice b{display:block;font-size:12.5px;font-weight:700;line-height:1.25}
+  .onboardChoice small{display:block;color:var(--mut);font-size:10px;line-height:1.3;margin-top:3px}
+  .onboardChoice.wide{grid-column:1/-1}
+  .onboardChoiceCount{font-size:11px;color:var(--mut);margin:7px 1px 0}
+  .onboardFields{display:grid;grid-template-columns:1fr 1fr;gap:11px 13px;margin:14px 0 4px}
+  .onboardField{display:block;min-width:0}
+  .onboardField span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 5px 2px}
+  .onboardField select,.onboardField input{width:100%;min-height:42px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;padding:9px 11px;outline:none}
+  .onboardField select:focus,.onboardField input:focus{border-color:var(--ux-accent);outline:2px solid color-mix(in srgb,var(--ux-accent) 20%,transparent);outline-offset:1px}
+  .onboardHomeBase{grid-column:1/-1;margin:0;padding:0;border:0;background:transparent}
+  .onboardFieldHint{font-size:10px;line-height:1.4;color:var(--mut);margin:5px 2px 0}
+  .onboardError{font-size:11px;color:#bd6464;margin-top:5px;min-height:0}
+  .onboardActions{display:flex;align-items:center;gap:9px;margin-top:16px}
+  .onboardActions .spacer{flex:1}
+  .onboardActions .btn{min-height:40px;padding:9px 16px}
+  .onboardActions .btn:disabled{opacity:.4;cursor:not-allowed}
+  .onboardActions .textbtn{font-size:12px;color:var(--mut)}
+  .onboardFine{font-size:10px;line-height:1.4;color:var(--mut);margin-top:8px}
+  .onboardFinal{padding:6px 0 0}
+  .onboardLookLabel{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin:13px 0 7px;color:var(--mut)}
+  .onboardPaletteChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .onboardPaletteChoice,.onboardModeChoices button{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);font-size:12px;cursor:pointer}
+  .onboardPaletteChoice[aria-pressed="true"],.onboardModeChoices button[aria-pressed="true"]{border-color:var(--ux-accent);background:var(--ux-accent-soft);box-shadow:inset 0 0 0 1px var(--ux-accent)}
+  .onboardPaletteSwatch{width:20px;height:20px;border-radius:50%;background:var(--ob-swatch);flex:none}
+  .onboardModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .onboardModeChoices button{justify-content:center;min-height:39px}
   .onboardSyncOverlay{position:fixed;inset:0;z-index:5100;display:grid;place-items:center;padding:18px;background:#10121ac0}
-  .onboardSyncDialog{display:grid;gap:12px;width:min(420px,100%);border-radius:22px;padding:25px;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:0 25px 70px #0003}
-  .onboardSyncDialog h2{margin:0;font-size:24px;line-height:1.2}
-  .onboardSyncDialog p{color:var(--mut);font-size:14px;line-height:1.6;margin:0}
+  .onboardSyncDialog{display:grid;gap:12px;width:min(420px,100%);border-radius:18px;padding:22px;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:0 25px 70px #0003}
+  .onboardSyncDialog h2{margin:0;font-size:22px;line-height:1.2}
+  .onboardSyncDialog p{color:var(--mut);font-size:13px;line-height:1.5;margin:0}
   .onboardSyncDialog .textbtn{justify-self:center;color:var(--mut)}
-  @media(max-width:520px){.onboardPaletteChoices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:620px){.onboardCard{padding:18px 15px;border-radius:16px}.onboardCard h2{font-size:23px}.onboardCard h3{font-size:19px}.onboardChoices{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.onboardChoice{min-height:42px;padding:8px}.onboardChoice b{font-size:11.5px}.onboardChoice small{font-size:9.5px}.onboardPaletteChoices{grid-template-columns:repeat(3,minmax(0,1fr))}.onboardPaletteChoice{padding:7px;font-size:11px}.onboardPaletteSwatch{width:17px;height:17px}.onboardActions .btn{min-height:38px}}
+  @media(max-height:720px){.onboardCard{padding-top:15px;padding-bottom:15px}.onboardProgress{margin-bottom:10px}.onboardLead{margin-bottom:8px;font-size:12px}.onboardChoices{margin-top:8px;gap:5px}.onboardChoice{min-height:38px;padding:7px}.onboardFields{margin-top:9px;gap:8px}.onboardActions{margin-top:10px}.onboardLookLabel{margin-top:9px}.onboardPaletteChoices{gap:5px}.onboardPaletteChoice{min-height:40px}.onboardModeChoices button{min-height:34px}}
+  @media(prefers-reduced-motion:reduce){.onboardOverlay,.onboardProgress>span{animation:none;transition:none}}
   @keyframes obFade{from{opacity:0}to{opacity:1}}
-  @media(max-width:600px){.onboardCard{padding:21px 17px;border-radius:22px}.onboardCard h2{font-size:27px}.onboardChoices,.onboardFields{grid-template-columns:1fr}.onboardChoice.wide{grid-column:auto}.onboardActions{flex-wrap:wrap}.onboardActions .spacer{display:none}.onboardActions .btn{flex:1}.onboardActions .textbtn{flex-basis:100%;order:3}}
   `;
 
   const ready=()=>{
@@ -80,7 +87,7 @@
       palette:localStorage.getItem('oriel-desk-palette-v1')||'forest',
       theme:document.documentElement.getAttribute('data-theme')||'light'
     });
-    const defaultAnswers=()=>({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some',homePostcode:window.OrielCommuteProfile?.read?.()||'',...getAppearance()});
+    const defaultAnswers=()=>({region:'',environment:'',priorities:[],salary:'',hours:'',community:'',homePostcode:window.OrielCommuteProfile?.read?.()||'',...getAppearance()});
     const renderAppliedProfile=profile=>{
       const panel=document.getElementById('uxProfileApplied'),target=document.getElementById('uxProfileAppliedChips');
       if(!panel||!target)return;
@@ -120,7 +127,7 @@
       };
       if(!answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.read?.()||'';
       answers.priorities=Array.isArray(answers.priorities)?answers.priorities:[];
-      let step=-1;
+      let step=-1,regionChosen=Boolean(answers.region);
       const overlay=document.createElement('div');overlay.className='onboardOverlay';overlay.setAttribute('role','presentation');
       const card=document.createElement('div');card.className='onboardCard';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Personalise Placement Atlas');overlay.appendChild(card);document.body.appendChild(overlay);
       const close=()=>{
@@ -141,33 +148,33 @@
       const render=()=>{
         card.dataset.palette=answers.palette;
         card.dataset.theme=answers.theme;
-        queueMicrotask(()=>card.querySelector('.onboardChoice.selected, #obNext, #obFinish, #obStart, button')?.focus());
+        queueMicrotask(()=>card.querySelector('.onboardChoice[aria-pressed="true"], [data-value], #obNext, #obFinish, #obStart, button')?.focus({preventScroll:true}));
         if(step===-1){
-          card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardSpark"></div><div class="onboardStepLabel">A tiny setup before we start</div><h2><span aria-hidden="true">👋</span> Let’s learn a bit more about you!</h2><p class="onboardLead">There are thousands of Oriel programmes, so instead of making you stare at all of them equally, I can use a few quick answers to make the map, recommendations and fit scores feel much more like <i>your</i> search.</p><div class="onboardReassure"><span></span><span><b>Nothing here is permanent.</b> You can change every answer later in Preferences, retake this setup, or ignore the recommendations completely.</span></div><div class="onboardActions"><button class="btn primary" id="obStart">Okay, personalise it </button><span class="spacer"></span><button class="textbtn" id="obLater">Maybe later</button></div><div class="onboardFine">About 30 seconds. Your choices stay in this browser. If you add a home postcode or area, it is sent to TfL only when a journey estimate is requested.</div>`;
-          card.querySelector('.onboardClose').onclick=close;card.querySelector('#obLater').onclick=close;card.querySelector('#obStart').onclick=()=>{step=0;render()};return;
+          card.innerHTML=`<div class="onboardStepLabel">PERSONALISE YOUR SEARCH</div><h2>Make Placement Atlas yours.</h2><p class="onboardLead">A few quick choices help tailor programme matches, fit scores and map results. You can change them whenever you like.</p><div class="onboardActions"><button class="btn primary" id="obStart">Get started</button><span class="spacer"></span><button class="textbtn" id="obLater">Maybe later</button></div><div class="onboardFine">Your answers stay in this browser. A home area is shared with TfL only when you request a journey estimate.</div>`;
+          card.querySelector('#obLater').onclick=close;card.querySelector('#obStart').onclick=()=>{step=0;render()};return;
         }
 
         let body='';
         if(step===0){
-          body=`<div class="onboardStepLabel">1 of 5 · Location</div><h3><span aria-hidden="true">🏠</span> Where are you actually looking?</h3><p class="onboardLead">Choose the region you are considering, then tell me where you expect to be based during your pre-registration year.</p><div class="onboardChoices">${regions.map(r=>choice(r,'📍',r,'',answers.region===r)).join('')}${choice('','🌍','Show me all regions','Start broad and narrow it down later.',answers.region==='',true)}</div><div class="onboardHomeBase"><label class="onboardField"><span>Where will you be living during your pre-registration year? (Optional)</span><input id="obHomePostcode" type="text" placeholder="e.g. E16 1RB or Canning Town" autocomplete="postal-code" maxlength="60"></label><p>I'll use this to assess the journey from your home area to every training site, including each location in split programmes. It won't move programme pins or hide placements. Saved in this browser; sent to TfL only when a journey estimate is requested.</p><div class="onboardError" id="obHomePostcodeError"></div></div>`;
+          body=`<div class="onboardStepLabel">1 / 6 · Location</div><h3>Where are you looking?</h3><p class="onboardLead">Choose one region, or explore them all.</p><div class="onboardChoices">${regions.map(r=>choice(r,'',r,'',regionChosen&&answers.region===r)).join('')}${choice('','','All regions','',regionChosen&&answers.region==='',true)}</div>`;
         }else if(step===1){
-          const opts=[['hospital','🏥','Hospital','Clinical exposure, wards and specialist services.'],['gp','🩺','General Practice','Primary care, medicines optimisation and more independent work.'],['mixed','🔀','A good mix','I want meaningful exposure across more than one setting.'],['industry','🏭','Industry / research / data','Transferable experience, research, digital or industry exposure.'],['community','💊','Community','Patient-facing community pharmacy is genuinely my thing.'],['unsure','🧭','I’m not sure yet','Keep the recommendations broad while I figure it out.']];
-          body=`<div class="onboardStepLabel">2 of 5 · Pharmacy</div><h3><span aria-hidden="true">🏥</span> What kind of environment sounds most like you?</h3><p class="onboardLead">This changes the weighting — it won’t completely hide the other options.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.environment===x[0])).join('')}</div>`;
+          const opts=[['hospital','','Hospital',''],['gp','','General practice',''],['mixed','','A good mix',''],['industry','','Industry, research or data',''],['community','','Community pharmacy',''],['unsure','','Not sure yet','']];
+          body=`<div class="onboardStepLabel">2 / 6 · Setting</div><h3>Which environment appeals to you?</h3><p class="onboardLead">This guides recommendations without hiding other settings.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.environment===x[0])).join('')}</div>`;
         }else if(step===2){
-          const opts=[['money','💷','Pay','I want strong salary/value.'],['lifestyle','⏰','Work-life balance','Hours and day-to-day quality matter a lot.'],['progression','📈','Career value','I want experience that opens doors afterwards.'],['location','🏠','Location','Where I live/work matters to my quality of life.'],['independence','🎧','Independence','I prefer autonomy, quieter work or desk-friendly tasks.'],['clinical','🔬','Clinical variety','I want broad, interesting clinical exposure.']];
-          body=`<div class="onboardStepLabel">3 of 5 · Priorities</div><h3><span aria-hidden="true">✨</span> What matters most to you?</h3><p class="onboardLead">Pick up to three. These get extra weight in your fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.priorities.includes(x[0]))).join('')}</div><div class="onboardError" id="obError"></div>`;
+          const opts=[['money','','Pay',''],['lifestyle','','Work-life balance',''],['progression','','Career progression',''],['location','','Location',''],['independence','','Independence',''],['clinical','','Clinical variety','']];
+          body=`<div class="onboardStepLabel">3 / 6 · Priorities</div><h3>What matters most?</h3><p class="onboardLead">Choose 1–3 priorities. They receive extra weight in your fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.priorities.includes(x[0]))).join('')}</div><div class="onboardChoiceCount" id="obPriorityCount" aria-live="polite">Choose 1–3</div><div class="onboardError" id="obError"></div>`;
         }else if(step===3){
-          body=`<div class="onboardStepLabel">4 of 5 · Practical stuff</div><h3><span aria-hidden="true">⏰</span> Any hard-ish limits?</h3><p class="onboardLead">These are filters, not personality traits — leave either one broad if you don’t want it restricting your results.</p><div class="onboardFields"><label class="onboardField"><span>Minimum salary</span><select id="obSalary"><option value="">💷 No minimum</option><option value="26000">💷 £26k+</option><option value="28000">💷 £28k+</option><option value="30000">💷 £30k+</option><option value="32000">💷 £32k+</option><option value="36000">💷 £36k+</option></select></label><label class="onboardField"><span>Maximum weekly hours</span><select id="obHours"><option value="">⏰ I’m flexible</option><option value="35">⏰ ≤35h</option><option value="37.5">⏰ ≤37.5h</option><option value="40">⏰ ≤40h</option><option value="42.5">⏰ ≤42.5h</option></select></label></div><div class="onboardReassure"><span>↺</span><span>You can loosen these later if the results become too narrow.</span></div>`;
+          body=`<div class="onboardStepLabel">4 / 6 · Practical</div><h3>Set your limits</h3><p class="onboardLead">All optional. Leave anything blank if it does not matter to you.</p><div class="onboardFields"><label class="onboardField"><span>Minimum salary</span><select id="obSalary"><option value="">No minimum</option><option value="26000">£26k+</option><option value="28000">£28k+</option><option value="30000">£30k+</option><option value="32000">£32k+</option><option value="36000">£36k+</option></select></label><label class="onboardField"><span>Maximum weekly hours</span><select id="obHours"><option value="">No limit</option><option value="35">35 hours</option><option value="37.5">37.5 hours</option><option value="40">40 hours</option><option value="42.5">42.5 hours</option></select></label><div class="onboardHomeBase"><label class="onboardField"><span>Home area (optional)</span><input id="obHomePostcode" type="text" placeholder="Postcode, area or station" autocomplete="postal-code" maxlength="60"></label><p class="onboardFieldHint">Used to estimate journeys to each training site.</p><div class="onboardError" id="obHomePostcodeError"></div></div></div>`;
         }else if(step===4){
-          const opts=[['happy','😊','Happy with community','I’m comfortable with a community-heavy programme.'],['some','🙂','Some is fine','I’m happy to have it as part of a mixed programme.'],['less','🌿','Prefer less community','I’d rather hospital/GP/other settings take the lead.'],['avoid','🙅','Avoid community-heavy','Strongly push community-heavy programmes down my recommendations.']];
-          body=`<div class="onboardStepLabel">5 of 5 · One last thing</div><h3><span aria-hidden="true">💊</span> How do you feel about community pharmacy exposure?</h3><p class="onboardLead">This changes how strongly community-heavy programmes are penalised in your personal fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
+          const opts=[['happy','','Happy with it',''],['some','','Some is fine',''],['less','','Prefer less',''],['avoid','','Avoid community-heavy','']];
+          body=`<div class="onboardStepLabel">5 / 6 · Community</div><h3>How much community pharmacy would you like?</h3><p class="onboardLead">This changes how community-heavy programmes affect your fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
         }else{
           const colours=[['forest','Forest','#274333'],['copper','Copper','#3f6589'],['mauve','Mauve','#805e78'],
             ['amber','Amber','#c49348'],['cocoa','Cocoa','#695443'],['mono','Monochrome','#55575a']];
-          body=`<div class="onboardStepLabel">6 of 6 · Make it yours</div>
-            <h3>Choose your Placement Atlas look</h3>
-            <p class="onboardLead">Choose your colour palette and light or dark appearance. The whole website, including this quiz, previews your choices instantly.</p>
-            <div class="onboardLookLabel">Your colour theme</div>
+          body=`<div class="onboardStepLabel">6 / 6 · Appearance</div>
+            <h3>Choose your look</h3>
+            <p class="onboardLead">Preview your palette and light or dark mode as you choose.</p>
+            <div class="onboardLookLabel">Colour palette</div>
             <div class="onboardPaletteChoices" role="group" aria-label="Choose colour palette">
              ${colours.map(([id,label,colour])=>`<button type="button" class="onboardPaletteChoice" data-ob-palette="${id}" aria-pressed="${answers.palette===id}">
                <span class="onboardPaletteSwatch" style="--ob-swatch:${colour}"></span><b>${label}</b>${answers.palette===id?'<span aria-hidden="true">✓</span>':''}
@@ -176,12 +183,12 @@
             <div class="onboardModeChoices" role="group" aria-label="Choose light or dark mode">
              <button type="button" data-ob-mode="light" aria-pressed="${answers.theme==='light'}">☀ Light</button>
              <button type="button" data-ob-mode="dark" aria-pressed="${answers.theme==='dark'}">☾ Dark</button>
-            </div><p class="onboardFine">You can change both later in Preferences.</p>`;
+            </div>`;
         }
 
         const final=step===5;
-        card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0&&!final?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${!final?'<button class="btn primary" id="obNext">Continue →</button>':'<button class="btn primary" id="obFinish">Show my matches </button>'}</div><div class="onboardFine">You can change all of this later under Preferences.</div>`;
-        card.querySelector('.onboardClose').onclick=close;
+        card.innerHTML=`<button type="button" class="onboardSkip" id="obSkip">Skip setup</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${step===2||step===3?'<button class="btn primary" id="obNext">Continue →</button>':''}${final?'<button class="btn primary" id="obFinish">Done</button>':''}</div>`;
+        card.querySelector('#obSkip').onclick=close;
 
         if(step===0){
           card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.region=b.dataset.value;render()});
