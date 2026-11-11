@@ -262,10 +262,10 @@ test('premium discovery prototype is reversible and keeps the original programme
   const sw=read('sw.js');
   const app=read('app-base.js');
   const product=read('app-product.js');
-  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover2/);
-  assert.match(html,/premium-discovery-preview\.css\?v=20261111makeover2/);
-  assert.match(sw,/premium-discovery-preview\.js\?v=20261111makeover2/);
-  assert.match(sw,/premium-discovery-preview\.css\?v=20261111makeover2/);
+  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover3/);
+  assert.match(html,/premium-discovery-preview\.css\?v=20261111makeover3/);
+  assert.match(sw,/premium-discovery-preview\.js\?v=20261111makeover3/);
+  assert.match(sw,/premium-discovery-preview\.css\?v=20261111makeover3/);
   assert.match(js,/atlasClassic/,'Prototype has a simple off switch');
   assert.match(js,/atlasPremiumPreview/,'Prototype is scoped to its opt-in class');
   assert.match(css,/html\.atlasPremiumPreview/);
@@ -283,8 +283,8 @@ test('premium discovery prototype is reversible and keeps the original programme
 
 test('editorial palette prototype keeps neutral surfaces and six distinct accessible accents',()=>{
   const html=read('index.html'),pwa=read('sw.js'),css=read('premium-editorial-palettes.css');
-  assert.match(html,/premium-editorial-palettes\.css\?v=20261111makeover2/);
-  assert.match(pwa,/premium-editorial-palettes\.css\?v=20261111makeover2/);
+  assert.match(html,/premium-editorial-palettes\.css\?v=20261111makeover3/);
+  assert.match(pwa,/premium-editorial-palettes\.css\?v=20261111makeover3/);
   assert.match(css,/--bg:#141719/);
   assert.match(css,/--panel:#22272A/);
   assert.match(css,/--line:#373E42/);
@@ -319,7 +319,7 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
   const heroCss=read('premium-discovery-preview.css');
   const cards=read('premium-card-tabs.js');
   const cardCss=read('premium-card-tabs.css');
-  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover2/);
+  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover3/);
   assert.match(hero,/className='atlasHowItWorks'/,'Introductory explanations should remain accessible behind disclosure');
   assert.match(hero,/enhanceNavigation/,'Secondary navigation should be grouped');
   assert.match(hero,/activeAdvanced/,'Active advanced filters should reopen automatically');
