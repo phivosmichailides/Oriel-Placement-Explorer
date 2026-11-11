@@ -230,6 +230,15 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     return {innerWidth:vw,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,offenders};
   });
   console.log('Mobile horizontal layout diagnostics: '+JSON.stringify(horizontal));
+  const layoutBoxes=await page.evaluate(()=>{
+    const selectors=['html','body','.shell','.atlasStickyHeader','.atlasStickyHeader>nav.tabs','.atlasStickyHeader>.brand','.atlasStickyHeader>.atlasHeaderUtilities','#tinderMode','.tdBoard'];
+    return selectors.map(sel=>{
+      const node=document.querySelector(sel);if(!node)return {selector:sel,missing:true};
+      const r=node.getBoundingClientRect(),cs=getComputedStyle(node);
+      return {selector:sel,x:Math.round(r.x),right:Math.round(r.right),width:Math.round(r.width),scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,overflowX:cs.overflowX,gridCols:cs.gridTemplateColumns,display:cs.display,maxWidth:cs.maxWidth};
+    });
+  });
+  console.log('Mobile layout box sizes: '+JSON.stringify(layoutBoxes));
   assert(horizontal.scrollWidth<=horizontal.innerWidth+1,'Mobile layout has horizontal overflow');
   await page.evaluate(()=>window.openOrielPersonalisation?.());
   await page.waitForSelector('.onboardOverlay',{timeout:10000});
