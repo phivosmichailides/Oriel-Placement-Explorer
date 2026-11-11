@@ -1,8 +1,8 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v69-swipe-unfiltered';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v70-layerfix';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'atlas-navigation.js?v=20261111logo4','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261111tone2',
+  'atlas-navigation.js?v=20261111layerfix5','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261111tone2',
   'atlas-completion.css?v=20261111completion6','learning-library.js?v=20261111learn2',
   'atlas-interactions.js?v=20261110reset1','atlas-interactions.css?v=20261110ux1','atlas-footer.css?v=20261110footer1',
   'premium-discovery-preview.js?v=20261111nav2','premium-discovery-preview.css?v=20261111makeover5',
