@@ -356,3 +356,55 @@ test('workspace refinement assets are wired and presentation-only',()=>{
   assert.doesNotMatch(js,/localStorage\.clear\s*\(/,'Must not clear user data');
   assert.doesNotMatch(js,/state\.marks\s*=/,'Must not rewrite programme decisions');
 });
+
+
+test('onboarding is compact, unselected by default and advances according to choice type',()=>{
+  const quiz=read('onboarding.js');
+  assert.match(quiz,/overflow:hidden/,'The setup should fit without a scrolling modal');
+  assert.match(quiz,/regionChosen&&answers\.region===''/,'All regions must not be preselected for a new visitor');
+  assert.match(quiz,/environment:''/,'A first-time visitor must choose a setting');
+  assert.match(quiz,/community:''/,'A first-time visitor must choose community exposure');
+  assert.match(quiz,/answers\.region=b\.dataset\.value;regionChosen=true;step\+\+;render\(\)/);
+  assert.match(quiz,/answers\.environment=b\.dataset\.value;step\+\+;render\(\)/);
+  assert.match(quiz,/answers\.community=b\.dataset\.value;step\+\+;render\(\)/);
+  assert.match(quiz,/if\(step===2&&!answers\.priorities\.length\)/,'At least one priority is required');
+  assert.match(quiz,/answers\.priorities\.length===0/,'Continue is disabled until a priority is selected');
+  assert.match(quiz,/step===2\|\|step===3/,'Only multi-select and practical pages require Continue');
+  assert.match(quiz,/id="obFinish">Done/);
+  assert.match(quiz,/onboardSkip/);
+  assert.doesNotMatch(quiz,/onboardClose/,'The oversized close control should be removed');
+});
+
+test('shortlist interface keeps secondary actions optional and note labels concise',()=>{
+  const html=read('index.html'),nav=read('atlas-navigation.js');
+  const css=read('premium-quiet-interface.css'),base=read('app-base.js'),product=read('app-product.js');
+  assert.match(html,/<h2>Shortlist<\/h2>/);
+  assert.doesNotMatch(html,/❤️ Shortlist|♥ My shortlist/);
+  assert.match(nav,/atlasShortlistMore/);
+  assert.match(nav,/menu\.append\(order\)/);
+  assert.match(css,/atlasShortlistMoreMenu/);
+  assert.match(css,/atlasRemoveShortlist/);
+  assert.match(css,/atlasSwipeOpen/);
+  assert.match(base,/placeholder="Note"/);
+  assert.match(product,/placeholder="Note"/);
+  assert.doesNotMatch(base,/placeholder=" Your note/);
+  assert.doesNotMatch(product,/placeholder=" Your note/);
+});
+
+test('map legend is sourced from rendered pins rather than the unfiltered catalogue',()=>{
+  const map=read('sector-map.js');
+  assert.match(map,/const renderLegend=\(rendered=\[\]\)/);
+  assert.match(map,/new Set\(rendered\.map\(g=>groupMapSector\(g\.entries\)\)\)/);
+  assert.match(map,/legend\.hidden=true/);
+  assert.match(map,/renderLegend\(displayGroups\)/);
+  assert.doesNotMatch(map,/new Set\(placements\.filter\(matches\)\.map\(programmeMapSector\)\)/);
+  assert.match(map,/hasShortlisted=groups\.some/);
+  assert.match(map,/hasExcluded=groups\.some/);
+});
+
+test('quiet interface stylesheet and refreshed application assets are cache-busted',()=>{
+  const html=read('index.html'),sw=read('sw.js'),pwa=read('pwa.js');
+  assert.match(html,/premium-quiet-interface\.css\?v=20261111quiet1/);
+  assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet1/);
+  assert.match(pwa,/sw\.js\?v=20261111quiet1/);
+});
