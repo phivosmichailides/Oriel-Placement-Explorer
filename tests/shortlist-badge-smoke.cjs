@@ -74,6 +74,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await mobile.locator('#results .placement').first().waitFor({state:'visible',timeout:60000});
   await mobile.locator('#results .placement').first().locator('[data-action=prefer]').click();
   await mobile.waitForFunction(()=>document.querySelector('#uxDrawerLauncher [data-ux-shortlist-count]')?.textContent==='(1)',null,{timeout:15000});
+  assert(await mobile.locator('#uxDrawerLauncher').evaluate(el=>el.parentElement===document.body),'Floating shortlist must escape the app content stacking context');
   await mobile.locator('#uxDrawerLauncher').click();
   const mobileItem=mobile.locator('#uxDrawerItems .uxDrawerItem').first();
   await mobileItem.waitFor({state:'visible',timeout:15000});
