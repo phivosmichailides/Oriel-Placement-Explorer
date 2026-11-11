@@ -62,9 +62,9 @@
   var systemDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
   var theme=saved==='dark'||(saved!=='light'&&systemDark)?'dark':'light';
   document.documentElement.setAttribute('data-theme',theme);
-  var palette='forest', layout='list';
-  try{palette=localStorage.getItem('oriel-desk-palette-v1')||'forest';layout=localStorage.getItem('oriel-desk-layout-v1')||'list'}catch(e){}
-  if(!/^(forest|copper|mauve|amber|cocoa|mono)$/.test(palette))palette='forest';
+  var palette='mono', layout='list';
+  try{palette=localStorage.getItem('oriel-desk-palette-v1')||'mono';layout=localStorage.getItem('oriel-desk-layout-v1')||'list'}catch(e){}
+  if(!/^(forest|copper|mauve|amber|cocoa|mono)$/.test(palette))palette='mono';
   document.documentElement.setAttribute('data-palette',palette);
   document.documentElement.setAttribute('data-layout',layout==='grid'?'grid':'list');
   document.querySelector('meta[name="theme-color"]').setAttribute('content',theme==='dark'?'#1b171b':'#f7f6f2');
@@ -174,7 +174,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <link rel="stylesheet" href="atlas-navigation.css?v=20261111logo1">
 <link rel="stylesheet" href="atlas-map-tones.css?v=20261109tone1">
 <link rel="stylesheet" href="atlas-interactions.css?v=20261110ux1">
-<link rel="stylesheet" href="atlas-footer.css?v=20261110footer1">
+<link rel="stylesheet" href="atlas-footer.css?v=20261111brand1">
 <link rel="stylesheet" href="premium-discovery-preview.css?v=20261111makeover5">
 <link rel="stylesheet" href="premium-card-tabs.css?v=20261111makeover5">
 <link rel="stylesheet" href="premium-editorial-palettes.css?v=20261111makeover5">
@@ -216,7 +216,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
   <label class="field"><span>Specialist programmes</span><select id="specialistView"><option value="all">Include the remaining settings</option><option value="only">Show specialist programmes only</option></select></label>
 </fieldset><label class="field"><span>Sort by</span><select id="sort"><option value="fit"> For you</option><option value="salary"> Salary</option><option value="hourly"> Effective hourly pay</option><option value="hours"> Shortest week</option><option value="name">A–Z</option></select></label>
       <div class="notice"><b>Start with the complete catalogue.</b><br>Filters narrow the programme list and map together. Your permanent preferences influence fit scores; only verified location exclusions remove programmes.</div>
-      <div class="footerbar"><b id="count">Loading…</b><span class="smallnote">saved locally</span></div>
+      <div class="footerbar"><b id="count">Loading…</b><span class="smallnote">Saved on this device</span></div>
     </aside>
     <div class="workspace"><section class="map-card card"><div class="map-heading"><div><div class="eyebrow">4,064 TOTAL · 4,064 MATCHING</div><h2>Explore all programme locations across England &amp; Wales</h2></div>
 <div class="map-heading-tools">
@@ -313,7 +313,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <footer class="app-footer atlasFooter" aria-label="Placement Atlas site information">
   <div class="atlasFooterGrid">
     <div class="atlasFooterIdentity">
-      <div class="atlasFooterBrand"><span class="atlasFooterCross" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M22.4 4.8h19.2v17.6h17.6v19.2H41.6v17.6H22.4V41.6H4.8V22.4h17.6z"/></svg></span><strong>Placement Atlas</strong></div>
+      <div class="atlasFooterBrand"><img class="atlasFooterMark" src="placement-atlas-compass-pin.webp?v=20261111logo2" alt="" aria-hidden="true"><strong>Placement Atlas</strong></div>
       <p>Explore clearly. Compare what matters.<br>Choose your foundation training with confidence.</p>
       <span class="atlasFooterIdentityNote">Independent · Built for pharmacy applicants</span>
     </div>
@@ -327,12 +327,13 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
       <h2>Plan &amp; compare</h2>
       <button type="button" data-atlas-footer-tab="compare">Compare programmes</button>
       <button type="button" data-atlas-footer-tab="simulator">Oriel Simulation</button>
-      <button type="button" data-atlas-footer-tab="outcome">My Outcome</button>
+      <button type="button" data-atlas-footer-tab="tinderMode">Swipe Mode</button>
+      <button type="button" data-atlas-footer-tab="outcome">Profile</button>
       <button type="button" data-atlas-footer-tab="prefs">Preferences</button>
     </nav>
     <nav class="atlasFooterGroup" aria-label="Project information and support">
       <h2>About &amp; support</h2>
-      <a href="guide.html">How to compare programmes</a>
+      <a href="guide.html">Placement guide</a>
       <a href="https://github.com/phivosmichailides/Placement_Atlas" target="_blank" rel="noopener noreferrer">Project on GitHub</a>
       <a href="https://github.com/phivosmichailides/Placement_Atlas/discussions" target="_blank" rel="noopener noreferrer">Feedback &amp; ideas</a>
       <a href="https://www.linkedin.com/in/phivos-michailides-601b0329b/" target="_blank" rel="noopener noreferrer">About the creator</a>
