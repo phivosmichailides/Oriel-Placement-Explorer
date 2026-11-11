@@ -17,7 +17,7 @@
     };
     const loadOnboarding=()=>{
       const onboarding=document.createElement('script');
-      onboarding.src='onboarding.js?v=20261111setup4';
+      onboarding.src='onboarding.js?v=20261111setup5';
       onboarding.onload=loadDeadlineDates;
       onboarding.onerror=loadDeadlineDates;
       document.body.appendChild(onboarding);
