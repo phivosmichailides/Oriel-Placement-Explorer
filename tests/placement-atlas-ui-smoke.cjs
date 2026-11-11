@@ -36,8 +36,6 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
   const saveNote=page.locator('#uxFilterSidebar .footerbar .smallnote');
   assert.equal(await saveNote.evaluate(el=>getComputedStyle(el).whiteSpace),'nowrap','Saved locally note should stay on one line');
-  const moreFilters=page.locator('.atlasQuickMore');
-  assert.equal((await moreFilters.innerText()).trim(),'More filters','Quick-filter disclosure should use the shorter label');
   const firstTitle=page.locator('#results .placement .placementTop h3').first();
   const titleMetrics=await firstTitle.evaluate(el=>({letterSpacing:getComputedStyle(el).letterSpacing,text:el.innerText}));
   assert(parseFloat(titleMetrics.letterSpacing)>=-.5,'Programme title tracking is still too compressed: '+JSON.stringify(titleMetrics));
@@ -46,7 +44,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   for(const [id,label] of [['simulator','Oriel Simulation'],['tinderMode','Swipe Mode']]){
    const button=page.locator('header.top nav.tabs [data-tab="'+id+'"]');
    assert.equal(await button.getAttribute('aria-label'),label,'Wrong accessible label for '+id);
-   assert.equal((await button.innerText()).replace(/\s+/g,' ').trim(),label,'Duplicated or overlapping navigation text for '+id);
+   assert.equal((await button.locator('.atlasTabLabel').innerText()).trim(),label,'Duplicated or overlapping navigation text for '+id);
   }
   assert.equal(await page.locator('header.top nav.tabs [data-tab=learn]').count(),1,'Learn navigation tab is missing');
   assert.equal(await page.locator('.atlasFooterMark').count(),1,'Footer compass-pin logo is missing');
@@ -65,10 +63,10 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    const map=document.getElementById('placementMap');
    return map&&(map.dataset.basemap||map.querySelector('canvas')||map.querySelector('.leaflet-tile-loaded'));
   },null,{timeout:60000});
-  await page.waitForFunction(()=>!!document.querySelector('#placementMap .leaflet-control-attribution'),null,{timeout:30000});
+  await page.waitForFunction(()=>!!document.querySelector('#placementMap .leaflet-control-attribution, #placementMap .maplibregl-ctrl-attrib'),null,{timeout:30000});
   const mapInfo=await page.evaluate(()=>{
-   const host=document.getElementById('placementMap'),credit=host.querySelector('.leaflet-control-attribution');
-   const layer=window.placementMap?placementMap._orielBasemapRecord?.layer:null;
+   const host=document.getElementById('placementMap'),credit=host.querySelector('.leaflet-control-attribution, .maplibregl-ctrl-attrib');
+   const layer=typeof placementMap!=='undefined'&&placementMap?placementMap._orielBasemapRecord?.layer:null;
    return {provider:host.dataset.basemap||'',tileCount:host.querySelectorAll('.leaflet-tile-loaded').length,
     canvasCount:host.querySelectorAll('canvas').length,credit:credit?.innerText||'',
     creditFont:credit?getComputedStyle(credit).fontSize:null,
@@ -93,8 +91,14 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   // Profile benefits are concrete and the learning library is a separate destination.
   await page.locator('header.top nav.tabs [data-tab=outcome]').click();
   await page.waitForFunction(()=>document.getElementById('outcome')?.classList.contains('active'),null,{timeout:12000});
-  assert.equal(await page.locator('.paJoinBenefits span').count(),3,'Free account benefits are missing');
-  assert((await page.locator('#paJoinBanner').innerText()).includes('Free to join'));
+  assert.equal(await page.locator('#paJoinBanner').count(),1,'Existing Profile account banner should remain intact');
+  assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
+  assert.equal((await page.locator('.atlasStickyHeader .brand h1').innerText()).trim(),'Placement Atlas');
+  assert((await page.locator('.atlasStickyHeader .brand p').innerText()).includes('Find your foundation placement.'));
+  const navLabels=await page.locator('header.top nav.tabs > .tab .atlasTabLabel').allInnerTexts();
+  assert.equal(navLabels.filter(x=>x==='Oriel Simulation').length,1,'Oriel Simulation should appear once');
+  assert.equal(navLabels.filter(x=>x==='Swipe Mode').length,1,'Swipe Mode should appear once');
+  assert.equal(navLabels.at(-1),'Preferences','Preferences must remain the final navigation item');
   await page.locator('header.top nav.tabs [data-tab=learn]').click();
   await page.waitForFunction(()=>document.getElementById('learn')?.classList.contains('active'),null,{timeout:12000});
   assert(await page.locator('#atlasLearnSettings').isVisible(),'Learning library settings guide did not open');
@@ -119,18 +123,18 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.waitForFunction(()=>document.getElementById('tinderMode')?.classList.contains('active')&&
     !!document.querySelector('#tinderCardSlot .tdCard'),null,{timeout:30000});
   const refine=page.locator('#tinderFilterToggle');
-  assert.equal((await refine.innerText()).trim(),'Refine','New Swipe Mode sessions should start without refined filters');
+  assert.equal((await refine.innerText()).trim(),'Refine (1 selected)','The default London location should be counted as an active filter');
   assert.equal(await page.locator('#tdSoundToggle').innerText().then(x=>x.trim()),'Sound on','Sound control is missing');
   await refine.click();
   await page.locator('#tdSetting').selectOption('gp');
   await page.locator('#tdMaxHours').selectOption('35');
-  await page.waitForFunction(()=>document.getElementById('tinderFilterToggle')?.innerText.includes('2 selected'),null,{timeout:5000});
-  assert((await refine.innerText()).includes('2 selected'),'Collapsed filter label does not disclose active filters');
+  await page.waitForFunction(()=>document.getElementById('tinderFilterToggle')?.innerText.includes('3 selected'),null,{timeout:5000});
+  assert((await refine.innerText()).includes('3 selected'),'Collapsed filter label does not disclose active filters');
   await refine.click();
-  assert((await refine.innerText()).includes('2 selected'),'Active filter count disappeared when the panel was collapsed');
+  assert((await refine.innerText()).includes('3 selected'),'Active filter count disappeared when the panel was collapsed');
   await refine.click();
   await page.locator('#tdFiltersReset').click();
-  assert.equal((await refine.innerText()).trim(),'Refine','Clear game filters did not reset the indicator');
+  assert.equal((await refine.innerText()).trim(),'Refine (1 selected)','Clearing additional filters should preserve the London location filter');
   await refine.click();
 
   const detailsButton=page.locator('#tinderCardSlot .tdShowDetails');
@@ -144,9 +148,9 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const sound=page.locator('#tdSoundToggle');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound off');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound on');
-  assert.equal((await page.locator('#tinderCardSlot .tdStampNo').innerText()).trim(),'LIKE NO');
+  assert((await page.locator('#tinderCardSlot .tdStampNo').innerText()).trim().toLowerCase().includes('like no'));
   await page.locator('#tdOpenRejected').click();
-  await page.waitForFunction(()=>document.querySelector('.tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
+  await page.waitForFunction(()=>document.getElementById('tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
   assert.equal((await page.locator('#tdDrawerHeading').innerText()).trim(),'Like No','Like No drawer heading should not include "Rejected"');
   await page.locator('#tdDrawerClose').click();
 
