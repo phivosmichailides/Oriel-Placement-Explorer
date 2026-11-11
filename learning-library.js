@@ -164,7 +164,6 @@
   };
   regionSelect?.addEventListener('change',updateRegionLinks);
   populateRegions();updateRegionLinks();
-  document.addEventListener('desk:dataset',()=>{populateRegions();updateRegionLinks()});
   const search=panel.querySelector('#atlasLearnProgrammeSearch'),results=panel.querySelector('#atlasLearnProgrammeResults'),selected=panel.querySelector('#atlasLearnSelectedProgramme');
   const researchFor=p=>{
     if(!selected)return;
@@ -201,5 +200,14 @@
     }
   };
   search?.addEventListener('input',renderMatches);
-  document.addEventListener('desk:dataset',renderMatches);
+  // The catalogue loads asynchronously. The main app announces desk:ready,
+  // not necessarily desk:dataset; hydrate again once data is available.
+  const syncLibrary=()=>{populateRegions();updateRegionLinks();renderMatches();};
+  for(const event of ['desk:ready','desk:dataset','desk:cards-ready'])document.addEventListener(event,syncLibrary);
+  tab.addEventListener('click',syncLibrary);
+  const awaitCatalogue=attempt=>{
+    if(allPlacements().length){syncLibrary();return;}
+    if(attempt<40)window.setTimeout(()=>awaitCatalogue(attempt+1),250);
+  };
+  awaitCatalogue(0);
 })();
