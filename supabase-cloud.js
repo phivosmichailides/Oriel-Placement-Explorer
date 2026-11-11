@@ -371,4 +371,15 @@
     return null;
   });
   function bootstrappingDone(){window.__orielCloudBootstrapped=true;}
+  // Minimal shared account bridge for the Profile view. The original
+  // sign-out button remains responsible for verifying pending cloud changes.
+  window.PlacementAtlasAccount={
+    getUser:()=>currentUser,
+    getClient:()=>client,
+    openSignIn:()=>{if(configured)showAuthModal();},
+    signOut:()=>{
+      const button=[...document.querySelectorAll('#orielCloudAccount button')].find(b=>b.textContent.trim()==='Sign out');
+      if(button)button.click();
+    }
+  };
 })();
