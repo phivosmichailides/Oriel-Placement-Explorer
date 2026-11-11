@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v53-profile-map';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v54-globe';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261110footer1','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
@@ -10,7 +10,7 @@ const EXTRA_ASSETS=[
   'placement-refinements.css?v=20261111mobile1','placement-profile.css?v=20261111profile1',
   'placement-makeover.css?v=20261111cards1','placement-mobile-navigation.js?v=20261111mobile1',
   'placement-profile.js?v=20261111profile1','placement-titles.js?v=20261111titles1',
-  'placement-atlas-globe.svg','favicon.svg?v=20261111globe1',
+  'placement-atlas-globe.svg','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
   'supabase-cloud.js?v=20261111profile1','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
   'sector-map.js?v=20261111pins1','onboarding.js?v=20261110ux1','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
@@ -29,7 +29,7 @@ const EXTRA_ASSETS=[
   'data/rail-stations-ew-ODbL.txt','data/rail-stations-ew-ATTRIBUTION.md',
   'locations.json','map-styles/editorial-light.json?v=20261109roads3',
   'map-styles/editorial-dark.json?v=20261109roads3',
-  'vendor/leaflet.js','vendor/leaflet.css','icons/placement-atlas-192.png?v=20261108atlas2','icons/placement-atlas-512.png?v=20261108atlas2'
+  'vendor/leaflet.js','vendor/leaflet.css','icons/placement-atlas-192.png?v=20261111globe1','icons/placement-atlas-512.png?v=20261111globe1'
 ];
 const localURL=value=>new URL(value,ROOT).href;
 const MAP_ASSET_CACHE='placement-atlas-map-assets-v1';
