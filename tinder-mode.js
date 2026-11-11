@@ -487,7 +487,7 @@
       const title=document.createElement('strong');title.className='tdDrawerProgrammeTitle';
       title.textContent=window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Unnamed programme',p)||p.title||p.employer||'Unnamed programme';
       const sub=document.createElement('span');sub.className='tdDrawerProgrammeSub';
-      sub.textContent=(p.region||'Region not listed')+' · '+money(p.salary)+
+      sub.textContent=formatRegion(p.region)+' · '+money(p.salary)+
         (p.hours?' · '+p.hours+'h/week':'');
       text.append(title,sub);
       const score=document.createElement('span');score.className='tdDrawerFit';
@@ -669,7 +669,7 @@
     const nav=document.querySelector('nav.tabs'),sim=nav?.querySelector('[data-tab="simulator"]');
     if(!sim)return;
     const tab=document.createElement('button');tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
-    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Tinder Mode</span>';
+    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Swipe Mode</span>';
     sim.after(tab);
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
