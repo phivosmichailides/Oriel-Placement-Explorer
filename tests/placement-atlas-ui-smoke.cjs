@@ -216,7 +216,21 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
   // The quiz should also fit on a narrow phone viewport.
   await page.setViewportSize({width:390,height:844});
-  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'Mobile layout has horizontal overflow');
+  const horizontal=await page.evaluate(()=>{
+    const vw=window.innerWidth;
+    const offenders=[...document.body.querySelectorAll('*')].map(node=>{
+      const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
+      return {node,rect,style};
+    }).filter(x=>x.style.display!=='none'&&x.style.visibility!=='hidden'&&x.rect.width>0&&x.rect.right>vw+2&&x.rect.left<vw+2)
+      .sort((a,b)=>b.rect.right-a.rect.right).slice(0,18).map(x=>({
+        tag:x.node.tagName,id:x.node.id,cls:String(x.node.className).slice(0,95),
+        left:Math.round(x.rect.left),right:Math.round(x.rect.right),width:Math.round(x.rect.width),
+        position:x.style.position,overflowX:x.style.overflowX,transform:x.style.transform.slice(0,50)
+      }));
+    return {innerWidth:vw,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,offenders};
+  });
+  console.log('Mobile horizontal layout diagnostics: '+JSON.stringify(horizontal));
+  assert(horizontal.scrollWidth<=horizontal.innerWidth+1,'Mobile layout has horizontal overflow');
   await page.evaluate(()=>window.openOrielPersonalisation?.());
   await page.waitForSelector('.onboardOverlay',{timeout:10000});
   await page.locator('#obStart').click();
