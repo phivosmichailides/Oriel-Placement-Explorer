@@ -82,7 +82,7 @@
       try{
         const local=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
         const cloud=typeof state!=='undefined'?state.prefs?.onboarding:null;
-        const profile=local||cloud;
+        const profile=cloud||local;
         if(!profile)return null;
         const completed=localStorage.getItem(DONE_KEY)==='1'||!!cloud;
         const priorities=Array.isArray(profile.priorities)?profile.priorities:[];
