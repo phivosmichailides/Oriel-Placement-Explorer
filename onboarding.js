@@ -6,11 +6,11 @@
 
   const css=`
   .onboardOverlay{position:fixed;inset:0;z-index:5000;background:rgba(20,27,23,.48);backdrop-filter:blur(9px);display:grid;place-items:center;padding:18px;animation:obFade .18s ease-out}
-  .onboardCard{width:min(680px,100%);max-height:min(760px,92vh);overflow:auto;background:#fff;border:1px solid #dfe7e1;border-radius:26px;box-shadow:0 30px 90px rgba(18,32,24,.22);padding:26px;position:relative}
+  .onboardCard{width:min(720px,100%);max-height:min(700px,calc(100dvh - 24px));overflow:hidden;background:#fff;border:1px solid #dfe7e1;border-radius:26px;box-shadow:0 30px 90px rgba(18,32,24,.22);padding:26px;position:relative}
   .onboardClose{position:absolute;right:16px;top:14px;border:0;background:#f1f4f1;width:35px;height:35px;border-radius:50%;font-size:18px;color:#626963}
-  .onboardSpark{font-size:34px;margin-bottom:8px}.onboardCard h2{font-size:31px;line-height:1.08;letter-spacing:-.035em;margin:4px 42px 10px 0}.onboardCard h3{font-size:23px;letter-spacing:-.025em;margin:8px 0}.onboardLead{font-size:15px;line-height:1.65;color:#56605a;max-width:570px;margin:0 0 18px}.onboardReassure{display:flex;gap:8px;align-items:flex-start;background:#f3f8f5;border:1px solid #dceae1;color:#405148;padding:11px 13px;border-radius:14px;font-size:12px;line-height:1.5;margin:15px 0}
+  .onboardSpark{font-size:34px;margin-bottom:8px}.onboardCard h2{font-size:31px;line-height:1.08;letter-spacing:-.035em;margin:4px 42px 10px 0}.onboardCard h3{font-size:23px;letter-spacing:-.025em;margin:8px 0}.onboardLead{font-size:14px;line-height:1.45;color:#56605a;max-width:620px;margin:0 0 12px}.onboardReassure{display:flex;gap:8px;align-items:flex-start;background:#f3f8f5;border:1px solid #dceae1;color:#405148;padding:11px 13px;border-radius:14px;font-size:12px;line-height:1.5;margin:15px 0}
   .onboardProgress{height:6px;background:#edf1ed;border-radius:999px;overflow:hidden;margin:4px 0 22px}.onboardProgress>span{display:block;height:100%;background:#164d3d;border-radius:999px;transition:width .2s ease}.onboardStepLabel{font-size:10px;font-weight:850;letter-spacing:.1em;color:#778078;text-transform:uppercase}
-  .onboardChoices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.onboardChoice{border:1px solid #dfe5e0;background:#fbfcfb;border-radius:15px;padding:13px;text-align:left;min-height:66px;transition:.15s;display:flex;gap:10px;align-items:flex-start}.onboardChoice:hover{border-color:#9db8a8;background:#f6faf7}.onboardChoice.selected{border-color:#164d3d;background:#edf6f1;box-shadow:inset 0 0 0 1px #164d3d}.onboardChoice .emoji{font-size:21px;line-height:1.2}.onboardChoice b{display:block;font-size:13px}.onboardChoice small{display:block;color:#6c746f;font-size:11px;line-height:1.4;margin-top:3px}.onboardChoice.wide{grid-column:1/-1}
+  .onboardChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.onboardChoice{border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:10px;text-align:left;min-height:54px;transition:.15s;display:flex;gap:10px;align-items:flex-start}.onboardChoice:hover{border-color:#9db8a8;background:#f6faf7}.onboardChoice.selected{border-color:#164d3d;background:#edf6f1;box-shadow:inset 0 0 0 1px #164d3d}.onboardChoice .emoji{font-size:21px;line-height:1.2}.onboardChoice b{display:block;font-size:13px}.onboardChoice small{display:block;color:#6c746f;font-size:11px;line-height:1.4;margin-top:3px}.onboardChoice.wide{grid-column:1/-1}
   .onboardFields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.onboardField{display:block}.onboardField span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#69716c;margin:0 0 6px 2px}.onboardField select{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px}
   .onboardField input{width:100%;border:1px solid #dfe5e0;background:#fbfcfb;border-radius:13px;padding:12px;color:#29332d}.onboardHomeBase{margin:15px 0 4px;padding:14px 15px;border:1px solid #dce7df;background:#f7faf7;border-radius:16px}.onboardHomeBase>p{font-size:11px;line-height:1.5;color:#647169;margin:8px 2px 0}.onboardHomeBase .onboardError{margin-top:5px}
   .onboardActions{display:flex;align-items:center;gap:8px;margin-top:22px}.onboardActions .spacer{flex:1}.onboardFine{font-size:11px;color:#7a817d;margin-top:9px}.onboardError{font-size:12px;color:#9a3e3e;margin-top:9px;min-height:17px}.onboardFinal{padding:10px 0 3px}.onboardSummary{display:flex;flex-wrap:wrap;gap:7px;margin:17px 0}.onboardSummary span{background:#eff5f1;border:1px solid #dce8df;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:700;color:#46554c}
@@ -77,17 +77,17 @@
 
     const paletteValues=['forest','copper','mauve','amber','cocoa','mono'];
     const getAppearance=()=>({
-      palette:localStorage.getItem('oriel-desk-palette-v1')||'forest',
+      palette:localStorage.getItem('oriel-desk-palette-v1')||'mono',
       theme:document.documentElement.getAttribute('data-theme')||'light'
     });
-    const defaultAnswers=()=>({region:'',environment:'unsure',priorities:[],salary:'',hours:'',community:'some',homePostcode:window.OrielCommuteProfile?.read?.()||'',...getAppearance()});
+    const defaultAnswers=()=>({region:'',environment:'',priorities:[],salary:'',hours:'',community:'',homePostcode:window.OrielCommuteProfile?.read?.()||'',...getAppearance()});
     const renderAppliedProfile=profile=>{
       const panel=document.getElementById('uxProfileApplied'),target=document.getElementById('uxProfileAppliedChips');
       if(!panel||!target)return;
       const p=profile||{},items=[];
       const environments={hospital:'Hospital-led',gp:'GP-focused',mixed:'Mixed / split settings',industry:'Industry / research',community:'Community',unsure:'Broad exploration'};
       const priorities={money:'Pay',lifestyle:'Work-life balance',progression:'Career progression',location:'Location',independence:'Independence',clinical:'Clinical variety'};
-      if(p.region)items.push('Region · '+p.region);
+      if(p.region)items.push('Region · '+(p.region==='all'?'All regions':p.region));
       if(p.environment&&p.environment!=='unsure')items.push('Setting · '+(environments[p.environment]||p.environment));
       (Array.isArray(p.priorities)?p.priorities:[]).forEach(x=>{if(priorities[x])items.push('Priority · '+priorities[x])});
       if(p.salary)items.push('Minimum salary · £'+Number(p.salary).toLocaleString('en-GB'));
@@ -149,18 +149,18 @@
 
         let body='';
         if(step===0){
-          body=`<div class="onboardStepLabel">1 of 5 · Location</div><h3> Where are you actually looking?</h3><p class="onboardLead">Choose the region you are considering, then tell me where you expect to be based during your pre-registration year.</p><div class="onboardChoices">${regions.map(r=>choice(r,'',r,'',answers.region===r)).join('')}${choice('','','Show me all regions','Start broad and narrow it down later.',answers.region==='',true)}</div><div class="onboardHomeBase"><label class="onboardField"><span>Where will you be living during your pre-registration year? (Optional)</span><input id="obHomePostcode" type="text" placeholder="e.g. E16 1RB or Canning Town" autocomplete="postal-code" maxlength="60"></label><p>I'll use this to assess the journey from your home area to every training site, including each location in split programmes. It won't move programme pins or hide placements. Saved in this browser; sent to TfL only when a journey estimate is requested.</p><div class="onboardError" id="obHomePostcodeError"></div></div>`;
+          body=`<div class="onboardStepLabel">1 of 6 · Location</div><h3>Where are you looking?</h3><p class="onboardLead">Choose one region. You can change it later in Preferences.</p><div class="onboardChoices onboardRegions">${regions.map(r=>choice(r,'',r,'',answers.region===r)).join('')}${choice('all','','All regions','Keep every region in view.',answers.region==='all',true)}</div><p class="onboardFine">You can add a commute starting point later in Preferences.</p>`;
         }else if(step===1){
           const opts=[['hospital','','Hospital','Clinical exposure, wards and specialist services.'],['gp','','General Practice','Primary care, medicines optimisation and more independent work.'],['mixed','','A good mix','I want meaningful exposure across more than one setting.'],['industry','','Industry / research / data','Transferable experience, research, digital or industry exposure.'],['community','','Community','Patient-facing community pharmacy is genuinely my thing.'],['unsure','','I’m not sure yet','Keep the recommendations broad while I figure it out.']];
-          body=`<div class="onboardStepLabel">2 of 5 · Pharmacy</div><h3> What kind of environment sounds most like you?</h3><p class="onboardLead">This changes the weighting — it won’t completely hide the other options.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.environment===x[0])).join('')}</div>`;
+          body=`<div class="onboardStepLabel">2 of 6 · Training setting</div><h3>Which setting interests you most?</h3><p class="onboardLead">Choose one. Other settings remain available to explore.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.environment===x[0])).join('')}</div>`;
         }else if(step===2){
           const opts=[['money','','Pay','I want strong salary/value.'],['lifestyle','','Work-life balance','Hours and day-to-day quality matter a lot.'],['progression','','Career value','I want experience that opens doors afterwards.'],['location','','Location','Where I live/work matters to my quality of life.'],['independence','','Independence','I prefer autonomy, quieter work or desk-friendly tasks.'],['clinical','','Clinical variety','I want broad, interesting clinical exposure.']];
-          body=`<div class="onboardStepLabel">3 of 5 · Priorities</div><h3> What matters most to you?</h3><p class="onboardLead">Pick up to three. These get extra weight in your fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.priorities.includes(x[0]))).join('')}</div><div class="onboardError" id="obError"></div>`;
+          body=`<div class="onboardStepLabel">3 of 6 · Priorities</div><h3>What matters most?</h3><p class="onboardLead">Choose one to three priorities. You can fine-tune their weights later.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.priorities.includes(x[0]))).join('')}</div><div class="onboardError" id="obError"></div><p class="onboardFine">${answers.priorities.length} of 3 selected</p>`;
         }else if(step===3){
-          body=`<div class="onboardStepLabel">4 of 5 · Practical stuff</div><h3> Any hard-ish limits?</h3><p class="onboardLead">These are filters, not personality traits — leave either one broad if you don’t want it restricting your results.</p><div class="onboardFields"><label class="onboardField"><span>Minimum salary</span><select id="obSalary"><option value=""> No minimum</option><option value="26000"> £26k+</option><option value="28000"> £28k+</option><option value="30000"> £30k+</option><option value="32000"> £32k+</option><option value="36000"> £36k+</option></select></label><label class="onboardField"><span>Maximum weekly hours</span><select id="obHours"><option value=""> I’m flexible</option><option value="35"> ≤35h</option><option value="37.5"> ≤37.5h</option><option value="40"> ≤40h</option><option value="42.5"> ≤42.5h</option></select></label></div><div class="onboardReassure"><span>↺</span><span>You can loosen these later if the results become too narrow.</span></div>`;
+          body=`<div class="onboardStepLabel">4 of 6 · Practical limits</div><h3>Any limits to consider?</h3><p class="onboardLead">These narrow results only if you set them. Leave either one broad if you prefer.</p><div class="onboardFields"><label class="onboardField"><span>Minimum salary</span><select id="obSalary"><option value=""> No minimum</option><option value="26000"> £26k+</option><option value="28000"> £28k+</option><option value="30000"> £30k+</option><option value="32000"> £32k+</option><option value="36000"> £36k+</option></select></label><label class="onboardField"><span>Maximum weekly hours</span><select id="obHours"><option value=""> I’m flexible</option><option value="35"> ≤35h</option><option value="37.5"> ≤37.5h</option><option value="40"> ≤40h</option><option value="42.5"> ≤42.5h</option></select></label></div><div class="onboardReassure"><span>↺</span><span>You can loosen these later if the results become too narrow.</span></div>`;
         }else if(step===4){
           const opts=[['happy','','Happy with community','I’m comfortable with a community-heavy programme.'],['some','','Some is fine','I’m happy to have it as part of a mixed programme.'],['less','','Prefer less community','I’d rather hospital/GP/other settings take the lead.'],['avoid','','Avoid community-heavy','Strongly push community-heavy programmes down my recommendations.']];
-          body=`<div class="onboardStepLabel">5 of 5 · One last thing</div><h3> How do you feel about community pharmacy exposure?</h3><p class="onboardLead">This changes how strongly community-heavy programmes are penalised in your personal fit score.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
+          body=`<div class="onboardStepLabel">5 of 6 · Community exposure</div><h3>How do you feel about community pharmacy?</h3><p class="onboardLead">Choose one. This adjusts how community-heavy programmes are ranked.</p><div class="onboardChoices">${opts.map(x=>choice(x[0],x[1],x[2],x[3],answers.community===x[0])).join('')}</div>`;
         }else{
           const colours=[['forest','Forest','#274333'],['copper','Copper','#3f6589'],['mauve','Mauve','#805e78'],
             ['amber','Amber','#c49348'],['cocoa','Cocoa','#695443'],['mono','Monochrome','#55575a']];
@@ -179,20 +179,18 @@
             </div><p class="onboardFine">You can change both later in Preferences.</p>`;
         }
 
-        const final=step===5;
-        card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0&&!final?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${!final?'<button class="btn primary" id="obNext">Continue →</button>':'<button class="btn primary" id="obFinish">Show my matches </button>'}</div><div class="onboardFine">You can change all of this later under Preferences.</div>`;
+        const final=step===5,autoAdvance=[0,1,4].includes(step);
+        card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${!final&&!autoAdvance?'<button class="btn primary" id="obNext">Continue</button>':''}${final?'<button class="btn primary" id="obFinish">Done · Show my matches</button>':''}</div><div class="onboardFine">You can change these choices later in Preferences.</div>`;
         card.querySelector('.onboardClose').onclick=close;
 
         if(step===0){
-          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.region=b.dataset.value;render()});
-          const home=card.querySelector('#obHomePostcode');
-          if(home){home.value=answers.homePostcode||'';home.addEventListener('input',()=>{answers.homePostcode=home.value;const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='';});}
+          card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.region=b.dataset.value;step=1;render()});
           card.querySelector('#obBackIntro').onclick=()=>{step=-1;render()};
         }
-        if(step===1){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.environment=b.dataset.value;render()});}
+        if(step===1){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.environment=b.dataset.value;step=2;render()});}
         if(step===2){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{const v=b.dataset.value;const i=answers.priorities.indexOf(v);if(i>=0)answers.priorities.splice(i,1);else if(answers.priorities.length<3)answers.priorities.push(v);else{const er=card.querySelector('#obError');if(er)er.textContent='Pick up to three — you can still adjust every weight later.';return;}render()});}
         if(step===3){const sal=card.querySelector('#obSalary'),hrs=card.querySelector('#obHours');sal.value=answers.salary;hrs.value=answers.hours;sal.onchange=()=>answers.salary=sal.value;hrs.onchange=()=>answers.hours=hrs.value;}
-        if(step===4){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.community=b.dataset.value;render()});}
+        if(step===4){card.querySelectorAll('.onboardChoice').forEach(b=>b.onclick=()=>{answers.community=b.dataset.value;step=5;render()});}
         if(step===5){
           card.querySelectorAll('[data-ob-palette]').forEach(button=>button.addEventListener('click',()=>{
             answers.palette=button.dataset.obPalette;applyAppearance();render();
@@ -203,11 +201,10 @@
           card.querySelector('#obFinish').disabled=!paletteValues.includes(answers.palette)||!['light','dark'].includes(answers.theme);
         }
         if(card.querySelector('#obBack'))card.querySelector('#obBack').onclick=()=>{step--;render()};
+        if(step===2){const next=card.querySelector('#obNext');if(next)next.disabled=answers.priorities.length===0;}
         if(card.querySelector('#obNext'))card.querySelector('#obNext').onclick=()=>{
-          if(step===0&&String(answers.homePostcode||'').trim()&&!window.OrielCommuteProfile?.isValid?.(answers.homePostcode)){
-            const error=card.querySelector('#obHomePostcodeError');if(error)error.textContent='Enter a UK postcode or area/station name, for example E16 1RB or Canning Town, or leave it blank.';return;
-          }
-          if(step===0&&answers.homePostcode)answers.homePostcode=window.OrielCommuteProfile?.normalise?.(answers.homePostcode)||answers.homePostcode.trim();
+          if(step===2&&!answers.priorities.length){const error=card.querySelector('#obError');if(error)error.textContent='Choose at least one priority to continue.';return;}
+          if(step===3)answers.homePostcode=window.OrielCommuteProfile?.normalise?.(answers.homePostcode||'')||'';
           document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_step_completed',step:step+1}}));step++;render();
         };
         if(final)card.querySelector('#obFinish').onclick=()=>finish();
@@ -258,7 +255,7 @@
             try{localStorage.setItem(profileQuickKey,JSON.stringify(nextProfileQuick))}catch{}
             document.querySelectorAll('.chip[data-q]').forEach(button=>button.classList.toggle('on',quick.has(button.dataset.q)));
             const r=$('region'),sal=$('salary'),hrs=$('hours');
-            if(r)r.value=answers.region||'';
+            if(r)r.value=answers.region==='all'?'':answers.region||'';
             if(sal)sal.value=answers.salary||'';
             if(hrs)hrs.value=answers.hours||'';
             if($('sort'))$('sort').value='fit';
