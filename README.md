@@ -158,6 +158,10 @@ docs/                 Implementation, deployment and product notes
 index.html             Application entry point
 app-base.js            Core catalogue, filtering and shortlist logic
 app-product.js         Programme cards and preference-aware fit explanations
+premium-discovery-preview.js / .css   Progressive discovery, concise titles and filters
+premium-card-tabs.js / .css           Compact cards and five-section programme details
+premium-editorial-palettes.css        Neutral editorial theme tokens and six accents
+premium-workspace.js / .css           Shortlist, For You and secondary-workspace refinement
 tinder-mode.js         Swipe-based decision workflow
 simulator.js           Separate Oriel practice simulation
 sw.js                  Offline application-shell caching
