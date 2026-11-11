@@ -39,22 +39,45 @@
    const roots=document.querySelectorAll(
      '#results .placement .uxLocationPanel,#results .placement .uxMiniMap,'+
      '#results .placement .miniMap,#results .placement .mini-map,'+
-     '#results .placement .leaflet-container'
+     '#results .placement .leaflet-container,'+
+     '#shortlistList .placement .uxLocationPanel,#shortlistList .placement .uxMiniMap,'+
+     '#mapSelection .placement .uxLocationPanel,#mapSelection .placement .uxMiniMap,'+
+     '#reco .reco .uxLocationPanel,#reco .reco .uxMiniMap'
    );
+   const isClose=control=>{
+     const label=(control.getAttribute('aria-label')||'')+' '+(control.getAttribute('title')||'');
+     const classes=String(control.className||'');
+     const text=String(control.textContent||'').trim();
+     return /close/i.test(label)||/popup-close-button|map-close|close-map/i.test(classes)||
+       ['×','x','✕','✖'].includes(text.toLowerCase());
+   };
    roots.forEach(root=>{
-     root.querySelectorAll('button,a,[role="button"]').forEach(control=>{
-       const label=(control.getAttribute('aria-label')||'')+' '+(control.getAttribute('title')||'');
-       const classes=String(control.className||'');
-       const text=String(control.textContent||'').trim();
-       if(/close/i.test(label)||/popup-close-button|map-close|close-map/i.test(classes)||
-          ['×','x','✕','✖'].includes(text.toLowerCase()))control.remove();
-     });
+     root.querySelectorAll('button,a,[role="button"],.leaflet-popup-close-button,.maplibregl-popup-close-button,.mapboxgl-popup-close-button')
+       .forEach(control=>{if(isClose(control))control.remove()});
+   });
+   // Some map libraries portal popup controls outside the mini-map element.
+   // Remove only a close control whose visible bounds overlap a programme mini-map.
+   const maps=document.querySelectorAll('#results .placement .uxMiniMap,#shortlistList .placement .uxMiniMap,#mapSelection .placement .uxMiniMap,#reco .reco .uxMiniMap');
+   if(!maps.length)return;
+   const controls=document.querySelectorAll('button,a,[role="button"],.leaflet-popup-close-button,.maplibregl-popup-close-button,.mapboxgl-popup-close-button');
+   controls.forEach(control=>{
+     if(!isClose(control))return;
+     const r=control.getBoundingClientRect();
+     if(!r.width&&!r.height)return;
+     for(const map of maps){
+       const m=map.getBoundingClientRect();
+       if(r.right>=m.left-12&&r.left<=m.right+12&&r.bottom>=m.top-12&&r.top<=m.bottom+12){
+         control.remove();break;
+       }
+     }
    });
  };
- const results=document.getElementById('results');
- if(results){
-   removeMiniMapClose();
-   new MutationObserver(()=>requestAnimationFrame(removeMiniMapClose))
-     .observe(results,{childList:true,subtree:true});
- }
+ let closeCleanupScheduled=false;
+ const scheduleMiniMapCloseCleanup=()=>{
+   if(closeCleanupScheduled)return;closeCleanupScheduled=true;
+   requestAnimationFrame(()=>{closeCleanupScheduled=false;removeMiniMapClose()});
+ };
+ removeMiniMapClose();
+ if(document.body)new MutationObserver(scheduleMiniMapCloseCleanup)
+   .observe(document.body,{childList:true,subtree:true});
 })();
