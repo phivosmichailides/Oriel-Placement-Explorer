@@ -14,6 +14,30 @@
     const overlay=document.getElementById(id);
     if(overlay&&overlay.parentElement!==document.body)document.body.append(overlay);
   }
+  // Narrow mobile browsers can expose a layout viewport wider than the actual
+  // visible screen when programme content overflows. Keep the floating button
+  // and its drawer within the *visible* viewport without moving saved data.
+  const positionShortlistOverlay=()=>{
+    const button=document.getElementById('uxDrawerLauncher');
+    const drawer=document.getElementById('uxDrawer');
+    if(!button)return;
+    button.style.removeProperty('right');
+    drawer?.style.removeProperty('right');
+    const widths=[window.innerWidth,window.visualViewport?.width,window.screen?.width]
+      .filter(value=>Number.isFinite(value)&&value>0);
+    const visibleWidth=Math.min(...widths);
+    const overflow=Math.max(0,Math.ceil(button.getBoundingClientRect().right-(visibleWidth-12)));
+    if(overflow>0){
+      button.style.setProperty('right',(12+overflow)+'px','important');
+      drawer?.style.setProperty('right',overflow+'px','important');
+    }
+  };
+  window.requestAnimationFrame(positionShortlistOverlay);
+  window.addEventListener('resize',positionShortlistOverlay,{passive:true});
+  window.visualViewport?.addEventListener('resize',positionShortlistOverlay,{passive:true});
+  window.addEventListener('load',positionShortlistOverlay,{once:true});
+  document.addEventListener('desk:render-explore',positionShortlistOverlay);
+
 
   // Accept both the original sibling layout and the unified brand-banner
   // layout. Reuse the same tab buttons and their existing event handlers.
