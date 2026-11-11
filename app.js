@@ -24,7 +24,7 @@
     };
     const loadSectors=()=>{
       const sectors=document.createElement('script');
-      sectors.src='sector-map.js?v=20261111legend2';
+      sectors.src='sector-map.js?v=20261111legend3';
       sectors.onload=loadOnboarding;
       sectors.onerror=loadOnboarding;
       document.body.appendChild(sectors);
