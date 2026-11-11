@@ -408,3 +408,18 @@ test('quiet interface stylesheet and refreshed application assets are cache-bust
   assert.match(sw,/premium-quiet-interface\.css\?v=20261111quiet2/);
   assert.match(pwa,/sw\.js\?v=20261111quiet2/);
 });
+
+
+test('history and offer maintenance controls are progressively disclosed',()=>{
+  const desk=read('desk-enhancements.js'),html=read('index.html'),css=read('premium-quiet-interface.css');
+  assert.match(desk,/atlasHistoryDisclosure/);
+  assert.match(desk,/id="undoDesk"/);
+  assert.match(desk,/id="redoDesk"/);
+  assert.match(css,/atlasHistoryActions/);
+  assert.match(html,/atlasOutcomeMore/);
+  assert.match(html,/id="outcomeExportBtn"/);
+  assert.match(html,/id="outcomeImportBtn"/);
+  assert.match(html,/id="outcomeClearBtn"/);
+  assert.match(css,/atlasOutcomeMoreMenu/);
+  assert.match(html,/Save outcome/);
+});
