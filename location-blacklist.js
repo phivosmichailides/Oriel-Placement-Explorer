@@ -187,7 +187,7 @@
     const entry={...item,createdAt:new Date().toISOString()};
     if(like)prefs().locationLikes=[...likedAreas(),entry];
     else{prefs().locationBlacklist=[...areas(),entry];prefs().locationAllowed={};}
-    save();const status=byId(like?'geoLikeStatus':'geoBlacklistStatus');if(status)status.textContent=like?'Added '+entry.label+' to your preferred areas. It will improve fit scores and ranking.':'Added '+entry.label+' to exclusions. Only exact verified matches will be hidden.';selected[mode]=null;
+    save();const status=byId(like?'geoLikeStatus':'geoBlacklistStatus');if(status)status.textContent=like?'Added '+entry.label+'. Match scores will update.':'Added '+entry.label+' to exclusions. Only verified matches are hidden.';selected[mode]=null;
     const input=byId(like?'geoLikeSearch':'geoAreaSearch'),add=byId(like?'geoAddLike':'geoAddArea'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions');
     if(input)input.value='';if(add)add.disabled=true;if(list)list.replaceChildren();
     progress();refresh();scan();
@@ -318,18 +318,18 @@
     if(!textarea||!saveBtn||byId('geoAreaSearch'))return;
     const original=textarea.closest('label');original?.classList.add('geoLegacyAvoid');legacyLike?.classList.add('geoLegacyLike');
     const likesPane=document.createElement('section');likesPane.className='geoLikesPane';
-    likesPane.innerHTML='<label class="geoSearchLabel" for="geoLikeSearch">Areas you like <span>· Permanent preference</span></label>'+
-      '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoLikeSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Find a borough, town or neighbourhood…" aria-label="Search UK locations to prefer"><button class="btn" id="geoAddLike" type="button" disabled>Add area</button></div><div id="geoLikeSuggestions" class="geoSuggestions" role="group" aria-label="Preferred location suggestions"></div></div>'+
-      '<p id="geoLikeStatus" class="geoBlacklistStatus" role="status">Choose an exact suggested area. Preferred areas improve fit scores and ranking; the optional focus filter can narrow the results.</p>'+
+    likesPane.innerHTML='<label class="geoSearchLabel" for="geoLikeSearch">Preferred areas</label>'+
+      '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoLikeSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search a borough, town or area…" aria-label="Search UK locations to prefer"><button class="btn" id="geoAddLike" type="button" disabled>Add area</button></div><div id="geoLikeSuggestions" class="geoSuggestions" role="group" aria-label="Preferred location suggestions"></div></div>'+
+      '<p id="geoLikeStatus" class="geoBlacklistStatus" role="status">Add areas to improve match scores.</p>'+
       '<label class="geoPreferredOnly"><input id="geoPreferredOnly" type="checkbox"> <span>Only show programmes in these preferred areas</span></label>'+
       '<div id="geoLikeChips" class="geoLikeChips" aria-label="Saved preferred areas"></div>';
     const pane=document.createElement('section');pane.className='geoBlacklistPane';
-    pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Areas you want to exclude <span>· Permanent verified-site filter</span></label>'+
-      '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoAreaSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search a UK town, borough or neighbourhood…" aria-label="Search UK locations to exclude"><button class="btn primary" id="geoAddArea" type="button" disabled>Exclude area</button></div><div id="geoAreaSuggestions" class="geoSuggestions" role="group" aria-label="Location suggestions"></div></div>'+
+    pane.innerHTML='<label class="geoSearchLabel" for="geoAreaSearch">Areas to exclude</label>'+
+      '<div class="geoSearchHolder"><div class="geoInputRow"><input id="geoAreaSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search a town, borough or area…" aria-label="Search UK locations to exclude"><button class="btn primary" id="geoAddArea" type="button" disabled>Exclude area</button></div><div id="geoAreaSuggestions" class="geoSuggestions" role="group" aria-label="Location suggestions"></div></div>'+
       '<p id="geoBlacklistStatus" class="geoBlacklistStatus" role="status"></p>'+
       '<div class="geoChipRow"><div id="geoAreaChips" class="geoAreaChips" aria-label="Saved excluded areas"></div><button class="btn geoViewExcluded" type="button" data-geo-open>See all excluded programmes <span data-geo-count></span></button></div>'+
-      '<p class="geoAccuracyNote">Matches listed training-site postcodes, not employer names. All split-site postcodes are checked. Only exact verified postcode or borough matches are excluded. Missing, unverifiable and approximate settlement matches remain visible in Explore and appear in Needs review.</p>'+
-      '<button type="button" class="geoRetry" id="geoRetry">↻ Retry postcode verification</button>';
+      '<p class="geoAccuracyNote">Only exact, verified training-site postcode matches are excluded. Unverified locations remain visible.</p>'+
+      '<button type="button" class="geoRetry" id="geoRetry">Retry verification</button>';
     legacyLike?.after(likesPane);original?.after(pane);
     const bindLocationSearch=(mode)=>{
       const like=mode==='like',input=byId(like?'geoLikeSearch':'geoAreaSearch'),list=byId(like?'geoLikeSuggestions':'geoAreaSuggestions'),add=byId(like?'geoAddLike':'geoAddArea');
