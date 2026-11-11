@@ -383,3 +383,9 @@ html body #atlasHeaderTools:empty,html body #atlasHeaderTools>.actions:empty{dis
 #prefs .atlasMapColourSettings .paMapColourReset .btn{background:transparent;color:var(--mut);border-color:var(--line);padding:7px 11px;font-size:11px;font-weight:650;border-radius:10px}
 #prefs .atlasMapColourSettings .paMapColourReset .btn:hover,#prefs .atlasMapColourSettings .paMapColourReset .btn:focus-visible{color:var(--ink);background:var(--soft)}
 @media(max-width:760px){#prefs .settings>.uxAppearanceSettings,#prefs .settings>.atlasMapColourSettings{grid-column:1/-1}}
+
+/* Keep the floating shortlist control tappable above programme-card stacking
+   contexts, with its own drawer/backdrop higher still. */
+html body #uxDrawerLauncher{position:fixed!important;z-index:2200!important;pointer-events:auto!important}
+html body #uxDrawerBackdrop{z-index:2400!important}
+html body #uxDrawer{z-index:2410!important}
