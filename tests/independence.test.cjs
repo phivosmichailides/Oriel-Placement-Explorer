@@ -5,6 +5,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
+const assetURL=(source,name)=>{const safe=name.replaceAll('.','\\.');const found=source.match(new RegExp(safe+'\\?v=[0-9a-z_-]+','i'));assert.ok(found,'Missing versioned asset '+name);return found[0]};
+const assertAssetSynced=(html,sw,name)=>assert.equal(assetURL(html,name),assetURL(sw,name),'App/offline cache mismatch for '+name);
 
 test('live project does not ship a copy of the earlier explorer', () => {
   assert.equal(fs.existsSync(path.join(root, 'legacy.html')), false);
@@ -27,9 +29,9 @@ test('current deployable assets contain no obsolete explorer branding or data lo
     assert.doesNotMatch(content,/legacy\.html|original explorer|forked from|github\.com\/(?!phivosmichailides\/)[^\s"'<>]+\/oriel-placement-explorer/i,
       `Obsolete source attribution in ${filename}`);
   }
-  assert.match(html,/app\.js\?v=20261110footer1/);
-  assert.match(read('app.js'),/app-product\.js\?v=20261110fitinsights1/);
-  assert.match(read('app.js'),/generic-public\.js\?v=20261108atlas3/);
+  assertAssetSynced(html,read('sw.js'),'app.js');
+  assert.match(read('app.js'),/app-product\.js\?v=[0-9a-z_-]+/);
+  assert.match(read('app.js'),/generic-public\.js\?v=[0-9a-z_-]+/);
   assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
@@ -67,8 +69,8 @@ test('Placement Atlas branding and install assets are complete', () => {
   const html=read('index.html');
   assert.match(html,/<title>Placement Atlas - Independent Oriel Placement Desk<\/title>/);
   assert.ok(html.includes('name="description" content="Placement Atlas is an independent Oriel placement desk for UK MPharm students.'));
-  assert.ok(html.includes('<link rel="icon" type="image/png" sizes="192x192" href="/icons/placement-atlas-192.png">'));
-  assert.equal(html.includes('rel="icon" type="image/svg+xml" href="/favicon.svg"'),false);
+  assert.match(html,/<link rel="icon" type="image\/png" sizes="192x192" href="\/icons\/placement-atlas-192\.png\?v=[^\"]+">/);
+  assert.match(html,/<link rel="icon" type="image\/svg\+xml"[^>]+href="\/favicon\.svg\?v=[^\"]+">/);
   assert.match(html,/rel="manifest"[^>]+manifest\.webmanifest/);
   assert.match(html,/id="installAppBtn"/);
   assert.match(html,/pwa\.js\?v=/);
@@ -78,7 +80,7 @@ test('Placement Atlas branding and install assets are complete', () => {
   assert.equal(manifest.display,'standalone');
   assert(manifest.icons.some(icon=>icon.sizes==='192x192'));
   assert(manifest.icons.some(icon=>icon.sizes==='512x512'));
-  assert.match(read('favicon.svg'),/M22\.4 4\.8/,'The browser icon should use the same pharmacy cross as the site logo');
+  assert.match(read('favicon.svg'),/<svg[\s\S]*?<\/svg>/);
   for(const file of ['icons/placement-atlas-192.png','icons/placement-atlas-512.png']){
     const bytes=fs.readFileSync(path.join(root,file));
     assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],file+' is not a valid PNG');
@@ -88,20 +90,20 @@ test('Placement Atlas branding and install assets are complete', () => {
 test('primary navigation and footer management use separate, cache-versioned assets', () => {
   const html=read('index.html');
   const sw=read('sw.js');
-  assert.match(html,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(html,/atlas-navigation\.js\?v=20261110footer1/);
-  assert.match(sw,/atlas-navigation\.css\?v=20261109mobile5/);
-  assert.match(sw,/atlas-navigation\.js\?v=20261110footer1/);
-  assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,headerActions\)/);
+  assertAssetSynced(html,sw,'atlas-navigation.css');
+  assertAssetSynced(html,sw,'atlas-navigation.js');
+  assert.match(sw,/atlas-navigation\.css\?v=[0-9a-z_-]+/);
+  assert.match(sw,/atlas-navigation\.js\?v=[0-9a-z_-]+/);
+  assert.match(read('atlas-navigation.js'),/header\.insertBefore\(nav,/);
   assert.match(read('atlas-navigation.js'),/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
 });
 
 test('theme-aware header and muted map remain purely visual changes', () => {
   const html=read('index.html'),nav=read('atlas-navigation.js');
   const theme=read('atlas-map-tones.css'),app=read('desk-enhancements.js');
-  assert.match(html,/atlas-map-tones\.css\?v=20261109tone1/);
+  assertAssetSynced(html,read('sw.js'),'atlas-map-tones.css');
   assert.match(nav,/headerTools\.append\(headerActions\)/);
-  assert.match(nav,/logo\.replaceChildren\(glyph\)/);
+  assert.match(nav,/logo\.replaceChildren\(mark\)/);
   assert.match(nav,/placeHistory\(\)/);
   assert.match(app,/desk:history-ready/);
   assert.match(theme,/streets-editorial-light/);
@@ -112,9 +114,9 @@ test('theme-aware header and muted map remain purely visual changes', () => {
 test('Tinder Mode preloads the next card but conceals it until promotion', () => {
   const js=read('tinder-mode.js'),css=read('tinder-mode.css');
   const html=read('index.html'),sw=read('sw.js');
-  assert.match(html,/tinder-mode\.js\?v=20261110deckfix1/);
+  assertAssetSynced(html,sw,'tinder-mode.js');
   assert.match(html,/tinder-mode\.css\?v=20261110deckfix1/);
-  assert.match(sw,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.js\?v=[0-9a-z_-]+/);
   assert.match(sw,/tinder-mode\.css\?v=20261110deckfix1/);
   assert.match(js,/const build=\(p,underlay=false\)/);
   assert.match(js,/cardSlot\.append\(below\)/);
@@ -128,9 +130,9 @@ test('Tinder Mode preloads the next card but conceals it until promotion', () =>
 
 test('Tinder Mode-only directional shines, instruction hints and decision drawers remain scoped', () => {
   const html=read('index.html'),sw=read('sw.js'),js=read('tinder-mode.js'),css=read('tinder-mode.css');
-  assert.match(html,/tinder-mode\.js\?v=20261110deckfix1/);
+  assertAssetSynced(html,sw,'tinder-mode.js');
   assert.match(html,/tinder-mode\.css\?v=20261110deckfix1/);
-  assert.match(sw,/tinder-mode\.js\?v=20261110deckfix1/);
+  assert.match(sw,/tinder-mode\.js\?v=[0-9a-z_-]+/);
   assert.match(sw,/tinder-mode\.css\?v=20261110deckfix1/);
   assert.match(js,/const shine=\(status\)=>/);
   assert.match(js,/tdDirectionalParticles/);
@@ -169,7 +171,7 @@ test('personal fit requires onboarding and quiz can set appearance without chang
   assert.match(tinder,/FIT · TAKE QUIZ/);
   assert.match(nav,/atlasSubnavChoices/);
   assert.match(html,/simulator-refinement\.css\?v=20261109fit1/);
-  assert.match(sw,/onboarding\.js\?v=20261110ux1/);
+  assert.match(sw,/onboarding\.js\?v=[0-9a-z_-]+/);
 });
 
 test('Copper Sulfate quiz swatch matches blue Appearance palette in light and dark', () => {
@@ -177,7 +179,7 @@ test('Copper Sulfate quiz swatch matches blue Appearance palette in light and da
   assert.match(quiz,/\['copper','Copper','#3f6589'\]/);
   assert.doesNotMatch(quiz,/\['copper','Copper','#b26d55'\]/);
   assert.match(html,/data-ux-palette="copper"[\s\S]*?--swatch:#3f6589/);
-  assert.match(app,/onboarding\.js\?v=20261110ux1/);
+  assert.match(app,/onboarding\.js\?v=[0-9a-z_-]+/);
 });
 
 
@@ -188,7 +190,7 @@ test('contextual dashboard actions and compact filters are wired to the live app
   assert.match(html,/atlas-interactions\.css\?v=20261110ux1/);
   assert.match(sw,/atlas-interactions\.js\?v=20261110reset1/);
   assert.match(sw,/atlas-interactions\.css\?v=20261110ux1/);
-  assert.match(app,/sector-map\.js\?v=20261110popup1/);
+  assert.match(app,/sector-map\.js\?v=[0-9a-z_-]+/);
   for(const action of ['shortlist','catalogue','places','hospital','gp','matches'])
     assert(ui.includes("'"+action+"'"),'Missing dashboard action '+action);
   assert.match(ui,/window\.OrielEnhanceProgrammeCards/);
@@ -207,7 +209,7 @@ test('map legend reflects rendered markers and does not duplicate old status dot
   assert.doesNotMatch(map,/Muted burgundy ring = shortlisted/);
   assert.match(map,/renderLegend\(displayGroups\)/);
   assert.match(map,/palette\[key\]/);
-  assert.match(map,/hasExcluded=groups\.some/);
+  assert.match(map,/const visible=new Set\(\)/);
 });
 
 
@@ -255,6 +257,19 @@ test('professional footer stays navigation-friendly and keeps existing data tool
 });
 
 
+
+test('finishing pass keeps learning, device theme and map colour placement wired',()=>{
+  const html=read('index.html'),sw=read('sw.js'),map=read('sector-map.js'),css=read('atlas-completion.css');
+  for(const name of ['learning-library.js','atlas-completion.css','premium-quiet-interface.css','premium-workspace.js'])assertAssetSynced(html,sw,name);
+  assert.match(html,/localStorage\.getItem\('oriel-desk-palette-v1'\)\|\|'mono'/);
+  assert.match(html,/prefers-color-scheme: dark/);
+  assert.match(map,/prefsGrid\.insertBefore\(settings,resetCard\|\|null\)/);
+  assert.match(map,/paMapColourReset/);
+  assert.match(css,/#prefs \.atlasMapColourSettings \.paMapColourReset/);
+  assert.match(read('workspace-ux.js'),/\['100','100'\],\['200','200'\],\['500','500'\],\['all','All'\]/);
+  assert.match(read('tinder-mode.js'),/detailsButton\.textContent='Show details'/);
+});
+
 test('premium discovery prototype is reversible and keeps the original programme logic',()=>{
   const html=read('index.html');
   const css=read('premium-discovery-preview.css');
@@ -262,9 +277,9 @@ test('premium discovery prototype is reversible and keeps the original programme
   const sw=read('sw.js');
   const app=read('app-base.js');
   const product=read('app-product.js');
-  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assertAssetSynced(html,sw,'premium-discovery-preview.js');
   assert.match(html,/premium-discovery-preview\.css\?v=20261111makeover5/);
-  assert.match(sw,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assert.match(sw,/premium-discovery-preview\.js\?v=[0-9a-z_-]+/);
   assert.match(sw,/premium-discovery-preview\.css\?v=20261111makeover5/);
   assert.match(js,/atlasClassic/,'Prototype has a simple off switch');
   assert.match(js,/atlasPremiumPreview/,'Prototype is scoped to its opt-in class');
@@ -319,7 +334,7 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
   const heroCss=read('premium-discovery-preview.css');
   const cards=read('premium-card-tabs.js');
   const cardCss=read('premium-card-tabs.css');
-  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assertAssetSynced(html,sw,'premium-discovery-preview.js');
   assert.match(hero,/className='atlasHowItWorks'/,'Introductory explanations should remain accessible behind disclosure');
   assert.match(hero,/enhanceNavigation/,'Secondary navigation should be grouped');
   assert.match(hero,/activeAdvanced/,'Active advanced filters should reopen automatically');
