@@ -324,6 +324,8 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
   assert.match(hero,/enhanceNavigation/,'Secondary navigation should be grouped');
   assert.match(hero,/activeAdvanced/,'Active advanced filters should reopen automatically');
   assert.match(hero,/OrielFitMapToScope/,'Region changes should fit the filtered map bounds');
+  assert.match(hero,/Hospital rotation: '\+h\+' weeks/,'Fit language should state sourced rotation weeks');
+  assert.match(hero,/Stated gross salary/,'Vague salary praise should be replaced by a factual amount');
   assert.match(heroCss,/atlasMoreNav/,'Secondary navigation needs a visible More disclosure');
   assert.match(heroCss,/atlasHowItWorks/,'How it works disclosure needs a clear presentation');
   assert.match(cards,/atlasCompactTakeHome/,'Compact cards should show the estimated monthly take-home');
