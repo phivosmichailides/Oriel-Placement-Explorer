@@ -104,8 +104,11 @@
       const label=active?.querySelector('span')?.textContent?.trim();
       more.querySelector('summary').textContent=active&&label?'More · '+label:'More';
     };
-    nav.addEventListener('click',()=>window.setTimeout(syncMoreLabel,0));
-    document.addEventListener('desk:after-navigation',syncMoreLabel);
+    if(nav.dataset.atlasMoreListener!=='1'){
+      nav.dataset.atlasMoreListener='1';
+      nav.addEventListener('click',()=>window.setTimeout(syncMoreLabel,0));
+      document.addEventListener('desk:after-navigation',syncMoreLabel);
+    }
     syncMoreLabel();
     if(!more.dataset.observing){
       more.dataset.observing='1';
