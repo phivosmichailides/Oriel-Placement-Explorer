@@ -397,7 +397,7 @@ test('map legend is sourced from rendered pins rather than the unfiltered catalo
   assert.match(map,/new Set\(rendered\.map\(g=>groupMapSector\(g\.entries\)\)\)/);
   assert.match(map,/legend\.hidden=true/);
   assert.match(map,/renderLegend\(displayGroups\)/);
-  assert.equal((map.match(/renderLegend\(/g)||[]).length,2,
+  assert.equal((map.match(/renderLegend\(/g)||[]).length,1,
     'The legend should refresh only as part of an actual map redraw');
   assert.doesNotMatch(map,/new Set\(placements\.filter\(matches\)\.map\(programmeMapSector\)\)/);
   assert.match(map,/hasShortlisted=groups\.some/);
