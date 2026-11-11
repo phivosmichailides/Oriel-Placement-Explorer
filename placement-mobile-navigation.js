@@ -17,8 +17,8 @@
    if(!button)return;
    let glyph=button.querySelector('.themeGlyph');
    if(!glyph){glyph=document.createElement('span');glyph.className='themeGlyph';glyph.setAttribute('aria-hidden','true');button.replaceChildren(glyph);}
-   if(!glyph.querySelector('svg')){
-     glyph.innerHTML='<svg class="themeIcon themeIconMoon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.802a6 6 0 0 0 8.27 8.27c.342-.215.824-.004.801.4Z"/></svg>';
+   if(!glyph.querySelector('.themeIconSun')){
+     glyph.innerHTML='<svg class="themeIcon themeIconMoon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.802a6 6 0 0 0 8.27 8.27c.342-.215.824-.004.801.4Z"/></svg><svg class="themeIcon themeIconSun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
    }
    button.setAttribute('aria-label','Change colour theme');
  };
