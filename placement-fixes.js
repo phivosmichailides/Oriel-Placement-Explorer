@@ -37,6 +37,8 @@
 
  const removeMiniMapClose=()=>{
    const roots=document.querySelectorAll(
+     '#results .placement,#mapSelection .placement,#shortlistList .placement,'+
+     '#shortlistList .rank-row,.uxDrawerItems .placement,'+
      '#results .placement .uxLocationPanel,#results .placement .uxMiniMap,'+
      '#results .placement .miniMap,#results .placement .mini-map,'+
      '#results .placement .leaflet-container'
