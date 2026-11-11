@@ -1,8 +1,8 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v59-staticlogo';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v60-logofinal';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'atlas-navigation.js?v=20261111logo1','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
+  'atlas-navigation.js?v=20261111logo2','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
   'atlas-interactions.js?v=20261110reset1','atlas-interactions.css?v=20261110ux1','atlas-footer.css?v=20261110footer1',
   'premium-discovery-preview.js?v=20261111titles1','premium-discovery-preview.css?v=20261111makeover5',
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
