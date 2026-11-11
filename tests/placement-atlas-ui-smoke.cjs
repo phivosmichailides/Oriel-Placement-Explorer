@@ -131,23 +131,23 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal(await page.locator('#simulator .simColHelp').count(),3,'Simulation column explanations are missing');
   assert((await page.locator('#simulator').innerText()).includes('You could accept a programme'));
 
-  // Swipe Mode: London is counted as the initial location filter; other filters are optional.
+  // Swipe Mode: fresh visitors start across all regions with no filters; chosen filters remain visible.
   await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderMode')?.classList.contains('active')&&
     !!document.querySelector('#tinderCardSlot .tdCard'),null,{timeout:30000});
   const refine=page.locator('#tinderFilterToggle');
-  assert.equal((await refine.innerText()).trim(),'Refine (1 selected)','The default London location should be counted as an active filter');
+  assert.equal((await refine.innerText()).trim(),'Refine','Fresh Swipe Mode should not silently select a region or other filters');
   assert.equal(await page.locator('#tdSoundToggle').innerText().then(x=>x.trim()),'Sound on','Sound control is missing');
   await refine.click();
   await page.locator('#tdSetting').selectOption('gp');
   await page.locator('#tdMaxHours').selectOption('35');
   await page.waitForFunction(()=>document.getElementById('tinderFilterToggle')?.innerText.includes('3 selected'),null,{timeout:5000});
-  assert((await refine.innerText()).includes('3 selected'),'Collapsed filter label does not disclose active filters');
+  assert((await refine.innerText()).includes('2 selected'),'Collapsed filter label does not disclose active filters');
   await refine.click();
-  assert((await refine.innerText()).includes('3 selected'),'Active filter count disappeared when the panel was collapsed');
+  assert((await refine.innerText()).includes('2 selected'),'Active filter count disappeared when the panel was collapsed');
   await refine.click();
   await page.locator('#tdFiltersReset').click();
-  assert.equal((await refine.innerText()).trim(),'Refine (1 selected)','Clearing additional filters should preserve the London location filter');
+  assert.equal((await refine.innerText()).trim(),'Refine','Clearing filters must restore the unfiltered region and setting state');
   await refine.click();
 
   const detailsButton=page.locator('#tinderCardSlot .tdShowDetails');
