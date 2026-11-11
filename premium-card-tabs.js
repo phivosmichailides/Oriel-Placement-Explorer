@@ -142,11 +142,12 @@
       fitbox.append(make('small','',score?.band||'Based on your preferences'));
     }else{
       fitbox.append(make('strong','atlasCardCompactFitValue atlasFitUnassessed','Not personalised'));
-      const quiz=make('button','atlasFitQuizLink atlasCompactFitLink','Take the quiz to assess fit');
+      const quiz=make('button','atlasFitQuizLink atlasCompactFitLink','Personalise fit');
       quiz.type='button';quiz.setAttribute('data-atlas-start-quiz','');
       fitbox.append(quiz);
     }
-    summary.append(signals,fitbox);
+    if(facts.length)summary.append(signals);
+    summary.append(fitbox);
     row?.insertAdjacentElement('afterend',summary);
 
     const sections=make('section','atlasCardSections');
