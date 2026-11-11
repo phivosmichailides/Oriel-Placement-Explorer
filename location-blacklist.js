@@ -92,10 +92,10 @@
     if(!status)return;
     const hasAnyArea=areas().length||likedAreas().length;
     const missing=hasAnyArea?allPC().filter(pc=>!has(pc)).length:0;
-    if(!areas().length&&!likedAreas().length)status.textContent='Add a preferred or excluded area to match the listed training-site postcodes.';
-    else if(scanning)status.textContent='Checking site postcodes · '+scanned+' / '+total+' verified. Unverified and approximate matches remain visible in Explore and are listed for review.';
+    if(!areas().length&&!likedAreas().length)status.textContent='Add an area to check listed training sites.';
+    else if(scanning)status.textContent='Checking site postcodes · '+scanned+' / '+total+'.';
     else if(missing)status.textContent=missing+' postcodes are not verified. Affected programmes remain visible in Explore and appear in Needs review; use Retry verification.';
-    else status.textContent='Site verification complete. Only exact verified postcode or borough matches are excluded; approximate and missing sites remain visible for review.';
+    else status.textContent='Site checks complete. Only exact verified matches are excluded.';
   };
   const scan=async()=>{
     if(scanning||(!areas().length&&!likedAreas().length)||!postcodes().length){progress();return;}
@@ -354,7 +354,7 @@
     byId('geoShow').onchange=e=>{showOnly=e.target.value;renderModal();};
     byId('geoExcludedSearch').oninput=renderModal;
     const top=byId('uxExploreToolbar')||byId('results');
-    const b=document.createElement('button');b.type='button';b.className='btn geoOpenExplore';b.dataset.geoOpen='';b.innerHTML='Location exclusions <span data-geo-count></span>';
+    const b=document.createElement('button');b.type='button';b.className='btn geoOpenExplore';b.dataset.geoOpen='';b.innerHTML='Exclusions <span data-geo-count></span>';
     if(top)top.insertAdjacentElement('beforebegin',b);
     const forYou=document.querySelector('#foryou .uxRecommendationsTools');
     if(forYou){const copy=b.cloneNode(true);copy.className='btn geoOpenForYou';forYou.append(copy);}
