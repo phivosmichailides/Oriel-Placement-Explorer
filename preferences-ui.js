@@ -42,6 +42,12 @@
        source.value=slider.value;
        source.dispatchEvent(new Event('input',{bubbles:true}));
        source.dispatchEvent(new Event('change',{bubbles:true}));
+       requestAnimationFrame(()=>{
+         if(typeof explore==='function')explore();
+         if(typeof reco==='function')reco();
+         if(typeof shortlist==='function')shortlist();
+         if(typeof compare==='function')compare();
+       });
      });
      source.before(wrap);
      source.classList.add('weightNative');source.tabIndex=-1;source.setAttribute('aria-hidden','true');
