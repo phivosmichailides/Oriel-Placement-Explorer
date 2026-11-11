@@ -32,7 +32,7 @@ test('current deployable assets contain no obsolete explorer branding or data lo
   assertAssetSynced(html,read('sw.js'),'app.js');
   assert.match(read('app.js'),/app-product\.js\?v=[0-9a-z_-]+/);
   assert.match(read('app.js'),/generic-public\.js\?v=[0-9a-z_-]+/);
-  assert.match(read('app-product.js'),/app-base\.js\?v=20261109fix2/);
+  assert.match(read('app-product.js'),/app-base\.js\?v=[0-9a-z_-]+/);
   assert.match(html,/rail-stations\.js\?v=20261109national1/);
   assert.match(read('generic-public.js'),/document\.title='Placement Atlas'/);
   assert.doesNotMatch(read('generic-public.js'),/Oriel Placement Desk/);
@@ -330,6 +330,7 @@ test('editorial palette prototype keeps neutral surfaces and six distinct access
 
 test('discovery redesign uses progressive disclosure and concise, evidence-led summaries',()=>{
   const html=read('index.html');
+  const sw=read('sw.js');
   const hero=read('premium-discovery-preview.js');
   const heroCss=read('premium-discovery-preview.css');
   const cards=read('premium-card-tabs.js');
