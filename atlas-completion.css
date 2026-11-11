@@ -1,0 +1,234 @@
+/* Placement Atlas · product-wide finishing pass.
+   Neutral surfaces, readable programme names and restrained controls across all views. */
+
+/* Programme titles: ease the compressed tracking without changing data labels. */
+html.atlasPremiumPreview .placement .placementTop h3,
+html.atlasPremiumPreview #results .placement.atlasDiscoveryCard .placementTop h3,
+html.atlasPremiumPreview #shortlistList .placement .placementTop h3,
+html.atlasPremiumPreview #mapSelection .placement .placementTop h3{
+  letter-spacing:-.012em!important;
+  line-height:1.36!important;
+  word-spacing:.005em;
+  overflow-wrap:anywhere;
+}
+#tinderMode .tdProgrammeName{
+  letter-spacing:-.008em!important;
+  line-height:1.36!important;
+  word-spacing:.005em;
+  overflow-wrap:break-word;
+}
+#tinderMode .tdDrawerProgrammeTitle,
+#simulator .simItemName,
+#simulator .simResultName{
+  letter-spacing:-.008em;
+  line-height:1.38;
+  overflow-wrap:anywhere;
+}
+
+/* Swipe Mode: quiet, optional details and compact sound control. */
+#tinderMode .tdShowDetails{
+  display:inline-flex;align-items:center;gap:5px;
+  margin:1px 0 10px;padding:2px 0;
+  border:0;background:transparent;color:var(--ux-accent-ink);
+  font:700 12px/1.4 inherit;letter-spacing:.005em;
+  text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:4px;cursor:pointer;
+}
+#tinderMode .tdShowDetails:hover{color:var(--ink)}
+#tinderMode .tdDetailsPanel{
+  margin:0 0 14px;padding:12px 13px;
+  border:1px solid var(--line);border-radius:13px;
+  background:var(--soft);text-align:left;
+}
+#tinderMode .tdDetailsPanel[hidden]{display:none!important}
+#tinderMode .tdDetailsFacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 15px;margin:0}
+#tinderMode .tdDetailsFacts>div{min-width:0}
+#tinderMode .tdDetailsFacts dt{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+#tinderMode .tdDetailsFacts dd{margin:2px 0 0;font-size:11px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+#tinderMode .tdResearchLinks{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+#tinderMode .tdResearchLinks a{font-size:11px;font-weight:700;color:var(--ux-accent-ink);text-underline-offset:3px}
+#tinderMode .tdSoundToggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:43px;padding:9px 12px;border:1px solid var(--line);
+  border-radius:12px;background:var(--panel);color:var(--mut);
+  font-size:12px;font-weight:750;cursor:pointer;
+}
+#tinderMode .tdSoundToggle svg{width:16px;height:16px;flex:none}
+#tinderMode .tdSoundToggle[aria-pressed="false"]{opacity:.78}
+#tinderMode .tdFilterToggle{white-space:nowrap}
+#tinderMode .tdStampNo{letter-spacing:.075em}
+#tinderMode .tdDrawerProgrammeTitle{letter-spacing:-.006em;line-height:1.38}
+@media(max-width:600px){
+  #tinderMode .tdDetailsFacts{grid-template-columns:minmax(0,1fr)}
+  #tinderMode .tdSettings{gap:10px}
+  #tinderMode .tdRoundStats{flex-basis:100%;justify-content:flex-start}
+}
+
+/* Explore: keep the local-save note on one line beside the count. */
+#uxFilterSidebar .footerbar{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:nowrap;gap:12px;min-width:0;
+}
+#uxFilterSidebar .footerbar #count{min-width:0;flex:1 1 auto;line-height:1.4}
+#uxFilterSidebar .footerbar .smallnote{
+  flex:0 0 auto;white-space:nowrap;line-height:1.3;
+  margin:0!important;font-size:10px;
+}
+#uxExplorePager{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px 16px;
+}
+#uxExplorePager .uxPagerInfo{color:var(--mut);font-size:12px;line-height:1.5}
+#uxExplorePager .uxPagerSize{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--mut);font-size:12px;font-weight:700;
+}
+#uxExplorePager .uxPagerSize select{
+  min-height:36px;padding:6px 10px;border:1px solid var(--line);
+  border-radius:10px;background:var(--panel);color:var(--ink);
+  font:inherit;font-weight:700;
+}
+#uxExplorePager .uxPagerButtons{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+#uxExplorePager .uxPagerButtons .btn{min-width:35px;min-height:35px;padding:6px 10px}
+@media(max-width:560px){
+  #uxExplorePager{align-items:flex-start}
+  #uxExplorePager .uxPagerInfo{flex-basis:100%}
+}
+
+/* Map attribution remains present and legible, without dominating the map. */
+.leaflet-container{background:var(--panel,#f5f5f2)!important}
+.leaflet-control-attribution{
+  max-width:min(78vw,480px);
+  padding:2px 6px!important;
+  border-radius:6px!important;
+  background:color-mix(in srgb,var(--panel,#fff) 82%,transparent)!important;
+  color:var(--mut,#667)!important;
+  font-size:8px!important;line-height:1.25!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+}
+.leaflet-control-attribution a{color:var(--mut,#667)!important;text-decoration:underline;text-underline-offset:2px}
+.placement .leaflet-control-attribution{max-width:calc(100% - 8px);font-size:7px!important}
+#placementMap .leaflet-tile,
+.placement .leaflet-tile{
+  border:0!important;outline:0!important;box-shadow:none!important;
+  backface-visibility:hidden;
+}
+#placementMap .leaflet-tile-pane,
+#placementMap .leaflet-map-pane{background:var(--panel,#f5f5f2)}
+
+/* Footer uses the same compass-pin mark as the application header. */
+html body .atlasFooterMark{
+  display:block;flex:0 0 36px;width:36px;height:36px;
+  object-fit:contain;object-position:center;
+}
+
+/* Profile: make the free account value clear without promising unavailable perks. */
+#outcome .paJoinBanner{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;gap:18px;
+}
+#outcome .paJoinCopy{min-width:0}
+#outcome .paJoinBenefits{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px 14px;margin:13px 0 8px;
+}
+#outcome .paJoinBenefits span{display:grid;gap:2px;min-width:0}
+#outcome .paJoinBenefits b{font-size:11px;color:var(--ink)}
+#outcome .paJoinBenefits small{font-size:10px;line-height:1.4;color:var(--mut)}
+#outcome .paJoinFreeNote{display:block;color:var(--mut);font-size:10px;font-weight:700}
+@media(max-width:760px){
+  #outcome .paJoinBanner{grid-template-columns:minmax(0,1fr)}
+  #outcome .paJoinBenefits{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Oriel Simulation category explanations. */
+#simulator .simColHelp{
+  margin:5px 0 11px;color:var(--mut);
+  font-size:11px;line-height:1.45;font-weight:500;
+  max-width:34ch;
+}
+
+/* Learning library. */
+.atlasLearnPanel{display:grid;gap:18px;max-width:1500px;margin:0 auto}
+.atlasLearnHero{
+  padding:clamp(22px,3.2vw,42px);
+  border:1px solid var(--line);border-radius:22px;
+  background:var(--panel);
+}
+.atlasLearnHero h2{margin:7px 0 10px;font-size:clamp(27px,3.2vw,40px);line-height:1.14;letter-spacing:-.035em}
+.atlasLearnHero>p:not(.atlasLearnDisclaimer){max-width:760px;margin:0;color:var(--mut);font-size:15px;line-height:1.65}
+.atlasLearnHeroActions{display:flex;flex-wrap:wrap;gap:9px;margin-top:19px}
+.atlasLearnDisclaimer,.atlasLearnCaution{font-size:11px;line-height:1.55;color:var(--mut);margin:12px 0 0}
+.atlasLearnSection{
+  padding:clamp(18px,2.4vw,28px);
+  border:1px solid var(--line);border-radius:19px;
+  background:var(--panel);scroll-margin-top:100px;
+}
+.atlasLearnSection>.eyebrow,.atlasLearnSectionHead .eyebrow{font-size:10px;letter-spacing:.1em;font-weight:850;color:var(--mut)}
+.atlasLearnSection h3{margin:5px 0 8px;font-size:clamp(19px,2vw,24px);line-height:1.25;letter-spacing:-.018em;color:var(--ink)}
+.atlasLearnSection>p,.atlasLearnSectionHead p{margin:0 0 14px;max-width:850px;color:var(--mut);font-size:13px;line-height:1.65}
+.atlasLearnSettingGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.atlasLearnTopic{border:1px solid var(--line);border-radius:13px;background:var(--soft);overflow:hidden}
+.atlasLearnTopic summary{padding:13px 15px;cursor:pointer;font-size:13px;font-weight:800;color:var(--ink);list-style-position:inside}
+.atlasLearnTopic>div{padding:0 15px 14px;color:var(--mut);font-size:12px;line-height:1.6}
+.atlasLearnTopic p{margin:0 0 8px}
+.atlasLearnTopic ul{padding-left:18px;margin:7px 0 0}
+.atlasLearnTopic li{margin:5px 0}
+.atlasLearnChecklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.atlasLearnChecklist>div{
+  display:grid;gap:3px;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--soft);
+}
+.atlasLearnChecklist b{font-size:12px;color:var(--ink)}
+.atlasLearnChecklist span{font-size:11px;line-height:1.5;color:var(--mut)}
+.atlasLearnRegionTools{
+  display:grid;grid-template-columns:auto minmax(190px,280px);
+  align-items:center;gap:9px 13px;padding:14px;
+  border:1px solid var(--line);border-radius:13px;background:var(--soft);
+}
+.atlasLearnRegionTools>label{font-size:12px;font-weight:800;color:var(--ink)}
+.atlasLearnRegionTools select,.atlasLearnResearch input{
+  width:100%;min-height:40px;padding:9px 11px;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);font:inherit;font-size:12px;
+}
+.atlasLearnRegionLinks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 14px}
+.atlasLearnRegionLinks a,.atlasLearnExternalLinks a{
+  color:var(--ux-accent-ink);font-size:11px;font-weight:750;
+  text-decoration:underline;text-underline-offset:3px;
+}
+.atlasLearnExternalLinks{display:flex;flex-wrap:wrap;gap:9px 18px;margin-top:13px}
+.atlasLearnTimeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.atlasLearnTimeline>div{padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.atlasLearnTimeline b{font-size:12px;color:var(--ink)}
+.atlasLearnTimeline p{margin:5px 0 0;color:var(--mut);font-size:11px;line-height:1.5}
+.atlasLearnQuestionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.atlasLearnQuestionGrid label{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft);font-size:11px;line-height:1.5;color:var(--ink)}
+.atlasLearnQuestionGrid input{margin:2px 0 0;accent-color:var(--ux-accent);flex:none}
+.atlasLearnSearchLabel{display:block;margin:13px 0 6px;font-size:11px;font-weight:800;color:var(--ink)}
+.atlasLearnProgrammeResults{display:grid;gap:6px;margin-top:8px}
+.atlasLearnProgrammeResults[hidden]{display:none!important}
+.atlasLearnProgrammeResult{
+  display:grid;gap:3px;width:100%;padding:11px 13px;
+  border:1px solid var(--line);border-radius:11px;background:var(--soft);
+  text-align:left;color:var(--ink);cursor:pointer;
+}
+.atlasLearnProgrammeResult strong{font-size:12px;letter-spacing:-.005em;line-height:1.4}
+.atlasLearnProgrammeResult span{font-size:10px;color:var(--mut)}
+.atlasLearnNoResults{margin:0;padding:12px;color:var(--mut);font-size:12px}
+.atlasLearnSelectedProgramme{margin-top:12px;padding:14px;border:1px solid var(--ux-accent-border);border-radius:13px;background:var(--ux-accent-soft)}
+.atlasLearnSelectedProgramme[hidden]{display:none!important}
+.atlasLearnSelectedHead{display:grid;gap:4px}
+.atlasLearnSelectedHead strong{font-size:14px;line-height:1.4;letter-spacing:-.01em;color:var(--ink)}
+.atlasLearnSelectedHead span{font-size:11px;color:var(--mut)}
+@media(max-width:900px){
+  .atlasLearnTimeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .atlasLearnSettingGrid,.atlasLearnChecklist,.atlasLearnQuestionGrid{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnRegionTools{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnRegionLinks{grid-column:auto}
+  .atlasLearnTimeline{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnHeroActions .btn{flex:1}
+}
