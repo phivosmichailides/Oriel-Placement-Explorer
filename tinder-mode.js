@@ -13,7 +13,7 @@
   };
   const getData=()=>typeof placements!=='undefined'&&Array.isArray(placements)?placements:[];
   const defaultFilters=()=>({setting:'all',minSalary:'',maxHours:'',splitOnly:false,hideDecided:false});
-  let game={version:1,seen:[],history:[],region:'London',filters:defaultFilters()};
+  let game={version:1,seen:[],history:[],region:'all',filters:defaultFilters()};
   const hydrateGame=()=>{
     // Run again after the cloud workspace has restored, not just on script
     // evaluation, otherwise old local progress could overwrite cloud data.
@@ -22,7 +22,7 @@
       if(v?.version===1){
         game.seen=Array.isArray(v.seen)?v.seen.filter(x=>typeof x==='string').slice(-5000):[];
         game.history=Array.isArray(v.history)?v.history.filter(x=>x&&typeof x.id==='string').slice(-150):[];
-        game.region=typeof v.region==='string'?v.region:'London';
+        game.region=typeof v.region==='string'?v.region:'all';
         const saved=v.filters&&typeof v.filters==='object'&&!Array.isArray(v.filters)?v.filters:{};
         game.filters={...defaultFilters(),
           setting:['all','hospital','gp','community','industry','mixed'].includes(saved.setting)?saved.setting:'all',
@@ -36,6 +36,38 @@
   hydrateGame();
   const saveGame=()=>{try{localStorage.setItem(KEY,JSON.stringify(game))}catch{note('Local progress storage unavailable. Export a backup.')}};
   const note=msg=>{const el=$('tinderNotice');if(el)el.textContent=msg;};
+  const SOUND_KEY='placement-atlas-swipe-sounds-v1';
+  let soundEnabled=false,audioContext=null;
+  try{soundEnabled=localStorage.getItem(SOUND_KEY)==='1'}catch{}
+  const updateSoundButton=()=>{
+    const button=$('tdSoundToggle');if(!button)return;
+    button.textContent=soundEnabled?'Sound on':'Sound off';
+    button.setAttribute('aria-pressed',String(soundEnabled));
+    button.setAttribute('aria-label',soundEnabled?'Turn swipe sounds off':'Turn swipe sounds on');
+  };
+  const playSound=kind=>{
+    if(!soundEnabled)return;
+    const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;
+    try{
+      audioContext=audioContext||new Context();
+      if(audioContext.state==='suspended')audioContext.resume();
+      const now=audioContext.currentTime;
+      const notes=kind==='super'?[[520,0,.15],[740,.075,.16],[1040,.15,.19]]:
+        kind==='no'?[[370,0,.12],[247,.075,.17]]:
+        kind==='undo'?[[440,0,.12],[660,.11,.14],[185,.49,.09]]:
+        [[620,0,.12],[790,.07,.14]];
+      notes.forEach(([frequency,offset,duration])=>{
+        const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
+        oscillator.type=kind==='no'?'sine':'triangle';
+        oscillator.frequency.setValueAtTime(frequency,now+offset);
+        gain.gain.setValueAtTime(.0001,now+offset);
+        gain.gain.exponentialRampToValueAtTime(kind==='no'?.022:.035,now+offset+.012);
+        gain.gain.exponentialRampToValueAtTime(.0001,now+offset+duration);
+        oscillator.connect(gain);gain.connect(audioContext.destination);
+        oscillator.start(now+offset);oscillator.stop(now+offset+duration+.02);
+      });
+    }catch{}
+  };
   const prefs=()=>typeof state!=='undefined'&&state?.marks?state:null;
   const assessed=p=>{try{return analyse(p)}catch{return{score:50,good:[],bad:[],band:'Not yet assessed'}}};
   const blacklisted=p=>window.OrielGeoBlacklist?.shouldHide?.(p)||false;
@@ -85,12 +117,24 @@
     let completed=false;try{completed=localStorage.getItem(HINT_KEY)==='1'}catch{}
     tips.hidden=completed||game.seen.length>0;
   };
+  const activeFilterCount=()=>{
+    const f=game.filters||defaultFilters();
+    return [f.setting!=='all',Boolean(f.minSalary),Boolean(f.maxHours),f.splitOnly===true,f.hideDecided===true].filter(Boolean).length;
+  };
+  const updateFilterToggle=()=>{
+    const toggle=$('tinderFilterToggle');if(!toggle)return;
+    const count=activeFilterCount(),label=toggle.querySelector('.tdFilterLabel');
+    if(label)label.textContent=count?'Refine · '+count+' active':'Refine';
+    toggle.dataset.activeFilters=String(count);
+    toggle.setAttribute('aria-label',count?'Refine programmes; '+count+' active filters':'Refine programmes');
+  };
   const available=()=>selectedPool();
   const nextProgramme=()=>{
     if(forced){const p=lookup(forced);if(p&&!blacklisted(p)&&available().some(x=>x.id===p.id))return p;forced=null;}
     const seen=new Set(game.seen);return available().find(p=>!seen.has(p.id))||null;
   };
   const code=p=>String(p.id||'').split('/').pop();
+  const readableTitle=p=>window.AtlasPrototypeCleanTitle?.(p.title||p.employer||'Programme',p)||clean(p.title||p.employer||'Programme');
   const clean=s=>String(s||'').trim();
   const shorten=(s,n=100)=>{const t=clean(s);return t.length>n?t.slice(0,n-1)+'…':t};
   const week=(p,q)=>(p.settings||[]).filter(x=>String(x[0]).toLowerCase().includes(q)).reduce((n,x)=>n+Number(x[1]||0),0);
@@ -177,8 +221,8 @@
       }
     }
     top.append(tag,score);
-    const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=p.title||p.employer||'Untitled programme';
-    const employer=document.createElement('p');employer.className='tdEmployer';employer.textContent=p.employer||'Employer not specified';
+    const name=document.createElement('h3');name.className='tdProgrammeName';name.textContent=readableTitle(p);name.title=String(p.title||p.employer||'Programme');
+    const employer=document.createElement('p');employer.className='tdEmployer';employer.textContent=window.AtlasPrototypeCleanTitle?.(p.employer||'Employer not specified',p)||p.employer||'Employer not specified';
     const metrics=document.createElement('div');metrics.className='tdMetrics';
     for(const [label,value] of [['SALARY',money(p.salary)],['HOURS',p.hours?p.hours+' / week':'Not stated'],['PLACES',p.places||'—']]){
       const div=document.createElement('div');const small=document.createElement('span');small.textContent=label;const strong=document.createElement('strong');strong.textContent=value;
@@ -199,8 +243,15 @@
       else for(const s of items){const li=document.createElement('li');li.textContent=s;ul.append(li)}
       block.append(ul);pros.append(block);
     }
-    const stamps=document.createElement('div');stamps.className='tdStamps';stamps.innerHTML='<span class="tdStamp tdStampNo">NOPE</span><span class="tdStamp tdStampYes">LIKE</span><span class="tdStamp tdStampSuper">SUPER LIKE</span>';
-    card.append(top,name,employer,metrics,sites,rotations,pros,stamps);
+    const stamps=document.createElement('div');stamps.className='tdStamps';stamps.innerHTML='<span class="tdStamp tdStampNo">LIKE NO</span><span class="tdStamp tdStampYes">LIKE</span><span class="tdStamp tdStampSuper">SUPER LIKE</span>';
+    card.append(top,name,employer,metrics,sites,rotations,pros);
+    if(!underlay){
+      const details=document.createElement('button');details.type='button';details.className='tdShowDetails';
+      details.textContent='Show details';details.setAttribute('aria-label','Show full details for '+readableTitle(p));
+      details.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();window.OrielProgrammePreview?.open(p.id)});
+      card.append(details);
+    }
+    card.append(stamps);
     if(!underlay)bindGesture(card,p);
     return card;
   };
@@ -259,6 +310,7 @@
   };
   const commit=(p,status,vector)=>{
     if(animating)return;
+    playSound(status==='love'?'super':status);
     animating=true;
     dismissHints();
     const card=$('tinderActiveCard');
@@ -301,6 +353,7 @@
   };
   const undo=()=>{
     if(animating)return;
+    playSound('undo');
     const last=game.history.pop();
     if(!last){note('Nothing to undo yet.');return;}
     const s=prefs();if(s){if(last.prev)s.marks[last.id]=last.prev;else delete s.marks[last.id];save();}
@@ -402,17 +455,17 @@
     const search=$('tdDrawerSearch')?.value.toLowerCase().trim()||'';
     const matches=all.filter(p=>[p.title,p.employer,p.id,p.region,...(p.postcodes||[])]
       .join(' ').toLowerCase().includes(search));
-    header.textContent=inLiked?'Shortlisted programmes':'Like No · Rejected';
+    header.textContent=inLiked?'Shortlist':'Like No';
     subtitle.textContent=all.length+' saved '+(inLiked?'to your shortlist':'as Like No')+
       ' · Tap a programme title for full details and your personalised fit.';
-    $('tdDrawerSearch').placeholder=inLiked?'Search shortlisted programmes':'Search rejected programmes';
+    $('tdDrawerSearch').placeholder=inLiked?'Search shortlist':'Search Like No programmes';
     list.replaceChildren();
     if(!matches.length){
       const empty=document.createElement('p');
       empty.className='tdDrawerEmpty';
       empty.textContent=search?'No matching programmes.':
-        inLiked?'Your shortlist is empty. Like a programme to see it here.':
-          'No rejected programmes yet. Swipe a card left to add one.';
+        inLiked?'Your shortlist is empty. Like a programme to add it here.':
+          'No Like No decisions yet. Swipe a programme left to add one.';
       list.append(empty);return;
     }
     const rows=document.createDocumentFragment();
@@ -423,7 +476,7 @@
       const summary=document.createElement('summary');summary.className='tdDrawerSummary';
       const text=document.createElement('span');text.className='tdDrawerSummaryText';
       const title=document.createElement('strong');title.className='tdDrawerProgrammeTitle';
-      title.textContent=p.title||p.employer||'Unnamed programme';
+      title.textContent=readableTitle(p);title.title=String(p.title||p.employer||'Programme');
       const sub=document.createElement('span');sub.className='tdDrawerProgrammeSub';
       sub.textContent=(p.region||'Region not listed')+' · '+money(p.salary)+
         (p.hours?' · '+p.hours+'h/week':'');
@@ -451,8 +504,8 @@
       const action=document.createElement('button');
       action.type='button';action.className='tdDrawerMove';
       action.setAttribute('aria-label',inLiked?
-        'Like No — remove '+(p.title||p.employer)+' from shortlist':
-        'Take '+(p.title||p.employer)+' to shortlist');
+        'Like No — remove '+readableTitle(p)+' from shortlist':
+        'Take '+readableTitle(p)+' to shortlist');
       action.innerHTML=inLiked?
         '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 18 18M18 6 6 18"/></svg><span>Like No</span>':
         '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.8 5.5a5.4 5.4 0 0 0-7.6 0L12 6.7l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 22l8.8-8.9a5.4 5.4 0 0 0 0-7.6Z"/></svg><span>Take to shortlist</span>';
@@ -468,7 +521,7 @@
         saveGame();
         render();
         renderDecisionDrawer();
-        note(inLiked?'Moved to rejected programmes.':'Moved to your shortlist.');
+        note(inLiked?'Moved to Like No.':'Moved to your shortlist.');
         $('tdDrawerSearch')?.focus();
       });
       row.append(details,action);rows.append(row);
@@ -490,7 +543,7 @@
     if($('tdFloatingDecisions'))return;
     const float=document.createElement('div');
     float.className='tdFloatingDecisions';float.id='tdFloatingDecisions';
-    float.setAttribute('aria-label','Tinder Mode saved decisions');
+    float.setAttribute('aria-label','Swipe Mode saved decisions');
     float.innerHTML='<button type="button" class="tdLauncher tdLauncherRejected" id="tdOpenRejected" aria-label="View rejected programmes">'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>'+
       '<span id="tdRejectedCount">(0)</span></button>'+
@@ -505,7 +558,7 @@
     drawer.setAttribute('aria-hidden','true');drawer.setAttribute('aria-labelledby','tdDrawerHeading');
     drawer.hidden=true;drawer.inert=true;
     drawer.innerHTML='<div class="tdDrawerHeader"><div>'+
-      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · TINDER MODE</div>'+
+      '<div class="tdDrawerEyebrow">PLACEMENT ATLAS · SWIPE MODE</div>'+
       '<h2 id="tdDrawerHeading">Saved programmes</h2>'+
       '<p id="tdDrawerSubtitle"></p></div>'+
       '<button type="button" id="tdDrawerClose" class="tdDrawerClose" aria-label="Close saved programmes">×</button></div>'+
@@ -543,7 +596,8 @@
     const pool=available(),ids=new Set(pool.map(p=>p.id));
     const seen=game.seen.filter(id=>ids.has(id)).length;
     const count=$('tinderProgress');if(count)count.textContent=seen.toLocaleString('en-GB')+' / '+pool.length.toLocaleString('en-GB')+' reviewed';
-    const remaining=$('tinderRemaining');if(remaining)remaining.textContent=(pool.length-seen)+' remaining in this region';
+    const remaining=$('tinderRemaining');if(remaining){const left=pool.length-seen;remaining.textContent=left+' remaining '+(game.region==='all'?'across England & Wales':'in '+game.region);}
+    updateFilterToggle();
     const cardSlot=$('tinderCardSlot');if(!cardSlot)return;
     cardSlot.replaceChildren();
     const p=nextProgramme();activeId=p?.id||'';
@@ -605,13 +659,13 @@
     const nav=document.querySelector('nav.tabs'),sim=nav?.querySelector('[data-tab="simulator"]');
     if(!sim)return;
     const tab=document.createElement('button');tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
-    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Tinder Mode</span>';
+    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Swipe Mode</span>';
     sim.after(tab);
     tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
-    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SPEED-DATING THE CATALOGUE</div><h2>Meet your next placement.</h2><p>One programme. One decision. No endless spreadsheets. Swipe left for Like No or right to like — and keep the super likes for the ones you really want.</p><small>Independent game-style shortlist tool; not affiliated with Tinder, Oriel or the NHS. Swipes update your Placement Desk decisions, never your official Oriel application.</small></header>'+
+    section.innerHTML='<header class="tdModeIntro"><div class="tdModeEyebrow">PLACEMENT ATLAS · SWIPE MODE</div><h2>One programme at a time.</h2><p>Swipe left for Like No, right to shortlist, or up for a Super Like. Review the details before you decide.</p><small>Your choices update your Placement Atlas shortlist only. They never change your official Oriel application.</small></header>'+
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
-     '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine cards</span></button>'+
+     '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span class="tdFilterLabel">Refine</span></button><button type="button" id="tdSoundToggle" class="tdSoundToggle" aria-pressed="false">Sound off</button>'+
      '<div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
      '<div id="tinderFilterPanel" class="tdFilterPanel" hidden aria-label="Tinder Mode programme filters">'+
      '<label>Training setting<select id="tdSetting"><option value="all">All settings</option><option value="hospital">Hospital-led</option><option value="gp">GP-led</option><option value="mixed">Split training</option><option value="community">Community-led</option><option value="industry">Industry</option></select></label>'+
@@ -624,13 +678,13 @@
      '<div class="tdActions"><button id="tinderUndo" class="tdAction tdAction-undo" title="Undo last swipe" aria-label="Undo last swipe">'+icon.undo+'</button><button id="tinderNo" class="tdAction tdAction-no" title="Like No — reject programme" aria-label="Like No — reject programme">'+icon.no+'</button><button id="tinderYes" class="tdAction tdAction-yes" title="Like" aria-label="Like programme">'+icon.yes+'</button><button id="tinderSuper" class="tdAction tdAction-super" title="Super Like" aria-label="Super Like programme">'+icon.super+'</button></div>'+
      '<div class="tdActionLegend"><span>Undo</span><span>Like No</span><span>Like</span><span>Super Like</span></div>'+
      '<p class="tdExisting" id="tinderExisting">Not yet decided</p><p class="tdNotice" id="tinderNotice" role="status" aria-live="polite">Tip: ← Like No · → Like · ↑ Super Like · Backspace Undo</p>'+
-     '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel CSV. Training areas are postcode-based approximations. Cheeky pros and cons are suggestions, not verified employer promises.</p></div>';
+     '<p class="tdDisclosure">Rotation weeks, salary and hours come from the Oriel dataset. Locations are postcode-based approximations. Strengths and trade-offs are suggestions, not verified employer promises.</p></div>';
     $('simulator')?.after(section);
     mountDecisionDrawers();
     const region=$('tinderRegion');if(region){
       const all=document.createElement('option');all.value='all';all.textContent='All regions — England & Wales';region.append(all);
       for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=r;region.append(option)}
-      if(![...region.options].some(x=>x.value===game.region))game.region='London';
+      if(![...region.options].some(x=>x.value===game.region))game.region='all';
       region.value=game.region;
       region.addEventListener('change',()=>{game.region=region.value;forced=null;saveGame();render()});
     }
@@ -648,7 +702,7 @@
         $('tdSplitOnly').checked=game.filters.splitOnly;
         $('tdHideDecided').checked=game.filters.hideDecided;
       };
-      updateFields();
+      updateFields();updateFilterToggle();
       filterPanel.addEventListener('change',()=>{
         game.filters={setting:$('tdSetting').value,minSalary:$('tdMinSalary').value,
           maxHours:$('tdMaxHours').value,splitOnly:$('tdSplitOnly').checked,
@@ -660,6 +714,8 @@
         updateFields();render();
       });
     }
+    const soundToggle=$('tdSoundToggle');
+    if(soundToggle){soundToggle.addEventListener('click',()=>{soundEnabled=!soundEnabled;try{localStorage.setItem(SOUND_KEY,soundEnabled?'1':'0')}catch{}updateSoundButton();});updateSoundButton();}
     $('tinderUndo').onclick=undo;
     $('tinderNo').onclick=()=>{const p=nextProgramme();if(p)commit(p,'no',-1)};
     $('tinderYes').onclick=()=>{const p=nextProgramme();if(p)commit(p,'yes',1)};
