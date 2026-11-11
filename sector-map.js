@@ -130,7 +130,7 @@
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
     const settings=document.createElement('div');settings.className='settingsCard card';
-    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><h2>Map colours</h2><p class="muted">Choose a colour for each setting. The map legend updates to match.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button>';
+    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><details class="paMapColourDetails"><summary><span>Map colours</span><small>Customise marker colours</small></summary><div class="paMapColourBody"><p class="muted">Choose a colour for each setting. The legend updates to match.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button></div></details>';
     document.querySelector('#prefs .settings').appendChild(settings);
     settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
