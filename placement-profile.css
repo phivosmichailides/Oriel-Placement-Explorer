@@ -43,3 +43,18 @@
  #outcome .paThemeModes button{flex:1}
  #outcome .paOutcomeBody{padding:0 12px 16px}
 }
+#outcome .paJoinBanner{
+ display:flex;align-items:center;justify-content:space-between;gap:18px;
+ padding:18px 21px;border:1px solid var(--ux-accent-border,var(--line));
+ border-radius:17px;background:var(--ux-accent-soft,var(--soft));
+}
+#outcome .paJoinBanner[hidden]{display:none!important}
+#outcome .paJoinBanner h3{margin:3px 0 5px;font-size:18px;letter-spacing:-.025em}
+#outcome .paJoinBanner p{margin:0;color:var(--mut);font-size:12px;line-height:1.5}
+#outcome .paJoinActions{display:flex;flex:0 0 auto;gap:7px;flex-wrap:wrap}
+#outcome .paJoinActions .btn{min-height:39px;padding:9px 13px;border-radius:10px}
+@media(max-width:620px){
+ #outcome .paJoinBanner{align-items:flex-start;flex-direction:column;padding:16px}
+ #outcome .paJoinActions{width:100%}
+ #outcome .paJoinActions .btn{flex:1}
+}
