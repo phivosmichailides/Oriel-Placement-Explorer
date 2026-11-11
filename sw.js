@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v62-complete-refinement';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v63-desktop-grid';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261111logo3','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
@@ -8,11 +8,11 @@ const EXTRA_ASSETS=[
   'premium-card-tabs.js?v=20261111salary2','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
   'placement-refinements.css?v=20261111mobile3','placement-profile.css?v=20261111profile2',
-  'placement-makeover.css?v=20261111cards2','placement-fixes.css?v=20261111fix2','placement-fixes.js?v=20261111fix2','placement-mobile-navigation.js?v=20261111mobile4',
-  'placement-profile.js?v=20261111profile3','placement-titles.js?v=20261111titles2',
+  'placement-makeover.css?v=20261111cards2','placement-fixes.css?v=20261111final1','placement-fixes.js?v=20261111fix2','placement-mobile-navigation.js?v=20261111mobile5',
+  'placement-profile.js?v=20261111profile4','placement-titles.js?v=20261111titles2',
   'placement-atlas-globe.svg','placement-atlas-compass-pin.webp?v=20261111logo2','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
-  'supabase-cloud.js?v=20261111profile2','app.js?v=20261111pins4','app-base.js?v=20261111labels1','app-product.js?v=20261111fitinsights2','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261111legend3','onboarding.js?v=20261111setup3','deadline-dates.js?v=20261109header2',
+  'supabase-cloud.js?v=20261111profile2','app.js?v=20261111pins4','app-base.js?v=20261111labels1','app-product.js?v=20261111fitinsights3','generic-public.js?v=20261108atlas3',
+  'sector-map.js?v=20261111legend3','onboarding.js?v=20261111setup4','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261111copy3','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
