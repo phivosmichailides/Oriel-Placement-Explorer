@@ -13,7 +13,7 @@
   };
   const getData=()=>typeof placements!=='undefined'&&Array.isArray(placements)?placements:[];
   const defaultFilters=()=>({setting:'all',minSalary:'',maxHours:'',splitOnly:false,hideDecided:false});
-  let game={version:1,seen:[],history:[],region:'London',filters:defaultFilters()};
+  let game={version:1,seen:[],history:[],region:'all',filters:defaultFilters()};
   const hydrateGame=()=>{
     // Run again after the cloud workspace has restored, not just on script
     // evaluation, otherwise old local progress could overwrite cloud data.
@@ -22,7 +22,7 @@
       if(v?.version===1){
         game.seen=Array.isArray(v.seen)?v.seen.filter(x=>typeof x==='string').slice(-5000):[];
         game.history=Array.isArray(v.history)?v.history.filter(x=>x&&typeof x.id==='string').slice(-150):[];
-        game.region=typeof v.region==='string'?v.region:'London';
+        game.region=typeof v.region==='string'?v.region:'all';
         const saved=v.filters&&typeof v.filters==='object'&&!Array.isArray(v.filters)?v.filters:{};
         game.filters={...defaultFilters(),
           setting:['all','hospital','gp','community','industry','mixed'].includes(saved.setting)?saved.setting:'all',
@@ -226,8 +226,8 @@
   };
   const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const SOUND_KEY='oriel-tinder-sounds-v1';
-  let soundEnabled=true,audioContext=null;
-  try{soundEnabled=localStorage.getItem(SOUND_KEY)!=='off'}catch{}
+  let soundEnabled=false,audioContext=null;
+  try{soundEnabled=localStorage.getItem(SOUND_KEY)==='on'}catch{}
   const playTones=(tones)=>{
     if(!soundEnabled)return;
     const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
@@ -676,7 +676,7 @@
     section.innerHTML=
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
      '<button type="button" id="tinderFilterToggle" class="tdFilterToggle" aria-expanded="false" aria-controls="tinderFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="9" cy="7" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/></svg><span>Refine</span></button>'+
-     '<button type="button" id="tdSoundToggle" class="tdSoundToggle" aria-pressed="true" aria-label="Mute swipe sound effects"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg><span>Sound on</span></button>'+
+     '<button type="button" id="tdSoundToggle" class="tdSoundToggle" aria-pressed="false" aria-label="Enable swipe sound effects"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg><span>Sound off</span></button>'+
      '<div class="tdRoundStats"><strong id="tinderProgress">0 / 0 reviewed</strong><span id="tinderRemaining">Loading programmes…</span></div></div>'+
      '<div id="tinderFilterPanel" class="tdFilterPanel" hidden aria-label="Swipe Mode programme filters">'+
      '<label>Training setting<select id="tdSetting"><option value="all">All settings</option><option value="hospital">Hospital-led</option><option value="gp">GP-led</option><option value="mixed">Split training</option><option value="community">Community-led</option><option value="industry">Industry</option></select></label>'+
@@ -695,7 +695,7 @@
     const region=$('tinderRegion');if(region){
       const all=document.createElement('option');all.value='all';all.textContent='All regions — England & Wales';region.append(all);
       for(const r of regionList()){const option=document.createElement('option');option.value=r;option.textContent=formatRegion(r);region.append(option)}
-      if(![...region.options].some(x=>x.value===game.region))game.region='London';
+      if(![...region.options].some(x=>x.value===game.region))game.region='all';
       region.value=game.region;
       region.addEventListener('change',()=>{game.region=region.value;forced=null;saveGame();render()});
     }

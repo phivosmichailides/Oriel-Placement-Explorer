@@ -45,6 +45,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await waitForCount(page,'(1)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(1)',
     'Bottom-right shortlist count did not update after adding a programme');
+  await page.locator('.atlasHistoryDisclosure > summary').click();
   await page.locator('#undoDesk').click();
   await waitForCount(page,'(0)');
   assert.equal(await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').innerText(),'(0)',
@@ -59,8 +60,10 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await waitForCount(page,'(1)');
   await page.locator('nav.tabs [data-tab="shortlist"]').click();
   const desktopRemove=page.locator('#shortlistList .rank-row [data-atlas-remove-shortlist]').first();
+  await page.locator('#shortlistList .rank-row').first().hover();
   await desktopRemove.waitFor({state:'visible',timeout:15000});
-  assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'1','Desktop shortlist X should remain visible');
+  await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('#shortlistList .rank-row [data-atlas-remove-shortlist]')).opacity)>0.99,null,{timeout:3000});
+  assert(Number(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity))>0.99,'Desktop shortlist X should be revealed on hover or focus');
   await desktopRemove.click();
   await waitForCount(page,'(0)');
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
@@ -71,6 +74,17 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await mobile.locator('#results .placement').first().waitFor({state:'visible',timeout:60000});
   await mobile.locator('#results .placement').first().locator('[data-action=prefer]').click();
   await mobile.waitForFunction(()=>document.querySelector('#uxDrawerLauncher [data-ux-shortlist-count]')?.textContent==='(1)',null,{timeout:15000});
+  assert(await mobile.locator('#uxDrawerLauncher').evaluate(el=>el.parentElement===document.body),'Floating shortlist must escape the app content stacking context');
+  const overlayMetrics=await mobile.evaluate(()=>{
+    const node=document.getElementById('uxDrawerLauncher'), rect=node.getBoundingClientRect(),
+      style=getComputedStyle(node),shell=document.querySelector('.shell'),shellStyle=getComputedStyle(shell),
+      x=rect.left+rect.width/2,y=rect.top+rect.height/2,top=document.elementFromPoint(x,y);
+    return {parent:node.parentElement?.tagName,rect:{x,y,width:rect.width,height:rect.height},
+      launcher:{z:style.zIndex,position:style.position,pointerEvents:style.pointerEvents,opacity:style.opacity,visibility:style.visibility},
+      shell:{z:shellStyle.zIndex,position:shellStyle.position,transform:shellStyle.transform},
+      hit:{tag:top?.tagName,className:String(top?.className).slice(0,150),id:top?.id},bodyChildren:[...document.body.children].slice(-6).map(n=>n.tagName+'.'+n.className)};
+  });
+  console.log('Floating shortlist hit-test: '+JSON.stringify(overlayMetrics));
   await mobile.locator('#uxDrawerLauncher').click();
   const mobileItem=mobile.locator('#uxDrawerItems .uxDrawerItem').first();
   await mobileItem.waitFor({state:'visible',timeout:15000});
