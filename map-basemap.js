@@ -201,11 +201,11 @@ const STYLES=Object.freeze({
     const previous=map._orielBasemapRecord;
     if(previous?.layer){try{map.removeLayer(previous.layer)}catch{}rasterInstances.delete(previous)}
     setMapBackdrop(map);
-    // The main map retains previously loaded Streets tiles while zooming.
-    // Mini-maps keep their existing lightweight settings.
+    // Refresh the main map during zooms and retain a wider tile buffer to avoid
+    // exposed blank patches. Mini-maps keep their lighter cache buffer.
     const mainMap=map.getContainer()?.id==='placementMap';
     const layer=L.tileLayer(rasterTileUrl(),{
-      maxZoom:19,keepBuffer:mainMap?6:3,updateWhenIdle:false,updateWhenZooming:!mainMap,updateInterval:200,
+      maxZoom:19,keepBuffer:mainMap?8:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:120,
       attribution:MAPTILER_ATTR,className:'oriel-maptile-raster'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'maptiler',attribution:MAPTILER_ATTR,intentional};
