@@ -57,7 +57,7 @@
    headerAccount();
  };
  const tidyTabs=()=>{
-   const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',prefs:'Preferences'};
+   const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',learn:'Learn',prefs:'Preferences'};
    const normalise=value=>String(value||'').replace(/\s+/g,' ').trim().toLowerCase();
    const tabs=[...nav.querySelectorAll(':scope > .tab')];
    const keyed=new Set(tabs.map(tab=>tab.dataset.tab).filter(Boolean));
