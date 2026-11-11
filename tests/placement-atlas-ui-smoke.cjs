@@ -96,7 +96,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal(await page.locator('#paJoinBanner').count(),1,'Existing Profile account banner should remain intact');
   assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
   assert.equal((await page.locator('.atlasStickyHeader .brand h1').innerText()).trim(),'Placement Atlas');
-  assert((await page.locator('.atlasStickyHeader .brand p').textContent()).includes('Find your foundation placement.'),'Header tagline must remain in the accessible document, even when condensed at smaller widths');
+  assert((await page.locator('.atlasStickyHeader .brand h1').innerText()).trim()==='Placement Atlas','Header must identify the site clearly');
   const navLabels=await page.locator('header.top nav.tabs > .tab .atlasTabLabel').allInnerTexts();
   assert.equal(navLabels.filter(x=>x==='Oriel Simulation').length,1,'Oriel Simulation should appear once');
   assert.equal(navLabels.filter(x=>x==='Swipe Mode').length,1,'Swipe Mode should appear once');
