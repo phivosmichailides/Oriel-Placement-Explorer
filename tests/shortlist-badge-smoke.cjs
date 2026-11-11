@@ -65,6 +65,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'0',
     'Desktop remove control should stay quiet until the card is hovered');
   await desktopRemove.locator('xpath=..').hover();
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('#shortlistList .atlasRemoveShortlist')).opacity==='1',null,{timeout:2000});
   assert.equal(await desktopRemove.evaluate(el=>getComputedStyle(el).opacity),'1',
     'Desktop remove control should appear on hover');
   await desktopRemove.click();
