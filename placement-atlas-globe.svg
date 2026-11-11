@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Placement Atlas globe</title>
+  <circle cx="32" cy="32" r="25" stroke="black" stroke-width="4.4"/>
+  <path d="M7 32h50M13 19.4c6.1 3.3 12.3 5.1 19 5.1s12.9-1.8 19-5.1M13 44.6c6.1-3.3 12.3-5.1 19-5.1s12.9 1.8 19 5.1" stroke="black" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M32 7c-8.8 7-13.7 15.4-13.7 25S23.2 50 32 57M32 7c8.8 7 13.7 15.4 13.7 25S40.8 50 32 57" stroke="black" stroke-width="3.7" stroke-linecap="round"/>
+</svg>
