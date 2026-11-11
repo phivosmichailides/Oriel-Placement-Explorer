@@ -209,7 +209,7 @@
       if(window.OrielGeoBlacklist?.assess(p).kind==='blocked')return-2;
       if(window.OrielGeoBlacklist?.matchesPreferred?.(p))return 2;
       if(likes.some(areaMatch))return 2;
-      if(selected)return p.region===selected?1:-1;
+      if(selected&&selected!=='all')return p.region===selected?1:-1;
       return 0;
     };
 
@@ -260,8 +260,8 @@
       const good=[],bad=[];
       const positive=s=>{if(s&&!good.includes(s))good.push(s)};
       const caution=s=>{if(s&&!bad.includes(s))bad.push(s)};
-      const preferHospital=(['hospital','mixed','unsure'].includes(env)&&weight('hospital')>=2)||weight('hospital')>=4;
-      const preferGP=(['gp','mixed','unsure'].includes(env)&&weight('gp')>=2)||weight('gp')>=4;
+      const preferHospital=weight('hospital')>0&&(env==='hospital'||env==='mixed'||(env==='unsure'&&weight('hospital')>=3));
+      const preferGP=weight('gp')>0&&(env==='gp'||env==='mixed'||(env==='unsure'&&weight('gp')>=3));
       const preferCommunity=env==='community'||profile.community==='happy';
       const minSalary=Number(profile.salary)||0,maxHours=Number(profile.hours)||0;
 
@@ -306,7 +306,7 @@
       else if(profile.community==='less'&&c>=26)caution('More community exposure than you prefer');
       else if(profile.community==='some'&&c>=39&&env!=='community')caution('Mostly community rather than a mixed placement');
 
-      if(profile.region){
+      if(profile.region&&profile.region!=='all'){
         if(p.region===profile.region)positive('In your chosen region');
         else caution('Outside your chosen region ('+profile.region+')');
       }else if(a.good.some(x=>/Area matches your preferences/i.test(x)))positive('Area matches your preferences');
