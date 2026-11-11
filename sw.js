@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v58-quiet5';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v59-quiet6';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261111quiet2','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
@@ -7,9 +7,9 @@ const EXTRA_ASSETS=[
   'premium-discovery-preview.js?v=20261111makeover5','premium-discovery-preview.css?v=20261111makeover5',
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
-  'premium-workspace.js?v=20261111workspace1','premium-workspace.css?v=20261111workspace1','premium-quiet-interface.css?v=20261111quiet4','app.js?v=20261111quiet3',
+  'premium-workspace.js?v=20261111workspace1','premium-workspace.css?v=20261111workspace1','premium-quiet-interface.css?v=20261111quiet4','app.js?v=20261111quiet4',
   'supabase-cloud.js?v=20261110reset1','app-base.js?v=20261111notes1','app-product.js?v=20261111notes1','generic-public.js?v=20261111quiz1',
-  'sector-map.js?v=20261111legend2','onboarding.js?v=20261111quiz2','deadline-dates.js?v=20261109header2',
+  'sector-map.js?v=20261111legend2','onboarding.js?v=20261111quiz3','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
