@@ -25,17 +25,53 @@
   const weeksIn=(p,key)=>{try{return safeNum(weeks(p,key))}catch{return 0}};
   const sourceStatus=p=>{try{return mark(p)?.status||'unmarked'}catch{return 'unmarked'}};
   const countPostcodes=p=>new Set((p.postcodes||[]).map(x=>String(x).trim()).filter(Boolean)).size;
+  const salaryNodes=card=>{
+    const payColumn=card.querySelector(':scope > .placementTop > div:last-child');
+    if(!payColumn)return {};
+    const box=payColumn.querySelector('.salary');
+    let value=payColumn.querySelector('.salary-value');
+    if(!value&&box){
+      value=make('span','salary-value',box.textContent.trim());
+      box.replaceChildren(value);
+    }
+    if(value)value.classList.add('atlasSalaryValue');
+    let monthly=payColumn.querySelector('.atlasSalaryMonthly');
+    if(!monthly){monthly=make('div','atlasSalaryMonthly');payColumn.append(monthly);}
+    let toggle=payColumn.querySelector('.atlasSalaryModeToggle');
+    if(!toggle){
+      toggle=make('button','atlasSalaryModeToggle','See estimated take-home');
+      toggle.type='button';toggle.addEventListener('click',()=>{
+        card.dataset.atlasPayMode=card.dataset.atlasPayMode==='net'?'gross':'net';
+        updateEstimate(card);
+      });
+      payColumn.append(toggle);
+    }
+    payColumn.querySelector('.atlasCompactTakeHome')?.remove();
+    return {payColumn,box,value,monthly,toggle};
+  };
   const updateEstimate=card=>{
     const salary=safeNum(card.dataset.atlasSalary);
     const target=card.querySelector('.atlasPayEstimateValue');
     const basis=card.querySelector('.atlasPayEstimateBasis');
-    const compact=card.querySelector('.atlasCompactTakeHome');
     const estimate=salary>0?window.OrielPay?.estimate?.(salary):null;
-    const available=estimate&&Number.isFinite(Number(estimate.monthly));
+    const available=Boolean(estimate&&Number.isFinite(Number(estimate.annual))&&Number.isFinite(Number(estimate.monthly)));
+    const nodes=salaryNodes(card),net=card.dataset.atlasPayMode==='net'&&available;
+    if(nodes.value){
+      nodes.value.textContent=salary>0?money(net?estimate.annual:salary):'Salary not stated';
+      nodes.value.dataset.salaryLabel=net?'ESTIMATED TAKE-HOME ANNUAL':'GROSS ANNUAL SALARY';
+    }
+    if(nodes.monthly){
+      nodes.monthly.textContent=salary>0&&available
+        ?money(net?estimate.monthly:salary/12)+' / month '+(net?'estimated take-home':'gross')
+        :'Monthly salary not stated';
+    }
+    if(nodes.toggle){
+      nodes.toggle.hidden=!available||salary<=0;
+      nodes.toggle.textContent=net?'Show gross salary':'See estimated take-home';
+      nodes.toggle.setAttribute('aria-pressed',String(net));
+    }
+    card.classList.toggle('atlasNetPayMode',net);
     if(target)target.textContent=available?money(estimate.monthly)+' / month':'Not available';
-    if(compact)compact.textContent=available
-      ?'Est. '+money(estimate.monthly)+'/mo take-home'
-      :'Take-home estimate unavailable';
     if(basis)basis.textContent=window.OrielPay?.descriptor?.()||'Illustrative estimate; check your circumstances.';
   };
   const tabLabels=[
@@ -60,9 +96,7 @@
     const community=weeksIn(p,'community'),industry=weeksIn(p,'industry');
     const postcodes=countPostcodes(p);
     const hours=safeNum(p.hours),salary=safeNum(p.salary),places=safeNum(p.places);
-    const payColumn=card.querySelector(':scope > .placementTop > div:last-child');
-    if(payColumn&&!payColumn.querySelector('.atlasCompactTakeHome'))
-      payColumn.append(make('div','atlasCompactTakeHome','Calculating take-home…'));
+    salaryNodes(card);
     const setting=(hospital>=13&&gp>=13)?'Hospital + GP':(typeof sector==='function'?sector(p):'Setting not stated');
     const pills=[setting,hours?hours+'h / week':'Hours not stated'];
     const exposure=[
@@ -90,12 +124,9 @@
     const facts=[];
     // The quick-read row is reserved for checks, not a repetition of the
     // setting and hours already shown in the summary chips.
-    if(postcodes>1)facts.push(['caution','Travel to check',postcodes+' listed postcodes']);
-    if(p.visa===false)facts.push(['caution','Eligibility to check','Sponsorship not offered']);
-    else if(p.visa==null)facts.push(['caution','Eligibility to check','Sponsorship not stated']);
-    if(!salary)facts.push(['caution','Salary information','Not stated in the catalogue']);
-    if(!hours)facts.push(['caution','Working hours','Not stated in the catalogue']);
-    if(!facts.length)facts.push(['neutral','Source information','No missing pay or hours fields flagged; review the full listing.']);
+    if(postcodes>1)facts.push(['caution','Travel',postcodes+' listed postcodes']);
+    if(p.visa===false)facts.push(['caution','Sponsorship','Not offered']);
+    else if(p.visa==null)facts.push(['neutral','Sponsorship','Not stated']);
     for(const [tone,name,value] of facts.slice(0,3)){
       const span=make('span','atlasCardQuickFact atlasCardQuickFact-'+tone);
       span.append(make('i','atlasCardSignalDot'),make('b','',name),make('span','',value));
