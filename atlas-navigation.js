@@ -22,14 +22,22 @@
     const drawer=document.getElementById('uxDrawer');
     if(!button)return;
     button.style.removeProperty('right');
+    button.style.removeProperty('bottom');
     drawer?.style.removeProperty('right');
-    const widths=[window.innerWidth,window.visualViewport?.width,window.screen?.width]
-      .filter(value=>Number.isFinite(value)&&value>0);
-    const visibleWidth=Math.min(...widths);
-    const overflow=Math.max(0,Math.ceil(button.getBoundingClientRect().right-(visibleWidth-12)));
-    if(overflow>0){
-      button.style.setProperty('right',(12+overflow)+'px','important');
-      drawer?.style.setProperty('right',overflow+'px','important');
+    drawer?.style.removeProperty('bottom');
+    const positive=values=>values.filter(value=>Number.isFinite(value)&&value>0);
+    const visibleWidth=Math.min(...positive([window.innerWidth,window.visualViewport?.width,window.screen?.width]));
+    const visibleHeight=Math.min(...positive([window.innerHeight,window.visualViewport?.height,window.screen?.height]));
+    const bounds=button.getBoundingClientRect();
+    const overflowX=Math.max(0,Math.ceil(bounds.right-(visibleWidth-12)));
+    const overflowY=Math.max(0,Math.ceil(bounds.bottom-(visibleHeight-12)));
+    if(overflowX>0){
+      button.style.setProperty('right',(12+overflowX)+'px','important');
+      drawer?.style.setProperty('right',overflowX+'px','important');
+    }
+    if(overflowY>0){
+      button.style.setProperty('bottom',(12+overflowY)+'px','important');
+      drawer?.style.setProperty('bottom',overflowY+'px','important');
     }
   };
   window.requestAnimationFrame(positionShortlistOverlay);
