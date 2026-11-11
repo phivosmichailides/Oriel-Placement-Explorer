@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v52-makeover5';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v53-workspace1';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261110footer1','atlas-navigation.css?v=20261109mobile5','atlas-map-tones.css?v=20261109tone1',
@@ -7,6 +7,8 @@ const EXTRA_ASSETS=[
   'premium-discovery-preview.js?v=20261111makeover5','premium-discovery-preview.css?v=20261111makeover5',
   'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
+  'premium-workspace.css?v=20261111workspace1',
+  'premium-workspace.js?v=20261111workspace1',
   'supabase-cloud.js?v=20261110reset1','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
   'sector-map.js?v=20261110popup1','onboarding.js?v=20261110ux1','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
