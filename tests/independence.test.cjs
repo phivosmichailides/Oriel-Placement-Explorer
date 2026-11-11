@@ -337,3 +337,22 @@ test('discovery redesign uses progressive disclosure and concise, evidence-led s
     'A training setting is factual, not inherently a positive recommendation');
   assert.match(cardCss,/atlasCompactTakeHome/,'Compact take-home needs a readable secondary style');
 });
+
+
+test('workspace refinement assets are wired and presentation-only',()=>{
+  const html=read('index.html'),sw=read('sw.js'),js=read('premium-workspace.js'),css=read('premium-workspace.css');
+  assert.match(html,/premium-workspace\.css\?v=20261111workspace1/);
+  assert.match(html,/premium-workspace\.js\?v=20261111workspace1/);
+  assert.match(sw,/premium-workspace\.css\?v=20261111workspace1/);
+  assert.match(sw,/premium-workspace\.js\?v=20261111workspace1/);
+  assert.match(js,/atlasPremiumPreview/,'Workspace refinement must only run inside the makeover');
+  assert.match(js,/enhanceShortlist/);
+  assert.match(js,/enhanceRecommendations/);
+  assert.match(js,/updateForYouIntro/);
+  assert.match(js,/atlasShortlistFacts/);
+  assert.match(css,/#shortlistList/);
+  assert.match(css,/#foryou/);
+  assert.match(css,/#compare/);
+  assert.doesNotMatch(js,/localStorage\.clear\s*\(/,'Must not clear user data');
+  assert.doesNotMatch(js,/state\.marks\s*=/,'Must not rewrite programme decisions');
+});
