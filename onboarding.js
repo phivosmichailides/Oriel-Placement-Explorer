@@ -196,7 +196,7 @@
         }
 
         const final=step===5;
-        card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${step===2||step===3?'<button class="btn primary" id="obNext">Continue →</button>':''}${final?'<button class="btn primary" id="obFinish">Show my matches</button>':''}</div><div class="onboardFine">You can change all of this later under Preferences.</div>`;
+        card.innerHTML=`<button class="onboardClose" aria-label="Close">×</button><div class="onboardProgress"><span style="width:${progress()}%"></span></div>${body}<div class="onboardActions">${step>0?'<button class="btn" id="obBack">← Back</button>':''}${step===0?'<button class="btn" id="obBackIntro">← Back</button>':''}<span class="spacer"></span>${step===2||step===3?'<button class="btn primary" id="obNext">Continue →</button>':''}${final?'<button class="btn primary" id="obFinish">Done</button>':''}</div><div class="onboardFine">You can change all of this later under Preferences.</div>`;
         card.querySelector('.onboardClose').onclick=close;
 
         if(step===0){
