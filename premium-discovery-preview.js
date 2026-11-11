@@ -96,7 +96,7 @@
     const menu=more.querySelector('.atlasMoreMenu');
     const secondary=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>{
       const label=tab.textContent.replace(/\\s+/g,' ').trim();
-      return tab.dataset.tab==='prefs'||/Oriel Simulation|Tinder Mode/i.test(label);
+      return ['prefs','simulator','tinderMode'].includes(tab.dataset.tab);
     });
     secondary.forEach(tab=>menu.append(tab));
     const syncMoreLabel=()=>{
@@ -114,7 +114,7 @@
       more.dataset.observing='1';
       new MutationObserver(()=>{
         const late=[...nav.querySelectorAll(':scope > .tab')].filter(tab=>
-          tab.dataset.tab==='prefs'||/Oriel Simulation|Tinder Mode/i.test(tab.textContent));
+          ['prefs','simulator','tinderMode'].includes(tab.dataset.tab));
         late.forEach(tab=>menu.append(tab));
         syncMoreLabel();
       }).observe(nav,{childList:true});
