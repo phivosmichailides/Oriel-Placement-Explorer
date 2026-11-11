@@ -179,8 +179,12 @@ const STYLES=Object.freeze({
     map.attributionControl?.removeAttribution(MAPTILER_ATTR);
     map.attributionControl?.removeAttribution(RASTER_ATTR);
     setMapBackdrop(map);
+    const mainMap=map.getContainer()?.id==='placementMap';
     const layer=L.tileLayer(OSM_TILE_URL,{
-      maxZoom:19,keepBuffer:3,updateWhenIdle:false,updateWhenZooming:true,updateInterval:200,
+      maxZoom:19,keepBuffer:mainMap?6:3,updateWhenIdle:false,
+      // Preserve the current main-map tiles while zooming; refresh once the
+      // gesture settles rather than exposing a blank tile grid mid-zoom.
+      updateWhenZooming:!mainMap,updateInterval:200,
       attribution:OSM_ATTR,className:'oriel-osm-fallback'
     }).addTo(map);
     const record={leaflet:map,layer,provider:'osm',attribution:OSM_ATTR};
