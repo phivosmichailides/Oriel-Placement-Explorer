@@ -150,7 +150,7 @@
 
       const regions=[...new Set(placements.map(p=>p.region).filter(Boolean))].sort((a,b)=>a==='London'?-1:b==='London'?1:a.localeCompare(b));
       const regionNames={'east midlands':'East Midlands','east of england':'East of England','kent, surrey and sussex':'Kent, Surrey and Sussex','north east':'North East','north west':'North West','south west':'South West','thames valley':'Thames Valley','wales':'Wales','wessex':'Wessex','west midlands':'West Midlands','yorkshire and the humber':'Yorkshire and the Humber','london':'London'};
-      const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'').replace(/\\b[a-z]/g,c=>c.toUpperCase());
+      const formatRegion=value=>regionNames[String(value||'').trim().toLowerCase()]||String(value||'').replace(/\b[a-z]/g,c=>c.toUpperCase());
       const choice=(value,_symbol,title,desc,selected,wide=false)=>`<button type="button" class="onboardChoice ${selected?'selected':''} ${wide?'wide':''}" data-value="${esc(value)}" aria-pressed="${selected}"><span><b>${title}</b>${desc?`<small>${desc}</small>`:''}</span></button>`;
       const progress=()=>step<0?0:Math.min(100,(step+1)/6*100);
 
