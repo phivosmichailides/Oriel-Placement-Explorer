@@ -65,7 +65,7 @@
    if(joinBanner)joinBanner.hidden=Boolean(user);
    letters.textContent=initials(label);
    photo.disabled=!user;photo.setAttribute('aria-label',user?'Change profile photo':'Sign in before uploading a photo');
-   authBtn.textContent=user?'Sign out':'Sign in';
+   authBtn.textContent=user?'Sign out':'Sign in';authBtn.hidden=!user;
    editBtn.hidden=!user;removeBtn.hidden=!user;
    if(user)loadAvatar(user);
    syncMode();
