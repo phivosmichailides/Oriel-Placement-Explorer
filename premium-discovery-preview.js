@@ -195,7 +195,20 @@
         shortText.className='atlasTitleConcise';shortText.textContent=concise;
         const original=document.createElement('span');
         original.className='atlasTitleOriginal';original.textContent=full;
-        title.append(shortText,original);
+        const fullToggle=document.createElement('button');
+        fullToggle.type='button';fullToggle.className='atlasTitleExpand';
+        fullToggle.textContent='Full name';
+        fullToggle.setAttribute('aria-expanded','false');
+        fullToggle.setAttribute('aria-label','Show full programme title');
+        fullToggle.addEventListener('click',event=>{
+          event.preventDefault();event.stopPropagation();
+          const expanded=title.classList.toggle('uxTitleExpanded');
+          fullToggle.textContent=expanded?'Less':'Full name';
+          fullToggle.setAttribute('aria-expanded',String(expanded));
+          fullToggle.setAttribute('aria-label',expanded?'Show shortened programme title':'Show full programme title');
+        });
+        title.title=full;
+        title.append(shortText,original,fullToggle);
       }
     }
   };
