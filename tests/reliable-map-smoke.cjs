@@ -366,6 +366,7 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('#atlasShortlistExportDecisions').isVisible(),'Shortlist decision export shortcut missing from More');
   assert(await page.locator('#atlasShortlistBackup').isVisible(),'Shortlist backup shortcut missing from More');
   assert(await page.locator('#shortlistViewOrder').isVisible(),'Display order should remain available inside More');
+  await shortlistMore.locator('summary').click();
   await page.waitForFunction(id=>!![...document.querySelectorAll('#shortlistList>.rank-row .placement')].find(el=>el.dataset.id===id),id,{timeout:12000});
   const x=page.locator('#shortlistList>.rank-row .atlasRemoveShortlist[data-atlas-remove-shortlist='+JSON.stringify(id)+']');
   assert(await x.count()>0,'Shortlist remove action missing');
