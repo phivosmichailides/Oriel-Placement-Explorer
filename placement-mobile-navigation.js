@@ -56,18 +56,7 @@
  };
  const tidyTabs=()=>{
    const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',prefs:'Preferences'};
-   nav.querySelectorAll(':scope > .tab').forEach(tab=>{
-     const key=tab.dataset.tab;
-     if(!names[key])return;
-     const span=tab.querySelector('span');
-     if(span)span.textContent=names[key];
-     else{
-       const icon=tab.querySelector('svg');
-       if(icon){const label=document.createElement('span');label.textContent=names[key];tab.append(label);}
-       else tab.textContent=names[key];
-     }
-     tab.setAttribute('aria-label',names[key]);
-   });
+   // Restore hidden destinations first, then keep one canonical tab per destination.
    const more=nav.querySelector(':scope > .atlasMoreNav');
    if(more){
      const menu=more.querySelector('.atlasMoreMenu');
@@ -75,6 +64,22 @@
      more.remove();
    }
    nav.querySelectorAll('.atlasMoreMenu > .tab').forEach(tab=>nav.append(tab));
+   const seen=new Set();
+   [...nav.querySelectorAll(':scope > .tab')].forEach(tab=>{
+     const key=tab.dataset.tab;
+     if(key&&seen.has(key)){tab.remove();return;}
+     if(key)seen.add(key);
+     if(!names[key])return;
+     // Simulator and Swipe Mode each have a separate icon span followed by a
+     // text span. Never overwrite the icon and leave the old label beside it.
+     const labels=[...tab.querySelectorAll(':scope > span')].filter(span=>
+       !span.classList.contains('simNavIcon')&&!span.classList.contains('tdNavFlame')&&
+       !span.classList.contains('tab-icon'));
+     let label=labels.at(-1);
+     if(!label){label=document.createElement('span');tab.append(label);}
+     label.textContent=names[key];
+     tab.setAttribute('aria-label',names[key]);
+   });
  };
  tidyTabs();
  placeUtilities();
