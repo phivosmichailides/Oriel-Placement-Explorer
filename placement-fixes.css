@@ -355,3 +355,13 @@ html.atlasPremiumPreview #prefs .uxPaletteOption{
 html.atlasPremiumPreview #prefs .uxAppearanceSettings>p{
   max-width:64ch;font-size:11.5px!important;line-height:1.45!important;
 }
+
+html.atlasPremiumPreview #results .placement.atlasSampleCard .placementTop .salary::after{
+ content:none!important;display:none!important;
+}
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasCardQuickRead.atlasNoQuickFacts{
+ grid-template-columns:minmax(0,1fr)!important;
+}
+html[data-layout="grid"] #results .placement.atlasSampleCard .atlasNoQuickFacts .atlasCardCompactFit{
+ border-left:0!important;padding-left:0!important;
+}
