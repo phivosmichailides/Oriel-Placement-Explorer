@@ -198,6 +198,13 @@ html .atlasStickyHeader > nav.tabs > .paMobileNavTab{display:none!important}
  html .atlasHeaderUtilities .paHeaderProfile{max-width:95px!important}
 }
 
+/* Static header fallback: the brand image is present in index.html before
+   any navigation JavaScript runs, so it cannot disappear during boot. */
+html .brand .logo img{
+  display:block!important;width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+}
 /* Brand mark: use the supplied compass-pin artwork as a real image.
    Keep the tab favicon as the simpler globe. */
 html .atlasStickyHeader .brand .logo{
