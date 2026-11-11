@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v65-polish-and-colours';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v66-unified-polish';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
   'atlas-navigation.js?v=20261111logo4','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261111tone2',
@@ -7,17 +7,17 @@ const EXTRA_ASSETS=[
   'atlas-interactions.js?v=20261110reset1','atlas-interactions.css?v=20261110ux1','atlas-footer.css?v=20261110footer1',
   'premium-discovery-preview.js?v=20261111nav2','premium-discovery-preview.css?v=20261111makeover5',
   'premium-card-tabs.js?v=20261111salary2','premium-card-tabs.css?v=20261111makeover5',
-  'premium-editorial-palettes.css?v=20261111makeover5',
+  'premium-editorial-palettes.css?v=20261111makeover5','premium-workspace.css?v=20261111workspace2','premium-quiet-interface.css?v=20261111quiet5','premium-workspace.js?v=20261111workspace2',
   'placement-refinements.css?v=20261111mobile3','placement-profile.css?v=20261111profile2',
   'placement-makeover.css?v=20261111cards2','placement-fixes.css?v=20261111final2','placement-fixes.js?v=20261111fix3','placement-mobile-navigation.js?v=20261111navfix3',
   'placement-profile.js?v=20261111profile5','placement-titles.js?v=20261111titles2',
   'placement-atlas-globe.svg','placement-atlas-compass-pin.webp?v=20261111logo2','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
-  'supabase-cloud.js?v=20261111profile2','app.js?v=20261111pins6','app-base.js?v=20261111labels1','app-product.js?v=20261111fitinsights3','generic-public.js?v=20261108atlas3',
+  'supabase-cloud.js?v=20261111profile2','app.js?v=20261111pins6','app-base.js?v=20261111labels1','app-product.js?v=20261111fitinsights3','generic-public.js?v=20261111neutral5',
   'sector-map.js?v=20261111colours5','onboarding.js?v=20261111setup5','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261111muted1','workspace-ux.js?v=20261111pager1','rail-stations.js?v=20261109national1',
   'location-blacklist.js?v=20261111copy4','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
-  'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261111swipefix2','tinder-mode.css?v=20261110deckfix1',
+  'desk-enhancements.js?v=20261111quiet5','tinder-mode.js?v=20261111swipefix2','tinder-mode.css?v=20261110deckfix1',
   'commute-guide.js?v=20261106a','commute-profile.js?v=20261106pcfix',
   'programme-preview.js?v=20261111preview2','location-guides.js?v=20261109national1',
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
