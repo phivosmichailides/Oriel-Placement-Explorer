@@ -250,7 +250,7 @@
     else if(status==='love')playTones([[520,0,.22,'triangle',.022,880],[784,.075,.22,'sine',.022,1175],[1046,.15,.24,'triangle',.018,1568],[1397,.23,.3,'sine',.014,1900]]);
     else playTones([[880,0,.13,'sine',.021,1175],[1175,.075,.18,'triangle',.018,1480]]);
   };
-  const playUndoSound=()=>{playTones([[392,0,.2,'sine',.02,784],[587,.11,.2,'triangle',.018,880]]);if(soundEnabled)setTimeout(()=>playTones([[175,0,.09,'sine',.012,120]]),620)};
+  const playUndoSound=()=>{playTones([[392,0,.2,'sine',.02,784],[587,.11,.2,'triangle',.018,880]]);if(soundEnabled)setTimeout(()=>playTones([[175,0,.09,'sine',.012,120]]),800)};
   const syncFilterToggle=()=>{
     const toggle=$('tinderFilterToggle');if(!toggle)return;
     const count=Number(game.filters.setting!=='all')+Number(Boolean(game.filters.minSalary))+Number(Boolean(game.filters.maxHours))+Number(Boolean(game.filters.splitOnly))+Number(Boolean(game.filters.hideDecided));
