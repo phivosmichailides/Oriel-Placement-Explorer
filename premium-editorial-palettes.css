@@ -1,0 +1,272 @@
+/*
+ * Placement Atlas · restrained editorial palette system (prototype only)
+ * Reference supplied by owner:
+ *    Background #141719 · Surfaces #22272A · Borders #373E42 · Accent #9EBEAD
+ *
+ * Rationale:
+ *   - dark/light surfaces stay near-neutral, regardless of palette
+ *   - colour identifies actions, active selections and semantic fit states
+ *   - hospital/GP/category labels and salaries are informational, not CTAs
+ *   - independent map pin colours and existing saved appearance are untouched
+ *   - ?atlasClassic=1 prevents atlasPremiumPreview from being applied
+ */
+
+/* Consistent canvas and foreground for every dark palette. */
+html.atlasPremiumPreview[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141719;
+  --panel:#22272A;
+  --soft:#2C3235;
+  --line:#373E42;
+  --dark:#101315;
+  --ink:#F1F1EE;
+  --mut:#B8C0BF;
+  --ux-cream:#E6E1D9;
+  --shadow:0 12px 30px rgba(0,0,0,.16);
+  --ui-action-fg:#141719;
+  --green:#9EBEAD;
+}
+/* Warm but distinctly neutral light appearance for every palette. */
+html.atlasPremiumPreview[data-theme="light"]{
+  color-scheme:light;
+  --bg:#F5F5F2;
+  --panel:#FDFDFB;
+  --soft:#EEEFEA;
+  --line:#D8DEDA;
+  --dark:#22282B;
+  --ink:#252C2D;
+  --mut:#5D6869;
+  --ux-cream:#F5F0E9;
+  --shadow:0 9px 23px rgba(25,32,30,.055);
+  --ui-action-fg:#fff;
+}
+/* Forest · sage action accent, not sage-tinted surfaces. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="forest"]{
+  --ux-accent:#9EBEAD;
+  --ux-accent-ink:#B9D6C6;
+  --ux-accent-soft:#303C36;
+  --ux-accent-border:#52675C;
+  --ui-action-bg:#9EBEAD;
+  --ui-action-hover:#B4D0C1;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="forest"]{
+  --ux-accent:#466F5A;
+  --ux-accent-ink:#365B48;
+  --ux-accent-soft:#E7EFE9;
+  --ux-accent-border:#C2D4C8;
+  --ui-action-bg:#466F5A;
+  --ui-action-hover:#385D49;
+}
+/* Copper is Placement Atlas's blue editorial palette. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="copper"]{
+  --ux-accent:#A6BACB;
+  --ux-accent-ink:#C3D4E0;
+  --ux-accent-soft:#303B44;
+  --ux-accent-border:#576D7B;
+  --ui-action-bg:#A6BACB;
+  --ui-action-hover:#BDD0DC;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="copper"]{
+  --ux-accent:#466C87;
+  --ux-accent-ink:#355773;
+  --ux-accent-soft:#E8EFF4;
+  --ux-accent-border:#C4D5DF;
+  --ui-action-bg:#466C87;
+  --ui-action-hover:#355B78;
+}
+/* Mauve · dusty plum. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mauve"]{
+  --ux-accent:#C4ADC3;
+  --ux-accent-ink:#DDC9DB;
+  --ux-accent-soft:#3A333E;
+  --ux-accent-border:#736271;
+  --ui-action-bg:#C4ADC3;
+  --ui-action-hover:#D6C1D3;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="mauve"]{
+  --ux-accent:#765B76;
+  --ux-accent-ink:#654A65;
+  --ux-accent-soft:#F0EAF0;
+  --ux-accent-border:#DCCFDC;
+  --ui-action-bg:#765B76;
+  --ui-action-hover:#654A65;
+}
+/* Amber · muted gold rather than bright orange. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="amber"]{
+  --ux-accent:#D1B78E;
+  --ux-accent-ink:#E6D1B1;
+  --ux-accent-soft:#3C362F;
+  --ux-accent-border:#75664F;
+  --ui-action-bg:#D1B78E;
+  --ui-action-hover:#E0C8A5;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="amber"]{
+  --ux-accent:#896637;
+  --ux-accent-ink:#745329;
+  --ux-accent-soft:#F4EEE3;
+  --ux-accent-border:#DECDB6;
+  --ui-action-bg:#896637;
+  --ui-action-hover:#765528;
+}
+/* Cocoa · understated clay-brown. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="cocoa"]{
+  --ux-accent:#C6B3A5;
+  --ux-accent-ink:#DDCDBE;
+  --ux-accent-soft:#39342F;
+  --ux-accent-border:#6B5F55;
+  --ui-action-bg:#C6B3A5;
+  --ui-action-hover:#D9C7B9;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="cocoa"]{
+  --ux-accent:#765D4F;
+  --ux-accent-ink:#62483C;
+  --ux-accent-soft:#EFEAE5;
+  --ux-accent-border:#DCCEC3;
+  --ui-action-bg:#765D4F;
+  --ui-action-hover:#654A3E;
+}
+/* Monochrome · purely neutral without the sage brand accent. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mono"]{
+  --ux-accent:#CFD6D4;
+  --ux-accent-ink:#E5EAE8;
+  --ux-accent-soft:#373D40;
+  --ux-accent-border:#606B6C;
+  --ui-action-bg:#CFD6D4;
+  --ui-action-hover:#E1E6E4;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="mono"]{
+  --ux-accent:#384448;
+  --ux-accent-ink:#2D363A;
+  --ux-accent-soft:#E9ECEB;
+  --ux-accent-border:#C8D0CD;
+  --ui-action-bg:#384448;
+  --ui-action-hover:#2E393E;
+}
+
+/*
+ * Give the neutral canvas the same selector specificity as the older
+ * Forest and Monochrome theme rules. Otherwise their former green/grey
+ * background values would win despite this stylesheet loading last.
+ */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="forest"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="copper"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mauve"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="amber"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="cocoa"],
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mono"]{
+  --bg:#141719;
+  --panel:#22272A;
+  --soft:#2C3235;
+  --line:#373E42;
+  --ink:#F1F1EE;
+  --mut:#B8C0BF;
+  --dark:#101315;
+}
+html.atlasPremiumPreview[data-theme="light"][data-palette="forest"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="copper"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="mauve"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="amber"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="cocoa"],
+html.atlasPremiumPreview[data-theme="light"][data-palette="mono"]{
+  --bg:#F5F5F2;
+  --panel:#FDFDFB;
+  --soft:#EEEFEA;
+  --line:#D8DEDA;
+  --ink:#252C2D;
+  --mut:#5D6869;
+  --dark:#22282B;
+}
+
+/* Existing palettes still drive selection and action colour. */
+html.atlasPremiumPreview[data-theme="dark"] .btn.primary,
+html.atlasPremiumPreview[data-theme="dark"] .chip.on{
+  background:var(--ux-accent);
+  border-color:var(--ux-accent);
+  color:#141719;
+}
+html.atlasPremiumPreview[data-theme="light"] .btn.primary,
+html.atlasPremiumPreview[data-theme="light"] .chip.on{
+  background:var(--ux-accent);
+  border-color:var(--ux-accent);
+  color:#FFFFFF;
+}
+/* Keep the backdrop of the hero and navigation neutral. */
+html.atlasPremiumPreview .productIntro.card,
+html.atlasPremiumPreview[data-theme="dark"] .productIntro,
+html.atlasPremiumPreview[data-theme="light"] .productIntro{
+  background:var(--panel)!important;
+}
+html.atlasPremiumPreview[data-theme="dark"] .tabs,
+html.atlasPremiumPreview[data-theme="light"] .tabs{
+  background:var(--soft);
+  border-color:var(--line);
+}
+html.atlasPremiumPreview[data-theme="dark"] .tab.active,
+html.atlasPremiumPreview[data-theme="light"] .tab.active{
+  background:var(--panel);
+  color:var(--ink);
+  box-shadow:0 2px 9px rgba(0,0,0,.07);
+}
+
+/* Read-only information should not be confused with an action. */
+html.atlasPremiumPreview[data-theme="dark"] .salary-value,
+html.atlasPremiumPreview[data-theme="light"] .salary-value{
+  color:var(--ink)!important;
+}
+html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasSummaryChipPrimary,
+html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasSummaryChip{
+  background:var(--soft)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+/* Warnings and measured fit signals remain semantic, not brand colours. */
+html.atlasPremiumPreview #results .placement.atlasSampleCard .atlasSummaryChipCaution{
+  background:var(--fit-mixed-bg,var(--soft))!important;
+  color:var(--fit-mixed-ink,var(--ink))!important;
+  border-color:var(--fit-mixed-border,var(--line))!important;
+}
+/* The muted accent is a purposeful *action* cue on an unselected shortlist.
+   View details remains the main strong neutral button in monochrome. */
+html.atlasPremiumPreview[data-theme="dark"] #results .placement.atlasSampleCard
+  .atlasCardFooter [data-action="prefer"]:not(.selected){
+  background:var(--ux-accent-soft)!important;
+  color:var(--ux-accent-ink)!important;
+  border-color:var(--ux-accent-border)!important;
+}
+html.atlasPremiumPreview[data-theme="dark"][data-palette="mono"] #results
+  .placement.atlasSampleCard .atlasCardFooter .atlasSampleExpandButton{
+  background:#E1E5E3!important;
+  border-color:#E1E5E3!important;
+  color:#141719!important;
+}
+/* The normal Forest button uses reference sage, with dark foreground. */
+html.atlasPremiumPreview[data-theme="dark"][data-palette="forest"] #results
+  .placement.atlasSampleCard .atlasCardFooter .atlasSampleExpandButton{
+  background:#9EBEAD!important;
+  border-color:#9EBEAD!important;
+  color:#141719!important;
+}
+/* Restrained introductory typography and less unnecessary coloured chrome. */
+html.atlasPremiumPreview .productIntro .eyebrow{
+  color:var(--mut)!important;
+}
+html.atlasPremiumPreview .atlasStatToolbarPremium .atlasStatTogglePremium{
+  color:var(--ux-accent-ink);
+}
+html.atlasPremiumPreview[data-theme="dark"] .atlasFooterIdentityNote{
+  background:var(--soft);
+  color:var(--mut);
+  border-color:var(--line);
+}
+
+
+/* The appearance questionnaire should preview the same *restrained* accents. */
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="forest"] .onboardPaletteSwatch{background:#9EBEAD!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="copper"] .onboardPaletteSwatch{background:#A6BACB!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="mauve"] .onboardPaletteSwatch{background:#C4ADC3!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="amber"] .onboardPaletteSwatch{background:#D1B78E!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="cocoa"] .onboardPaletteSwatch{background:#C6B3A5!important}
+html.atlasPremiumPreview .onboardPaletteChoice[data-ob-palette="mono"] .onboardPaletteSwatch{background:#CFD6D4!important}
+html.atlasPremiumPreview .onboardPaletteSwatch{
+  border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);
+}

@@ -253,3 +253,87 @@ test('professional footer stays navigation-friendly and keeps existing data tool
   assert.match(css,/atlasFooterBottom/);
   assert.match(sw,/atlas-footer\.css\?v=20261110footer1/);
 });
+
+
+test('premium discovery prototype is reversible and keeps the original programme logic',()=>{
+  const html=read('index.html');
+  const css=read('premium-discovery-preview.css');
+  const js=read('premium-discovery-preview.js');
+  const sw=read('sw.js');
+  const app=read('app-base.js');
+  const product=read('app-product.js');
+  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assert.match(html,/premium-discovery-preview\.css\?v=20261111makeover5/);
+  assert.match(sw,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assert.match(sw,/premium-discovery-preview\.css\?v=20261111makeover5/);
+  assert.match(js,/atlasClassic/,'Prototype has a simple off switch');
+  assert.match(js,/atlasPremiumPreview/,'Prototype is scoped to its opt-in class');
+  assert.match(css,/html\.atlasPremiumPreview/);
+  assert.match(js,/className='atlasCompactSummary'/,'Compact summaries are additive');
+  assert.match(js,/const cleanTitle=/,'Raw source titles remain preserved');
+  assert.match(js,/const details=document\.createElement\('details'\)/,'Advanced controls remain accessible');
+  assert.match(js,/for\(const node of advanced\)/,'Controls are moved intact, not duplicated');
+  assert.match(js,/region'\)\?\.addEventListener\('change',syncMapToRegion/);
+  assert.match(app,/function card\(p,compact=false\)/);
+  assert.match(product,/card=\(p,compact=false\)=>/);
+  assert.doesNotMatch(js,/state\.marks\s*=/,'Prototype must not overwrite decisions');
+  assert.doesNotMatch(js,/localStorage\.clear\s*\(/);
+});
+
+
+test('editorial palette prototype keeps neutral surfaces and six distinct accessible accents',()=>{
+  const html=read('index.html'),pwa=read('sw.js'),css=read('premium-editorial-palettes.css');
+  assert.match(html,/premium-editorial-palettes\.css\?v=20261111makeover5/);
+  assert.match(pwa,/premium-editorial-palettes\.css\?v=20261111makeover5/);
+  assert.match(css,/--bg:#141719/);
+  assert.match(css,/--panel:#22272A/);
+  assert.match(css,/--line:#373E42/);
+  assert.match(css,/--ux-accent:#9EBEAD/);
+  const stableCanvas=css.split('Give the neutral canvas')[1]?.split('/* Existing palettes')[0]||'';
+  assert.match(stableCanvas,/--bg:#141719/,'Exact charcoal canvas must override older palette rules');
+  assert.match(stableCanvas,/--panel:#22272A/,'Neutral surfaces must override old green tint');
+  assert.match(stableCanvas,/--line:#373E42/,'Neutral border contrast must override legacy palettes');
+  for(const palette of ['forest','copper','mauve','amber','cocoa','mono']){
+    assert(stableCanvas.includes('data-theme="dark"][data-palette="'+palette+'"]'),
+      'Explicit high-specificity dark neutral canvas missing for '+palette);
+    assert(stableCanvas.includes('data-theme="light"][data-palette="'+palette+'"]'),
+      'Explicit high-specificity light neutral canvas missing for '+palette);
+    assert(css.includes('data-theme="dark"][data-palette="'+palette+'"]'),
+      'Missing dark palette '+palette);
+    assert(css.includes('data-theme="light"][data-palette="'+palette+'"]'),
+      'Missing light palette '+palette);
+    assert(css.includes('[data-ob-palette="'+palette+'"]'),
+      'Missing updated onboarding swatch '+palette);
+  }
+  assert.match(css,/\.atlasSummaryChipPrimary/,'Informational setting chips must be neutral');
+  assert.match(css,/\.salary-value/,'Salary values are read-only information');
+  assert.match(css,/\.atlasSummaryChipCaution/,'Warnings keep distinct semantic colour');
+  assert.match(css,/\.productIntro\.card/,'Hero should have a neutral surface');
+  assert.match(css,/html\.atlasPremiumPreview/,'Palette changes must remain prototype-scoped');
+});
+
+
+test('discovery redesign uses progressive disclosure and concise, evidence-led summaries',()=>{
+  const html=read('index.html');
+  const hero=read('premium-discovery-preview.js');
+  const heroCss=read('premium-discovery-preview.css');
+  const cards=read('premium-card-tabs.js');
+  const cardCss=read('premium-card-tabs.css');
+  assert.match(html,/premium-discovery-preview\.js\?v=20261111makeover5/);
+  assert.match(hero,/className='atlasHowItWorks'/,'Introductory explanations should remain accessible behind disclosure');
+  assert.match(hero,/enhanceNavigation/,'Secondary navigation should be grouped');
+  assert.match(hero,/activeAdvanced/,'Active advanced filters should reopen automatically');
+  assert.match(hero,/OrielFitMapToScope/,'Region changes should fit the filtered map bounds');
+  assert.match(hero,/Hospital rotation: '\+h\+' weeks/,'Fit language should state sourced rotation weeks');
+  assert.match(hero,/Stated gross salary/,'Vague salary praise should be replaced by a factual amount');
+  assert.match(hero,/atlasTitleExpand/,'Concise programme titles must retain access to their original full names');
+  assert.match(heroCss,/atlasTitleExpand/,'The full-title control needs visible keyboard focus styling');
+  assert.match(heroCss,/atlasMoreNav/,'Secondary navigation needs a visible More disclosure');
+  assert.match(heroCss,/atlasHowItWorks/,'How it works disclosure needs a clear presentation');
+  assert.match(cards,/atlasCompactTakeHome/,'Compact cards should show the estimated monthly take-home');
+  assert.match(cards,/Travel to check/,'Multi-postcode programmes should surface a travel check');
+  assert.match(cards,/Sponsorship not stated/,'Unknown eligibility must remain unknown');
+  assert.doesNotMatch(cards,/facts\.push\(\['good','Hospital \+ GP'/,
+    'A training setting is factual, not inherently a positive recommendation');
+  assert.match(cardCss,/atlasCompactTakeHome/,'Compact take-home needs a readable secondary style');
+});

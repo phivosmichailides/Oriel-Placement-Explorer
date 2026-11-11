@@ -78,9 +78,12 @@ fs.mkdirSync(output,{recursive:true});
   const tileFilter=await page.evaluate(()=>getComputedStyle(document.querySelector('#placementMap .leaflet-tile-pane')).filter);
   assert.notEqual(tileFilter,'none','MapTiler Streets raster colour treatment did not apply');
   assert(await page.locator('header.top').evaluate(el=>getComputedStyle(el).position==='sticky'),'Main header must remain sticky');
-  const visibleNav=await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs .tab')]
+  const visibleNav=await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs > .tab')]
     .filter(el=>getComputedStyle(el).display!=='none').map(el=>el.dataset.tab));
-  assert.deepEqual(visibleNav,['explore','shortlist','simulator','tinderMode','outcome','prefs'],'Unexpected main navigation order');
+  assert.deepEqual(visibleNav,['explore','shortlist','outcome'],'Primary navigation should contain only the main decision paths');
+  assert(await page.locator('header.top nav.tabs > .atlasMoreNav > summary').isVisible(),'Secondary navigation disclosure is missing');
+  assert.deepEqual(await page.evaluate(()=>[...document.querySelectorAll('header.top nav.tabs .atlasMoreMenu .tab')].map(el=>el.dataset.tab)),
+    ['simulator','tinderMode','prefs'],'Advanced tools should remain available under More');
   await page.locator('#atlasExploreSubnav [data-atlas-subtab=foryou]').click();
   assert(await page.locator('#foryou .historyControls').count()===1,'Undo/redo should follow For You view');
   await page.waitForFunction(()=>document.getElementById('foryou')?.classList.contains('active'),null,{timeout:10000});
@@ -98,8 +101,10 @@ fs.mkdirSync(output,{recursive:true});
   assert(await page.locator('header.top').evaluate(el=>{const y=el.getBoundingClientRect().top;return y>=-2&&y<=12}),'Navigation disappeared on scroll');
   await page.evaluate(()=>window.scrollTo(0,0));
 
+  // Secondary tools remain available in the compact More menu.
+  await page.locator('header.top nav.tabs > .atlasMoreNav > summary').click();
   // Tinder preloads the next programme, but only one card is ever visible.
-  await page.locator('header.top nav.tabs [data-tab=tinderMode]').click();
+  await page.locator('header.top nav.tabs .atlasMoreMenu [data-tab=tinderMode]').click();
   await page.waitForFunction(()=>document.getElementById('tinderActiveCard')&&
     document.querySelector('#tinderCardSlot > .tdNextCard'),null,{timeout:20000});
   const initialDeck=await page.evaluate(()=>{
@@ -317,6 +322,31 @@ fs.mkdirSync(output,{recursive:true});
   await page.locator('#placementMap').screenshot({path:output+'/map-neighbourhood.png'});
   assert(await page.locator('#results .placement').count()>0,'Explore programme cards disappeared');
   assert(await page.locator('#results .uxMiniMap').count()>0,'Programme mini maps missing');
+  if(await page.locator('html.atlasPremiumPreview').count()){
+    // The imported sample must be backed by real existing controls rather
+    // than an independent mock state. All five detail categories are reusable.
+    await page.waitForFunction(()=>document.querySelector('#results .placement.atlasSampleCard')?.dataset.atlasDetailTabs==='1',null,{timeout:15000});
+    const previewCard=page.locator('#results .placement.atlasSampleCard').first();
+    assert.equal(await previewCard.locator('[role=tab]').count(),5,'Five progressive-disclosure tabs missing');
+    assert.equal(await previewCard.locator('.atlasCardSections').isVisible(),false,'Compact card should begin collapsed');
+    await previewCard.locator('[data-ux-expand]').click();
+    assert(await previewCard.locator('.atlasCardSections').isVisible(),'Detailed card did not expand');
+    await previewCard.locator('[data-atlas-card-tab=training]').click();
+    assert(await previewCard.locator('[data-atlas-card-page=training]').isVisible(),'Training panel did not show');
+    await previewCard.locator('[data-atlas-card-tab=pay]').click();
+    assert(await previewCard.locator('.atlasPayEstimateValue').isVisible(),'Real pay estimate missing from Pay tab');
+    await previewCard.locator('[data-atlas-card-tab=locations]').click();
+    assert(await previewCard.locator('.uxMiniMap').isVisible(),'Existing mini-map missing from Locations tab');
+    await previewCard.locator('[data-atlas-card-tab=assessment]').click();
+    assert(await previewCard.locator('[data-action=note]').isVisible(),'Existing notes editor missing from My assessment');
+    await previewCard.locator('[data-atlas-card-tab=overview]').click();
+    assert(await previewCard.locator('.fit').isVisible(),'Existing personalised assessment missing from Overview');
+    await previewCard.locator('[data-ux-expand]').click();
+    assert.equal(await previewCard.locator('.atlasCardSections').isVisible(),false,'Card could not collapse');
+    assert(await previewCard.locator('[data-action=prefer]').isVisible(),'Shortlist action missing after collapse');
+    assert(await previewCard.locator('[data-action=compare]').isVisible(),'Compare action missing after collapse');
+  }
+
   // PWA metadata, install assets and shortlist interactions remain available.
   assert.equal(await page.locator('link[rel=manifest]').count(),1);
   assert.equal(await page.locator('link[rel=icon]').count()>=1,true);
