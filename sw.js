@@ -1,26 +1,26 @@
 'use strict';
-const CACHE_NAME='placement-atlas-shell-2026-11-11-v60-logofinal';
+const CACHE_NAME='placement-atlas-shell-2026-11-11-v61-layout-salary';
 const ROOT=new URL('./',self.registration.scope).href;
 const EXTRA_ASSETS=[
-  'atlas-navigation.js?v=20261111logo2','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
+  'atlas-navigation.js?v=20261111logo3','atlas-navigation.css?v=20261111logo1','atlas-map-tones.css?v=20261109tone1',
   'atlas-interactions.js?v=20261110reset1','atlas-interactions.css?v=20261110ux1','atlas-footer.css?v=20261110footer1',
-  'premium-discovery-preview.js?v=20261111titles1','premium-discovery-preview.css?v=20261111makeover5',
-  'premium-card-tabs.js?v=20261111makeover5','premium-card-tabs.css?v=20261111makeover5',
+  'premium-discovery-preview.js?v=20261111nav2','premium-discovery-preview.css?v=20261111makeover5',
+  'premium-card-tabs.js?v=20261111salary1','premium-card-tabs.css?v=20261111makeover5',
   'premium-editorial-palettes.css?v=20261111makeover5',
-  'placement-refinements.css?v=20261111mobile3','placement-profile.css?v=20261111profile1',
-  'placement-makeover.css?v=20261111cards2','placement-mobile-navigation.js?v=20261111mobile3',
-  'placement-profile.js?v=20261111profile1','placement-titles.js?v=20261111titles2',
-  'placement-atlas-globe.svg','placement-atlas-compass-pin.webp?v=20261111logo1','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
-  'supabase-cloud.js?v=20261111profile1','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
-  'sector-map.js?v=20261111pins1','onboarding.js?v=20261110ux1','deadline-dates.js?v=20261109header2',
+  'placement-refinements.css?v=20261111mobile3','placement-profile.css?v=20261111profile2',
+  'placement-makeover.css?v=20261111cards2','placement-fixes.css?v=20261111fix1','placement-fixes.js?v=20261111fix1','placement-mobile-navigation.js?v=20261111mobile4',
+  'placement-profile.js?v=20261111profile2','placement-titles.js?v=20261111titles2',
+  'placement-atlas-globe.svg','placement-atlas-compass-pin.webp?v=20261111logo2','favicon.svg?v=20261111globe1','manifest.webmanifest?v=20261111globe1',
+  'supabase-cloud.js?v=20261111profile2','app-base.js?v=20261109fix2','app-product.js?v=20261109fit1','generic-public.js?v=20261108atlas3',
+  'sector-map.js?v=20261111legend2','onboarding.js?v=20261111setup2','deadline-dates.js?v=20261109header2',
   'map-basemap.js?v=20261109tiles1','workspace-ux.js?v=20261110ux1','rail-stations.js?v=20261109national1',
-  'location-blacklist.js?v=20261108atlas1','specialist-settings.js','area-rules.js',
+  'location-blacklist.js?v=20261111copy2','specialist-settings.js','area-rules.js',
   'locations-bundled.js?v=20261106a','tube-stations.js?v=20261108tfl2',
   'desk-enhancements.js?v=20261109history2','tinder-mode.js?v=20261110deckfix1','tinder-mode.css?v=20261110deckfix1',
   'commute-guide.js?v=20261106a','commute-profile.js?v=20261106pcfix',
   'programme-preview.js?v=20261106fixed1','location-guides.js?v=20261109national1',
   'pay-estimate.js?v=20261105c','research-core.js?v=1','research.js?v=20261015-no-ratings',
-  'preferences-ui.js?v=20261107segmented1','theme-outcome.js?v=20261106i',
+  'preferences-ui.js?v=20261111slider1','preferences-ui.css?v=20261111slider1','theme-outcome.js?v=20261106i',
   'simulator.js?v=20261109brand1','motion-effects.js?v=20261107a',
   'session-ui.js?v=20261110ux1','interface-polish.js?v=20261107responsive2',
   'data/oriel-2026.part-01.txt','data/oriel-2026.part-02.txt','data/oriel-2026.part-03.txt',
@@ -47,7 +47,7 @@ const trimMapTileCache=async cache=>{
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE_NAME);
-    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261108atlas2'),localURL('favicon.svg?v=20261108atlas2'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261109national2'),...EXTRA_ASSETS.map(localURL)]);
+    const urls=new Set([localURL('./'),localURL('index.html'),localURL('manifest.webmanifest?v=20261111globe1'),localURL('favicon.svg?v=20261111globe1'),localURL('pwa.css?v=20261108atlas1'),localURL('pwa.js?v=20261109national2'),...EXTRA_ASSETS.map(localURL)]);
     // Do not activate a new worker unless the current app shell was
     // successfully fetched. This preserves the previous working offline app
     // if an update is attempted during a connection failure.
