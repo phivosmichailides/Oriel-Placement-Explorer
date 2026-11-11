@@ -37,13 +37,14 @@ The built-in catalogue is based on an **Oriel data export supplied to the projec
 - Explore hospital, general practice, community, industry and mixed or split-setting programmes.
 - Narrow results using specialist-setting indicators, location preferences, postcode information and distance filters.
 - Switch between list and grid layouts, sort results and collapse the filter workspace when you want more room to browse.
-- Inspect programme details, training-site information, stated rotations and available Oriel identifiers.
+- Scan compact programme cards with gross salary, estimated monthly take-home, training setting, recorded rotations and available places. Expand a programme into five sections: **Overview**, **Training & dates**, **Pay & eligibility**, **Locations & commute** and **My assessment**.
+- Reveal the original Oriel programme title on demand when a concise display title is used.
 
 ### 2. Personalise recommendations — and understand the reasons
 
 A guided setup lets applicants describe the things that matter to them, including preferred region, training environment, community-pharmacy exposure, salary, working hours, location and wider career priorities. The profile can be revisited as priorities change, and preference weights can be adjusted.
 
-The **For You** experience uses those choices to organise relevant programmes and explain the signals behind each recommendation.
+The **For You** experience ranks relevant programmes across England and Wales against those choices and explains the signals behind each recommendation. It is not restricted to a fixed city.
 
 A key design decision is that the explanation changes with the applicant:
 
@@ -55,7 +56,7 @@ Personal fit is a transparent heuristic based on available programme information
 
 ### 3. Explore training locations and commutes
 
-- Interactive map and programme results stay connected as filters change.
+- Interactive map and programme results stay connected as filters change; changing the selected region fits the map to the matching programme locations.
 - Setting-aware programme markers help distinguish hospital, GP, community and other placement types.
 - Custom editorial light and dark map styles, with fallback rendering paths when a map provider or renderer is unavailable.
 - Programme-specific location previews for multi-site and split placements, with controls to move between training locations and open external map directions.
@@ -76,6 +77,7 @@ Applicants can organise programmes into states such as **Love**, **Strong yes**,
 - Save, exclude and revisit programmes without losing the wider catalogue.
 - Assign decision states, add personal notes and set manual priorities.
 - Reorder the shortlist and review the current ranking.
+- Compact shortlist cards keep priority, status, notes and comparison controls accessible; rotation facts and fit explanations can be expanded when needed.
 - Compare up to five selected programmes side by side.
 - Hide already-shortlisted or excluded items when you want a cleaner discovery view.
 - Undo and redo recent changes, with saved decisions kept separately from the temporary browsing session.
@@ -93,7 +95,8 @@ Programme cards surface stated salary and weekly hours, with gross hourly compar
 
 ### 8. Make the workspace your own
 
-- Six interface palettes, light and dark appearance modes, and coordinated map styling.
+- Six restrained editorial palettes, light and dark appearance modes, neutral charcoal or warm off-white surfaces, and coordinated map styling.
+- The main navigation prioritises Explore, Shortlist and My Outcome, with Oriel Simulation, Tinder Mode and Preferences available under **More**.
 - Responsive layouts for desktop and mobile, with list/grid controls and adjustable workspace zoom.
 - An installable Progressive Web App, with a service worker that caches the application shell and selected resources for more reliable repeat visits and limited offline use.
 - Local browser saving, downloadable backup/restore and optional signed-in Supabase cloud synchronisation for supported workspace data.
