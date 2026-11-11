@@ -299,7 +299,7 @@
     window.openOrielPersonalisation=()=>openSetup(true);
     document.getElementById('personaliseAgain')?.addEventListener('click',()=>openSetup(true));
     document.getElementById('personaliseTop')?.addEventListener('click',()=>openSetup(true));
-    let done=false,skipped=false;try{done=localStorage.getItem(DONE_KEY)==='1';skipped=sessionStorage.getItem(SESSION_SKIP)==='1';const returning=Boolean(localStorage.getItem('oriel-desk-v2')||localStorage.getItem('oriel-desk-theme-v1')||localStorage.getItem('oriel-desk-layout-v1')||localStorage.getItem(PROFILE_KEY));if(!done&&returning){localStorage.setItem(DONE_KEY,'1');done=true}}catch{}
+    let done=false,skipped=false;try{done=localStorage.getItem(DONE_KEY)==='1';skipped=sessionStorage.getItem(SESSION_SKIP)==='1';const returning=Boolean(localStorage.getItem('phivos-desk-v2')||localStorage.getItem('phivos-desk-csv-v2')||localStorage.getItem('oriel-desk-palette-v1')||localStorage.getItem('oriel-desk-layout-v1')||localStorage.getItem(PROFILE_KEY));if(!done&&returning){localStorage.setItem(DONE_KEY,'1');done=true}}catch{}
     if(done)document.body.classList.add('deskPersonalised');
     if(!done&&!skipped&&!new URLSearchParams(location.search).has('study'))setTimeout(()=>openSetup(false),350);
     return true;
