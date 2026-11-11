@@ -105,7 +105,7 @@
       if(Array.isArray(rendered)){
         rendered.forEach(group=>{
           (group.entries||[]).forEach(programme=>visible.add(programmeMapSector(programme)));
-          if(group.cluster&&groupMapSector(group.entries)==='Mixed')visible.add('Mixed');
+          if(group.cluster&&groupMapSector(group.entries||[])==='Mixed')visible.add('Mixed');
         });
       }else{
         (window.OrielFilteredProgrammes||placements.filter(matches)).forEach(programme=>visible.add(programmeMapSector(programme)));
@@ -525,14 +525,14 @@
         }
       }
 
+      renderLegend(displayGroups);
       const unresolved=allCodes.size-resolvedCodes.size;
       const summary=[
-        programmesWithAllSites.toLocaleString()+' of '+list.length.toLocaleString()+' programmes have all listed sites mapped',
-        groups.size.toLocaleString()+' unique sites',
-        displayGroups.length.toLocaleString()+' visible map markers'+(window.OrielMapClusterCount?' · '+window.OrielMapClusterCount.toLocaleString()+' clusters':''),
-        resolvedCodes.size.toLocaleString()+' of '+allCodes.size.toLocaleString()+' location codes resolved'
+        programmesWithAllSites.toLocaleString()+' fully mapped',
+        groups.size.toLocaleString()+' sites',
+        displayGroups.length.toLocaleString()+' markers'
       ];
-      if(unresolved)summary.push(unresolved.toLocaleString()+' codes still need locating');
+      if(unresolved)summary.push(unresolved.toLocaleString()+' codes unresolved');
       if(programmesWithoutCode)summary.push(programmesWithoutCode.toLocaleString()+' programmes have no postcode/outcode in the source');
       $('mapStatus').textContent=summary.join(' · ');
       $('mapStatus').title='Showing programmes that match your current filters. With no active filters, the full catalogue is shown. At wider zooms, numbered clusters zoom into nearby sites; individual location pins open a programme preview. Outcode-only markers are approximate area locations. Underground station symbols appear at close street-level zoom (15.5+); station data provided by Transport for London.';
