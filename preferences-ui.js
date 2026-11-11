@@ -1,82 +1,56 @@
 'use strict';
-/* Progressive enhancement: preserve the existing 0–5 weight inputs and the
-   app's original input/change listeners, persistence, and score calculations. */
+/* Preference weights refine the answers from the initial setup. The original
+   hidden inputs remain the source of truth for scoring and persistence. */
 (()=>{
-  const host=document.getElementById('weights');
-  if(!host)return;
-  const meanings=['Off','Very low','Low','Moderate','High','Maximum'];
-  const enhance=()=>{
-    if(!host.querySelector('.weightGuide')&&host.querySelector('.weight')){
-      const guide=document.createElement('p');
-      guide.className='weightGuide';
-      guide.textContent='0 = off   ·   5 = strongest influence';
-      host.prepend(guide);
-    }
-    for(const row of host.querySelectorAll('.weight')){
-      if(row.classList.contains('weightModern'))continue;
-      const input=row.querySelector('input[data-weight]');
-      if(!input)continue;
-      const label=row.querySelector('b')?.textContent?.trim()||'Preference';
-      const group=document.createElement('div');
-      group.className='weightScale';
-      const bubble=document.createElement('span');
-      bubble.className='weightSelectionBubble';
-      bubble.setAttribute('aria-hidden','true');
-      group.append(bubble);
-      group.setAttribute('role','group');
-      group.setAttribute('aria-label',label+': weight from 0 (off) to 5 (strongest)');
-      const min=Number(input.min),max=Number(input.max);
-      for(let level=min;level<=max;level++){
-        const button=document.createElement('button');
-        button.type='button';
-        button.className='weightStep';
-        button.dataset.weightLevel=String(level);
-        button.textContent=String(level);
-        button.setAttribute('aria-label',label+': '+level+' of '+max+', '+(meanings[level]||''));
-        button.setAttribute('aria-pressed',String(Number(input.value)===level));
-        group.append(button);
-      }
-      input.before(group);
-      input.classList.add('weightNative');
-      input.tabIndex=-1;
-      input.setAttribute('aria-hidden','true');
-      if(input.nextElementSibling?.tagName==='SPAN')
-        input.nextElementSibling.classList.add('weightLegacyValue');
-      row.classList.add('weightModern');
-      requestAnimationFrame(()=>placeBubble(row,false));
-    }
-  };
-  const placeBubble=(row,animate=true)=>{
-    const scale=row?.querySelector('.weightScale');
-    const bubble=scale?.querySelector('.weightSelectionBubble');
-    const active=scale?.querySelector('.weightStep[aria-pressed="true"]');
-    if(!bubble||!active)return;
-    bubble.style.width=active.offsetWidth+'px';
-    if(!animate)bubble.style.transition='none';
-    bubble.style.transform='translate3d('+active.offsetLeft+'px,0,0)';
-    if(!animate)requestAnimationFrame(()=>bubble.style.removeProperty('transition'));
-  };
-  host.addEventListener('click',event=>{
-    const button=event.target.closest('button.weightStep');
-    if(!button||!host.contains(button))return;
-    const row=button.closest('.weight');
-    const input=row?.querySelector('input[data-weight]');
-    if(!input)return;
-    const chosen=button.dataset.weightLevel;
-    if(input.value!==chosen){
-      input.value=chosen;
-      // Reuse existing app logic for saving and recalculating recommendations.
-      input.dispatchEvent(new Event('input',{bubbles:true}));
-      input.dispatchEvent(new Event('change',{bubbles:true}));
-    }
-    row.querySelectorAll('button.weightStep').forEach(step=>{
-      step.setAttribute('aria-pressed',String(step===button));
-    });
-    placeBubble(row);
-  });
-  // prefs() regenerates the rows when users revisit Preferences.
-  // Observe just the container's direct children to avoid observer loops.
-  new MutationObserver(enhance).observe(host,{childList:true});
-  window.addEventListener('resize',()=>host.querySelectorAll('.weightModern').forEach(row=>placeBubble(row,false)),{passive:true});
-  enhance();
+ const host=document.getElementById('weights');
+ if(!host)return;
+ const meanings=['Off','Very low','Low','Moderate','High','Maximum'];
+ const enhance=()=>{
+   if(!host.querySelector('.weightGuide')&&host.querySelector('.weight')){
+     const guide=document.createElement('p');
+     guide.className='weightGuide';
+     guide.textContent='Fine-tune how strongly each factor affects your matches.';
+     host.prepend(guide);
+   }
+   for(const row of host.querySelectorAll('.weight')){
+     if(row.classList.contains('weightModern'))continue;
+     const source=row.querySelector('input[data-weight]');
+     if(!source)continue;
+     const label=row.querySelector('b')?.textContent?.trim()||'Preference';
+     const min=Number(source.min)||0,max=Number(source.max)||5;
+     const wrap=document.createElement('div');wrap.className='weightSliderWrap';
+     const line=document.createElement('div');line.className='weightSliderLine';
+     const slider=document.createElement('input');
+     slider.type='range';slider.className='weightSlider';
+     slider.min=String(min);slider.max=String(max);slider.step=source.step||'1';
+     slider.value=source.value;slider.setAttribute('aria-label',label);
+     const value=document.createElement('output');value.className='weightSliderValue';
+     value.setAttribute('aria-live','off');
+     line.append(slider,value);
+     const ends=document.createElement('div');ends.className='weightSliderEnds';
+     ends.innerHTML='<span>Off</span><span>Strongest</span>';
+     wrap.append(line,ends);
+     const update=()=>{
+       const n=Number(slider.value),ratio=max===min?0:(n-min)/(max-min)*100;
+       value.textContent=String(n);
+       slider.style.setProperty('--weight-fill',ratio+'%');
+       slider.setAttribute('aria-valuetext',n+' of '+max+' · '+(meanings[n]||''));
+       source.value=String(n);
+     };
+     slider.addEventListener('input',update);
+     slider.addEventListener('change',()=>{
+       source.value=slider.value;
+       source.dispatchEvent(new Event('input',{bubbles:true}));
+       source.dispatchEvent(new Event('change',{bubbles:true}));
+     });
+     source.before(wrap);
+     source.classList.add('weightNative');source.tabIndex=-1;source.setAttribute('aria-hidden','true');
+     if(source.nextElementSibling?.tagName==='SPAN')source.nextElementSibling.classList.add('weightLegacyValue');
+     row.classList.add('weightModern');
+     update();
+   }
+ };
+ new MutationObserver(enhance).observe(host,{childList:true});
+ window.addEventListener('resize',()=>host.querySelectorAll('.weightSlider').forEach(slider=>slider.style.setProperty('--weight-fill',((Number(slider.value)-Number(slider.min))/(Number(slider.max)-Number(slider.min)||1))*100+'%')),{passive:true});
+ enhance();
 })();
