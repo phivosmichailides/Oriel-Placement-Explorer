@@ -7,7 +7,7 @@
     // Session-only undo history. Uploaded datasets are intentionally outside its scope.
     const saveBase=save;let history=[clone(state)],cursor=0,lastEdit='',lastTime=0,restoring=false,dataset=placements;
     const controls=document.createElement('div');controls.className='historyControls';
-    controls.innerHTML='<button class="btn" id="undoDesk" disabled>↶ Undo</button><button class="btn" id="redoDesk" disabled>↷ Redo</button><span class="smallnote" id="historyStatus" role="status">Decisions & preferences · this session</span>';
+    controls.innerHTML='<button class="btn" id="undoDesk" disabled>↶ Undo</button><button class="btn" id="redoDesk" disabled>↷ Redo</button><span class="smallnote" id="historyStatus" role="status" title="Undo and redo decisions and preferences in this session">History</span>';
     document.getElementById('explore')?.prepend(controls);
     document.dispatchEvent(new CustomEvent('desk:history-ready'));
     function updateHistory(){document.getElementById('undoDesk').disabled=cursor===0;document.getElementById('redoDesk').disabled=cursor===history.length-1;}
