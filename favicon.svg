@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="1" y="1" width="62" height="62" rx="17" fill="#24352a"/>
-  <path d="M22.4 4.8h19.2v17.6h17.6v19.2H41.6v17.6H22.4V41.6H4.8V22.4h17.6z" fill="#f4efe3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Placement Atlas</title>
+  <style>
+    .atlas-globe{stroke:#334A43}
+    @media(prefers-color-scheme:dark){.atlas-globe{stroke:#E9EEE9}}
+  </style>
+  <circle class="atlas-globe" cx="32" cy="32" r="25" stroke-width="4.4"/>
+  <path class="atlas-globe" d="M7 32h50M13 19.4c6.1 3.3 12.3 5.1 19 5.1s12.9-1.8 19-5.1M13 44.6c6.1-3.3 12.3-5.1 19-5.1s12.9 1.8 19 5.1" stroke-width="3.5" stroke-linecap="round"/>
+  <path class="atlas-globe" d="M32 7c-8.8 7-13.7 15.4-13.7 25S23.2 50 32 57M32 7c8.8 7 13.7 15.4 13.7 25S40.8 50 32 57" stroke-width="3.7" stroke-linecap="round"/>
 </svg>
