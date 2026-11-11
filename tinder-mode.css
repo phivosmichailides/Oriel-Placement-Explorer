@@ -1,7 +1,7 @@
 /* Placement Atlas — deliberate card-swiping mode, independent of Oriel/Tinder. */
 #tinderMode{--td-red:#ee5265;--td-green:#3dbb83;--td-blue:#479eea;--td-orange:#eaa74b;min-width:0}
 .tdModeIntro{padding:24px 26px 19px;border-radius:20px;border:1px solid var(--line);background:var(--panel)}
-.tdModeIntro h2{font-size:clamp(25px,3vw,36px);letter-spacing:-.04em;line-height:1.2;margin:5px 0 9px}
+.tdModeIntro h2{font-size:clamp(25px,3vw,36px);letter-spacing:-.025em;line-height:1.2;margin:5px 0 9px}
 .tdModeIntro p{color:var(--ink);font-size:14px;line-height:1.6;max-width:750px;margin:0 0 9px}
 .tdModeIntro small{font-size:11px;color:var(--mut);line-height:1.6}
 .tdModeEyebrow{font-size:10px;font-weight:850;color:var(--ux-accent-ink);letter-spacing:.13em}
@@ -20,7 +20,7 @@
 .tdCardTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}
 .tdCardCode{font-size:10px;font-weight:850;letter-spacing:.1em;color:var(--mut)}
 .tdFitScore{border:1px solid var(--ux-accent-border);background:var(--ux-accent-soft);color:var(--ux-accent-ink);font-size:11px;font-weight:850;border-radius:999px;padding:6px 10px;white-space:nowrap}
-.tdProgrammeName{font-size:clamp(19px,2.2vw,25px);font-weight:850;letter-spacing:-.03em;line-height:1.3;overflow-wrap:anywhere;margin:0 0 6px}
+.tdProgrammeName{font-size:clamp(19px,2.2vw,25px);font-weight:850;letter-spacing:-.01em;word-spacing:.01em;line-height:1.34;overflow-wrap:anywhere;margin:0 0 6px}
 .tdEmployer{font-size:12px;color:var(--mut);font-weight:650;margin:0 0 15px;line-height:1.4}
 .tdMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
 .tdMetrics>div{padding:12px 10px;background:var(--soft);border:1px solid var(--line);border-radius:12px;display:grid;gap:4px;min-width:0}
@@ -348,7 +348,7 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
   font-size:10px;font-weight:850;letter-spacing:.105em;
   color:var(--ux-accent-ink);margin-bottom:6px;
 }
-.tdDrawerHeader h2{margin:0;font-size:clamp(21px,2vw,27px);letter-spacing:-.035em;line-height:1.2}
+ .tdDrawerHeader h2{margin:0;font-size:clamp(21px,2vw,27px);letter-spacing:-.02em;line-height:1.2}
 .tdDrawerHeader p{margin:8px 0 0;font-size:13px;line-height:1.55;color:var(--mut)}
 .tdDrawerClose{
   border:1px solid var(--line);background:var(--soft);color:var(--ink);
@@ -380,7 +380,7 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
 .tdDrawerSummaryText{display:grid;gap:7px;min-width:0;flex:1}
 .tdDrawerProgrammeTitle{
   color:var(--ink);font-size:15px;line-height:1.45;
-  font-weight:820;letter-spacing:-.012em;overflow-wrap:anywhere;
+  font-weight:820;letter-spacing:-.005em;word-spacing:.01em;overflow-wrap:anywhere;
 }
 .tdDrawerProgrammeSub{
   color:var(--mut);font-size:12px;line-height:1.45;overflow-wrap:anywhere;
@@ -440,6 +440,25 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
 }
 
 
+/* Clean, quiet details link and optional sound control. */
+#tinderMode .tdShowDetails{
+ display:inline-flex;align-items:center;align-self:flex-start;
+ margin:9px 0 0;padding:4px 0;border:0;border-radius:0;
+ background:transparent;color:var(--ux-accent-ink);
+ font-size:12px;font-weight:760;text-decoration:underline;
+ text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer;
+}
+#tinderMode .tdShowDetails:hover{color:var(--ux-accent)}
+#tinderMode .tdShowDetails:focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+#tinderMode .tdSoundToggle{
+ min-height:39px;padding:8px 12px;border:1px solid var(--line);
+ border-radius:11px;background:var(--panel);color:var(--mut);
+ font-size:12px;font-weight:750;cursor:pointer;
+}
+#tinderMode .tdSoundToggle[aria-pressed="true"]{
+ border-color:var(--ux-accent);background:var(--ux-accent-soft);color:var(--ux-accent-ink);
+}
+
 /* Tinder's compact, optional controls keep the card visually central. */
 #tinderMode .tdFilterToggle{
  display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -448,6 +467,9 @@ body[data-atlas-view="tinderMode"] .tdFloatingDecisions{
  min-height:43px;padding:9px 13px;font-size:13px;font-weight:750;cursor:pointer;
 }
 #tinderMode .tdFilterToggle svg{width:17px;height:17px;flex:none}
+ #tinderMode .tdFilterToggle[data-active-filters]:not([data-active-filters="0"]){
+ border-color:var(--ux-accent);color:var(--ux-accent-ink);background:var(--ux-accent-soft);
+}
 #tinderMode .tdFilterToggle[aria-expanded="true"]{
  border-color:var(--ux-accent);color:var(--ux-accent-ink);
  background:var(--ux-accent-soft);
