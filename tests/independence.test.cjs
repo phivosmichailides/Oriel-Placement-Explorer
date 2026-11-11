@@ -356,7 +356,7 @@ test('secondary workspaces use the same editorial design without rewriting decis
   assert.match(base,/Your shortlist is empty/,'Shortlist needs a clear empty state');
   assert.match(base,/Remove a filter or widen your search/,'Explore empty state should offer a next action');
   assert.match(workspaceCss,/compareTable thead th/,'Compare table needs a consistent sticky header');
-  assert.match(workspaceCss,/#shortlistList \\.rank-row/,'Shortlist cards need a compact responsive layout');
+  assert.match(workspaceCss,/#shortlistList \.rank-row/,'Shortlist cards need a compact responsive layout');
   assert.match(workspaceCss,/field input/,'Workspace controls should use the neutral theme surfaces');
   assert.match(simulator,/Practise arranging programmes in the three official Oriel categories/);
 });
