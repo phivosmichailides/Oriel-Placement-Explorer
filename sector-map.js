@@ -129,9 +129,14 @@
     const mapCaption=document.querySelector('.map-caption');
     if(mapCaption&&!document.getElementById('sectorMapLegend'))mapCaption.insertAdjacentElement('beforebegin',legend);
 
-    const settings=document.createElement('div');settings.className='settingsCard card';
-    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><details class="paMapColourDetails"><summary><span>Map colours</span><small>Customise marker colours</small></summary><div class="paMapColourBody"><p class="muted">Choose a colour for each setting. The legend updates to match.</p>'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'<button class="btn" id="resetMapColours">Reset map colours</button></div></details>';
-    document.querySelector('#prefs .settings').appendChild(settings);
+    const settings=document.createElement('div');
+    settings.className='settingsCard card atlasMapColourSettings';
+    settings.innerHTML='<div class="eyebrow">YOUR MAP</div><details class="paMapColourDetails"><summary><span>Map colours</span><small>Customise marker colours</small></summary><div class="paMapColourBody"><p class="muted">Choose a colour for each setting. The legend updates to match.</p><div class="paMapColourChoices">'+Object.keys(palette).map(key=>`<label class="colourChoice"><input type="color" data-sector-colour="${key}" aria-label="${label[key]} map colour" value="${palette[key]}"> ${label[key]}</label>`).join('')+'</div><div class="paMapColourReset"><button class="btn" id="resetMapColours" type="button">Restore default map colours</button></div></div></details>';
+    // Two-column Preferences layout: Interface colours on the left,
+    // Map colours immediately to the right, Reset in a lower row.
+    const prefsGrid=document.querySelector('#prefs .settings');
+    const resetCard=prefsGrid?.querySelector('#clearData')?.closest('.settingsCard');
+    if(prefsGrid)prefsGrid.insertBefore(settings,resetCard||null);
     settings.addEventListener('change',e=>{const key=e.target.dataset.sectorColour;if(!key)return;state.prefs.mapColours={...state.prefs.mapColours,[key]:e.target.value};save();renderLegend();drawMap(placements.filter(matches));});
     document.getElementById('resetMapColours').onclick=()=>{delete state.prefs.mapColours;save();document.dispatchEvent(new CustomEvent('desk:palette'));};
     document.addEventListener('desk:palette',()=>{renderLegend();settings.querySelectorAll('input').forEach(input=>input.value=palette[input.dataset.sectorColour]);drawMap(placements.filter(matches));});

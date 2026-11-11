@@ -1,0 +1,391 @@
+/* Placement Atlas · product-wide finishing pass.
+   Neutral surfaces, readable programme names and restrained controls across all views. */
+
+/* Programme titles: ease the compressed tracking without changing data labels. */
+html.atlasPremiumPreview .placement .placementTop h3,
+html.atlasPremiumPreview #results .placement.atlasDiscoveryCard .placementTop h3,
+html.atlasPremiumPreview #shortlistList .placement .placementTop h3,
+html.atlasPremiumPreview #mapSelection .placement .placementTop h3{
+  letter-spacing:-.012em!important;
+  line-height:1.36!important;
+  word-spacing:.005em;
+  overflow-wrap:anywhere;
+}
+#tinderMode .tdProgrammeName{
+  letter-spacing:-.008em!important;
+  line-height:1.36!important;
+  word-spacing:.005em;
+  overflow-wrap:break-word;
+}
+#tinderMode .tdDrawerProgrammeTitle,
+#simulator .simItemName,
+#simulator .simResultName{
+  letter-spacing:-.008em;
+  line-height:1.38;
+  overflow-wrap:anywhere;
+}
+
+/* Swipe Mode: quiet, optional details and compact sound control. */
+#tinderMode .tdShowDetails{
+  display:inline-flex;align-items:center;gap:5px;
+  margin:1px 0 10px;padding:2px 0;
+  border:0;background:transparent;color:var(--ux-accent-ink);
+  font-family:inherit;font-size:12px;font-weight:700;line-height:1.4;letter-spacing:.005em;
+  text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:4px;cursor:pointer;
+}
+#tinderMode .tdShowDetails:hover{color:var(--ink)}
+#tinderMode .tdDetailsPanel{
+  margin:0 0 14px;padding:12px 13px;
+  border:1px solid var(--line);border-radius:13px;
+  background:var(--soft);text-align:left;
+}
+#tinderMode .tdDetailsPanel[hidden]{display:none!important}
+#tinderMode .tdDetailsFacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 15px;margin:0}
+#tinderMode .tdDetailsFacts>div{min-width:0}
+#tinderMode .tdDetailsFacts dt{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+#tinderMode .tdDetailsFacts dd{margin:2px 0 0;font-size:11px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+#tinderMode .tdResearchLinks{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+#tinderMode .tdResearchLinks a{font-size:11px;font-weight:700;color:var(--ux-accent-ink);text-underline-offset:3px}
+#tinderMode .tdSoundToggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:43px;padding:9px 12px;border:1px solid var(--line);
+  border-radius:12px;background:var(--panel);color:var(--mut);
+  font-size:12px;font-weight:750;cursor:pointer;
+}
+#tinderMode .tdSoundToggle svg{width:16px;height:16px;flex:none}
+#tinderMode .tdSoundToggle[aria-pressed="false"]{opacity:.78}
+#tinderMode .tdFilterToggle{white-space:nowrap}
+#tinderMode .tdStampNo{letter-spacing:.075em}
+#tinderMode .tdDrawerProgrammeTitle{letter-spacing:-.006em;line-height:1.38}
+@media(max-width:600px){
+  #tinderMode .tdDetailsFacts{grid-template-columns:minmax(0,1fr)}
+  #tinderMode .tdSettings{gap:10px}
+  #tinderMode .tdRoundStats{flex-basis:100%;justify-content:flex-start}
+}
+
+/* Explore: keep the local-save note on one line beside the count. */
+#uxFilterSidebar .footerbar{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:nowrap;gap:12px;min-width:0;
+}
+#uxFilterSidebar .footerbar #count{min-width:0;flex:1 1 auto;line-height:1.4}
+#uxFilterSidebar .footerbar .smallnote{
+  flex:0 0 auto;white-space:nowrap;line-height:1.3;
+  margin:0!important;font-size:10px;
+}
+#uxExplorePager{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px 16px;
+}
+#uxExplorePager .uxPagerInfo{color:var(--mut);font-size:12px;line-height:1.5}
+#uxExplorePager .uxPagerSize{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--mut);font-size:12px;font-weight:700;
+}
+#uxExplorePager .uxPagerSize select{
+  min-height:36px;padding:6px 10px;border:1px solid var(--line);
+  border-radius:10px;background:var(--panel);color:var(--ink);
+  font:inherit;font-weight:700;
+}
+#uxExplorePager .uxPagerButtons{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+#uxExplorePager .uxPagerButtons .btn{min-width:35px;min-height:35px;padding:6px 10px}
+@media(max-width:560px){
+  #uxExplorePager{align-items:flex-start}
+  #uxExplorePager .uxPagerInfo{flex-basis:100%}
+}
+
+/* Map surfaces and legal credits: retain all required providers, but keep the
+   attribution quiet and integrated rather than looking like a second caption. */
+html[data-theme="light"]{--atlas-map-backdrop:#f7f3e9}
+html[data-theme="dark"]{--atlas-map-backdrop:#1b2520}
+.leaflet-container,
+#placementMap .leaflet-map-pane,
+#placementMap .leaflet-tile-pane,
+.uxMiniMap .leaflet-map-pane,
+.uxMiniMap .leaflet-tile-pane{
+  background:var(--atlas-map-backdrop,#f7f3e9)!important;
+}
+#placementMap .leaflet-tile,
+.uxMiniMap .leaflet-tile{
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;backface-visibility:hidden;
+  image-rendering:auto;
+}
+.leaflet-control-attribution,
+.maplibregl-ctrl-attrib{
+  max-width:min(72vw,420px);
+  padding:2px 6px!important;
+  border:0!important;border-radius:7px!important;
+  background:color-mix(in srgb,var(--panel) 82%,transparent)!important;
+  color:var(--mut)!important;
+  font-size:7px!important;line-height:1.25!important;
+  box-shadow:none!important;opacity:.82;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.maplibregl-ctrl-attrib-inner{font-size:7px!important;line-height:1.25!important}
+.leaflet-control-attribution a,
+.maplibregl-ctrl-attrib a{
+  color:var(--mut)!important;text-decoration:none!important;
+  border-bottom:1px solid color-mix(in srgb,var(--mut) 36%,transparent);
+}
+.uxMiniMap .leaflet-control-attribution,
+.uxMiniMap .maplibregl-ctrl-attrib,
+.placement .leaflet-control-attribution{font-size:6px!important;max-width:72%}
+@media(max-width:600px){
+  .leaflet-control-attribution,.maplibregl-ctrl-attrib{font-size:6px!important;max-width:70vw}
+}
+
+/* One compact brand banner: identity left, utility controls, then navigation.
+   Preferences stays the final tab on the right. */
+html body .shell>.top.atlasStickyHeader{
+  display:grid!important;
+  grid-template-columns:max-content auto minmax(0,1fr)!important;
+  grid-template-areas:"brand utility nav"!important;
+  align-items:center!important;
+  column-gap:clamp(9px,1.2vw,19px)!important;row-gap:0!important;
+  min-height:66px!important;padding:7px clamp(10px,1.35vw,19px)!important;
+  margin:0!important;border-radius:16px!important;
+}
+html body .atlasStickyHeader>.brand{
+  grid-area:brand!important;display:flex!important;align-items:center!important;
+  gap:10px!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.brand .eyebrow{display:none!important}
+html body .atlasStickyHeader>.brand h1{
+  margin:0!important;font-size:clamp(22px,2vw,29px)!important;
+  line-height:1.05!important;font-weight:850!important;
+  letter-spacing:-.045em!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.brand p{
+  display:block!important;margin:3px 0 0!important;
+  color:var(--mut)!important;font-size:10px!important;
+  line-height:1.2!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.brand .logo{
+  width:42px!important;height:42px!important;min-width:42px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  border-radius:0!important;overflow:visible!important;
+}
+html body .atlasStickyHeader>.brand .logo img{
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities{
+  grid-area:utility!important;display:flex!important;align-items:center!important;
+  justify-content:flex-end!important;gap:6px!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccount{
+  display:flex!important;align-items:center!important;min-width:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountMain{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  flex-wrap:nowrap!important;gap:5px!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountStatus,
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountHint{display:none!important}
+html body .atlasStickyHeader>.atlasHeaderUtilities .cloudAccountButton{
+  min-height:35px!important;padding:7px 9px!important;
+  font-size:11px!important;white-space:nowrap!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 36px!important;width:36px!important;min-width:36px!important;
+  height:36px!important;min-height:36px!important;padding:0!important;margin:0!important;
+}
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle .themeGlyph,
+html body .atlasStickyHeader>.atlasHeaderUtilities #themeToggle .themeIcon{
+  display:block!important;width:19px!important;height:19px!important;
+}
+html body .atlasStickyHeader>nav.tabs{
+  grid-area:nav!important;display:flex!important;align-items:center!important;
+  justify-content:flex-end!important;min-width:0!important;width:100%!important;
+  margin:0!important;padding:0!important;gap:2px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  scrollbar-width:none!important;overscroll-behavior-x:contain;
+}
+html body .atlasStickyHeader>nav.tabs::-webkit-scrollbar{display:none!important}
+html body .atlasStickyHeader>nav.tabs>.tab{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;gap:5px!important;min-height:39px!important;
+  padding:8px clamp(7px,.65vw,11px)!important;
+  border-radius:10px!important;white-space:nowrap!important;
+  font-size:clamp(11px,.88vw,13px)!important;font-weight:780!important;
+  line-height:1.2!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab .atlasTabLabel{display:inline-block!important;white-space:nowrap!important}
+html body .atlasStickyHeader>nav.tabs>.tab svg.tab-icon,
+html body .atlasStickyHeader>nav.tabs>.tab .tdNavFlame svg{
+  display:block!important;width:16px!important;height:16px!important;flex:none!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab .simNavIcon,
+html body .atlasStickyHeader>nav.tabs>.tab .tdNavFlame{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:none!important;
+}
+html body .atlasStickyHeader>nav.tabs>.tab[data-tab="foryou"],
+html body .atlasStickyHeader>nav.tabs>.tab[data-tab="compare"]{display:none!important}
+html body .atlasStickyHeader>nav.tabs>.tab.active,
+html body .atlasStickyHeader>nav.tabs>.tab.atlasParentActive{
+  background:var(--ux-accent-soft)!important;color:var(--ux-accent-ink)!important;
+  box-shadow:inset 0 0 0 1px var(--ux-accent-border)!important;
+}
+
+/* The export/backup controls live below the brand banner, not inside it. */
+html body .shell>#atlasHeaderTools{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:5px!important;min-height:0!important;margin:7px 2px 12px!important;padding:0 2px!important;
+}
+html body #atlasHeaderTools>.actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  flex-wrap:wrap!important;gap:6px!important;width:100%!important;
+}
+html body #atlasHeaderTools>.actions>.btn{
+  min-height:33px!important;padding:6px 10px!important;
+  border-radius:10px!important;font-size:10px!important;
+}
+html body #atlasHeaderTools #saveHelp{
+  margin:0!important;padding:0!important;border:0!important;
+  max-width:none!important;text-align:right!important;
+  color:var(--mut)!important;font-size:10px!important;line-height:1.35!important;
+}
+@media(max-width:960px){
+  html body .shell>.top.atlasStickyHeader{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:"brand utility" "nav nav"!important;
+    row-gap:3px!important;min-height:0!important;padding:8px 11px!important;
+  }
+  html body .atlasStickyHeader>nav.tabs{justify-content:flex-start!important}
+  html body .atlasStickyHeader>nav.tabs>.tab{font-size:12px!important;padding:8px 10px!important}
+}
+@media(max-width:600px){
+  html body .atlasStickyHeader>.brand .logo{width:34px!important;height:34px!important;min-width:34px!important}
+  html body .atlasStickyHeader>.brand h1{font-size:21px!important}
+  html body .atlasStickyHeader>.brand p{font-size:9px!important}
+  html body .atlasStickyHeader>.atlasHeaderUtilities{gap:4px!important}
+  html body #atlasHeaderTools>.actions>.btn{flex:1 1 auto}
+  html body #atlasHeaderTools #saveHelp{text-align:left!important}
+}
+/* Footer uses the same compass-pin mark as the application header. */
+html body .atlasFooterMark{
+  display:block;flex:0 0 36px;width:36px;height:36px;
+  object-fit:contain;object-position:center;
+}
+
+/* Oriel Simulation category explanations. */
+#simulator .simColHelp{
+  margin:5px 0 11px;color:var(--mut);
+  font-size:11px;line-height:1.45;font-weight:500;
+  max-width:34ch;
+}
+
+/* Learning library. */
+.atlasLearnPanel{display:grid;gap:18px;max-width:1500px;margin:0 auto}
+.atlasLearnHero{
+  padding:clamp(22px,3.2vw,42px);
+  border:1px solid var(--line);border-radius:22px;
+  background:var(--panel);
+}
+.atlasLearnHero h2{margin:7px 0 10px;font-size:clamp(27px,3.2vw,40px);line-height:1.14;letter-spacing:-.035em}
+.atlasLearnHero>p:not(.atlasLearnDisclaimer){max-width:760px;margin:0;color:var(--mut);font-size:15px;line-height:1.65}
+.atlasLearnHeroActions{display:flex;flex-wrap:wrap;gap:9px;margin-top:19px}
+.atlasLearnDisclaimer,.atlasLearnCaution{font-size:11px;line-height:1.55;color:var(--mut);margin:12px 0 0}
+.atlasLearnSection{
+  padding:clamp(18px,2.4vw,28px);
+  border:1px solid var(--line);border-radius:19px;
+  background:var(--panel);scroll-margin-top:100px;
+}
+.atlasLearnSection>.eyebrow,.atlasLearnSectionHead .eyebrow{font-size:10px;letter-spacing:.1em;font-weight:850;color:var(--mut)}
+.atlasLearnSection h3{margin:5px 0 8px;font-size:clamp(19px,2vw,24px);line-height:1.25;letter-spacing:-.018em;color:var(--ink)}
+.atlasLearnSection>p,.atlasLearnSectionHead p{margin:0 0 14px;max-width:850px;color:var(--mut);font-size:13px;line-height:1.65}
+.atlasLearnSettingGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.atlasLearnTopic{border:1px solid var(--line);border-radius:13px;background:var(--soft);overflow:hidden}
+.atlasLearnTopic summary{padding:13px 15px;cursor:pointer;font-size:13px;font-weight:800;color:var(--ink);list-style-position:inside}
+.atlasLearnTopic>div{padding:0 15px 14px;color:var(--mut);font-size:12px;line-height:1.6}
+.atlasLearnTopic p{margin:0 0 8px}
+.atlasLearnTopic ul{padding-left:18px;margin:7px 0 0}
+.atlasLearnTopic li{margin:5px 0}
+.atlasLearnChecklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.atlasLearnChecklist>div{
+  display:grid;gap:3px;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--soft);
+}
+.atlasLearnChecklist b{font-size:12px;color:var(--ink)}
+.atlasLearnChecklist span{font-size:11px;line-height:1.5;color:var(--mut)}
+.atlasLearnRegionTools{
+  display:grid;grid-template-columns:auto minmax(190px,280px);
+  align-items:center;gap:9px 13px;padding:14px;
+  border:1px solid var(--line);border-radius:13px;background:var(--soft);
+}
+.atlasLearnRegionTools>label{font-size:12px;font-weight:800;color:var(--ink)}
+.atlasLearnRegionTools select,.atlasLearnResearch input{
+  width:100%;min-height:40px;padding:9px 11px;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);font:inherit;font-size:12px;
+}
+.atlasLearnRegionLinks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 14px}
+.atlasLearnRegionLinks a,.atlasLearnExternalLinks a{
+  color:var(--ux-accent-ink);font-size:11px;font-weight:750;
+  text-decoration:underline;text-underline-offset:3px;
+}
+.atlasLearnExternalLinks{display:flex;flex-wrap:wrap;gap:9px 18px;margin-top:13px}
+.atlasLearnTimeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.atlasLearnTimeline>div{padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.atlasLearnTimeline b{font-size:12px;color:var(--ink)}
+.atlasLearnTimeline p{margin:5px 0 0;color:var(--mut);font-size:11px;line-height:1.5}
+.atlasLearnQuestionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.atlasLearnQuestionGrid label{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft);font-size:11px;line-height:1.5;color:var(--ink)}
+.atlasLearnQuestionGrid input{margin:2px 0 0;accent-color:var(--ux-accent);flex:none}
+.atlasLearnSearchLabel{display:block;margin:13px 0 6px;font-size:11px;font-weight:800;color:var(--ink)}
+.atlasLearnProgrammeResults{display:grid;gap:6px;margin-top:8px}
+.atlasLearnProgrammeResults[hidden]{display:none!important}
+.atlasLearnProgrammeResult{
+  display:grid;gap:3px;width:100%;padding:11px 13px;
+  border:1px solid var(--line);border-radius:11px;background:var(--soft);
+  text-align:left;color:var(--ink);cursor:pointer;
+}
+.atlasLearnProgrammeResult strong{font-size:12px;letter-spacing:-.005em;line-height:1.4}
+.atlasLearnProgrammeResult span{font-size:10px;color:var(--mut)}
+.atlasLearnNoResults{margin:0;padding:12px;color:var(--mut);font-size:12px}
+.atlasLearnSelectedProgramme{margin-top:12px;padding:14px;border:1px solid var(--ux-accent-border);border-radius:13px;background:var(--ux-accent-soft)}
+.atlasLearnSelectedProgramme[hidden]{display:none!important}
+.atlasLearnSelectedHead{display:grid;gap:4px}
+.atlasLearnSelectedHead strong{font-size:14px;line-height:1.4;letter-spacing:-.01em;color:var(--ink)}
+.atlasLearnSelectedHead span{font-size:11px;color:var(--mut)}
+@media(max-width:900px){
+  .atlasLearnTimeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .atlasLearnSettingGrid,.atlasLearnChecklist,.atlasLearnQuestionGrid{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnRegionTools{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnRegionLinks{grid-column:auto}
+  .atlasLearnTimeline{grid-template-columns:minmax(0,1fr)}
+  .atlasLearnHeroActions .btn{flex:1}
+}
+
+/* Programme preview window: keep the title readable and public research links quiet. */
+.progPeekTitle{letter-spacing:-.012em!important;line-height:1.28!important;overflow-wrap:anywhere}
+.progPeekFullName{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft)}
+.progPeekFullName summary{cursor:pointer;font-size:11px;font-weight:750;color:var(--ux-accent-ink);text-decoration:underline;text-underline-offset:3px}
+.progPeekFullName p{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--mut);overflow-wrap:anywhere}
+.progPeekResearchLinks{display:flex;flex-wrap:wrap;gap:8px 14px;margin:8px 0 5px}
+.progPeekResearchLinks a{font-size:11px;font-weight:750;color:var(--ux-accent-ink);text-decoration:underline;text-underline-offset:3px}
+
+html body #atlasHeaderTools:empty,html body #atlasHeaderTools>.actions:empty{display:none!important}
+
+/* Preferences: a calm two-column appearance row, with reset below it. */
+#prefs .settings>.uxAppearanceSettings,#prefs .settings>.atlasMapColourSettings{min-width:0}
+#prefs .atlasMapColourSettings .paMapColourDetails{width:100%}
+#prefs .atlasMapColourSettings .paMapColourBody{display:flex;flex-direction:column;gap:12px}
+#prefs .atlasMapColourSettings .paMapColourChoices{display:flex;flex-wrap:wrap;align-items:center;gap:9px 12px}
+#prefs .atlasMapColourSettings .paMapColourChoices .colourChoice{flex:0 1 auto;min-width:0;margin:0}
+#prefs .atlasMapColourSettings .paMapColourReset{display:flex;justify-content:flex-end;align-items:center;border-top:1px solid var(--line);margin-top:5px;padding-top:14px}
+#prefs .atlasMapColourSettings .paMapColourReset .btn{background:transparent;color:var(--mut);border-color:var(--line);padding:7px 11px;font-size:11px;font-weight:650;border-radius:10px}
+#prefs .atlasMapColourSettings .paMapColourReset .btn:hover,#prefs .atlasMapColourSettings .paMapColourReset .btn:focus-visible{color:var(--ink);background:var(--soft)}
+@media(max-width:760px){#prefs .settings>.uxAppearanceSettings,#prefs .settings>.atlasMapColourSettings{grid-column:1/-1}}
+
+/* Keep the floating shortlist control tappable above programme-card stacking
+   contexts, with its own drawer/backdrop higher still. */
+html body #uxDrawerLauncher{position:fixed!important;z-index:2200!important;pointer-events:auto!important}
+html body #uxDrawerBackdrop{z-index:2400!important}
+html body #uxDrawer{z-index:2410!important}

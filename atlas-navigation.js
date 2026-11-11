@@ -3,22 +3,63 @@
 (()=>{
   const root=document.querySelector('.shell');
   const header=root?.querySelector(':scope > header.top');
-  const headerActions=header?.querySelector('.actions');
-  const nav=root?.querySelector('nav.tabs');
+  const headerActions=header?.querySelector('.actions')||root?.querySelector('#atlasHeaderTools .actions');
+  const nav=header?.querySelector('nav.tabs')||root?.querySelector('nav.tabs');
   const footer=document.querySelector('.app-footer');
   if(!root||!header||!headerActions||!nav||!footer)return;
 
-  // Reuse the original SVG navigation, button IDs, account and theme controls.
-  // The existing switchTab/session handlers remain authoritative.
+  // Keep fixed drawers in the viewport's top-level stacking context.
+  // Their previous nesting inside .shell let card layers intercept taps on phones.
+  for(const id of ['uxDrawerLauncher','uxDrawerBackdrop','uxDrawer']){
+    const overlay=document.getElementById(id);
+    if(overlay&&overlay.parentElement!==document.body)document.body.append(overlay);
+  }
+  // Narrow mobile browsers can expose a layout viewport wider than the actual
+  // visible screen when programme content overflows. Keep the floating button
+  // and its drawer within the *visible* viewport without moving saved data.
+  const positionShortlistOverlay=()=>{
+    const button=document.getElementById('uxDrawerLauncher');
+    const drawer=document.getElementById('uxDrawer');
+    if(!button)return;
+    button.style.removeProperty('right');
+    button.style.removeProperty('bottom');
+    drawer?.style.removeProperty('right');
+    drawer?.style.removeProperty('bottom');
+    const positive=values=>values.filter(value=>Number.isFinite(value)&&value>0);
+    const visibleWidth=Math.min(...positive([window.innerWidth,window.visualViewport?.width,window.screen?.width]));
+    const visibleHeight=Math.min(...positive([window.innerHeight,window.visualViewport?.height,window.screen?.height]));
+    const bounds=button.getBoundingClientRect();
+    const overflowX=Math.max(0,Math.ceil(bounds.right-(visibleWidth-12)));
+    const overflowY=Math.max(0,Math.ceil(bounds.bottom-(visibleHeight-12)));
+    if(overflowX>0){
+      button.style.setProperty('right',(12+overflowX)+'px','important');
+      drawer?.style.setProperty('right',overflowX+'px','important');
+    }
+    if(overflowY>0){
+      button.style.setProperty('bottom',(12+overflowY)+'px','important');
+      drawer?.style.setProperty('bottom',overflowY+'px','important');
+    }
+  };
+  window.requestAnimationFrame(positionShortlistOverlay);
+  window.addEventListener('resize',positionShortlistOverlay,{passive:true});
+  window.visualViewport?.addEventListener('resize',positionShortlistOverlay,{passive:true});
+  window.addEventListener('load',positionShortlistOverlay,{once:true});
+  document.addEventListener('desk:render-explore',positionShortlistOverlay);
+
+
+  // Accept both the original sibling layout and the unified brand-banner
+  // layout. Reuse the same tab buttons and their existing event handlers.
   header.classList.add('atlasStickyHeader');
   nav.setAttribute('aria-label','Placement Atlas main navigation');
-  header.insertBefore(nav,headerActions);
-  // Account, theme and the recruitment deadline are below the sticky banner.
-  const headerTools=document.createElement('div');
-  headerTools.id='atlasHeaderTools';
-  headerTools.className='atlasHeaderTools';
-  headerTools.append(headerActions);
-  header.insertAdjacentElement('afterend',headerTools);
+  if(nav.parentNode!==header)header.insertBefore(nav,headerActions.parentNode===header?headerActions:null);
+  let headerTools=root.querySelector('#atlasHeaderTools');
+  if(!headerTools){
+    headerTools=document.createElement('div');
+    headerTools.id='atlasHeaderTools';
+    headerTools.className='atlasHeaderTools';
+  }
+  if(headerActions.parentNode!==headerTools)headerTools.append(headerActions);
+  if(headerTools.parentNode!==root)header.insertAdjacentElement('afterend',headerTools);
   // Use the Placement Atlas compass-pin mark in the main header.
   // The simpler globe remains the browser-tab favicon.
   const logo=header.querySelector('.brand .logo');
@@ -117,13 +158,19 @@
   // Add convenient shortcuts without replacing the existing ranked CSV export.
   const shortlistBar=document.querySelector('#shortlist .shortlist-toolbar');
   if(shortlistBar){
-    const shortcuts=document.createElement('div');
-    shortcuts.className='atlasShortlistDataActions';
+    const disclosure=document.createElement('details');
+    disclosure.className='atlasShortlistMore';
+    const summary=document.createElement('summary');summary.textContent='More';
+    const menu=document.createElement('div');menu.className='atlasShortlistMoreMenu';
+    const shortcuts=document.createElement('div');shortcuts.className='atlasShortlistDataActions';
     shortcuts.innerHTML='<button class="btn" type="button" id="atlasShortlistExportDecisions">Export decisions</button>'+
       '<button class="btn" type="button" id="atlasShortlistBackup">Backup</button>';
     shortcuts.querySelector('#atlasShortlistExportDecisions').addEventListener('click',()=>document.getElementById('exportBtn')?.click());
     shortcuts.querySelector('#atlasShortlistBackup').addEventListener('click',()=>document.getElementById('backupBtn')?.click());
-    shortlistBar.append(shortcuts);
+    shortcuts.addEventListener('click',event=>{if(event.target.closest('button'))disclosure.open=false;});
+    const order=shortlistBar.querySelector('.shortlistViewOrder');
+    if(order){order.title='Change display order without changing saved ranks';menu.append(order);}
+    menu.append(shortcuts);disclosure.append(summary,menu);shortlistBar.append(disclosure);
   }
 
   // Keep exactly one undo/redo toolbar, repositioned inside each active page.
