@@ -8,6 +8,13 @@
   const footer=document.querySelector('.app-footer');
   if(!root||!header||!headerActions||!nav||!footer)return;
 
+  // Keep fixed drawers in the viewport's top-level stacking context.
+  // Their previous nesting inside .shell let card layers intercept taps on phones.
+  for(const id of ['uxDrawerLauncher','uxDrawerBackdrop','uxDrawer']){
+    const overlay=document.getElementById(id);
+    if(overlay&&overlay.parentElement!==document.body)document.body.append(overlay);
+  }
+
   // Accept both the original sibling layout and the unified brand-banner
   // layout. Reuse the same tab buttons and their existing event handlers.
   header.classList.add('atlasStickyHeader');
