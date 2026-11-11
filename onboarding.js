@@ -65,7 +65,7 @@
     const prefsCard=document.querySelector('#prefs .settingsCard');
     if(prefsCard&&!document.getElementById('personaliseAgain')){
       const wrap=document.createElement('div');wrap.className='personaliseAgain';
-      wrap.innerHTML='<button class="btn" id="personaliseAgain"> Personalise my desk again</button><div class="smallnote" style="margin-top:6px">Retake the quick setup whenever your priorities change.</div>';
+      wrap.innerHTML='<button class="btn" id="personaliseAgain">Retake setup</button>';
       prefsCard.appendChild(wrap);
     }
     const introActions=document.querySelector('.introActions');
