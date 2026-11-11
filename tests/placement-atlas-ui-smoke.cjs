@@ -152,18 +152,18 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal((await refine.innerText()).trim(),'Refine','Clearing filters must restore the unfiltered region and setting state');
   await refine.click();
 
-  const detailsButton=page.locator('#tinderCardSlot .tdShowDetails');
+  const detailsButton=page.locator('#tinderCardSlot .tdSwipeCard:not(.tdNextCard) .tdShowDetails');
   assert.equal((await detailsButton.innerText()).trim(),'Show details','Swipe card details disclosure is missing');
   await detailsButton.click();
-  assert(await page.locator('#tinderCardSlot .tdDetailsPanel').isVisible(),'Swipe programme details did not expand');
-  assert.equal(await page.locator('#tinderCardSlot .tdResearchLinks a').count(),3,'Swipe details should include public research links');
-  await page.locator('#tinderCardSlot .tdShowDetails').click();
-  assert.equal((await page.locator('#tinderCardSlot .tdShowDetails').innerText()).trim(),'Show details');
+  assert(await page.locator('#tinderCardSlot .tdSwipeCard:not(.tdNextCard) .tdDetailsPanel').isVisible(),'Swipe programme details did not expand');
+  assert.equal(await page.locator('#tinderCardSlot .tdSwipeCard:not(.tdNextCard) .tdResearchLinks a').count(),3,'Swipe details should include public research links');
+  await detailsButton.click();
+  assert.equal((await detailsButton.innerText()).trim(),'Show details');
 
   const sound=page.locator('#tdSoundToggle');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound on');
   await sound.click();assert.equal((await sound.innerText()).trim(),'Sound off');
-  assert((await page.locator('#tinderCardSlot .tdStampNo').innerText()).trim().toLowerCase().includes('like no'));
+  assert((await page.locator('#tinderCardSlot .tdSwipeCard:not(.tdNextCard) .tdStampNo').innerText()).trim().toLowerCase().includes('like no'));
   await page.locator('#tdOpenRejected').click();
   await page.waitForFunction(()=>document.getElementById('tdDecisionDrawer')?.getAttribute('aria-hidden')==='false',null,{timeout:5000});
   assert.equal((await page.locator('#tdDrawerHeading').innerText()).trim(),'Like No','Like No drawer heading should not include "Rejected"');
