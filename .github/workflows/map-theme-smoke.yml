@@ -1,7 +1,7 @@
 name: Placement Atlas map and theme smoke
 on:
   push:
-    branches: [main, release/atlas-restoration-tested-20261111]
+    branches: [main]
     paths:
       - 'index.html'
       - '*.js'
