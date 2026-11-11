@@ -75,6 +75,16 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
   await mobile.locator('#results .placement').first().locator('[data-action=prefer]').click();
   await mobile.waitForFunction(()=>document.querySelector('#uxDrawerLauncher [data-ux-shortlist-count]')?.textContent==='(1)',null,{timeout:15000});
   assert(await mobile.locator('#uxDrawerLauncher').evaluate(el=>el.parentElement===document.body),'Floating shortlist must escape the app content stacking context');
+  const overlayMetrics=await mobile.evaluate(()=>{
+    const node=document.getElementById('uxDrawerLauncher'), rect=node.getBoundingClientRect(),
+      style=getComputedStyle(node),shell=document.querySelector('.shell'),shellStyle=getComputedStyle(shell),
+      x=rect.left+rect.width/2,y=rect.top+rect.height/2,top=document.elementFromPoint(x,y);
+    return {parent:node.parentElement?.tagName,rect:{x,y,width:rect.width,height:rect.height},
+      launcher:{z:style.zIndex,position:style.position,pointerEvents:style.pointerEvents,opacity:style.opacity,visibility:style.visibility},
+      shell:{z:shellStyle.zIndex,position:shellStyle.position,transform:shellStyle.transform},
+      hit:{tag:top?.tagName,className:String(top?.className).slice(0,150),id:top?.id},bodyChildren:[...document.body.children].slice(-6).map(n=>n.tagName+'.'+n.className)};
+  });
+  console.log('Floating shortlist hit-test: '+JSON.stringify(overlayMetrics));
   await mobile.locator('#uxDrawerLauncher').click();
   const mobileItem=mobile.locator('#uxDrawerItems .uxDrawerItem').first();
   await mobileItem.waitFor({state:'visible',timeout:15000});
