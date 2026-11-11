@@ -374,11 +374,12 @@
  const siteName=(p,site,index,count)=>{
    const title=String(p.title||''),p0=title.search(/\b[A-Z]{1,2}\s*\d[A-Z\d]?\s*\d[A-Z]{2}\b/i);
    const prefix=(p0>=0?title.slice(0,p0):title).replace(/[\/+\s]+$/,'');
+   const readable=value=>window.AtlasPrototypeCleanTitle?.(value,p)||String(value||'').replace(/\bHosp\b/gi,'Hospital').replace(/\s*&\s*/g,' & ').trim();
    const byPlus=prefix.split('+').map(x=>x.split('/')[0].trim()).filter(Boolean);
-   if(byPlus.length>=count&&byPlus[index])return byPlus[index].slice(0,85);
+   if(byPlus.length>=count&&byPlus[index])return readable(byPlus[index]).slice(0,85);
    const generic=new Set(['london','dartford','slough','kingston','surrey','england']);
    const bySlash=prefix.split('/').map(x=>x.trim()).filter(x=>x.length>6&&!generic.has(x.toLowerCase()));
-   if(bySlash.length>=count&&bySlash[index])return bySlash[index].slice(0,85);
+   if(bySlash.length>=count&&bySlash[index])return readable(bySlash[index]).slice(0,85);
    return 'Training location '+(index+1)+' · '+site.pc;
  };
  const miniMaps=new Map();
