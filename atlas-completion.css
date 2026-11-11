@@ -110,7 +110,7 @@ html[data-theme="dark"]{--atlas-map-backdrop:#1b2520}
 .uxMiniMap .leaflet-tile{
   border:0!important;outline:0!important;box-shadow:none!important;
   background:transparent!important;backface-visibility:hidden;
-  transform:translateZ(0);
+  image-rendering:auto;
 }
 .leaflet-control-attribution,
 .maplibregl-ctrl-attrib{
