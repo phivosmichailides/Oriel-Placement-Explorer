@@ -389,3 +389,23 @@ html body #atlasHeaderTools:empty,html body #atlasHeaderTools>.actions:empty{dis
 html body #uxDrawerLauncher{position:fixed!important;z-index:2200!important;pointer-events:auto!important}
 html body #uxDrawerBackdrop{z-index:2400!important}
 html body #uxDrawer{z-index:2410!important}
+
+/* Mobile navigation must scroll inside the header without enlarging the page.
+   The sliding indicator belongs to desktop; compact tabs keep their own
+   selected appearance instead of extending a transformed pill off-screen. */
+@media(max-width:600px){
+  html body .shell>header.top.atlasStickyHeader{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  html body .atlasStickyHeader>nav.tabs{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
+  }
+  html .tabs.tabMotionReady .atlasTabIndicator{display:none!important}
+  html body .atlasStickyHeader>nav.tabs>.tab.active{
+    background:var(--ux-accent-soft)!important;
+    color:var(--ux-accent-ink)!important;
+    box-shadow:inset 0 0 0 1px var(--ux-accent-border)!important;
+  }
+}
