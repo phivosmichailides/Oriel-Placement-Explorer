@@ -56,6 +56,8 @@
    msg('Exported your simulation order. This does not update Oriel.');
  }
  function markup(){
+   // The simulator can be re-entered after a live dataset refresh; never add a second tab or panel.
+   if(document.getElementById('simulator')&&document.querySelector('nav.tabs [data-tab="simulator"]'))return;
    const tab=el('button','tab');tab.type='button';tab.dataset.tab='simulator';
    tab.innerHTML='<span class="simNavIcon" aria-hidden="true">▥</span><span>Oriel Simulation</span>';
    document.querySelector('nav.tabs [data-tab="outcome"]').before(tab);
