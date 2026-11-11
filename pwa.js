@@ -76,7 +76,7 @@
       if(navigator.onLine!==false)registration.update().catch(()=>{});
     };
     window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./sw.js?v=20261111quiet1',{scope:'./',updateViaCache:'none'})
+      navigator.serviceWorker.register('./sw.js?v=20261111quiet2',{scope:'./',updateViaCache:'none'})
         .then(registration=>{
           checkForUpdate(registration);
           window.addEventListener('online',()=>checkForUpdate(registration));
