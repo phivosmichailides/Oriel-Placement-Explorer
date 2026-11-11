@@ -7,11 +7,16 @@
  if(!header||!nav)return;
  const logo=header.querySelector('.brand .logo');
  if(logo){
-   logo.classList.add('paTransparentLogo');
-   const globe=document.createElement('span');
-   globe.className='atlasBrandGlobe';
-   globe.setAttribute('aria-hidden','true');
-   logo.replaceChildren(globe);
+   // Keep the actual image element: replacing it with a CSS mask made the
+   // mark disappear in some browsers and stripped the logo's intrinsic size.
+   const mark=document.createElement('img');
+   mark.src='placement-atlas-compass-pin.webp?v=20261111logo1';
+   mark.alt='';
+   mark.setAttribute('aria-hidden','true');
+   mark.width=512;mark.height=512;
+   mark.decoding='async';
+   logo.classList.remove('paTransparentLogo');
+   logo.replaceChildren(mark);
  }
  const utility=document.createElement('div');utility.className='atlasHeaderUtilities';
  header.append(utility);
