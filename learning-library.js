@@ -8,7 +8,8 @@
   tab.type='button';tab.className='tab atlasLearnNavTab';tab.dataset.tab='learn';
   tab.setAttribute('aria-label','Learn');
   tab.innerHTML='<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 5.5v17M8 7h8M8 11h8"/></svg><span class="atlasTabLabel">Learn</span>';
-  nav.append(tab);
+  const preferencesTab=nav.querySelector(':scope > .tab[data-tab="prefs"]');
+  if(preferencesTab)nav.insertBefore(tab,preferencesTab);else nav.append(tab);
   const panel=document.createElement('section');panel.id='learn';panel.className='panel atlasLearnPanel';
   panel.innerHTML=`
     <header class="atlasLearnHero">
