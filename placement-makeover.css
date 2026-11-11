@@ -1,0 +1,106 @@
+/* Placement Atlas ongoing editorial makeover. All source fields and all
+   detailed programme tabs remain available. */
+html.atlasPremiumPreview .productIntro .atlasHeroPrimary{
+  background:color-mix(in srgb,var(--ux-accent) 48%,#202428)!important;
+  border-color:color-mix(in srgb,var(--ux-accent) 48%,#202428)!important;
+  color:#fff!important;
+  font-weight:800!important;
+}
+html.atlasPremiumPreview .productIntro .atlasHeroPrimary:hover{
+  background:color-mix(in srgb,var(--ux-accent) 57%,#202428)!important;
+  border-color:color-mix(in srgb,var(--ux-accent) 57%,#202428)!important;
+}
+html.atlasPremiumPreview .productIntro .atlasHeroSecondary{
+  background:transparent!important;color:var(--ink)!important;
+  border:1px solid var(--line)!important;
+  font-weight:760!important;
+}
+html.atlasPremiumPreview .productIntro .atlasHeroPrimary:focus-visible,
+html.atlasPremiumPreview .productIntro .atlasHeroSecondary:focus-visible{
+  outline:2px solid var(--ink)!important;outline-offset:3px!important;
+}
+/* Human-readable programme names are the main line, not the postcode-stuffed
+   Oriel database title. The original remains visible through "Full name". */
+html.atlasPremiumPreview .placement .placementTop h3{
+  overflow-wrap:anywhere;word-break:normal;
+  font-weight:800;letter-spacing:-.025em;line-height:1.36;
+}
+html.atlasPremiumPreview .placement .atlasTitleConcise{display:inline}
+html.atlasPremiumPreview .placement .atlasTitleOriginal{
+  display:none;font-size:12px;font-weight:520;letter-spacing:0;
+  line-height:1.55;white-space:normal;overflow-wrap:anywhere;
+  color:var(--mut);margin-top:7px;
+}
+html.atlasPremiumPreview .placement .uxTitleExpanded>.atlasTitleOriginal{display:block!important}
+html.atlasPremiumPreview .placement .atlasTitleExpand{
+  border:0!important;background:transparent!important;color:var(--ux-accent-ink)!important;
+  font-size:11.5px!important;font-weight:700!important;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;
+  padding:2px 5px!important;margin-left:5px!important;
+  border-radius:5px;white-space:nowrap;
+}
+html.atlasPremiumPreview .placement .atlasTitleExpand:focus-visible{
+  outline:2px solid var(--ux-accent-ink);outline-offset:2px;
+}
+html.atlasPremiumPreview #shortlistList .placement .atlasTitleOriginal,
+html.atlasPremiumPreview #mapSelection .placement .atlasTitleOriginal{display:none}
+html.atlasPremiumPreview #shortlistList .placement .uxTitleExpanded>.atlasTitleOriginal,
+html.atlasPremiumPreview #mapSelection .placement .uxTitleExpanded>.atlasTitleOriginal{display:block!important}
+html.atlasPremiumPreview #placementMap{
+  border-radius:14px 14px 0 0;overflow:hidden;
+  background:var(--soft);isolation:isolate;
+}
+html.atlasPremiumPreview .map-card{
+  border:1px solid var(--line)!important;
+  background:var(--panel)!important;
+  border-radius:19px!important;overflow:hidden;
+  box-shadow:none!important;
+}
+html.atlasPremiumPreview #placementMap .leaflet-bar,
+html.atlasPremiumPreview #placementMap .leaflet-control-zoom{
+  border:1px solid var(--line)!important;border-radius:11px!important;
+  box-shadow:0 5px 16px rgba(17,20,22,.14)!important;overflow:hidden!important;
+  background:var(--panel)!important;
+}
+html.atlasPremiumPreview #placementMap .leaflet-control-zoom a{
+  background:var(--panel)!important;color:var(--ink)!important;
+  border:0!important;min-width:35px!important;min-height:35px!important;
+  width:35px!important;height:35px!important;line-height:35px!important;
+}
+html.atlasPremiumPreview #placementMap .leaflet-control-zoom a+a{
+  border-top:1px solid var(--line)!important;
+}
+html.atlasPremiumPreview .map-caption{
+  background:var(--panel)!important;border-top:1px solid var(--line)!important;
+  padding:12px 14px!important;
+}
+html.atlasPremiumPreview .map-caption #mapStatus{
+  color:var(--mut)!important;font-size:11px!important;
+  line-height:1.5!important;overflow-wrap:anywhere;
+}
+html.atlasPremiumPreview #sectorMapLegend{
+  background:var(--panel)!important;border-top:1px solid var(--line)!important;
+  padding:12px 14px!important;
+  font-size:11px!important;color:var(--mut)!important;
+}
+html.atlasPremiumPreview #sectorMapLegend .atlasLegendDot{
+  width:9px!important;height:9px!important;border-radius:50%;
+}
+html.atlasPremiumPreview #sectorMapLegend .atlasLegendItem{
+  gap:6px!important;white-space:nowrap;
+}
+@media(max-width:700px){
+ html.atlasPremiumPreview .productIntro .introActions .btn{
+   flex:1 1 160px;min-width:0!important;font-size:13px!important;
+   padding:11px 13px!important;
+ }
+ html.atlasPremiumPreview .productIntro .atlasHeroTrust{
+   gap:8px 16px!important;font-size:11px!important;
+ }
+ html.atlasPremiumPreview .map-heading{gap:12px!important}
+ html.atlasPremiumPreview #sectorMapLegend{gap:8px 12px!important}
+ html.atlasPremiumPreview #sectorMapLegend .atlasLegendHelp{display:none!important}
+ html.atlasPremiumPreview #placementMap .leaflet-control-zoom a{
+   width:33px!important;height:33px!important;line-height:33px!important;
+ }
+}
