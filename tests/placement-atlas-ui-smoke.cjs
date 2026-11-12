@@ -302,6 +302,30 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.screenshot({path:output+'/placement-atlas-mobile-quiz.png',fullPage:true});
   await page.locator('.onboardClose').click();
   await page.evaluate(()=>window.scrollTo(0,0));
+  // Member onboarding: fake client tests form validation and the atomic save
+  // without creating or editing any actual Supabase account.
+  await page.evaluate(()=>{
+    window.PlacementAtlasAccount={
+      getUser:()=>({id:'ui-test-user',email:'test@example.invalid',user_metadata:{}}),
+      getClient:()=>({
+        from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})})}),
+        rpc:async()=>({data:null,error:null})
+      }),
+      openSignIn:()=>{}
+    };
+    window.PlacementAtlasMemberProfile.open();
+  });
+  assert(await page.locator('.atlasMemberDialog').isVisible(),'Member onboarding dialog did not open');
+  await page.locator('.atlasMemberDialog input[name="first"]').fill('Φοίβος');
+  await page.locator('.atlasMemberDialog input[name="last"]').fill('Michailides');
+  await page.locator('.atlasMemberDialog input[name="username"]').fill('atlasstudent99');
+  await page.locator('.atlasMemberDialog input[name="birth"]').fill('2004-04-29');
+  await page.locator('.atlasMemberDialog input[name="university"]').fill('University College London');
+  await page.locator('.atlasMemberDialog input[name="study_year"][value="year4"]').check();
+  await page.waitForFunction(()=>document.querySelector('#atlasHandleStatus')?.textContent?.includes('Available'),null,{timeout:6000});
+  await page.locator('#atlasMemberSave').click();
+  await page.waitForFunction(()=>!document.querySelector('.atlasMemberDialog'),null,{timeout:6000});
+  assert.equal(await page.locator('.atlasStickyHeader .paHeaderLabel').innerText(),'Φοίβος','Header should show the saved first name');
   assert.equal(errors.length,0,'Browser runtime errors: '+errors.join(' | '));
   console.log(JSON.stringify({target:base,programmes:4064,pageSize:100,map:mapInfo.provider,tiles:mapInfo.tileCount,nav:'ok',learn:'ok',swipe:'ok',quiz:'ok',runtimeErrors:errors}));
  }finally{
