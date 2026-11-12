@@ -58,3 +58,15 @@ The workspace is a single JSONB document per applicant so the current app can be
 ## Current deployment status
 
 The frontend cloud integration is prepared, but it is not live until a Supabase project is connected, the migration is applied, Google Auth is configured, and the Project URL and publishable key are added to supabase-config.js.
+
+## Direct Google Identity Services button (no paid custom domain)
+
+The optional Google Identity Services integration uses Google's official browser button and passes the signed Google ID token to Supabase using `auth.signInWithIdToken`. It does not navigate through the random Supabase host during normal Google sign-in.
+
+1. In Google Cloud > Google Auth Platform > Clients, open the existing **Web application** OAuth client and copy its **Client ID** (not the client secret).
+2. Add `https://placementatlas.co.uk` (without trailing slash) to **Authorised JavaScript origins** for that client; keep the existing Supabase callback URL under **Authorised redirect URIs** until the replacement is verified.
+3. Paste the public Client ID into `googleClientId` in `supabase-config.js`. Keep Google enabled in Supabase > Authentication > Providers. Do not change Supabase's provider secret or disable nonce validation.
+4. Confirm the Google Auth Platform app is published to External production and that branding/approved domains are complete.
+5. In a fresh private window on `https://placementatlas.co.uk/`, open Sign in. The official Google button should load; sign in with a test account and verify your private workspace is saved. Then test returning Google and email users, and cross-device sync.
+
+If the Client ID is absent, the existing OAuth button remains available. If Google Identity Services cannot load, a labelled fallback offers the original redirect-based login. `google-identity.js` generates a cryptographic nonce and SHA-256 hash for token validation. No service secret is exposed to the browser.
