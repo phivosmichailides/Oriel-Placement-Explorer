@@ -97,6 +97,58 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
   assert.equal((await page.locator('.atlasStickyHeader .brand h1').innerText()).trim(),'Placement Atlas');
   assert((await page.locator('.atlasStickyHeader .brand h1').innerText()).trim()==='Placement Atlas','Header must identify the site clearly');
+  // Desktop layout regression: a 1536px window previously collapsed the brand,
+  // navigation and account buttons into the same space, while a physical-screen
+  // positioning adjustment moved the floating shortlist over the map.
+  await page.waitForFunction(()=>!!document.querySelector('.productIntro')&&
+    !!document.getElementById('orielDeadline')&&!!document.getElementById('atlasDeadlineRow'),
+    null,{timeout:25000});
+  for(const dims of [{width:1920,height:1080},{width:1536,height:960},
+                      {width:1280,height:900},{width:390,height:844}]){
+    await page.setViewportSize(dims);
+    await wait(120);
+    const layout=await page.evaluate(()=>{
+      const bounds=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
+      const header=document.querySelector('header.top.atlasStickyHeader');
+      const brand=header.querySelector(':scope > .brand'),nav=header.querySelector(':scope > nav.tabs');
+      const utility=header.querySelector(':scope > .atlasHeaderUtilities');
+      const icon=brand.querySelector('.logo img'),title=brand.querySelector('h1');
+      const intro=document.querySelector('.productIntro'),deadline=document.getElementById('orielDeadline');
+      const launcher=document.getElementById('uxDrawerLauncher');
+      return {vw:innerWidth,vh:innerHeight,pageWidth:document.documentElement.scrollWidth,
+        header:bounds(header),brand:bounds(brand),nav:bounds(nav),utility:bounds(utility),
+        icon:bounds(icon),iconLoaded:icon.complete&&icon.naturalWidth>0,
+        title:bounds(title),deadline:bounds(deadline),intro:bounds(intro),
+        deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,
+        launcher:bounds(launcher),launcherPosition:getComputedStyle(launcher).position,
+        navOverflow:nav.scrollWidth-nav.clientWidth};
+    });
+    const intersects=(a,b)=>a.left<b.right-2&&a.right>b.left+2&&a.top<b.bottom-2&&a.bottom>b.top+2;
+    assert(layout.iconLoaded,'Header logo failed to load: '+JSON.stringify(layout));
+    assert(layout.icon.right<=layout.title.left+2,'Compass logo is not to the left of the title: '+JSON.stringify(layout));
+    assert(layout.brand.left<=layout.header.left+40,'Brand is no longer left aligned: '+JSON.stringify(layout));
+    assert(!intersects(layout.brand,layout.nav),'Brand and navigation overlap: '+JSON.stringify(layout));
+    assert(!intersects(layout.brand,layout.utility),'Brand and utility controls overlap: '+JSON.stringify(layout));
+    assert(!intersects(layout.nav,layout.utility),'Navigation and utility controls overlap: '+JSON.stringify(layout));
+    assert(layout.pageWidth<=layout.vw+1,'Whole-page horizontal overflow: '+JSON.stringify(layout));
+    assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadline.top>=layout.intro.bottom-3,
+      'Oriel recruitment status has returned to the top header: '+JSON.stringify(layout));
+    assert(layout.launcherPosition==='fixed','Shortlist launcher must be viewport-fixed: '+JSON.stringify(layout));
+    assert(layout.vw-layout.launcher.right>=5&&layout.vw-layout.launcher.right<=54,
+      'Shortlist is not at the bottom-right edge: '+JSON.stringify(layout));
+    assert(layout.vh-layout.launcher.bottom>=5&&layout.vh-layout.launcher.bottom<=54,
+      'Shortlist is vertically misplaced: '+JSON.stringify(layout));
+    await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
+    await wait(120);
+    const scrolled=await page.locator('#uxDrawerLauncher').evaluate(el=>{const r=el.getBoundingClientRect();return {right:innerWidth-r.right,bottom:innerHeight-r.bottom}});
+    assert(scrolled.right>=5&&scrolled.right<=54&&scrolled.bottom>=5&&scrolled.bottom<=54,
+      'Shortlist moves away from viewport corner while scrolling: '+JSON.stringify({dims,scrolled}));
+    await page.evaluate(()=>scrollTo(0,0));
+  }
+  await page.setViewportSize({width:1440,height:960});
+  const gphcAssessment='https://www.pharmacyregulation.org/students-and-trainees/pharmacist-education-and-training/common-registration-assessment/sitting-common-registration-assessment';
+  assert.equal(await page.locator('#learn a[href="'+gphcAssessment+'"]').count(),1,
+    'Learn must link directly to the current GPhC Common Registration Assessment page');
   const navLabels=await page.locator('header.top nav.tabs > .tab .atlasTabLabel').allInnerTexts();
   assert.equal(navLabels.filter(x=>x==='Oriel Simulation').length,1,'Oriel Simulation should appear once');
   assert.equal(navLabels.filter(x=>x==='Swipe Mode').length,1,'Swipe Mode should appear once');
