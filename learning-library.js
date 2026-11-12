@@ -93,7 +93,7 @@
       <p class="atlasLearnCaution">Your employer's training plan and the current GPhC requirements take precedence. Confirm current rules and deadlines directly with the regulator.</p>
       <div class="atlasLearnExternalLinks">
         <a href="https://www.pharmacyregulation.org/" target="_blank" rel="noopener noreferrer">General Pharmaceutical Council (GPhC)</a>
-        <a href="https://www.pharmacyregulation.org/pharmacists/registering-pharmacist/registration-assessment" target="_blank" rel="noopener noreferrer">GPhC · Registration assessment</a>
+        <a href="https://www.pharmacyregulation.org/students-and-trainees/pharmacist-education-and-training/common-registration-assessment/sitting-common-registration-assessment" target="_blank" rel="noopener noreferrer">GPhC · Common Registration Assessment</a>
       </div>
     </section>
 
