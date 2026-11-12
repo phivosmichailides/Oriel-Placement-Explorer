@@ -36,6 +36,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
     return route.abort();
   });
   const url='http://127.0.0.1:'+server.address().port;
+  fs.mkdirSync('/tmp/oriel-map-theme-smoke',{recursive:true});
   await page.goto(url+'/?qa=shortlist',{waitUntil:'domcontentloaded'});
   await page.locator('#results .placement').first().waitFor({state:'visible',timeout:60000});
   await page.locator('#uxDrawerLauncher [data-ux-shortlist-count]').waitFor({state:'attached',timeout:20000});
@@ -90,6 +91,7 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
     assert(/\/mo gross$/.test(layoutMetrics.hourlyText),'The secondary salary line should show gross monthly pay: '+JSON.stringify(layoutMetrics));
     assert.equal(layoutMetrics.hourlyDisplay,'block','Gross monthly salary should remain visible: '+JSON.stringify(layoutMetrics));
   }
+  await page.screenshot({path:'/tmp/oriel-map-theme-smoke/placement-atlas-shortlist-desktop.png',fullPage:true});
   const desktopRemove=page.locator('#shortlistList .rank-row .rank-controls [data-atlas-remove-shortlist]').first();
   await page.locator('#shortlistList .rank-row').first().hover();
   await desktopRemove.waitFor({state:'visible',timeout:15000});
