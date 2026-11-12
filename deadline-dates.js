@@ -59,7 +59,31 @@
     box.setAttribute('role','status');
     box.setAttribute('aria-live','polite');
     box.innerHTML='<div class="deadlineLabel" id="deadlineLabel">ORIEL 2027/28 · TRAINING INTAKE</div><div class="deadlineValue" id="deadlineValue">Checking recruitment stage…</div><div class="deadlineExact" id="deadlineExact"></div><a class="deadlineLink" href="https://london.wtepharmacy.nhs.uk/national-recruitment/offers/" target="_blank" rel="noopener noreferrer">Official offers guidance ↗</a>';
-    actions.prepend(box);
+    // The recruitment status belongs below the page introduction, not in
+    // the sticky identity/navigation header. Keep it in a separate narrow row.
+    let statusRow=document.getElementById('atlasDeadlineRow');
+    if(!statusRow){
+      statusRow=document.createElement('div');
+      statusRow.id='atlasDeadlineRow';
+      statusRow.className='atlasDeadlineRow';
+      statusRow.setAttribute('aria-label','Oriel recruitment status');
+    }
+    statusRow.append(box);
+    const placeStatusRow=()=>{
+      const hero=document.querySelector('.productIntro');
+      const anchor=hero||document.getElementById('atlasHeaderTools')||document.querySelector('header.top');
+      if(anchor&&statusRow.previousElementSibling!==anchor)anchor.insertAdjacentElement('afterend',statusRow);
+      return Boolean(hero);
+    };
+    if(!placeStatusRow()){
+      const shell=document.querySelector('.shell');
+      if(shell){
+        const observer=new MutationObserver(()=>{
+          if(placeStatusRow())observer.disconnect();
+        });
+        observer.observe(shell,{childList:true});
+      }
+    }
 
     const offersStart=new Date('2026-11-04T00:00:00Z').getTime();
     const upgradeEnd=new Date('2026-11-25T12:00:00Z').getTime();
