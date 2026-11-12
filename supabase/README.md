@@ -20,9 +20,9 @@ The built-in programme catalogue and postcode-coordinate cache are not copied in
 
 1. Create a Supabase project.
 2. Apply the SQL migration in supabase/migrations/20261106000000_create_oriel_user_workspaces.sql.
-3. In Authentication → URL Configuration, set the Site URL to:
-   https://phivosmichailides.github.io/Oriel-Placement-Explorer/
-4. Add that same URL to the allowed Redirect URLs list. Add a local development URL only if you actually use one.
+3. In Authentication → URL Configuration, set the production Site URL to:
+   https://placementatlas.co.uk/
+4. Add https://placementatlas.co.uk/ as an exact Redirect URL. Remove the retired https://phivosmichailides.github.io/Oriel-Placement-Explorer/ address after migration. Add a local development URL only if you actually use one. Google OAuth and email magic-link redirects must both return to the branded production URL.
 5. In Authentication → Providers, enable Google. Google OAuth requires an OAuth client ID and client secret created in Google Cloud. In Google Cloud, register Supabase's callback URL shown in the Supabase Google provider settings as an authorised redirect URI. Do not put the Google client secret in this repository.
 6. Copy the Supabase Project URL and the browser-safe publishable key (or legacy anon key) into supabase-config.js.
 7. Deploy the GitHub Pages site again.
