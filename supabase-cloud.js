@@ -147,7 +147,9 @@
     else if(currentUser)status('Checking your saved workspace…','pending');
     else status('','neutral');
   };
-  const redirectUrl=()=>window.location.origin+window.location.pathname;
+  const redirectUrl=()=>/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
+    ? window.location.origin+window.location.pathname
+    : 'https://placementatlas.co.uk/';
   const showAuthModal=()=>{
     if(!client||!configured)return;
     const overlay=element('div','cloudOverlay');
