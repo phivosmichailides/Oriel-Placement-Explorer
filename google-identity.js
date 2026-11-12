@@ -42,7 +42,13 @@
       if(session.overlay.isConnected)session.overlay.remove();
       if(active===session)active=null;
     }catch(error){
-      if(active===session)errorMessage('Google sign-in failed: '+(error.message||'Please try again.'));
+      if(active===session){
+        errorMessage('Google sign-in failed: '+(error.message||'Please try again.'));
+        // Keep a recovery path if Google returns a token the server rejects.
+        // The legacy OAuth flow is only exposed when the direct route fails.
+        session.button.hidden=false;
+        session.button.textContent='Try alternative Google sign-in';
+      }
     }finally{
       session.busy=false;
       if(session.host.isConnected)session.host.removeAttribute('aria-busy');
