@@ -871,8 +871,11 @@
   };
   const decorate=()=>{
     $('shortlistList')?.querySelectorAll(':scope > .rank-row').forEach(row=>{
-      if(row.querySelector(':scope > .atlasRemoveShortlist'))return;
-      const id=row.querySelector(':scope > .placement')?.dataset.id;if(id)row.append(makeButton(id));
+      const controls=row.querySelector(':scope > .rank-controls');
+      const target=controls||row;
+      if(target.querySelector(':scope > .atlasRemoveShortlist'))return;
+      const id=row.querySelector(':scope > .placement')?.dataset.id;
+      if(id)target.append(makeButton(id));
     });
     $('uxDrawerItems')?.querySelectorAll(':scope > .uxDrawerItem').forEach(item=>{
       const id=item.dataset.programmeId;if(!id||item.querySelector(':scope > .atlasRemoveShortlist'))return;
