@@ -489,12 +489,12 @@ html body .shell > header.top.atlasStickyHeader > .atlasHeaderUtilities #themeTo
   min-width:37px!important;min-height:37px!important;
   margin:0!important;padding:0!important;
 }
-/* Recruitment countdown sits BELOW the main page introduction. */
+/* Recruitment countdown sits ABOVE the main page introduction. */
 html body .shell > #atlasDeadlineRow{
   position:relative!important;z-index:1!important;
   display:flex!important;align-items:center!important;justify-content:flex-end!important;
   width:100%!important;min-width:0!important;max-width:100%!important;
-  padding:0 4px!important;margin:8px 0 18px!important;
+  padding:0 4px!important;margin:8px 0 0!important;
 }
 html body #atlasDeadlineRow #orielDeadline{
   width:auto!important;max-width:min(100%,490px)!important;min-width:0!important;
