@@ -91,7 +91,7 @@
       const width=Math.min(390,Math.max(220,Math.floor(host.clientWidth||320)));
       googleID.renderButton(host,{
         type:'standard',theme:document.documentElement.getAttribute('data-theme')==='dark'?'filled_black':'outline',
-        size:'large',shape:'rectangular',text:'continue_with',logo_alignment:'left',width
+        size:'large',shape:'pill',text:'continue_with',logo_alignment:'left',width
       });
       if(!host.firstElementChild)throw new Error('The Google button did not appear.');
       return true;

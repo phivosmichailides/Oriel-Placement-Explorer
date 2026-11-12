@@ -153,7 +153,7 @@
   const showAuthModal=()=>{
     if(!client||!configured)return;
     const overlay=element('div','cloudOverlay');
-    overlay.innerHTML='<section class="cloudDialog" role="dialog" aria-modal="true" aria-labelledby="cloudDialogTitle"><button type="button" class="cloudClose" aria-label="Close">×</button><div class="cloudEyebrow">PLACEMENT ATLAS COMMUNITY</div><h2 id="cloudDialogTitle">Join Placement Atlas</h2><p class="cloudLead">Create an account or sign in to save your profile, shortlist, preferences and notes across devices.</p><button type="button" class="btn primary cloudGoogleButton" id="cloudGoogleSignIn"><span aria-hidden="true">G</span> Continue with Google</button><div class="cloudOr"><span>or use email</span></div><label class="cloudEmailLabel" for="cloudEmail">Email address</label><div class="cloudEmailRow"><input id="cloudEmail" type="email" autocomplete="email" placeholder="you@example.com"><button type="button" class="btn" id="cloudEmailSignIn">Send link</button></div><p class="cloudFine">New here? Verifying your email creates your account. Returning? The same link signs you in. Your current browser workspace can be saved to your private account. Your existing shortlist will be migrated if this account has no saved workspace. You can sign out at any time.</p><p class="cloudPrivacy">Only your authenticated account can access its workspace. Your commute starting point is included if you have saved one.</p><p class="cloudError" id="cloudAuthError" role="status"></p></section>';
+    overlay.innerHTML='<section class="cloudDialog" role="dialog" aria-modal="true" aria-labelledby="cloudDialogTitle"><button type="button" class="cloudClose" aria-label="Close">×</button><div class="cloudEyebrow">PLACEMENT ATLAS COMMUNITY</div><h2 id="cloudDialogTitle">Welcome to Placement Atlas</h2><p class="cloudLead">Sign in to keep your choices and workspace in sync.</p><button type="button" class="btn primary cloudGoogleButton" id="cloudGoogleSignIn"><span aria-hidden="true">G</span> Continue with Google</button><div class="cloudOr"><span>or use email</span></div><label class="cloudEmailLabel" for="cloudEmail">Email address</label><div class="cloudEmailRow"><input id="cloudEmail" type="email" autocomplete="email" placeholder="you@example.com"><button type="button" class="btn" id="cloudEmailSignIn">Send link</button></div><p class="cloudFine">New here? Signing in creates your account. You can import existing browser choices securely.</p><p class="cloudPrivacy">Your saved workspace is private to you. <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a></p><p class="cloudError" id="cloudAuthError" role="status"></p></section>';
     document.body.append(overlay);
     // When a public Google Web Client ID is configured, use Google's official
     // browser sign-in instead of the Supabase OAuth redirect.
@@ -225,6 +225,7 @@
       }
       await writeWorkspace(user,'Your new private workspace is ready.');
       bootUserId=user.id;
+      document.dispatchEvent(new CustomEvent('placement:auth-changed'));
       return;
     }
     const remoteWorkspace=row.workspace||{};
@@ -253,6 +254,7 @@
       await writeWorkspace(user,'This browser’s workspace is now saved to your account.');
     }
     bootUserId=user.id;
+    document.dispatchEvent(new CustomEvent('placement:auth-changed'));
     // An auth change can happen after the current app has already loaded its
     // old in-memory state. Reload only then, after hydration, to prevent a
     // stale shortlist or simulator from being written over the new account.
@@ -363,6 +365,8 @@
           return;
         }
         renderAccount();status('Signed out. Your private cloud workspace remains saved.','neutral');
+      }else if(event==='USER_UPDATED'&&session?.user&&session.user.id===bootUserId){
+        currentUser=session.user;renderAccount();document.dispatchEvent(new CustomEvent('placement:auth-changed'));
       }else if((event==='SIGNED_IN'||event==='USER_UPDATED')&&session&&session.user&&session.user.id!==bootUserId&&session.user.id!==preparingUserId){
         setTimeout(()=>prepareUser(session.user).then(()=>{if(syncActive)flush()}).catch(error=>status('Could not load your cloud workspace. '+(error.message||''),'error')),0);
       }

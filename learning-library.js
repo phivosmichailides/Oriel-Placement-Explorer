@@ -6,8 +6,8 @@
   if(!nav||document.getElementById('learn'))return;
   const tab=document.createElement('button');
   tab.type='button';tab.className='tab atlasLearnNavTab';tab.dataset.tab='learn';
-  tab.setAttribute('aria-label','Learn');
-  tab.innerHTML='<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 5.5v17M8 7h8M8 11h8"/></svg><span class="atlasTabLabel">Learn</span>';
+  tab.setAttribute('aria-label','Learning Hub');
+  tab.innerHTML='<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 5.5v17M8 7h8M8 11h8"/></svg><span class="atlasTabLabel">Learning Hub</span>';
   const preferencesTab=nav.querySelector(':scope > .tab[data-tab="prefs"]');
   if(preferencesTab)nav.insertBefore(tab,preferencesTab);else nav.append(tab);
   const panel=document.createElement('section');panel.id='learn';panel.className='panel atlasLearnPanel';
@@ -132,6 +132,27 @@
       <p class="atlasLearnCaution">This guide is separate from the future member discussion forum. Community-submitted experiences will need clear dates, source context, moderation and reporting before they are published.</p>
     </section>
   `;
+  // Existing Oriel information becomes a secondary Guidance view.
+  const guide=document.createElement('div');guide.id='atlasLearnGuidance';
+  while(panel.firstChild)guide.append(panel.firstChild);
+  guide.hidden=true;
+  const home=document.createElement('div');home.id='atlasLearnHome';
+  home.innerHTML='<header class="atlasLearnHero"><div class="eyebrow">YOUR PHARMACY LEARNING SPACE</div><h2>Learn with purpose.</h2><p>Build confidence from your first MPharm year through foundation training and registration preparation.</p></header>'+
+  '<div class="atlasLearnHomeGrid">'+
+  '<article class="atlasLearnModule"><span class="atlasModuleIndex">01</span><h3>Drug knowledge</h3><p>Practise a structured formulary and build clinically accurate medicine knowledge.</p><small>Formulary exercises · next stage</small></article>'+
+  '<article class="atlasLearnModule"><span class="atlasModuleIndex">02</span><h3>Flashcards &amp; revision</h3><p>Organise year-specific material and revisit the concepts you find difficult.</p><small>Study tools · planned</small></article>'+
+  '<article class="atlasLearnModule"><span class="atlasModuleIndex">03</span><h3>Clinical simulations</h3><p>Practise counselling, prescription checking, services and OSCE-style scenarios.</p><small>Interactive practice · planned</small></article>'+
+  '<article class="atlasLearnModule"><span class="atlasModuleIndex">04</span><h3>Journal &amp; portfolio</h3><p>Capture learning experiences, reflections and future portfolio material.</p><small>Private autosaving journal · planned</small></article></div>'+
+  '<section class="atlasLearnHubGuidance"><div><span class="eyebrow">GUIDANCE &amp; ADVICE</span><h3>Research a placement</h3><p>Understand training settings, salary, working life and programme structure.</p></div><button type="button" class="btn" data-atlas-learn-view="guide">Open guidance</button></section>';
+  const menu=document.createElement('nav');menu.className='atlasLearnHubNav';menu.setAttribute('aria-label','Learning Hub sections');
+  menu.innerHTML='<button type="button" data-atlas-learn-view="home" aria-current="page">Learning</button><button type="button" data-atlas-learn-view="guide">Guidance &amp; advice</button>';
+  panel.append(menu,home,guide);
+  panel.querySelectorAll('[data-atlas-learn-view]').forEach(b=>b.addEventListener('click',()=>{
+    const guidance=b.dataset.atlasLearnView==='guide';
+    guide.hidden=!guidance;home.hidden=guidance;
+    menu.querySelectorAll('button').forEach(x=>x.setAttribute('aria-current',String(x===b?'page':'false')));
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
+  }));
   const prefs=document.getElementById('prefs');
   if(prefs)prefs.insertAdjacentElement('afterend',panel);
   else document.querySelector('.shell')?.append(panel);
