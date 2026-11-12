@@ -51,8 +51,10 @@
 
   const installCountdown=()=>{
     if(document.getElementById('orielDeadline'))return;
-    const actions=document.querySelector('#atlasHeaderTools .actions')||document.querySelector('header.top .actions');
-    if(!actions)return;
+    // Recruitment status is independent of the removed/emptied header-action
+    // container. The page shell exists even when all action buttons move.
+    const shell=document.querySelector('.shell');
+    if(!shell)return;
     const box=document.createElement('div');
     box.id='orielDeadline';
     box.className='deadlineBox';
