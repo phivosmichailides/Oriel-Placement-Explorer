@@ -178,3 +178,16 @@ html .cloudConflictChoices .btn { width: 100%; min-height: 43px; }
   html .cloudDialog { padding: 23px 19px; }
   html .cloudEmailRow { flex-direction: column; }
 }
+
+/* Official Google Identity Services button and loading state. */
+html .cloudGoogleNative {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  color: var(--mut);
+  font-size: 12px;
+}
+html .cloudGoogleNative[hidden],
+html #cloudGoogleSignIn[hidden] { display: none !important; }
