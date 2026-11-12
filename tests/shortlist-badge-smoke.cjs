@@ -78,13 +78,18 @@ const waitForCount=(page,count)=>page.waitForFunction(value=>{
       scoreOverflow:score?score.scrollWidth>score.clientWidth+2:false,
       fitWidth:fit?.getBoundingClientRect().width||0,
       mapWidth:map?.getBoundingClientRect().width||0,
-      hourlyDisplay:hourly?getComputedStyle(hourly).display:'missing'
+      hourlyDisplay:hourly?getComputedStyle(hourly).display:'missing',
+      hourlyText:hourly?.textContent.trim()||''
     };
   });
   assert(layoutMetrics.scoreWidth>=145,'Personal Fit panel should have enough width: '+JSON.stringify(layoutMetrics));
   assert(!layoutMetrics.scoreOverflow,'Personal Fit content should not overflow: '+JSON.stringify(layoutMetrics));
   assert(layoutMetrics.mapWidth<layoutMetrics.fitWidth*.68,'Location map should not dominate the shortlist card: '+JSON.stringify(layoutMetrics));
-  assert.equal(layoutMetrics.hourlyDisplay,'none','Hourly salary should be hidden in the shortlist');
+  assert(!/\/hr/i.test(layoutMetrics.hourlyText),'Hourly pay should not appear in the shortlist: '+JSON.stringify(layoutMetrics));
+  if(layoutMetrics.hourlyText){
+    assert(/\/mo gross$/.test(layoutMetrics.hourlyText),'The secondary salary line should show gross monthly pay: '+JSON.stringify(layoutMetrics));
+    assert.equal(layoutMetrics.hourlyDisplay,'block','Gross monthly salary should remain visible: '+JSON.stringify(layoutMetrics));
+  }
   const desktopRemove=page.locator('#shortlistList .rank-row .rank-controls [data-atlas-remove-shortlist]').first();
   await page.locator('#shortlistList .rank-row').first().hover();
   await desktopRemove.waitFor({state:'visible',timeout:15000});
