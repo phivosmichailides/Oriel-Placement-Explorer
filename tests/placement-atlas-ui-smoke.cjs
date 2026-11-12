@@ -119,7 +119,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
         header:bounds(header),brand:bounds(brand),nav:bounds(nav),utility:bounds(utility),
         icon:bounds(icon),iconLoaded:icon.complete&&icon.naturalWidth>0,
         title:bounds(title),deadline:bounds(deadline),intro:bounds(intro),
-        deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,
+        deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,deadlineFollowsIntro:Boolean(intro.compareDocumentPosition(deadline)&Node.DOCUMENT_POSITION_FOLLOWING),
         launcher:bounds(launcher),launcherPosition:getComputedStyle(launcher).position,
         navOverflow:nav.scrollWidth-nav.clientWidth};
     });
@@ -131,19 +131,19 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     assert(!intersects(layout.brand,layout.utility),'Brand and utility controls overlap: '+JSON.stringify(layout));
     assert(!intersects(layout.nav,layout.utility),'Navigation and utility controls overlap: '+JSON.stringify(layout));
     assert(layout.pageWidth<=layout.vw+1,'Whole-page horizontal overflow: '+JSON.stringify(layout));
-    assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadline.top>=layout.intro.bottom-3,
-      'Oriel recruitment status has returned to the top header: '+JSON.stringify(layout));
+    assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadlineFollowsIntro,
+      'Oriel recruitment status must follow the hero and never appear inside the header: '+JSON.stringify(layout));
     assert(layout.launcherPosition==='fixed','Shortlist launcher must be viewport-fixed: '+JSON.stringify(layout));
     assert(layout.vw-layout.launcher.right>=5&&layout.vw-layout.launcher.right<=54,
       'Shortlist is not at the bottom-right edge: '+JSON.stringify(layout));
     assert(layout.vh-layout.launcher.bottom>=5&&layout.vh-layout.launcher.bottom<=54,
       'Shortlist is vertically misplaced: '+JSON.stringify(layout));
-    await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
+    await page.evaluate(()=>scrollTo({top:document.body.scrollHeight,behavior:'instant'}));
     await wait(120);
     const scrolled=await page.locator('#uxDrawerLauncher').evaluate(el=>{const r=el.getBoundingClientRect();return {right:innerWidth-r.right,bottom:innerHeight-r.bottom}});
     assert(scrolled.right>=5&&scrolled.right<=54&&scrolled.bottom>=5&&scrolled.bottom<=54,
       'Shortlist moves away from viewport corner while scrolling: '+JSON.stringify({dims,scrolled}));
-    await page.evaluate(()=>scrollTo(0,0));
+    await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
   }
   await page.setViewportSize({width:1440,height:960});
   const gphcAssessment='https://www.pharmacyregulation.org/students-and-trainees/pharmacist-education-and-training/common-registration-assessment/sitting-common-registration-assessment';
