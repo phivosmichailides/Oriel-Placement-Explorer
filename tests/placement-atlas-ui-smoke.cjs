@@ -91,7 +91,8 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   }
 
   // Profile benefits are concrete and the learning library is a separate destination.
-  await page.locator('header.top nav.tabs [data-tab=outcome]').click();
+  assert.equal(await page.locator('header.top nav.tabs [data-tab=outcome]').isVisible(),false,'Duplicate Profile navigation should be hidden');
+  await page.locator('header.top .atlasHeaderUtilities .paHeaderProfile').click();
   await page.waitForFunction(()=>document.getElementById('outcome')?.classList.contains('active'),null,{timeout:12000});
   assert.equal(await page.locator('#paJoinBanner').count(),1,'Existing Profile account banner should remain intact');
   assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
