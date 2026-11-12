@@ -56,7 +56,8 @@
  };
  const refresh=()=>{
    const user=bridge().getUser?.()||null;
-   const label=String(user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'Your account');
+   const member=window.PlacementAtlasMemberProfile?.current?.();
+   const label=String(member?[member.firstName,member.lastName].filter(Boolean).join(' '):user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'Your account');
    const newId=user?.id||'';
    if(activeId!==newId){releaseAvatar();photoLoadedFor='';activeId=newId;say('');}
    name.textContent=user?label:'Pharmacist';
@@ -150,6 +151,7 @@
  const authHost=$('orielCloudAccount')||document.querySelector('.cloudAccount');
  if(authHost)new MutationObserver(()=>queueMicrotask(refresh)).observe(authHost,{childList:true,subtree:true});
  document.addEventListener('placement:auth-changed',refresh);
+ document.addEventListener('placement:member-profile',refresh);
  window.addEventListener('pageshow',refresh);
  refresh();
 })();

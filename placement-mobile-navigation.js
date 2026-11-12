@@ -26,9 +26,9 @@
  };
  const headerAccount=()=>{
    const user=window.PlacementAtlasAccount?.getUser?.();
+   const member=window.PlacementAtlasMemberProfile?.current?.();
    let control=utility.querySelector('.paHeaderProfile');
-   if(!user){control?.remove();utility.classList.remove('paSignedIn');return;}
-   utility.classList.add('paSignedIn');
+   utility.classList.toggle('paSignedIn',Boolean(user));
    if(!control){
      control=document.createElement('button');
      control.type='button';control.className='paHeaderProfile';
@@ -40,11 +40,13 @@
      });
      utility.prepend(control);
    }
-   const identity=String(avatar.name||user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'Pharmacist');
-   control.querySelector('.paHeaderLabel').textContent=identity;
+   const memberName=member?[member.firstName,member.lastName].filter(Boolean).join(' '):'';
+   const identity=String(user?(memberName||user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'Your profile'):'Profile');
+   control.querySelector('.paHeaderLabel').textContent=identity.split(' ')[0]||'Profile';
+   control.setAttribute('aria-label',user?'Open '+identity+' profile':'Open profile and sign in');
    const face=control.querySelector('.paHeaderPhoto');face.replaceChildren();
    if(avatar.url){const img=document.createElement('img');img.src=avatar.url;img.alt='';face.append(img);}
-   else face.textContent=String(avatar.initials||identity.split(' ').map(x=>x[0]).slice(0,2).join('')).toUpperCase()||'PA';
+   else face.textContent=user?(memberName?memberName.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase():identity.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()):'PA';
  };
  const placeUtilities=()=>{
    const account=tools?.querySelector('.cloudAccount')||document.querySelector('.cloudAccount');
@@ -57,7 +59,7 @@
    headerAccount();
  };
  const tidyTabs=()=>{
-   const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',learn:'Learn',prefs:'Preferences'};
+   const names={explore:'Explore',shortlist:'Shortlist',outcome:'Profile',simulator:'Oriel Simulation',tinderMode:'Swipe Mode',learn:'Learning Hub',prefs:'Preferences'};
    const normalise=value=>String(value||'').replace(/\s+/g,' ').trim().toLowerCase();
    const tabs=[...nav.querySelectorAll(':scope > .tab')];
    const keyed=new Set(tabs.map(tab=>tab.dataset.tab).filter(Boolean));
@@ -102,6 +104,7 @@
  new MutationObserver(()=>requestAnimationFrame(tidyTabs)).observe(nav,{childList:true,subtree:false});
  window.addEventListener('placement:avatar',event=>{avatar=event.detail||{url:'',initials:'PA',name:''};headerAccount();});
  document.addEventListener('placement:auth-changed',headerAccount);
+ document.addEventListener('placement:member-profile',headerAccount);
  document.addEventListener('desk:after-navigation',()=>{
    const current=document.querySelector('.panel.active')?.id||'explore';
    nav.querySelectorAll(':scope > .tab').forEach(tab=>tab.classList.toggle('atlasParentActive',tab.dataset.tab==='explore'&&(current==='foryou'||current==='compare')));

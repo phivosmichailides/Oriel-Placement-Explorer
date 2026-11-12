@@ -91,7 +91,8 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   }
 
   // Profile benefits are concrete and the learning library is a separate destination.
-  await page.locator('header.top nav.tabs [data-tab=outcome]').click();
+  assert.equal(await page.locator('header.top nav.tabs [data-tab=outcome]').isVisible(),false,'Duplicate Profile navigation should be hidden');
+  await page.locator('header.top .atlasHeaderUtilities .paHeaderProfile').click();
   await page.waitForFunction(()=>document.getElementById('outcome')?.classList.contains('active'),null,{timeout:12000});
   assert.equal(await page.locator('#paJoinBanner').count(),1,'Existing Profile account banner should remain intact');
   assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
@@ -168,7 +169,9 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.setViewportSize({width:1440,height:960});
   await page.locator('header.top nav.tabs [data-tab=learn]').click();
   await page.waitForFunction(()=>document.getElementById('learn')?.classList.contains('active'),null,{timeout:12000});
-  assert(await page.locator('#atlasLearnSettings').isVisible(),'Learning library settings guide did not open');
+  assert(await page.locator('#atlasLearnHome').isVisible(),'Learning Hub home should open first');
+  await page.locator('[data-atlas-learn-view="guide"]').last().click();
+  assert(await page.locator('#atlasLearnSettings').isVisible(),'Learning Hub guidance view did not open');
   const southWest=page.locator('#atlasLearnRegion option').filter({hasText:'South West'});
   assert.equal(await southWest.count(),1,'Region names should use consistent title case');
   await page.locator('#atlasLearnRegion').selectOption({label:'South West'});
@@ -299,6 +302,30 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.screenshot({path:output+'/placement-atlas-mobile-quiz.png',fullPage:true});
   await page.locator('.onboardClose').click();
   await page.evaluate(()=>window.scrollTo(0,0));
+  // Member onboarding: fake client tests form validation and the atomic save
+  // without creating or editing any actual Supabase account.
+  await page.evaluate(()=>{
+    window.PlacementAtlasAccount={
+      getUser:()=>({id:'ui-test-user',email:'test@example.invalid',user_metadata:{}}),
+      getClient:()=>({
+        from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})})}),
+        rpc:async()=>({data:null,error:null})
+      }),
+      openSignIn:()=>{}
+    };
+    window.PlacementAtlasMemberProfile.open();
+  });
+  assert(await page.locator('.atlasMemberDialog').isVisible(),'Member onboarding dialog did not open');
+  await page.locator('.atlasMemberDialog input[name="first"]').fill('Φοίβος');
+  await page.locator('.atlasMemberDialog input[name="last"]').fill('Michailides');
+  await page.locator('.atlasMemberDialog input[name="username"]').fill('atlasstudent99');
+  await page.locator('.atlasMemberDialog input[name="birth"]').fill('2004-04-29');
+  await page.locator('.atlasMemberDialog input[name="university"]').fill('University College London');
+  await page.locator('.atlasMemberDialog input[name="study_year"][value="year4"]').check();
+  await page.waitForFunction(()=>document.querySelector('#atlasHandleStatus')?.textContent?.includes('Available'),null,{timeout:6000});
+  await page.locator('#atlasMemberSave').click();
+  await page.waitForFunction(()=>!document.querySelector('.atlasMemberDialog'),null,{timeout:6000});
+  assert.equal(await page.locator('.atlasStickyHeader .paHeaderLabel').innerText(),'Φοίβος','Header should show the saved first name');
   assert.equal(errors.length,0,'Browser runtime errors: '+errors.join(' | '));
   console.log(JSON.stringify({target:base,programmes:4064,pageSize:100,map:mapInfo.provider,tiles:mapInfo.tileCount,nav:'ok',learn:'ok',swipe:'ok',quiz:'ok',runtimeErrors:errors}));
  }finally{

@@ -191,3 +191,14 @@ html .cloudGoogleNative {
 }
 html .cloudGoogleNative[hidden],
 html #cloudGoogleSignIn[hidden] { display: none !important; }
+
+/* Google owns its iframe; clip the white rectangular backing to a rounded pill. */
+html .cloudDialog{width:min(430px,100%);padding:25px}
+html .cloudLead{margin-bottom:15px;line-height:1.5}
+html .cloudGoogleNative{width:min(100%,380px);min-height:45px;margin:0 auto;overflow:hidden;border-radius:999px;background:transparent}
+html .cloudGoogleNative>div,html .cloudGoogleNative iframe{max-width:100%;border-radius:999px!important}
+html .cloudOr{margin:12px 0}
+html .cloudFine{margin:11px 0 6px;font-size:11px}
+html .cloudPrivacy{margin:9px 0 0;padding:0;border:0;background:transparent;color:var(--mut)}
+html .cloudPrivacy a{color:inherit;text-underline-offset:3px}
+html .cloudEmailRow input,html .cloudEmailRow button{border-radius:13px}
