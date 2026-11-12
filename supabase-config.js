@@ -3,5 +3,5 @@ window.ORIEL_SUPABASE_CONFIG = {
   url: "https://rojkpikwqtejjpuizkqn.supabase.co",
   publishableKey: "sb_publishable_ihUxBF1PKFSAuOlfM6zfhw__ACgs32V",
   // Public Google OAuth Web Client ID. Never add the client secret here.
-  googleClientId: ""
+  googleClientId: "206790268173-km6129bmuruvssfn080eon9n643qlaug.apps.googleusercontent.com"
 };
