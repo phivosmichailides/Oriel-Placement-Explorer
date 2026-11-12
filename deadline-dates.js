@@ -61,8 +61,8 @@
     box.setAttribute('role','status');
     box.setAttribute('aria-live','polite');
     box.innerHTML='<div class="deadlineLabel" id="deadlineLabel">ORIEL 2027/28 · TRAINING INTAKE</div><div class="deadlineValue" id="deadlineValue">Checking recruitment stage…</div><div class="deadlineExact" id="deadlineExact"></div><a class="deadlineLink" href="https://london.wtepharmacy.nhs.uk/national-recruitment/offers/" target="_blank" rel="noopener noreferrer">Official offers guidance ↗</a>';
-    // The recruitment status belongs below the page introduction, not in
-    // the sticky identity/navigation header. Keep it in a separate narrow row.
+    // Keep recruitment status in a narrow row just ABOVE the page introduction,
+    // outside the sticky identity/navigation header.
     let statusRow=document.getElementById('atlasDeadlineRow');
     if(!statusRow){
       statusRow=document.createElement('div');
@@ -73,9 +73,13 @@
     statusRow.append(box);
     const placeStatusRow=()=>{
       const hero=document.querySelector('.productIntro');
-      const anchor=hero||document.getElementById('atlasHeaderTools')||document.querySelector('header.top');
+      if(hero){
+        if(statusRow.nextElementSibling!==hero)hero.insertAdjacentElement('beforebegin',statusRow);
+        return true;
+      }
+      const anchor=document.getElementById('atlasHeaderTools')||document.querySelector('header.top');
       if(anchor&&statusRow.previousElementSibling!==anchor)anchor.insertAdjacentElement('afterend',statusRow);
-      return Boolean(hero);
+      return false;
     };
     if(!placeStatusRow()){
       const shell=document.querySelector('.shell');

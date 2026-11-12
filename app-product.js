@@ -418,13 +418,28 @@
       if(document.querySelector('.productIntro'))return;
       const header=document.querySelector('header.top');if(!header)return;
       const intro=document.createElement('section');intro.className='productIntro card';
-      intro.innerHTML=`<div class="productIntroCopy"><div class="eyebrow">ENGLAND & WALES · PERSONALISED ORIEL DECISION TOOL</div><h2>4,064 programmes across 12 regions. <span class="uxNoBreak">One long-term decision.</span></h2><p><b>Oriel</b> gives pharmacy applicants thousands of England & Wales Foundation Pharmacy programmes to preference. This desk turns the dataset into a cleaner decision by filtering and explaining each programme against the priorities that matter to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Personalise my desk</button><button class="btn" id="showForYou">Show my strongest matches</button></div></div><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>Choose the region and priorities that work for you.</small></div></div>`;
+      const classicIntro=new URLSearchParams(location.search).get('atlasClassic')==='1';
+      intro.innerHTML=classicIntro?`<div class="productIntroCopy"><div class="eyebrow">ENGLAND & WALES · PERSONALISED ORIEL DECISION TOOL</div><h2>4,064 programmes across 12 regions. <span class="uxNoBreak">One long-term decision.</span></h2><p><b>Oriel</b> gives pharmacy applicants thousands of England & Wales Foundation Pharmacy programmes to preference. This desk turns the dataset into a cleaner decision by filtering and explaining each programme against the priorities that matter to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Personalise my desk</button><button class="btn" id="showForYou">Show my strongest matches</button></div></div><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>Choose the region and priorities that work for you.</small></div></div>`:`<div class="productIntroCopy"><div class="eyebrow">FOUNDATION PHARMACIST TRAINING · ENGLAND & WALES</div><h2>Find a placement that actually fits you.</h2><p>Compare 4,064 foundation training programmes by location, salary, training experience and what matters most to you.</p><div class="introActions"><button class="btn primary" id="tuneCriteria">Explore programmes</button><button class="btn" id="showForYou">Find my matches</button></div><div class="atlasHeroTrust"><span>✓ Free to explore</span><span>✓ No account needed to start</span><span>✓ Independent project</span></div><details class="atlasHowItWorks"><summary>How Placement Atlas helps</summary><div class="productPrinciples"><div><span>01</span><b>Reduce overload</b><small>Surface the useful information first instead of treating every field equally.</small></div><div><span>02</span><b>Explain the score</b><small>Show the reasons and trade-offs behind a recommendation, not just a number.</small></div><div><span>03</span><b>Work for every included region</b><small>Choose the region and priorities that work for you.</small></div></div></details></div>`;
       (document.getElementById('atlasHeaderTools')||header).insertAdjacentElement('afterend',intro);
       $('tuneCriteria')?.addEventListener('click',()=>{
+        if(!classicIntro){
+          if(typeof switchTab==='function')switchTab('explore');
+          const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          document.getElementById('results')?.scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'});
+          return;
+        }
         if(typeof window.openOrielPersonalisation==='function')window.openOrielPersonalisation();
         else document.getElementById('personaliseAgain')?.click();
       });
-      $('showForYou')?.addEventListener('click',()=>document.querySelector('[data-tab="foryou"]')?.click());
+      $('showForYou')?.addEventListener('click',()=>{
+        if(!classicIntro&&!state?.prefs?.onboarding){
+          if(typeof window.openOrielPersonalisation==='function')window.openOrielPersonalisation();
+          else document.getElementById('personaliseAgain')?.click();
+          return;
+        }
+        if(typeof switchTab==='function')switchTab('foryou');
+        else document.querySelector('[data-tab="foryou"]')?.click();
+      });
     };
 
     const injectContextStrip=()=>{

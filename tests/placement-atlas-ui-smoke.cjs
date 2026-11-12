@@ -119,7 +119,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
         header:bounds(header),brand:bounds(brand),nav:bounds(nav),utility:bounds(utility),
         icon:bounds(icon),iconLoaded:icon.complete&&icon.naturalWidth>0,
         title:bounds(title),deadline:bounds(deadline),intro:bounds(intro),
-        deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,deadlineFollowsIntro:Boolean(intro.compareDocumentPosition(deadline)&Node.DOCUMENT_POSITION_FOLLOWING),
+        deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,deadlinePrecedesIntro:Boolean(deadline.compareDocumentPosition(intro)&Node.DOCUMENT_POSITION_FOLLOWING),
         launcher:bounds(launcher),launcherPosition:getComputedStyle(launcher).position,
         navOverflow:nav.scrollWidth-nav.clientWidth};
     });
@@ -131,8 +131,8 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     assert(!intersects(layout.brand,layout.utility),'Brand and utility controls overlap: '+JSON.stringify(layout));
     assert(!intersects(layout.nav,layout.utility),'Navigation and utility controls overlap: '+JSON.stringify(layout));
     assert(layout.pageWidth<=layout.vw+1,'Whole-page horizontal overflow: '+JSON.stringify(layout));
-    assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadlineFollowsIntro,
-      'Oriel recruitment status must follow the hero and never appear inside the header: '+JSON.stringify(layout));
+    assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadlinePrecedesIntro,
+      'Oriel recruitment status must precede the hero and never appear inside the header: '+JSON.stringify(layout));
     assert(layout.launcherPosition==='fixed','Shortlist launcher must be viewport-fixed: '+JSON.stringify(layout));
     assert(layout.vw-layout.launcher.right>=5&&layout.vw-layout.launcher.right<=54,
       'Shortlist is not at the bottom-right edge: '+JSON.stringify(layout));

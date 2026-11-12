@@ -81,12 +81,15 @@
         else window.openOrielPersonalisation?.();
       });
       actions.append(browse,match);
-      const trust=document.createElement('div');
-      trust.className='atlasHeroTrust';
-      for(const text of ['Free to explore','No account needed to start','Independent project']){
-        const span=document.createElement('span');span.textContent='✓ '+text;trust.append(span);
+      // Initial HTML already has the trust row; don't duplicate it after loading.
+      if(!copy.querySelector('.atlasHeroTrust')){
+        const trust=document.createElement('div');
+        trust.className='atlasHeroTrust';
+        for(const text of ['Free to explore','No account needed to start','Independent project']){
+          const span=document.createElement('span');span.textContent='✓ '+text;trust.append(span);
+        }
+        copy.append(trust);
       }
-      copy.append(trust);
     }
     // Keep the useful explanation, but let first-time visitors choose when to read it.
     const principles=document.querySelector('.productPrinciples');
@@ -334,12 +337,12 @@
     window.setTimeout(()=>{if(typeof window.OrielFitMapToScope==='function')window.OrielFitMapToScope()},420);
   };
   const activate=()=>{
-    // Only install after the base, product, map, and card-enhancement scripts finish.
-    // Earlier installation can race with programme-card and filter initialization.
-    if(typeof placements==='undefined'||!Array.isArray(placements)||!placements.length||
-       !document.querySelector('.productIntro')||!window.OrielEnhanceProgrammeCards)return false;
+    // First-paint presentation must not wait for programme data, maps or cards.
     const hero=enhanceHero();
     const navigation=enhanceNavigation();
+    // Data-dependent enhancements can still wait for their dependencies safely.
+    if(typeof placements==='undefined'||!Array.isArray(placements)||!placements.length||
+       !document.querySelector('.productIntro')||!window.OrielEnhanceProgrammeCards)return false;
     const stats=enhanceStats();
     const filters=organiseFilters();
     enhanceCards();
