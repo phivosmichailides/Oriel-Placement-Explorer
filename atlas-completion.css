@@ -435,7 +435,7 @@ html body .shell > header.top.atlasStickyHeader{
   margin:0 0 14px!important;overflow:visible!important;
 }
 html body .shell > header.top.atlasStickyHeader > .brand{
-  grid-area:brand!important;grid-column:auto!important;grid-row:auto!important;
+  grid-area:brand!important;
   position:relative!important;display:flex!important;align-items:center!important;
   justify-self:start!important;gap:10px!important;min-width:0!important;
   max-width:none!important;margin:0!important;transform:none!important;
@@ -463,7 +463,7 @@ html body .shell > header.top.atlasStickyHeader > .brand h1{
 html body .shell > header.top.atlasStickyHeader > .brand .eyebrow,
 html body .shell > header.top.atlasStickyHeader > .brand p{display:none!important}
 html body .shell > header.top.atlasStickyHeader > nav.tabs{
-  grid-area:nav!important;grid-column:auto!important;grid-row:auto!important;
+  grid-area:nav!important;
   min-width:0!important;width:100%!important;max-width:100%!important;
   display:flex!important;align-items:center!important;justify-content:flex-end!important;
   overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;
@@ -475,7 +475,7 @@ html body .shell > header.top.atlasStickyHeader > nav.tabs > .tab{
   font-size:clamp(11px,.83vw,13px)!important;
 }
 html body .shell > header.top.atlasStickyHeader > .atlasHeaderUtilities{
-  grid-area:utility!important;grid-column:auto!important;grid-row:auto!important;
+  grid-area:utility!important;
   justify-self:end!important;display:flex!important;align-items:center!important;
   justify-content:flex-end!important;gap:7px!important;
   min-width:0!important;max-width:100%!important;
