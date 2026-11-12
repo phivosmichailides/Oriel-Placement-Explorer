@@ -14,38 +14,9 @@
     const overlay=document.getElementById(id);
     if(overlay&&overlay.parentElement!==document.body)document.body.append(overlay);
   }
-  // Narrow mobile browsers can expose a layout viewport wider than the actual
-  // visible screen when programme content overflows. Keep the floating button
-  // and its drawer within the *visible* viewport without moving saved data.
-  const positionShortlistOverlay=()=>{
-    const button=document.getElementById('uxDrawerLauncher');
-    const drawer=document.getElementById('uxDrawer');
-    if(!button)return;
-    button.style.removeProperty('right');
-    button.style.removeProperty('bottom');
-    drawer?.style.removeProperty('right');
-    drawer?.style.removeProperty('bottom');
-    const positive=values=>values.filter(value=>Number.isFinite(value)&&value>0);
-    const visibleWidth=Math.min(...positive([window.innerWidth,window.visualViewport?.width,window.screen?.width]));
-    const visibleHeight=Math.min(...positive([window.innerHeight,window.visualViewport?.height,window.screen?.height]));
-    const bounds=button.getBoundingClientRect();
-    const overflowX=Math.max(0,Math.ceil(bounds.right-(visibleWidth-12)));
-    const overflowY=Math.max(0,Math.ceil(bounds.bottom-(visibleHeight-12)));
-    if(overflowX>0){
-      button.style.setProperty('right',(12+overflowX)+'px','important');
-      drawer?.style.setProperty('right',overflowX+'px','important');
-    }
-    if(overflowY>0){
-      button.style.setProperty('bottom',(12+overflowY)+'px','important');
-      drawer?.style.setProperty('bottom',overflowY+'px','important');
-    }
-  };
-  window.requestAnimationFrame(positionShortlistOverlay);
-  window.addEventListener('resize',positionShortlistOverlay,{passive:true});
-  window.visualViewport?.addEventListener('resize',positionShortlistOverlay,{passive:true});
-  window.addEventListener('load',positionShortlistOverlay,{once:true});
-  document.addEventListener('desk:render-explore',positionShortlistOverlay);
-
+  // The shortlist launcher is positioned by CSS relative to the viewport.
+  // Never adjust it using window.screen dimensions: those describe the physical
+  // display, not the usable browser viewport, and moved it over the map.
 
   // Accept both the original sibling layout and the unified brand-banner
   // layout. Reuse the same tab buttons and their existing event handlers.
