@@ -10,7 +10,7 @@
     const activateCloud=()=>{try{window.OrielCloud?.activateSync?.()}catch(error){console.warn('Oriel cloud sync could not start.',error)}};
     const loadDeadlineDates=()=>{
       const extra=document.createElement('script');
-      extra.src='deadline-dates.js?v=20261109header2';
+      extra.src='deadline-dates.js?v=20261112lower1';
       extra.onload=activateCloud;
       extra.onerror=activateCloud;
       document.body.appendChild(extra);
