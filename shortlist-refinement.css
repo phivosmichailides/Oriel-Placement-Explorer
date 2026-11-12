@@ -95,8 +95,28 @@ html.atlasPremiumPreview #shortlistList .placementTop .salary{
   text-align:right!important;
   white-space:nowrap!important;
 }
+html.atlasPremiumPreview #shortlistList .placementTop .salary.salary-value::after{
+  content:"gross / year";
+  display:block;
+  margin-top:2px;
+  color:var(--mut);
+  font-size:10px;
+  line-height:1.3;
+  font-weight:650;
+  letter-spacing:0;
+}
 html.atlasPremiumPreview #shortlistList .placementTop .hourly{
   display:none!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .hourly.atlasGrossMonthly{
+  display:block!important;
+  margin-top:3px!important;
+  color:var(--mut)!important;
+  font-size:10.5px!important;
+  line-height:1.35!important;
+  font-weight:650!important;
+  text-align:right!important;
+  white-space:nowrap!important;
 }
 html.atlasPremiumPreview #shortlistList .placementTop .uxTakeHome{
   display:block!important;
