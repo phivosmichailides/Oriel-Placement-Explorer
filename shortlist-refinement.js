@@ -46,6 +46,25 @@
   }[status]||'Unmarked');
 
   const polishCard=card=>{
+    let programme=null;
+    try{
+      if(typeof placements!=='undefined'&&Array.isArray(placements))
+        programme=placements.find(item=>String(item.id)===String(card.dataset.id))||null;
+    }catch{}
+    const monthlyGross=Number(programme?.salary)>0
+      ?'£'+Math.round(Number(programme.salary)/12).toLocaleString('en-GB')+'/mo gross':'';
+    const monthlyLine=card.querySelector(':scope > .placementTop .hourly');
+    if(monthlyLine){
+      if(monthlyGross){
+        monthlyLine.classList.add('atlasGrossMonthly');
+        if(monthlyLine.textContent.trim()!==monthlyGross)monthlyLine.textContent=monthlyGross;
+        monthlyLine.setAttribute('aria-label','Gross salary per month');
+      }else{
+        monthlyLine.classList.remove('atlasGrossMonthly');
+        monthlyLine.textContent='';
+        monthlyLine.removeAttribute('aria-label');
+      }
+    }
     const heading=card.querySelector(':scope > .placementTop h3');
     if(heading){
       const display=heading.querySelector('.atlasTitleConcise,.atlasWorkspaceTitleConcise');
