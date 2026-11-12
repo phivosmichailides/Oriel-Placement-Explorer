@@ -1,0 +1,406 @@
+/* Placement Atlas · shortlist-only finishing pass.
+   Keeps the existing programme data, ranking controls and location tools intact. */
+
+html.atlasPremiumPreview #shortlist .sectionHero.card{
+  padding:18px 20px!important;
+  margin-bottom:12px!important;
+}
+html.atlasPremiumPreview #shortlist .sectionHero h2{
+  margin:2px 0 5px!important;
+  font-size:clamp(26px,2vw,30px)!important;
+  line-height:1.18!important;
+  letter-spacing:-.028em!important;
+  font-weight:820!important;
+}
+html.atlasPremiumPreview #shortlist .sectionHero p{
+  max-width:760px!important;
+  font-size:12.5px!important;
+  line-height:1.48!important;
+}
+html.atlasPremiumPreview #shortlist .shortlist-toolbar{
+  gap:9px!important;
+  padding:10px 12px!important;
+}
+html.atlasPremiumPreview #shortlist #exportRanked{
+  min-height:38px!important;
+  padding:8px 13px!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+html.atlasPremiumPreview #shortlistList>.rank-row{
+  grid-template-columns:46px minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+html.atlasPremiumPreview #shortlistList>.rank-row>.placement{
+  min-width:0!important;
+  padding:12px 14px!important;
+  padding-right:14px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  border-radius:13px!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) max-content!important;
+  align-items:start!important;
+  gap:8px 18px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop>div:first-child{
+  min-width:0!important;
+  width:auto!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop>div:last-child{
+  min-width:145px!important;
+  max-width:185px!important;
+  text-align:right!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .eyebrow{
+  display:block!important;
+  margin:0 0 4px!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+  letter-spacing:.065em!important;
+  overflow-wrap:anywhere!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop h3{
+  margin:0 0 3px!important;
+  font-size:18px!important;
+  line-height:1.34!important;
+  font-weight:760!important;
+  letter-spacing:-.012em!important;
+  word-spacing:.02em!important;
+  overflow-wrap:anywhere!important;
+  hyphens:auto;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .employer{
+  color:var(--mut)!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+  font-weight:650!important;
+  letter-spacing:.015em!important;
+  text-transform:none!important;
+  overflow-wrap:anywhere!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .salary{
+  margin:0!important;
+  font-size:23px!important;
+  line-height:1.12!important;
+  font-weight:850!important;
+  letter-spacing:-.03em!important;
+  text-align:right!important;
+  white-space:nowrap!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .hourly{
+  display:none!important;
+}
+html.atlasPremiumPreview #shortlistList .placementTop .uxTakeHome{
+  display:block!important;
+  max-width:185px!important;
+  margin:4px 0 0 auto!important;
+  color:var(--mut)!important;
+  font-size:10.5px!important;
+  line-height:1.4!important;
+  font-weight:600!important;
+  text-align:right!important;
+  white-space:normal!important;
+}
+html.atlasPremiumPreview #shortlistList .placement>.badges{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  margin:6px 0 0!important;
+}
+html.atlasPremiumPreview #shortlistList .placement>.badges .badge{
+  padding:3px 7px!important;
+  font-size:10px!important;
+  line-height:1.25!important;
+}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts{
+  margin:4px 0 0!important;
+  padding:6px 9px!important;
+}
+html.atlasPremiumPreview #shortlistList .atlasShortlistFacts>summary{
+  font-size:10.5px!important;
+}
+html.atlasPremiumPreview #shortlistList .programmeDates{
+  margin:6px 0 0!important;
+  padding:8px 10px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+  line-height:1.38!important;
+}
+html.atlasPremiumPreview #shortlistList .programmeDates *{
+  font-size:inherit!important;
+  line-height:inherit!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation{
+  grid-template-columns:minmax(155px,180px) minmax(270px,340px) minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  margin:8px 0 0!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score{
+  min-width:0!important;
+  width:auto!important;
+  padding:12px 13px!important;
+  border-radius:12px!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  overflow-wrap:anywhere!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score>span{
+  font-size:10px!important;
+  line-height:1.3!important;
+  letter-spacing:.085em!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score>b{
+  font-size:25px!important;
+  line-height:1.05!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score>small{
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score>em{
+  font-size:10px!important;
+  line-height:1.35!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score .atlasFitQuizLink{
+  display:inline-flex!important;
+  align-self:flex-start!important;
+  width:auto!important;
+  min-height:29px!important;
+  margin:5px 0 0!important;
+  padding:6px 9px!important;
+  border:1px solid currentColor!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  text-align:left!important;
+  text-decoration:none!important;
+  opacity:1!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation .fitBreakdown{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-content:start!important;
+  gap:8px!important;
+  min-width:0!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation .fitColumn{
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation .fitLabel{
+  margin:0 0 4px!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+  letter-spacing:.085em!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation .fitPoint{
+  font-size:11.5px!important;
+  line-height:1.45!important;
+  overflow-wrap:anywhere!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation .fitColumn .atlasFitQuizLink{
+  display:none!important;
+}
+html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.uxLocationPanel{
+  min-width:0!important;
+  width:100%!important;
+  padding:9px!important;
+  gap:6px!important;
+  border-radius:12px!important;
+}
+html.atlasPremiumPreview #shortlistList .uxLocationTitle{
+  font-size:10px!important;
+  line-height:1.3!important;
+}
+html.atlasPremiumPreview #shortlistList .uxSiteName{
+  font-size:11.5px!important;
+  line-height:1.35!important;
+}
+html.atlasPremiumPreview #shortlistList .uxLocationSummary{
+  font-size:11px!important;
+  line-height:1.38!important;
+}
+html.atlasPremiumPreview #shortlistList .uxMiniMap{
+  height:112px!important;
+  min-height:112px!important;
+}
+html.atlasPremiumPreview #shortlistList .uxLocationCaption,
+html.atlasPremiumPreview #shortlistList .uxCommutePersonalisation{
+  font-size:10.5px!important;
+  line-height:1.4!important;
+}
+html.atlasPremiumPreview #shortlistList .uxCommutePersonalisation{
+  padding:7px 8px!important;
+}
+html.atlasPremiumPreview #shortlistList .uxLocationMore>summary{
+  font-size:10.5px!important;
+}
+html.atlasPremiumPreview #shortlistList .uxMapLinks{
+  font-size:10px!important;
+}
+html.atlasPremiumPreview #shortlistList .decision-quick{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin-top:5px!important;
+}
+html.atlasPremiumPreview #shortlistList .decision-quick .btn{
+  min-height:32px!important;
+  padding:7px 10px!important;
+  font-size:11px!important;
+}
+html.atlasPremiumPreview #shortlistList .decision-quick .smallnote{
+  font-size:10px!important;
+  line-height:1.35!important;
+}
+html.atlasPremiumPreview #shortlistList .placement>.controls{
+  grid-template-columns:minmax(145px,1fr) 72px minmax(150px,2fr) auto!important;
+  gap:6px!important;
+  margin-top:4px!important;
+}
+html.atlasPremiumPreview #shortlistList .placement>.controls input,
+html.atlasPremiumPreview #shortlistList .placement>.controls select{
+  min-width:0!important;
+  min-height:32px!important;
+  padding:6px 8px!important;
+  font-size:11px!important;
+}
+html.atlasPremiumPreview #shortlistList .placement>.controls .btn{
+  min-height:32px!important;
+  padding:7px 9px!important;
+  font-size:11px!important;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls{
+  position:sticky!important;
+  top:105px!important;
+  display:grid!important;
+  justify-items:center!important;
+  align-content:start!important;
+  gap:5px!important;
+  padding-top:7px!important;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls .btn{
+  min-width:30px!important;
+  min-height:30px!important;
+  padding:4px!important;
+}
+html.atlasPremiumPreview #shortlistList .rank-controls>.atlasRemoveShortlist{
+  position:static!important;
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  min-height:30px!important;
+  flex:0 0 30px!important;
+  margin:3px 0 0!important;
+  padding:0!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+@media(hover:none),(pointer:coarse){
+  html.atlasPremiumPreview #shortlistList .rank-controls>.atlasRemoveShortlist{
+    opacity:0!important;
+    pointer-events:none!important;
+    transform:translateX(7px)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .rank-row.atlasSwipeOpen .rank-controls>.atlasRemoveShortlist{
+    opacity:1!important;
+    pointer-events:auto!important;
+    transform:none!important;
+  }
+}
+@media(hover:hover) and (pointer:fine){
+  html.atlasPremiumPreview #shortlistList .rank-controls>.atlasRemoveShortlist{
+    opacity:1!important;
+    pointer-events:auto!important;
+    transform:none!important;
+  }
+}
+@media(max-width:1100px){
+  html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(145px,170px) minmax(0,1fr)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.uxLocationPanel{
+    grid-column:1/-1!important;
+  }
+  html.atlasPremiumPreview #shortlistList .uxMiniMap{
+    height:108px!important;
+    min-height:108px!important;
+  }
+}
+@media(max-width:780px){
+  html.atlasPremiumPreview #shortlistList .rank-row{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .rank-controls{
+    position:static!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    padding:0 0 5px!important;
+    gap:6px!important;
+  }
+  html.atlasPremiumPreview #shortlistList .rank-controls>.atlasRemoveShortlist{
+    margin:0 0 0 3px!important;
+  }
+  html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score{
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:8px!important;
+  }
+  html.atlasPremiumPreview #shortlistList .fit.fitExpanded.uxFitWithLocation>.score .atlasFitQuizLink{
+    margin:0!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placementTop>div:last-child{
+    min-width:125px!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placement>.controls{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placement>.controls input[data-action="note"]{
+    grid-column:1/-1!important;
+  }
+}
+@media(max-width:460px){
+  html.atlasPremiumPreview #shortlistList .placementTop{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placementTop>div:last-child{
+    min-width:0!important;
+    max-width:none!important;
+    text-align:left!important;
+  }
+  html.atlasPremiumPreview #shortlistList .placementTop .salary,
+  html.atlasPremiumPreview #shortlistList .placementTop .uxTakeHome{
+    text-align:left!important;
+    margin-left:0!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html.atlasPremiumPreview #shortlistList .placement,
+  html.atlasPremiumPreview #shortlistList .rank-controls>.atlasRemoveShortlist{
+    transition:none!important;
+  }
+}
