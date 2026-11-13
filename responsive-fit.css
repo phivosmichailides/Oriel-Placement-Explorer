@@ -101,6 +101,15 @@ html body.atlasFooterInView .tdFloatingDecisions{
  pointer-events:none!important;
 }
 
+/* Direct state wins over older forced-visible shortlist styles. */
+html body #uxPageZoomDock[data-atlas-footer-hidden],
+html body #uxBackTop[data-atlas-footer-hidden],
+html body #uxDrawerLauncher[data-atlas-footer-hidden],
+html body #uxFloatingTools[data-atlas-footer-hidden],
+html body .tdFloatingDecisions[data-atlas-footer-hidden]{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+
 /* Clear, intentional inset on both sides of the footer. */
 html body .app-footer.atlasFooter{
  min-width:0;max-width:100%;box-sizing:border-box;
