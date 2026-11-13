@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" sizes="192x192" href="/icons/placement-atlas-192.png?v=20261111globe1">
 <link rel="manifest" href="/manifest.webmanifest?v=20261111globe1">
 <meta name="application-name" content="Placement Atlas">
-<meta name="atlas-release" content="2026-11-13-page-isolation-navigation-fix">
+<meta name="atlas-release" content="2026-11-13-responsive-footer-fit">
 <meta name="description" content="Placement Atlas is an independent Oriel placement desk for UK MPharm students. Compare 4,064 foundation pharmacist training programmes across England and Wales with interactive maps, pay and hours insights, personalised fit scores, filters, shortlist management and swipe-based discovery.">
 <link rel="canonical" href="https://placementatlas.co.uk/">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -187,7 +187,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <link rel="stylesheet" href="atlas-navigation.css?v=20261111logo1">
 <link rel="stylesheet" href="atlas-map-tones.css?v=20261111tone2">
 <link rel="stylesheet" href="atlas-interactions.css?v=20261110ux1">
-<link rel="stylesheet" href="atlas-footer.css?v=20261110footer1">
+<link rel="stylesheet" href="atlas-footer.css?v=20261113responsive1">
 <link rel="stylesheet" href="premium-discovery-preview.css?v=20261111makeover5">
 <link rel="stylesheet" href="premium-card-tabs.css?v=20261111makeover5">
 <link rel="stylesheet" href="premium-editorial-palettes.css?v=20261111makeover5">
@@ -201,6 +201,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <link rel="stylesheet" href="shortlist-refinement.css?v=20261112shortlist1">
 <link rel="stylesheet" href="member-profile.css?v=20261113experience1">
 <link rel="stylesheet" href="atlas-experience.css?v=20261113navigationfix1">
+<link rel="stylesheet" href="responsive-fit.css?v=20261113responsive1">
 </head>
 <body>
 <div class="shell">
@@ -355,7 +356,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
       <h2>Plan &amp; compare</h2>
       <button type="button" data-atlas-footer-tab="compare">Compare programmes</button>
       <button type="button" data-atlas-footer-tab="simulator">Oriel Simulation</button>
-      <button type="button" data-atlas-footer-tab="outcome">My Outcome</button>
+      <button type="button" data-atlas-footer-action="offers">Offer &amp; outcome</button>
       <button type="button" data-atlas-footer-tab="prefs">Preferences</button>
     </nav>
     <nav class="atlasFooterGroup" aria-label="Project information and support">
@@ -373,7 +374,7 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
     <p>Independent of Oriel, the NHS and GPhC. Programme information comes from a dated 2026 Oriel CSV snapshot, not a live recruitment feed. Verify current information with official sources; fit scores are guidance, not verified working conditions.</p>
   </div>
 </footer><div class="toast" role="status" id="toast"></div>
-<script src="atlas-navigation.js?v=20261112header1"></script>
+<script src="atlas-navigation.js?v=20261113responsive1"></script>
 <script src="vendor/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.0.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js" crossorigin="anonymous"></script>
@@ -403,7 +404,8 @@ html[data-theme="dark"] .top #themeToggle .themeIconMoon {
 <script src="simulator.js?v=20261113navigationfix1"></script>
 <script src="tinder-mode.js?v=20261113navigationfix1"></script>
 <script src="motion-effects.js?v=20261107a"></script>
-<script src="session-ui.js?v=20261110ux1"></script>
+<script src="session-ui.js?v=20261113responsive1"></script>
+<script src="footer-viewport.js?v=20261113responsive1"></script>
 <script src="interface-polish.js?v=20261107responsive2"></script>
 <script src="atlas-interactions.js?v=20261110reset1"></script>
 <script src="premium-discovery-preview.js?v=20261112firstpaint1"></script>
