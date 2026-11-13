@@ -668,10 +668,12 @@
     hydrateGame();
     const nav=document.querySelector('nav.tabs'),sim=nav?.querySelector('[data-tab="simulator"]');
     if(!sim)return;
-    const tab=document.createElement('button');tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
+    const tab=nav.querySelector('[data-tab="tinderMode"]')||document.createElement('button');
+    tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
     tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Swipe Mode</span>';
-    sim.after(tab);
-    tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()});
+    if(!tab.isConnected)sim.after(tab);
+    tab.disabled=false;tab.removeAttribute('title');
+    tab.onclick=()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()};
     const section=document.createElement('section');section.id='tinderMode';section.className='panel tdMode';
     section.innerHTML=
      '<div class="tdSettings"><label>Location <select id="tinderRegion" aria-label="Choose region for programme swiping"></select></label>'+
