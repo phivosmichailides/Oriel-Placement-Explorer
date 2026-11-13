@@ -46,3 +46,63 @@ html body .atlasStickyHeader .paHeaderLabel{max-width:120px;font-size:12px;font-
 .atlasModuleIndex{font-size:11px;font-weight:850;color:var(--ux-accent-ink)}
 .atlasLearnHubGuidance{display:flex;justify-content:space-between;align-items:center;gap:15px}
 @media(max-width:620px){.atlasMemberFields,.atlasLearnHomeGrid{grid-template-columns:1fr}.atlasMemberField.wide{grid-column:auto}.atlasMemberFooter,.atlasLearnHubGuidance{flex-direction:column;align-items:stretch}}
+
+/* One compact, vertically stacked account identity in the header.
+   The two separate buttons keep Profile navigation and sign-in/out accessible. */
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:center!important;gap:0!important;flex:0 0 auto!important;
+  width:112px!important;max-width:112px!important;min-width:0!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderProfile{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:center!important;gap:3px!important;width:100%!important;
+  min-height:53px!important;max-width:100%!important;padding:2px 3px 1px!important;
+  margin:0!important;background:transparent!important;border:0!important;
+  border-radius:12px!important;color:var(--ink)!important;cursor:pointer!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderPhoto{
+  display:grid!important;place-items:center!important;width:33px!important;height:33px!important;
+  min-width:33px!important;min-height:33px!important;border-radius:50%!important;
+  overflow:hidden!important;flex:none!important;background:var(--soft)!important;
+  border:1px solid var(--line)!important;font-weight:800!important;font-size:13px!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderPhoto svg{
+  width:20px;height:20px;color:var(--mut);
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderLabel{
+  display:block!important;max-width:100%!important;min-width:0!important;
+  width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  white-space:nowrap!important;text-align:center!important;
+  font-size:11px!important;font-weight:760!important;line-height:1.2!important;
+  color:var(--ink)!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderSessionAction{
+  appearance:none!important;display:block!important;flex:0 0 auto!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  margin:0!important;padding:3px 8px 4px!important;min-height:24px!important;
+  color:var(--mut)!important;text-decoration:underline!important;text-underline-offset:3px!important;
+  font:inherit!important;font-size:10px!important;line-height:1.2!important;
+  font-weight:500!important;cursor:pointer!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderProfile:hover .paHeaderLabel,
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderSessionAction:hover{
+  color:var(--ink)!important;
+}
+html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity button:focus-visible{
+  outline:2px solid var(--ux-accent-ink)!important;outline-offset:2px!important;
+}
+@media(max-width:720px){
+  html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity{
+    width:87px!important;max-width:87px!important;
+  }
+  html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderPhoto{
+    width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+  }
+  html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderProfile{
+    min-height:48px!important;
+  }
+  html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity .paHeaderLabel{
+    font-size:10px!important;
+  }
+}

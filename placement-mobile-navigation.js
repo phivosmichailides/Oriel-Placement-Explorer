@@ -25,28 +25,55 @@
    button.setAttribute('aria-label','Change colour theme');
  };
  const headerAccount=()=>{
-   const user=window.PlacementAtlasAccount?.getUser?.();
+   const account=window.PlacementAtlasAccount||{};
+   const user=account.getUser?.();
    const member=window.PlacementAtlasMemberProfile?.current?.();
-   let control=utility.querySelector('.paHeaderProfile');
    utility.classList.toggle('paSignedIn',Boolean(user));
-   if(!control){
-     control=document.createElement('button');
-     control.type='button';control.className='paHeaderProfile';
-     control.setAttribute('aria-label','Open profile');
-     control.innerHTML='<span class="paHeaderPhoto"><span>PA</span></span><span class="paHeaderLabel"></span>';
-     control.addEventListener('click',()=>{
+   let group=utility.querySelector('.paHeaderIdentity');
+   if(!group){
+     group=document.createElement('div');
+     group.className='paHeaderIdentity';
+     const profile=document.createElement('button');
+     profile.type='button';
+     profile.className='paHeaderProfile';
+     profile.innerHTML='<span class="paHeaderPhoto" aria-hidden="true"></span><span class="paHeaderLabel"></span>';
+     profile.addEventListener('click',()=>{
        if(typeof switchTab==='function')switchTab('outcome');
        else nav.querySelector('[data-tab="outcome"]')?.click();
      });
-     utility.prepend(control);
+     const session=document.createElement('button');
+     session.type='button';
+     session.className='paHeaderSessionAction';
+     session.addEventListener('click',()=>{
+       const api=window.PlacementAtlasAccount||{};
+       if(api.getUser?.())api.signOut?.();
+       else api.openSignIn?.();
+     });
+     group.append(profile,session);
+     utility.prepend(group);
    }
-   const memberName=member?[member.firstName,member.lastName].filter(Boolean).join(' '):'';
-   const identity=String(user?(memberName||user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'Your profile'):'Profile');
-   control.querySelector('.paHeaderLabel').textContent=identity.split(' ')[0]||'Profile';
-   control.setAttribute('aria-label',user?'Open '+identity+' profile':'Open profile and sign in');
-   const face=control.querySelector('.paHeaderPhoto');face.replaceChildren();
-   if(avatar.url){const img=document.createElement('img');img.src=avatar.url;img.alt='';face.append(img);}
-   else face.textContent=user?(memberName?memberName.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase():identity.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()):'PA';
+   const profile=group.querySelector('.paHeaderProfile');
+   const session=group.querySelector('.paHeaderSessionAction');
+   const metadata=user?.user_metadata||{};
+   const full=String(metadata.full_name||metadata.name||'').trim();
+   const firstName=String(member?.firstName||metadata.given_name||full.split(/\s+/)[0]||user?.email?.split('@')[0]||'there').trim();
+   const greeting=user?'Hi, '+firstName:'Profile';
+   profile.querySelector('.paHeaderLabel').textContent=greeting;
+   profile.title=user?'Open profile · '+firstName:'Open profile';
+   profile.setAttribute('aria-label',user?'Open '+firstName+' profile':'Open profile');
+   session.textContent=user?'Log out':'Sign in';
+   session.setAttribute('aria-label',user?'Log out of Placement Atlas':'Sign in to Placement Atlas');
+   const face=profile.querySelector('.paHeaderPhoto');
+   face.replaceChildren();
+   if(user&&avatar.url){
+     const img=document.createElement('img');img.src=avatar.url;img.alt='';face.append(img);
+   }else if(user){
+     const initials=String(member?[member.firstName,member.lastName].filter(Boolean).join(' '):full||firstName)
+       .split(/\s+/).filter(Boolean).slice(0,2).map(s=>Array.from(s)[0]||'').join('').toUpperCase();
+     face.textContent=initials||'PA';
+   }else{
+     face.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c.4-4 3-6.1 7.2-6.1s6.8 2.1 7.2 6.1"/></svg>';
+   }
  };
  const placeUtilities=()=>{
    const account=tools?.querySelector('.cloudAccount')||document.querySelector('.cloudAccount');

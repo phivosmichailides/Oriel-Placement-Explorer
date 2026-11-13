@@ -92,7 +92,10 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
   // Profile benefits are concrete and the learning library is a separate destination.
   assert.equal(await page.locator('header.top nav.tabs [data-tab=outcome]').isVisible(),false,'Duplicate Profile navigation should be hidden');
-  await page.locator('header.top .atlasHeaderUtilities .paHeaderProfile').click();
+  const headerIdentity=page.locator('header.top .atlasHeaderUtilities .paHeaderIdentity');
+  assert.equal(await headerIdentity.locator('.paHeaderLabel').innerText(),'Profile','Guest header shows Profile');
+  assert.equal(await headerIdentity.locator('.paHeaderSessionAction').innerText(),'Sign in','Guest header offers Sign in');
+  await headerIdentity.locator('.paHeaderProfile').click();
   await page.waitForFunction(()=>document.getElementById('outcome')?.classList.contains('active'),null,{timeout:12000});
   assert.equal(await page.locator('#paJoinBanner').count(),1,'Existing Profile account banner should remain intact');
   assert((await page.locator('#paJoinBanner').innerText()).includes('Join the pharmacy community'));
@@ -318,6 +321,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert(await page.locator('.atlasMemberDialog').isVisible(),'Member onboarding dialog did not open');
   await page.locator('.atlasMemberDialog input[name="first"]').fill('Φοίβος');
   await page.locator('.atlasMemberDialog input[name="last"]').fill('Michailides');
+  assert.equal(await page.locator('.atlasMemberDialog input[name="username"]').getAttribute('maxlength'),'15','Username field must have a 15-character cap');
   await page.locator('.atlasMemberDialog input[name="username"]').fill('atlasstudent99');
   await page.locator('.atlasMemberDialog input[name="birth"]').fill('2004-04-29');
   await page.locator('.atlasMemberDialog input[name="university"]').fill('University College London');
@@ -325,7 +329,11 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await page.waitForFunction(()=>document.querySelector('#atlasHandleStatus')?.textContent?.includes('Available'),null,{timeout:6000});
   await page.locator('#atlasMemberSave').click();
   await page.waitForFunction(()=>!document.querySelector('.atlasMemberDialog'),null,{timeout:6000});
-  assert.equal(await page.locator('.atlasStickyHeader .paHeaderLabel').innerText(),'Φοίβος','Header should show the saved first name');
+  assert.equal(await page.locator('.atlasStickyHeader .paHeaderLabel').innerText(),'Hi, Φοίβος','Header should greet the saved first name');
+  assert.equal(await page.locator('.atlasStickyHeader .paHeaderSessionAction').innerText(),'Log out','Signed-in header needs Log out');
+  await page.evaluate(()=>{window.__atlasTestLoggedOut=false;window.PlacementAtlasAccount.signOut=()=>{window.__atlasTestLoggedOut=true}});
+  await page.locator('.atlasStickyHeader .paHeaderSessionAction').click();
+  assert.equal(await page.evaluate(()=>window.__atlasTestLoggedOut),true,'Log out shortcut must invoke protected account sign-out');
   assert.equal(errors.length,0,'Browser runtime errors: '+errors.join(' | '));
   console.log(JSON.stringify({target:base,programmes:4064,pageSize:100,map:mapInfo.provider,tiles:mapInfo.tileCount,nav:'ok',learn:'ok',swipe:'ok',quiz:'ok',runtimeErrors:errors}));
  }finally{
