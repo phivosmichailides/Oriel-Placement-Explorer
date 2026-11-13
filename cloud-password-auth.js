@@ -2,7 +2,7 @@
 /* Email/password account experience for Placement Atlas.
    Supabase Auth handles password storage, verification and recovery. */
 (()=>{
-  const MIN_PASSWORD_LENGTH=8;
+  const MIN_PASSWORD_LENGTH=12;
   const ERROR='cloudAuthError';
   const byId=(root,id)=>root.querySelector('#'+id);
   const emailIsValid=input=>input.value.trim()!=='' && input.checkValidity();
@@ -34,14 +34,14 @@
       '<label class="cloudEmailLabel" for="cloudEmail">Email address</label>',
       '<input class="cloudAuthInput" id="cloudEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>',
       '<label class="cloudEmailLabel" for="cloudPassword">Password</label>',
-      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Enter your password" required>',
+      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudPassword" type="password" autocomplete="current-password" minlength="12" placeholder="Enter your password" required>',
       '<button class="cloudVisibility" type="button" data-toggle-password="cloudPassword" aria-label="Show password" aria-pressed="false">Show</button></div>',
       '<div id="cloudConfirmWrap" hidden>',
       '<label class="cloudEmailLabel" for="cloudConfirmPassword">Confirm password</label>',
-      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudConfirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your password">',
+      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudConfirmPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Re-enter your password">',
       '<button class="cloudVisibility" type="button" data-toggle-password="cloudConfirmPassword" aria-label="Show password confirmation" aria-pressed="false">Show</button></div>',
       '</div>',
-      '<p id="cloudPasswordHelp" class="cloudPasswordHelp" hidden>Use at least 8 characters. A longer, unique password is better.</p>',
+      '<p id="cloudPasswordHelp" class="cloudPasswordHelp" hidden>Use at least 12 characters. A longer, unique password is better.</p>',
       '<button class="btn primary cloudAuthSubmit" id="cloudPasswordSubmit" type="submit">Sign in</button>',
       '</form>',
       '<form id="cloudForgotForm" novalidate hidden>',
@@ -51,11 +51,11 @@
       '</form>',
       '<form id="cloudRecoveryForm" novalidate hidden>',
       '<label class="cloudEmailLabel" for="cloudNewPassword">New password</label>',
-      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudNewPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>',
+      '<div class="cloudPasswordField"><input class="cloudAuthInput" id="cloudNewPassword" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters" required>',
       '<button class="cloudVisibility" type="button" data-toggle-password="cloudNewPassword" aria-label="Show new password" aria-pressed="false">Show</button></div>',
       '<label class="cloudEmailLabel" for="cloudNewConfirm">Confirm new password</label>',
-      '<input class="cloudAuthInput" id="cloudNewConfirm" type="password" autocomplete="new-password" minlength="8" required>',
-      '<p class="cloudPasswordHelp">Use at least 8 characters and avoid passwords used elsewhere.</p>',
+      '<input class="cloudAuthInput" id="cloudNewConfirm" type="password" autocomplete="new-password" minlength="12" required>',
+      '<p class="cloudPasswordHelp">Use at least 12 characters and avoid passwords used elsewhere.</p>',
       '<button class="btn primary cloudAuthSubmit" type="submit">Update password</button>',
       '</form>',
       '<form id="cloudLinkForm" novalidate hidden>',
@@ -111,7 +111,7 @@
       get('cloudBackButton').hidden=accountMode;
       conf.required=mode==='signup';
       pw.autocomplete=mode==='signup'?'new-password':'current-password';
-      pw.placeholder=mode==='signup'?'At least 8 characters':'Enter your password';
+      pw.placeholder=mode==='signup'?'At least 12 characters':'Enter your password';
       get('cloudPasswordSubmit').textContent=mode==='signup'?'Create account':'Sign in';
       for(const button of overlay.querySelectorAll('[data-auth-mode]')){
         button.setAttribute('aria-pressed',String(button.dataset.authMode===mode));
@@ -169,7 +169,7 @@
       event.preventDefault();
       if(!emailIsValid(email)){setStatus('Enter a valid email address.');email.focus();return;}
       if(mode==='signup'&&pw.value.length<MIN_PASSWORD_LENGTH){
-        setStatus('Use at least 8 characters for your password.');pw.focus();return;
+        setStatus('Use at least 12 characters for your password.');pw.focus();return;
       }
       if(mode==='signup'&&pw.value!==conf.value){
         setStatus('The passwords don’t match.');conf.focus();return;
@@ -246,7 +246,7 @@
     get('cloudRecoveryForm').addEventListener('submit',event=>{
       event.preventDefault();
       const one=get('cloudNewPassword'),two=get('cloudNewConfirm');
-      if(one.value.length<MIN_PASSWORD_LENGTH){setStatus('Use at least 8 characters.');one.focus();return;}
+      if(one.value.length<MIN_PASSWORD_LENGTH){setStatus('Use at least 12 characters.');one.focus();return;}
       if(one.value!==two.value){setStatus('The passwords don’t match.');two.focus();return;}
       perform(event.submitter||get('cloudRecoveryForm').querySelector('button[type=submit]'),'Updating…',async()=>{
         const {error}=await client.auth.updateUser({password:one.value});
