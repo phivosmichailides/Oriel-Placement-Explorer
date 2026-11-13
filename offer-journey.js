@@ -6,6 +6,23 @@
  const KEY='oriel-desk-outcome-v1';
  const OFFER_START=new Date('2026-10-22T12:00:00+01:00').getTime();
  const CELEBRATION_DAYS=14;
+ const CELEBRATION_KEY='atlas-offer-celebration-v1';
+ const celebrationStart=record=>{
+   const good=record&&['accepted','upgrades'].includes(record.status);
+   let track=null;
+   try{track=JSON.parse(localStorage.getItem(CELEBRATION_KEY)||'null')}catch{}
+   if(!good){
+     if(track){try{localStorage.removeItem(CELEBRATION_KEY)}catch{}}
+     return null;
+   }
+   if(track?.acceptedAt&&Number.isFinite(Date.parse(track.acceptedAt))){
+     return Date.parse(track.acceptedAt);
+   }
+   const initial=record.savedAt&&Number.isFinite(Date.parse(record.savedAt))?record.savedAt:new Date().toISOString();
+   try{localStorage.setItem(CELEBRATION_KEY,JSON.stringify({acceptedAt:initial}))}catch{}
+   return Date.parse(initial);
+ };
+
  let overlay=null,advice=null,previousFocus=null,oldOverflow='';
  const read=()=>{
    try{
@@ -133,9 +150,9 @@
    if(!overlay)return;
    const existing=$('atlasOfferCongrats');
    const record=read();
-   const good=record&&['accepted','upgrades'].includes(record.status);
-   const age=good&&record.savedAt?Date.now()-Date.parse(record.savedAt):Infinity;
-   const show=good&&Number.isFinite(age)&&age>=0&&age<CELEBRATION_DAYS*86400000;
+   const start=celebrationStart(record);
+   const age=start===null?Infinity:Date.now()-start;
+   const show=Number.isFinite(age)&&age>=0&&age<CELEBRATION_DAYS*86400000;
    if(!show){existing?.remove();return}
    const anchor=$('atlasDeadlineRow')||document.querySelector('.productIntro');
    if(!anchor)return;
@@ -152,7 +169,7 @@
    counter++;
    if(!overlay)createModal();
    ensureButtons();renderStatus();
-   if(overlay&&$('atlasOfferSimButton')&&$('orielDeadline')||counter>130)clearInterval(timer);
+   if(counter>130||(overlay&&$('atlasOfferSimButton')&&$('atlasOfferDeadlineButton')))clearInterval(timer);
  },180);
  document.addEventListener('desk:after-navigation',ensureButtons);
  window.addEventListener('storage',event=>{if(event.key===KEY){guidance();renderStatus()}});
