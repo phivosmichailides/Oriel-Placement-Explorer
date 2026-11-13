@@ -84,12 +84,24 @@ Production setup:
    `https://placementatlas.co.uk/` and allow both
    `https://placementatlas.co.uk/` and
    `https://placementatlas.co.uk/?atlas_auth=recovery` as redirect URLs.
-3. Configure custom SMTP, verify the sending domain, and preserve the
-   Supabase link variables in Confirm sign up and Reset password templates.
-4. Review CAPTCHA and rate limits before public launch.
-5. Test signup → email verification → sign-in, invalid credentials, recovery
-   email → new password, Google sign-in, optional email-link sign-in, and
-   workspace sync/sign-out so account data remains isolated.
+3. Configure custom SMTP and keep the Supabase `{{ .ConfirmationURL }}`
+   variable in **Confirm sign up** and **Reset password**. In **Magic link
+   or OTP**, include BOTH `{{ .ConfirmationURL }}` (one-tap link) and
+   `{{ .Token }}` (six-digit code). The frontend uses `verifyOtp` with
+   `type: 'email'`. Do not remove either placeholder.
+4. In Authentication → Sign In / Providers → Email, set minimum password
+   length to **12** to match the frontend. Review email OTP expiry (e.g.
+   10 minutes), rate limits and CAPTCHA / attack protection settings.
+   Passwords are handled by Supabase; no frontend storage of passwords.
+5. Review security notification emails (Password changed and Sign-in method
+   changed) and enable appropriate notifications in the dashboard.
+6. Test signup → confirmation → password sign-in, wrong password, forgot-
+   password reset link → password update, optional email-link sign-in,
+   six-digit code sign-in (including invalid and expired codes), request
+   another code, Google sign-in, and workspace sync/sign-out.
+7. The signed-in Profile → Account security action sends a password-change
+   link to the current registered email address. The link expires and leads
+   back to the recovery form; it does not change the password immediately.
 
 The reset link returns to the site with `atlas_auth=recovery`; the app also
 listens for the `PASSWORD_RECOVERY` authentication event.
