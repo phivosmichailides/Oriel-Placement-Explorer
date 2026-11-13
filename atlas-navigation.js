@@ -69,8 +69,11 @@
     help.append(summary,savedHelp);
     utilities.append(help);
   }
-  // Keep the management panel inside the same bounded workspace as page content.
-  footer.insertAdjacentElement('beforebegin',utilities);
+  // Data-management tools belong to Preferences, never globally above every footer.
+  // Keep the actual export/restore button nodes and their event handlers intact.
+  const preferencesPanel=document.getElementById('prefs');
+  if(preferencesPanel)preferencesPanel.append(utilities);
+  else footer.insertAdjacentElement('beforebegin',utilities);
 
   const navigate=target=>{
     if(typeof switchTab==='function')switchTab(target);
@@ -81,6 +84,17 @@
     button.addEventListener('click',()=>{
       navigate(button.dataset.atlasFooterTab);
       window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
+  });
+
+  // Offer status lives in the Oriel Simulation tracker, never in Profile.
+  footer.querySelectorAll('[data-atlas-footer-action="offers"]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      navigate('simulator');
+      window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      const open=()=>document.getElementById('atlasOfferSimButton')?.click();
+      if(!document.getElementById('atlasOfferSimButton'))setTimeout(open,300);
+      else open();
     });
   });
 

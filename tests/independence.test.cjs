@@ -244,16 +244,17 @@ test('professional footer stays navigation-friendly and keeps existing data tool
   const css=read('atlas-footer.css'),sw=read('sw.js');
   assert.match(html,/class="app-footer atlasFooter"/);
   assert.match(html,/atlasFooterGrid/);
-  for(const tab of ['explore','foryou','shortlist','compare','simulator','outcome','prefs'])
+  for(const tab of ['explore','foryou','shortlist','compare','simulator','prefs'])
     assert(html.includes('data-atlas-footer-tab="'+tab+'"'));
   assert.match(html,/guide\.html/);
   assert.match(html,/Feedback &amp; ideas/);
   assert.match(html,/2026 Oriel CSV snapshot/);
-  assert.match(nav,/footer\.insertAdjacentElement\('beforebegin',utilities\)/);
+  assert.match(nav,/preferencesPanel\.append\(utilities\)/);
+  assert.match(html,/data-atlas-footer-action="offers"/);
   assert.match(nav,/footer\.querySelectorAll\('\[data-atlas-footer-tab\]'\)/);
   assert.match(nav,/atlasSaveHelp/);
   assert.match(css,/atlasFooterBottom/);
-  assert.match(sw,/atlas-footer\.css\?v=20261110footer1/);
+  assert.match(sw,/atlas-footer\.css\?v=20261113responsive1/);
 });
 
 
