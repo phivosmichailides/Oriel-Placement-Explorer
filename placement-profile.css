@@ -58,3 +58,9 @@
  #outcome .paJoinActions{width:100%}
  #outcome .paJoinActions .btn{flex:1}
 }
+
+/* Account security is only visible to authenticated members. */
+#outcome .paSecuritySettings[hidden]{display:none!important}
+#outcome .paSecuritySettings .btn{min-height:42px;border-radius:12px;white-space:normal}
+#outcome .paSecuritySettings button:focus-visible{outline:2px solid var(--ux-accent-ink);outline-offset:3px}
+@media(max-width:540px){#outcome .paSecuritySettings .btn{width:100%}}
