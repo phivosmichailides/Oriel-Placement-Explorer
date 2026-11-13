@@ -58,10 +58,13 @@
  function markup(){
    // The simulator can be re-entered after a live dataset refresh; never add a second tab or panel.
    if(document.getElementById('simulator')&&document.querySelector('nav.tabs [data-tab="simulator"]'))return;
-   const tab=el('button','tab');tab.type='button';tab.dataset.tab='simulator';
+   const tab=document.querySelector('nav.tabs [data-tab="simulator"]')||el('button','tab');
+   tab.type='button';tab.classList.add('tab');tab.dataset.tab='simulator';
    tab.innerHTML='<span class="simNavIcon" aria-hidden="true">▥</span><span>Oriel Simulation</span>';
-   document.querySelector('nav.tabs [data-tab="outcome"]').before(tab);
-   tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('simulator')});
+   if(!tab.isConnected)document.querySelector('nav.tabs [data-tab="outcome"]')?.before(tab);
+   tab.disabled=false;tab.removeAttribute('title');
+   // Replace any earlier generic handler rather than invoking navigation twice.
+   tab.onclick=()=>{if(typeof switchTab==='function')switchTab('simulator')};
    const section=el('section','panel');section.id='simulator';
    section.innerHTML=
     '<div class="sectionHero card simHero"><div><div class="eyebrow">PRIVATE ORIEL PRACTICE WORKSPACE</div><h2>Oriel Simulation</h2><p>Organise programmes into the three official category names, drag or reorder them, and copy their exact codes. <b>This never updates your actual Oriel application or the main Placement Atlas shortlist.</b></p></div><div class="simHeroActions"><a class="btn" href="https://www.oriel.nhs.uk/" target="_blank" rel="noopener noreferrer">Open official Oriel ↗</a><button class="btn simSplitButton" id="simOpenSplit" type="button">Open official Oriel in split view</button><small class="simSplitHelp" id="simSplitHelp">Opens a second tab. In Chrome, right-click the Oriel tab and choose “Add tab to new split view”, then select this Desk.</small></div></div>'+
