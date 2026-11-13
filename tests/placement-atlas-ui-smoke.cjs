@@ -149,8 +149,9 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert(ratingSpacing.rows>=5&&ratingSpacing.gap>=14,
     'Importance-rating rows should have adequate breathing room: '+JSON.stringify(ratingSpacing));
   const footer=page.locator('footer.app-footer.atlasFooter');
-  await footer.scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>document.body.classList.contains('atlasFooterInView'),null,{timeout:5000});
+  await page.evaluate(()=>document.querySelector('footer.app-footer.atlasFooter').scrollIntoView({block:'start',behavior:'instant'}));
+  await page.waitForFunction(()=>document.body.classList.contains('atlasFooterInView')&&
+    document.getElementById('uxDrawerLauncher')?.hasAttribute('data-atlas-footer-hidden'),null,{timeout:5000});
   const footerMetrics=await footer.evaluate(el=>{
     const f=el.getBoundingClientRect();
     const left=el.querySelector('.atlasFooterIdentity')?.getBoundingClientRect();
