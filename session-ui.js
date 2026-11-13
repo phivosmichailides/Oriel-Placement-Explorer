@@ -16,7 +16,12 @@
  let collapsed=mobileFirst?true:storage.get(L,COLLAPSE)==='1';
  let zoom=Number(storage.get(L,ZOOM)||100);
  if(!Number.isFinite(zoom)||zoom<70||zoom>130)zoom=100;
- function currentFilters(){const fields={};ids.forEach(id=>fields[id]=$(id)?.value??'');return {fields,quick:typeof quick!=='undefined'?[...quick]:[],hideAvoid:!!$('hideAvoid')?.checked,hideExcluded:!!$('hideExcluded')?.checked,hideOuterLondon:!!$('hideOuterLondon')?.checked,hideShortlisted:!!$('hideShortlisted')?.checked,hideJustice:!!$('hideJustice')?.checked,hideMental:!!$('hideMental')?.checked,hideOtherSpecialist:!!$('hideOtherSpecialist')?.checked}}
+  // `quick` is declared by app-base.js, which app.js loads lazily. Until then the
+ // name resolves to the <div id="quick"> element via named window access, so
+ // only trust it once it is a real Set.
+ const getQuickSet=()=>{try{return (typeof quick!=='undefined'&&quick instanceof Set)?quick:null}catch{return null}};
+ function currentQuick(){const q=getQuickSet();if(q)return [...q];const prev=getSaved()?.filters?.quick;return Array.isArray(prev)?prev.filter(x=>typeof x==='string'):[]}
+ function currentFilters(){const fields={};ids.forEach(id=>fields[id]=$(id)?.value??'');return {fields,quick:currentQuick(),hideAvoid:!!$('hideAvoid')?.checked,hideExcluded:!!$('hideExcluded')?.checked,hideOuterLondon:!!$('hideOuterLondon')?.checked,hideShortlisted:!!$('hideShortlisted')?.checked,hideJustice:!!$('hideJustice')?.checked,hideMental:!!$('hideMental')?.checked,hideOtherSpecialist:!!$('hideOtherSpecialist')?.checked}}
  const getSaved=()=>{try{const v=JSON.parse(storage.get(S,SESSION)||'null');return v&&v.version===1?v:null}catch{return null}};
  function snapshot(position=true){
    if(restoreInProgress)return;
@@ -214,7 +219,7 @@
    if($('hideOuterLondon')&&f.hideOuterLondon!==undefined)$('hideOuterLondon').checked=!!f.hideOuterLondon;
    if($('hideShortlisted'))$('hideShortlisted').checked=!!f.hideShortlisted;
    for(const id of ['hideJustice','hideMental','hideOtherSpecialist'])if($(id))$(id).checked=f[id]===undefined?true:!!f[id];
-   if(Array.isArray(f.quick)&&typeof quick!=='undefined'){
+   if(Array.isArray(f.quick)&&getQuickSet()){
      // Persistent app state is authoritative when it exists. The session
      // snapshot can lag behind a chip click because capture-phase snapshots
      // run before the chip's own click handler.
