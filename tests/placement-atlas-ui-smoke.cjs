@@ -20,6 +20,16 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    localStorage.setItem('phivos-onboarding-v1','1');
   });
   await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+  // The primary navigation must be visibly present immediately, without waiting
+  // for dataset or asynchronously built simulation/learning modules.
+  assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('atlasNavLoading')),false,
+    'Navigation is still gated behind an asynchronous loading state');
+  assert(await page.locator('header.top nav.tabs').isVisible(),
+    'Primary navigation must be visible from first paint');
+  for(const id of ['explore','shortlist','simulator','tinderMode','learn','prefs']){
+    assert.equal(await page.locator('header.top nav.tabs > .tab[data-tab="'+id+'"]').count(),1,
+      'Missing or duplicate first-paint navigation: '+id);
+  }
   await page.waitForFunction(()=>typeof placements!=='undefined'&&placements.length===4064&&
     !!document.getElementById('results')&&!!document.querySelector('#uxExplorePager select'),null,{timeout:90000});
 
@@ -90,6 +100,23 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     'Map became blank after zooming');
   }
 
+  // Regression: Learning Hub content must never bleed into Shortlist, Profile,
+  // Oriel Simulation or Explore. Only the active section may be rendered.
+  const expectExclusivePage=async tab=>{
+    await page.evaluate(id=>switchTab(id),tab);
+    await page.waitForFunction(id=>document.getElementById(id)?.classList.contains('active'),tab,{timeout:6000});
+    const visible=await page.locator('.shell > section.panel').evaluateAll(nodes=>nodes.filter(node=>{
+      const style=getComputedStyle(node),box=node.getBoundingClientRect();
+      return style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;
+    }).map(node=>node.id));
+    assert.deepEqual(visible,[tab],'Unexpected sections visible while '+tab+' is active: '+JSON.stringify(visible));
+    if(tab!=='learn')assert.equal(await page.locator('#atlasLearnHome').isVisible(),false,
+      'Learning Hub appeared on '+tab);
+    assert.equal(await page.locator('#paOutcomeDetails').isVisible(),false,
+      'Old My Outcome dropdown is still visible on '+tab);
+  };
+  for(const tab of ['explore','shortlist','outcome','simulator','learn','prefs','explore'])await expectExclusivePage(tab);
+  // Keep the public landing-page state as the entry point for the rest of the test.
   // Profile benefits are concrete and the learning library is a separate destination.
   assert.equal(await page.locator('header.top nav.tabs [data-tab=outcome]').isVisible(),false,'Duplicate Profile navigation should be hidden');
   const headerIdentity=page.locator('header.top .atlasHeaderUtilities .paHeaderIdentity');

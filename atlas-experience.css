@@ -97,3 +97,22 @@ html body #atlasLearnRegions .atlasRegionDecision span{font-size:12px;color:var(
  html body #atlasLearnRegions .atlasRegionStats>div:first-child{grid-column:1/-1}
  html body #atlasLearnRegions .atlasRegionDecision{grid-template-columns:minmax(0,1fr)}
 }
+
+/* 2026-11-13: Page isolation. The prior .atlasLearnPanel display:grid rule
+   overrode .panel{display:none}, leaking Learning Hub into every view.
+   Only the single currently active top-level page may be rendered. */
+html body .shell > section.panel:not(.active){display:none!important}
+html body .shell > section.panel.active{display:block!important}
+html body .shell > section#learn.panel.active{display:grid!important;grid-template-columns:minmax(0,1fr);gap:18px}
+html body .shell > section#learn.panel:not(.active){display:none!important}
+html body .shell > section#outcome.panel:not(.active){display:none!important}
+html body #paOutcomeDetails{display:none!important}
+/* Prevent cards/inputs from escaping the bounds of their own page. */
+html body .shell > section.panel{min-width:0;max-width:100%}
+html body #learn,html body #learn>*{min-width:0;max-width:100%}
+html body #learn .atlasLearnHomeGrid,html body #learn .atlasLearnSettingGrid{min-width:0}
+html body #learn .atlasLearnModule,html body #learn .atlasLearnSection,html body #learn .atlasLearnHero{min-width:0;overflow-wrap:break-word}
+@media(max-width:680px){
+ html body #learn .atlasLearnHomeGrid,html body #learn .atlasLearnSettingGrid{grid-template-columns:minmax(0,1fr)!important}
+ html body #learn .atlasLearnModule,html body #learn .atlasLearnHubGuidance{padding:16px}
+}

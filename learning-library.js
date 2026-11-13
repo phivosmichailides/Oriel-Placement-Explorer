@@ -4,12 +4,13 @@
 (()=>{
   const nav=document.querySelector('nav.tabs');
   if(!nav||document.getElementById('learn'))return;
-  const tab=document.createElement('button');
+  const tab=nav.querySelector(':scope > .tab[data-tab="learn"]')||document.createElement('button');
   tab.type='button';tab.className='tab atlasLearnNavTab';tab.dataset.tab='learn';
   tab.setAttribute('aria-label','Learning Hub');
   tab.innerHTML='<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 5.5v17M8 7h8M8 11h8"/></svg><span class="atlasTabLabel">Learning Hub</span>';
   const preferencesTab=nav.querySelector(':scope > .tab[data-tab="prefs"]');
-  if(preferencesTab)nav.insertBefore(tab,preferencesTab);else nav.append(tab);
+  if(!tab.isConnected){if(preferencesTab)nav.insertBefore(tab,preferencesTab);else nav.append(tab);}
+  tab.disabled=false;tab.removeAttribute('title');
   const panel=document.createElement('section');panel.id='learn';panel.className='panel atlasLearnPanel';
   panel.innerHTML=`
     <header class="atlasLearnHero">
@@ -159,7 +160,7 @@
   const prefs=document.getElementById('prefs');
   if(prefs)prefs.insertAdjacentElement('afterend',panel);
   else document.querySelector('.shell')?.append(panel);
-  tab.addEventListener('click',()=>{if(typeof switchTab==='function')switchTab('learn')});
+  tab.onclick=()=>{if(typeof switchTab==='function')switchTab('learn')};
   panel.querySelectorAll('[data-learn-jump]').forEach(button=>button.addEventListener('click',()=>{
     panel.querySelector('#atlasLearn'+(button.dataset.learnJump==='settings'?'Settings':'Research'))?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
   }));
