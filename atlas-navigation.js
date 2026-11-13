@@ -87,6 +87,17 @@
     });
   });
 
+  // Offer status lives in the Oriel Simulation tracker, never in Profile.
+  footer.querySelectorAll('[data-atlas-footer-action="offers"]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      navigate('simulator');
+      window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      const open=()=>document.getElementById('atlasOfferSimButton')?.click();
+      if(!document.getElementById('atlasOfferSimButton'))setTimeout(open,300);
+      else open();
+    });
+  });
+
   // "For You" is a subview of Explore, not another top-level app destination.
   const addExploreSubnav=(panelId,title,description)=>{
     const panel=document.getElementById(panelId);if(!panel)return;
