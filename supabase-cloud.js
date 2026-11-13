@@ -150,29 +150,17 @@
   const redirectUrl=()=>/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
     ? window.location.origin+window.location.pathname
     : 'https://placementatlas.co.uk/';
-  const showAuthModal=()=>{
+  const showAuthModal=(mode='signin')=>{
     if(!client||!configured)return;
-    const overlay=element('div','cloudOverlay');
-    overlay.innerHTML='<section class="cloudDialog" role="dialog" aria-modal="true" aria-labelledby="cloudDialogTitle"><button type="button" class="cloudClose" aria-label="Close">×</button><div class="cloudEyebrow">PLACEMENT ATLAS COMMUNITY</div><h2 id="cloudDialogTitle">Welcome to Placement Atlas</h2><p class="cloudLead">Sign in to keep your choices and workspace in sync.</p><button type="button" class="btn primary cloudGoogleButton" id="cloudGoogleSignIn"><span aria-hidden="true">G</span> Continue with Google</button><div class="cloudOr"><span>or use email</span></div><label class="cloudEmailLabel" for="cloudEmail">Email address</label><div class="cloudEmailRow"><input id="cloudEmail" type="email" autocomplete="email" placeholder="you@example.com"><button type="button" class="btn" id="cloudEmailSignIn">Send link</button></div><p class="cloudFine">New here? Signing in creates your account. You can import existing browser choices securely.</p><p class="cloudPrivacy">Your saved workspace is private to you. <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a></p><p class="cloudError" id="cloudAuthError" role="status"></p></section>';
-    document.body.append(overlay);
-    // When a public Google Web Client ID is configured, use Google's official
-    // browser sign-in instead of the Supabase OAuth redirect.
-    window.PlacementAtlasGoogle?.mount({overlay,button:overlay.querySelector('#cloudGoogleSignIn'),client,clientId:cfg.googleClientId});
-    const close=()=>overlay.remove();
-    overlay.querySelector('.cloudClose').addEventListener('click',close);
-    overlay.addEventListener('click',event=>{if(event.target===overlay)close()});
-    overlay.querySelector('#cloudGoogleSignIn').addEventListener('click',async event=>{
-      const button=event.currentTarget;button.disabled=true;button.textContent='Opening Google…';
-      const result=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl(),queryParams:{prompt:'select_account'}}});
-      if(result.error){overlay.querySelector('#cloudAuthError').textContent=result.error.message;button.disabled=false;button.textContent='Continue with Google';}
-    });
-    overlay.querySelector('#cloudEmailSignIn').addEventListener('click',async event=>{
-      const input=overlay.querySelector('#cloudEmail'),button=event.currentTarget,email=input.value.trim();
-      if(!email||!input.checkValidity()){overlay.querySelector('#cloudAuthError').textContent='Enter a valid email address.';input.focus();return;}
-      button.disabled=true;button.textContent='Sending…';
-      const result=await client.auth.signInWithOtp({email,options:{emailRedirectTo:redirectUrl()}});
-      if(result.error){overlay.querySelector('#cloudAuthError').textContent=result.error.message;button.disabled=false;button.textContent='Send link';}
-      else{overlay.querySelector('#cloudAuthError').textContent='Check your inbox for your secure sign-in link.';button.textContent='Link sent';}
+    if(!window.PlacementAtlasPasswordAuth){
+      status('Account sign-in is loading. Refresh the page and try again.','error');
+      return;
+    }
+    return window.PlacementAtlasPasswordAuth.open({
+      client,
+      googleClientId:cfg.googleClientId,
+      redirectUrl,
+      initialMode:mode
     });
   };
   const chooseFirstImport=()=>new Promise(resolve=>{
@@ -344,6 +332,11 @@
     if(result.error)throw result.error;
     if(result.data&&result.data.session){
       await prepareUser(result.data.session.user);
+      // Recovery redirects may initialise a session before the auth listener
+      // subscribes. The query flag preserves the password-update prompt.
+      if(new URLSearchParams(window.location.search).get('atlas_auth')==='recovery'){
+        setTimeout(()=>showAuthModal('recovery'),0);
+      }
     }else{
       currentUser=null;renderAccount();
       status('','neutral');
@@ -351,7 +344,15 @@
     // Subscribe only after the initial session has finished hydrating, so the
     // app never starts with a duplicate, still-pending cloud restore.
     client.auth.onAuthStateChange((event,session)=>{
-      if(event==='SIGNED_OUT'){
+      if(event==='PASSWORD_RECOVERY'){
+        // Do not await Supabase calls inside its authentication callback.
+        setTimeout(()=>{
+          if(session?.user&&session.user.id!==bootUserId&&session.user.id!==preparingUserId){
+            prepareUser(session.user).catch(error=>status('Could not load your saved workspace. '+(error.message||''),'error'));
+          }
+          showAuthModal('recovery');
+        },0);
+      }else if(event==='SIGNED_OUT'){
         const wasAuthenticated=!!currentUser;
         currentUser=null;syncActive=false;conflictBlocked=false;bootUserId='';
         if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
