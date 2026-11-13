@@ -63,9 +63,14 @@
       '<input class="cloudAuthInput" id="cloudLinkEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>',
       '<button class="btn primary cloudAuthSubmit" type="submit">Send sign-in link</button>',
       '</form>',
+      '<form id="cloudOtpForm" novalidate hidden>',
+      '<label class="cloudEmailLabel" for="cloudOtpCode">Six-digit email code</label>',
+      '<input class="cloudAuthInput cloudOtpCode" id="cloudOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-describedby="cloudAuthFine" required>',
+      '<button class="btn primary cloudAuthSubmit" type="submit">Verify code</button>',
+      '</form>',
       '<div class="cloudAuthExtras" id="cloudAuthExtras">',
       '<button type="button" class="cloudTextAction" id="cloudForgotButton">Forgot password?</button>',
-      '<button type="button" class="cloudTextAction" id="cloudLinkButton">Email me a sign-in link</button>',
+      '<button type="button" class="cloudTextAction" id="cloudLinkButton">Email me a link or code</button>',
       '</div>',
       '<button class="cloudTextAction cloudBack" type="button" id="cloudBackButton" hidden>Back to sign in</button>',
       '<p class="cloudFine" id="cloudAuthFine">Don’t have an account? Choose Create account above.</p>',
@@ -86,10 +91,11 @@
     const pw=get('cloudPassword');
     const conf=get('cloudConfirmPassword');
     const email=get('cloudEmail');
+    let pendingOtpEmail='';
     let mode='signin';
 
     function setMode(next){
-      mode=['signin','signup','forgot','link','recovery'].includes(next)?next:'signin';
+      mode=['signin','signup','forgot','link','otp','recovery'].includes(next)?next:'signin';
       const accountMode=mode==='signin'||mode==='signup';
       get('cloudAuthTabs').hidden=!accountMode;
       get('cloudGoogleRegion').hidden=!accountMode;
@@ -98,6 +104,7 @@
       get('cloudForgotForm').hidden=mode!=='forgot';
       get('cloudRecoveryForm').hidden=mode!=='recovery';
       get('cloudLinkForm').hidden=mode!=='link';
+      get('cloudOtpForm').hidden=mode!=='otp';
       get('cloudConfirmWrap').hidden=mode!=='signup';
       get('cloudPasswordHelp').hidden=mode!=='signup';
       get('cloudAuthExtras').hidden=mode!=='signin';
@@ -113,7 +120,8 @@
         signin:['Sign in','Access your saved programmes, preferences and shortlist.','New here? Choose Create account above.'],
         signup:['Create your account','Save your shortlist and preferences securely across devices.','We’ll email you a link to verify your address.'],
         forgot:['Reset your password','We’ll email a secure password reset link if an account exists.','Check your inbox, including spam, after submitting.'],
-        link:['Sign in with a link','Receive a one-time sign-in link instead of using a password.','The link can only be used for a limited time.'],
+        link:['Sign in without a password','We’ll email a secure link and a temporary six-digit code. Choose either to sign in.','This is for existing Placement Atlas accounts.'],
+        otp:['Check your email','Enter the six-digit code we sent, or open the sign-in link instead.','The code expires after a short time. Return to request a new one if needed.'],
         recovery:['Set a new password','Choose a new password to secure your Placement Atlas account.','After updating your password, you can continue to your workspace.']
       };
       get('cloudDialogTitle').textContent=copy[mode][0];
@@ -122,6 +130,7 @@
       setStatus('');
       if(mode==='forgot')get('cloudForgotEmail').value=email.value.trim();
       if(mode==='link')get('cloudLinkEmail').value=email.value.trim();
+      if(mode==='otp')get('cloudOtpCode').value='';
     }
     overlay.addEventListener('atlas:auth-mode',event=>setMode(event.detail));
     overlay.querySelector('.cloudClose').addEventListener('click',close);
@@ -198,8 +207,40 @@
       perform(event.submitter||get('cloudLinkForm').querySelector('button[type=submit]'),'Sending…',async()=>{
         // Passwordless sign-in must not silently create new accounts.
         const result=await client.auth.signInWithOtp({email:input.value.trim(),options:{emailRedirectTo:redirectUrl(),shouldCreateUser:false}});
-        if(result.error)throw result.error;
-        setStatus('If this address has an account, check your inbox for a sign-in link.','success');
+        if(result.error){
+          // Avoid disclosing whether a particular email has an account.
+          if(/rate|limit|too many/i.test(result.error.message||''))throw new Error('Please wait before requesting another code.');
+          throw new Error('Could not send a sign-in email right now. Please try again.');
+        }
+        pendingOtpEmail=input.value.trim();
+        setMode('otp');
+        setStatus('Check your inbox for the sign-in link or six-digit code.','success');
+      });
+    });
+    get('cloudOtpForm').addEventListener('submit',event=>{
+      event.preventDefault();
+      const input=get('cloudOtpCode');
+      const token=input.value.trim();
+      if(!pendingOtpEmail){
+        setMode('link');
+        setStatus('Enter your email and request a new code.');return;
+      }
+      if(!/^[0-9]{6}$/.test(token)){
+        setStatus('Enter the six-digit code from the email.');
+        input.focus();return;
+      }
+      perform(event.submitter||get('cloudOtpForm').querySelector('button[type=submit]'),'Verifying…',async()=>{
+        const result=await client.auth.verifyOtp({email:pendingOtpEmail,token,type:'email'});
+        if(result.error){
+          throw new Error('That code could not be verified. Check the digits or request another code.');
+        }
+        if(!result.data?.session){
+          setStatus('Verification is still pending. You can also use the link in your email.');
+          return;
+        }
+        pendingOtpEmail='';
+        input.value='';
+        close();
       });
     });
     get('cloudRecoveryForm').addEventListener('submit',event=>{
