@@ -35,8 +35,10 @@
     if(session.host.isConnected)session.host.setAttribute('aria-busy','true');
     errorMessage('');
     try{
+      const captchaToken=await session.getCaptchaToken();
       const {error}=await session.client.auth.signInWithIdToken({
-        provider:'google',token:response.credential,nonce:rawNonce
+        provider:'google',token:response.credential,nonce:rawNonce,
+        options:{captchaToken}
       });
       if(error)throw error;
       if(session.overlay.isConnected)session.overlay.remove();
@@ -50,6 +52,7 @@
         session.button.textContent='Try alternative Google sign-in';
       }
     }finally{
+      session.resetCaptcha?.();
       session.busy=false;
       if(session.host.isConnected)session.host.removeAttribute('aria-busy');
     }
@@ -75,7 +78,7 @@
     })().catch(error=>{initPromise=null;throw error;});
     return initPromise;
   };
-  const mount=async({overlay,button,client,clientId})=>{
+  const mount=async({overlay,button,client,clientId,getCaptchaToken,resetCaptcha})=>{
     if(!VALID_CLIENT_ID.test(String(clientId||'').trim()))return false;
     const host=document.createElement('div');
     host.className='cloudGoogleNative';
@@ -83,7 +86,7 @@
     host.textContent='Loading Google sign-in…';
     button.before(host);
     button.hidden=true;
-    active={overlay,button,host,client,clientId:String(clientId).trim(),busy:false};
+    active={overlay,button,host,client,clientId:String(clientId).trim(),getCaptchaToken,resetCaptcha,busy:false};
     try{
       const googleID=await initialise();
       if(!overlay.isConnected)return true;
