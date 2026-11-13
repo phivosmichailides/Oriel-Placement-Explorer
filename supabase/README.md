@@ -70,3 +70,26 @@ The optional Google Identity Services integration uses Google's official browser
 5. In a fresh private window on `https://placementatlas.co.uk/`, open Sign in. The official Google button should load; sign in with a test account and verify your private workspace is saved. Then test returning Google and email users, and cross-device sync.
 
 If the Client ID is absent, the existing OAuth button remains available. If Google Identity Services cannot load, a labelled fallback offers the original redirect-based login. `google-identity.js` generates a cryptographic nonce and SHA-256 hash for token validation. No service secret is exposed to the browser.
+
+## Email and password accounts
+
+Placement Atlas supports email/password signup and login, Google, optional
+passwordless email sign-in, and password recovery via Supabase Auth.
+Passwords must never be stored in localStorage, workspace records, or logs.
+
+Production setup:
+1. In Supabase Authentication → Sign In / Providers → Email, enable Email
+   and Confirm email.
+2. In Authentication → URL Configuration set the Site URL to
+   `https://placementatlas.co.uk/` and allow both
+   `https://placementatlas.co.uk/` and
+   `https://placementatlas.co.uk/?atlas_auth=recovery` as redirect URLs.
+3. Configure custom SMTP, verify the sending domain, and preserve the
+   Supabase link variables in Confirm sign up and Reset password templates.
+4. Review CAPTCHA and rate limits before public launch.
+5. Test signup → email verification → sign-in, invalid credentials, recovery
+   email → new password, Google sign-in, optional email-link sign-in, and
+   workspace sync/sign-out so account data remains isolated.
+
+The reset link returns to the site with `atlas_auth=recovery`; the app also
+listens for the `PASSWORD_RECOVERY` authentication event.
