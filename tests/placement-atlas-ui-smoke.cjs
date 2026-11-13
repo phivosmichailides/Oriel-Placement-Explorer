@@ -206,6 +206,11 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
         title:bounds(title),deadline:bounds(deadline),intro:bounds(intro),
         deadlineInHeader:header.contains(deadline),deadlineParent:deadline.parentElement?.id,deadlinePrecedesIntro:Boolean(deadline.compareDocumentPosition(intro)&Node.DOCUMENT_POSITION_FOLLOWING),
         launcher:bounds(launcher),launcherPosition:getComputedStyle(launcher).position,
+        launcherHidden:getComputedStyle(launcher).visibility==='hidden',
+        footerVisible:(()=>{
+          const f=document.querySelector('.app-footer').getBoundingClientRect();
+          return f.top<innerHeight-12&&f.bottom>12;
+        })(),
         navOverflow:nav.scrollWidth-nav.clientWidth};
     });
     const intersects=(a,b)=>a.left<b.right-2&&a.right>b.left+2&&a.top<b.bottom-2&&a.bottom>b.top+2;
@@ -219,16 +224,20 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     assert(!layout.deadlineInHeader&&layout.deadlineParent==='atlasDeadlineRow'&&layout.deadlinePrecedesIntro,
       'Oriel recruitment status must precede the hero and never appear inside the header: '+JSON.stringify(layout));
     assert(layout.launcherPosition==='fixed','Shortlist launcher must be viewport-fixed: '+JSON.stringify(layout));
-    assert(layout.vw-layout.launcher.right>=5&&layout.vw-layout.launcher.right<=54,
-      'Shortlist is not at the bottom-right edge: '+JSON.stringify(layout));
-    assert(layout.vh-layout.launcher.bottom>=5&&layout.vh-layout.launcher.bottom<=54,
-      'Shortlist is vertically misplaced: '+JSON.stringify(layout));
+    if(layout.footerVisible){
+      assert(layout.launcherHidden,'Shortlist must not obscure a visible footer: '+JSON.stringify(layout));
+    }else{
+      assert(layout.vw-layout.launcher.right>=5&&layout.vw-layout.launcher.right<=54,
+        'Shortlist is not at the bottom-right edge above footer: '+JSON.stringify(layout));
+      assert(layout.vh-layout.launcher.bottom>=5&&layout.vh-layout.launcher.bottom<=54,
+        'Shortlist is vertically misplaced above footer: '+JSON.stringify(layout));
+    }
     await page.evaluate(()=>scrollTo({top:document.body.scrollHeight,behavior:'instant'}));
-    await wait(120);
-    const scrolled=await page.locator('#uxDrawerLauncher').evaluate(el=>{const r=el.getBoundingClientRect();return {right:innerWidth-r.right,bottom:innerHeight-r.bottom}});
-    assert(scrolled.right>=5&&scrolled.right<=54&&scrolled.bottom>=5&&scrolled.bottom<=54,
-      'Shortlist moves away from viewport corner while scrolling: '+JSON.stringify({dims,scrolled}));
+    await page.waitForFunction(()=>document.body.classList.contains('atlasFooterInView'),null,{timeout:5000});
+    assert.equal(await page.locator('#uxDrawerLauncher').evaluate(el=>getComputedStyle(el).visibility),'hidden',
+      'Shortlist must disappear at the footer instead of covering attribution');
     await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+    await wait(120);
   }
   await page.setViewportSize({width:1440,height:960});
   const gphcAssessment='https://www.pharmacyregulation.org/students-and-trainees/pharmacist-education-and-training/common-registration-assessment/sitting-common-registration-assessment';
