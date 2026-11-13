@@ -13,6 +13,14 @@
    // any part of it is visible; restore the controls above it.
    const touchesFooter=rect.top<window.innerHeight-12&&rect.bottom>12;
    document.body.classList.toggle('atlasFooterInView',touchesFooter);
+   // Several older styles explicitly force shortcuts visible with !important.
+   // Set a direct control state so no legacy launcher selector can override it.
+   for(const id of ['uxPageZoomDock','uxBackTop','uxDrawerLauncher','uxFloatingTools','tdFloatingDecisions']){
+     const control=document.getElementById(id);
+     if(!control)continue;
+     if(touchesFooter)control.setAttribute('data-atlas-footer-hidden','');
+     else control.removeAttribute('data-atlas-footer-hidden');
+   }
    // Close the quick-filter popover if its launcher just became obscured.
    if(touchesFooter){
      const panel=document.getElementById('uxFloatInner');
