@@ -16,6 +16,7 @@
  '<div class="paProfileActions"><button class="btn primary" type="button" id="paProfileAuth">Sign in</button><button class="btn" type="button" id="paNameEdit" hidden>Edit name</button><button class="btn" type="button" id="paAvatarRemove" hidden>Remove photo</button></div>'+
  '<div class="paEditName" id="paEditName"><input id="paNameInput" maxlength="80" autocomplete="name" aria-label="Display name"><button class="btn primary" type="button" id="paNameSave">Save name</button><button class="btn" type="button" id="paNameCancel">Cancel</button></div>'+
  '<div role="status" aria-live="polite" class="paProfileMessage" id="paProfileMessage"></div></div></section>'+
+ '<section class="paProfileSettings paSecuritySettings" id="paSecuritySettings" hidden><div><strong>Account security</strong><p>Reset your password securely using a link sent to your registered email.</p></div><button type="button" class="btn" id="paPasswordReset">Set or change password</button></section>'+
  '<section class="paProfileSettings"><div><strong>Appearance</strong><p>Follow your device automatically, or choose your own light or dark mode.</p></div><div class="paThemeModes" role="group" aria-label="Appearance preference"><button type="button" data-pa-theme="auto">Follow device</button><button type="button" data-pa-theme="light">Light</button><button type="button" data-pa-theme="dark">Dark</button></div></section>';
  const oldContent=document.createElement('div');oldContent.className='paOutcomeBody';
  old.forEach(el=>oldContent.append(el));
@@ -64,6 +65,7 @@
    caption.textContent=user?label:'Not signed in';
    email.textContent=user?.email||'Create an account to save your shortlist and preferences across devices.';
    if(joinBanner)joinBanner.hidden=Boolean(user);
+   $('paSecuritySettings').hidden=!user;
    letters.textContent=initials(label);
    photo.disabled=!user;photo.setAttribute('aria-label',user?'Change profile photo':'Sign in before uploading a photo');
    authBtn.textContent=user?'Sign out':'Sign in';authBtn.hidden=!user;
@@ -92,6 +94,25 @@
  const system=window.matchMedia?.('(prefers-color-scheme: dark)');
  system?.addEventListener?.('change',()=>{if(currentMode()==='auto')applyMode('auto')});
  authBtn.addEventListener('click',()=>{const api=bridge();if(api.getUser?.())api.signOut?.();else api.openSignIn?.()});
+ let lastPasswordResetRequest=0;
+ $('paPasswordReset').addEventListener('click',async()=>{
+   const user=bridge().getUser?.(),client=bridge().getClient?.();
+   if(!user?.email||!client){say('Sign in to manage your password.','error');return;}
+   if(Date.now()-lastPasswordResetRequest<60000){say('Please wait a minute before requesting another link.','error');return;}
+   const button=$('paPasswordReset');
+   button.disabled=true;say('Sending a secure password link…');
+   try{
+     const base=/^(localhost|127\\.0\\.0\\.1)$/.test(window.location.hostname)
+       ?window.location.origin+window.location.pathname:'https://placementatlas.co.uk/';
+     const redirectTo=base+(base.includes('?')?'&':'?')+'atlas_auth=recovery';
+     const result=await client.auth.resetPasswordForEmail(user.email,{redirectTo});
+     if(result.error)throw result.error;
+     lastPasswordResetRequest=Date.now();
+     say('Check your registered email for a secure password link. The link expires automatically.','success');
+   }catch(error){
+     say('Could not send the password link: '+(error.message||'Try again later.'),'error');
+   }finally{button.disabled=false}
+ });
  wrap.querySelectorAll('[data-pa-join]').forEach(button=>button.addEventListener('click',()=>bridge().openSignIn?.()));
  photo.addEventListener('click',()=>{if(bridge().getUser?.()&&!busy)file.click()});
  const edit=$('paEditName'),input=$('paNameInput');
