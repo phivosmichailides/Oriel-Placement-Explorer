@@ -105,3 +105,32 @@ Production setup:
 
 The reset link returns to the site with `atlas_auth=recovery`; the app also
 listens for the `PASSWORD_RECOVERY` authentication event.
+
+## Cloudflare Turnstile (existing widget)
+
+Frontend widget: `atlas-turnstile.js` uses the public existing Cloudflare
+Turnstile site key `0x4AAAAAAF_H_KvCURq8Ixkp` and renders explicitly in
+the account modal. Supabase Auth receives `captchaToken` with signup,
+password login, password reset, email link/code, and Google ID-token login.
+Consumed tokens are reset after requests. Profile password management opens
+the same protected recovery form.
+
+**Supabase Auth is the server-side verifier, not GitHub Pages.** This is a
+static website and cannot directly perform a secret-bearing Siteverify call.
+
+Before activating CAPTCHA in production:
+1. Check the existing Cloudflare widget allows `placementatlas.co.uk`.
+2. Retrieve its private secret from the Turnstile dashboard. Never commit it
+   or insert it into frontend code.
+3. In Supabase Authentication → Attack Protection, choose **Turnstile by
+   Cloudflare** (not hCaptcha), enter the matching secret privately, and save.
+4. Ensure the website's latest deployment is live first.
+5. Test email/password signup, login, wrong password, reset email,
+   passwordless link/code requests, the signed-in Profile reset flow,
+   and native Google sign-in. Verify retries after a consumed token.
+6. Check Supabase Auth logs and Turnstile Analytics for verification results.
+   If the frontend or backend configuration is incomplete, disable CAPTCHA
+   temporarily to avoid locking legitimate users out.
+
+The public site key is not a secret. The private Turnstile secret belongs
+only in Supabase's protected dashboard settings. No new Worker is required.
