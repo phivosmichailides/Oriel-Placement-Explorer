@@ -38,9 +38,9 @@
    observer.observe(footer);
  }
  window.addEventListener('scroll',schedule,{passive:true});
- window.addEventListener('resize',schedule,{passive:true});
+ window.addEventListener('resize',sync,{passive:true});
  window.visualViewport?.addEventListener('resize',schedule,{passive:true});
- document.addEventListener('desk:after-navigation',schedule);
+ document.addEventListener('desk:after-navigation',sync);
  document.addEventListener('desk:zoom-change',schedule);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
  sync();
