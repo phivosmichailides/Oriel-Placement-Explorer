@@ -102,7 +102,7 @@
    const button=$('paPasswordReset');
    button.disabled=true;say('Sending a secure password link…');
    try{
-     const base=/^(localhost|127\\.0\\.0\\.1)$/.test(window.location.hostname)
+     const base=/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
        ?window.location.origin+window.location.pathname:'https://placementatlas.co.uk/';
      const redirectTo=base+(base.includes('?')?'&':'?')+'atlas_auth=recovery';
      const result=await client.auth.resetPasswordForEmail(user.email,{redirectTo});
