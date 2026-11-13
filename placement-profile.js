@@ -94,24 +94,12 @@
  const system=window.matchMedia?.('(prefers-color-scheme: dark)');
  system?.addEventListener?.('change',()=>{if(currentMode()==='auto')applyMode('auto')});
  authBtn.addEventListener('click',()=>{const api=bridge();if(api.getUser?.())api.signOut?.();else api.openSignIn?.()});
- let lastPasswordResetRequest=0;
- $('paPasswordReset').addEventListener('click',async()=>{
-   const user=bridge().getUser?.(),client=bridge().getClient?.();
-   if(!user?.email||!client){say('Sign in to manage your password.','error');return;}
-   if(Date.now()-lastPasswordResetRequest<60000){say('Please wait a minute before requesting another link.','error');return;}
-   const button=$('paPasswordReset');
-   button.disabled=true;say('Sending a secure password link…');
-   try{
-     const base=/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
-       ?window.location.origin+window.location.pathname:'https://placementatlas.co.uk/';
-     const redirectTo=base+(base.includes('?')?'&':'?')+'atlas_auth=recovery';
-     const result=await client.auth.resetPasswordForEmail(user.email,{redirectTo});
-     if(result.error)throw result.error;
-     lastPasswordResetRequest=Date.now();
-     say('Check your registered email for a secure password link. The link expires automatically.','success');
-   }catch(error){
-     say('Could not send the password link: '+(error.message||'Try again later.'),'error');
-   }finally{button.disabled=false}
+ $('paPasswordReset').addEventListener('click',()=>{
+   const user=bridge().getUser?.();
+   if(!user?.email){say('Sign in to manage your password.','error');return;}
+   // Use the shared CAPTCHA-protected reset form, already prefilled with the
+   // signed-in user's address. Never send an unverified reset request.
+   bridge().openSignIn?.('forgot');
  });
  wrap.querySelectorAll('[data-pa-join]').forEach(button=>button.addEventListener('click',()=>bridge().openSignIn?.()));
  photo.addEventListener('click',()=>{if(bridge().getUser?.()&&!busy)file.click()});
