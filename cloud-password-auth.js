@@ -67,6 +67,7 @@
       '<label class="cloudEmailLabel" for="cloudOtpCode">Six-digit email code</label>',
       '<input class="cloudAuthInput cloudOtpCode" id="cloudOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-describedby="cloudAuthFine" required>',
       '<button class="btn primary cloudAuthSubmit" type="submit">Verify code</button>',
+      '<button class="cloudTextAction cloudOtpResend" id="cloudOtpResend" type="button">Request another code</button>',
       '</form>',
       '<div class="cloudAuthExtras" id="cloudAuthExtras">',
       '<button type="button" class="cloudTextAction" id="cloudForgotButton">Forgot password?</button>',
@@ -129,7 +130,7 @@
       get('cloudAuthFine').textContent=copy[mode][2];
       setStatus('');
       if(mode==='forgot')get('cloudForgotEmail').value=email.value.trim();
-      if(mode==='link')get('cloudLinkEmail').value=email.value.trim();
+      if(mode==='link')get('cloudLinkEmail').value=pendingOtpEmail||email.value.trim();
       if(mode==='otp')get('cloudOtpCode').value='';
     }
     overlay.addEventListener('atlas:auth-mode',event=>setMode(event.detail));
@@ -151,6 +152,7 @@
     });
     get('cloudForgotButton').addEventListener('click',()=>setMode('forgot'));
     get('cloudLinkButton').addEventListener('click',()=>setMode('link'));
+    get('cloudOtpResend').addEventListener('click',()=>setMode('link'));
     get('cloudBackButton').addEventListener('click',()=>setMode('signin'));
 
     async function perform(button,workingText,action){
