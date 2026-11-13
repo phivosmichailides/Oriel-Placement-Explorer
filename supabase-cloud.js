@@ -134,7 +134,7 @@
     }else{
       const button=element('button','btn primary cloudAccountButton','Sign in to save');
       button.type='button';
-      button.addEventListener('click',showAuthModal);
+      button.addEventListener('click',()=>showAuthModal());
       main.append(button);
     }
     const state=element('span','cloudAccountStatus');
@@ -160,7 +160,8 @@
       client,
       googleClientId:cfg.googleClientId,
       redirectUrl,
-      initialMode:mode
+      initialMode:mode,
+      initialEmail:currentUser?.email||''
     });
   };
   const chooseFirstImport=()=>new Promise(resolve=>{
@@ -386,7 +387,7 @@
   window.PlacementAtlasAccount={
     getUser:()=>currentUser,
     getClient:()=>client,
-    openSignIn:()=>{if(configured)showAuthModal();},
+    openSignIn:(mode='signin')=>{if(configured)showAuthModal(mode);},
     signOut:()=>{
       const button=[...document.querySelectorAll('#orielCloudAccount button')].find(b=>b.textContent.trim()==='Sign out');
       if(button)button.click();
