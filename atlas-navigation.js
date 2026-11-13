@@ -69,8 +69,11 @@
     help.append(summary,savedHelp);
     utilities.append(help);
   }
-  // Keep the management panel inside the same bounded workspace as page content.
-  footer.insertAdjacentElement('beforebegin',utilities);
+  // Data-management tools belong to Preferences, never globally above every footer.
+  // Keep the actual export/restore button nodes and their event handlers intact.
+  const preferencesPanel=document.getElementById('prefs');
+  if(preferencesPanel)preferencesPanel.append(utilities);
+  else footer.insertAdjacentElement('beforebegin',utilities);
 
   const navigate=target=>{
     if(typeof switchTab==='function')switchTab(target);
