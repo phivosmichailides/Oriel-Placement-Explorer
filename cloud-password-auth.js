@@ -8,7 +8,7 @@
   const emailIsValid=input=>input.value.trim()!=='' && input.checkValidity();
   const recoveryUrl=base=>base+(base.includes('?')?'&':'?')+'atlas_auth=recovery';
 
-  const open=({client,googleClientId,redirectUrl,initialMode='signin'})=>{
+  const open=({client,googleClientId,redirectUrl,initialMode='signin',initialEmail=''})=>{
     if(!client)return;
     const existing=document.querySelector('.cloudOverlay[data-atlas-auth="true"]');
     if(existing){
@@ -87,13 +87,50 @@
       errorNode.textContent=message||'';
       errorNode.dataset.tone=tone;
     };
-    const close=()=>overlay.remove();
+    const close=()=>{challenge?.destroy();overlay.remove()};
     const pwdForm=get('cloudPasswordForm');
     const pw=get('cloudPassword');
     const conf=get('cloudConfirmPassword');
     const email=get('cloudEmail');
     let pendingOtpEmail='';
     let mode='signin';
+    let challenge=null;
+    const securityArea=document.createElement('div');
+    securityArea.className='cloudTurnstileArea';
+    securityArea.setAttribute('aria-label','Security verification');
+
+    const captchaActions={
+      signin:['login',pwdForm],
+      signup:['signup',pwdForm],
+      forgot:['password_reset',get('cloudForgotForm')],
+      link:['email_signin',get('cloudLinkForm')]
+    };
+    const mountChallenge=()=>{
+      challenge?.destroy();
+      challenge=null;
+      const config=captchaActions[mode];
+      securityArea.remove();
+      securityArea.replaceChildren();
+      if(!config)return;
+      const [action,form]=config;
+      form.querySelector('button[type="submit"]').before(securityArea);
+      if(!window.PlacementAtlasTurnstile){
+        setStatus('The security check is unavailable. Refresh the page and try again.');
+        return;
+      }
+      try{
+        const next=window.PlacementAtlasTurnstile.create(securityArea,action);
+        challenge=next;
+        next.ready.catch(error=>{
+          if(challenge===next&&overlay.isConnected)setStatus(error.message||'Verification could not load.');
+        });
+      }catch(error){setStatus(error.message||'Verification could not start.');}
+    };
+    const getCaptchaToken=async()=>{
+      if(!challenge)throw new Error('Security verification is unavailable. Refresh the page.');
+      return await challenge.getToken();
+    };
+    const resetChallenge=()=>challenge?.reset();
 
     function setMode(next){
       mode=['signin','signup','forgot','link','otp','recovery'].includes(next)?next:'signin';
@@ -132,6 +169,7 @@
       if(mode==='forgot')get('cloudForgotEmail').value=email.value.trim();
       if(mode==='link')get('cloudLinkEmail').value=pendingOtpEmail||email.value.trim();
       if(mode==='otp')get('cloudOtpCode').value='';
+      mountChallenge();
     }
     overlay.addEventListener('atlas:auth-mode',event=>setMode(event.detail));
     overlay.querySelector('.cloudClose').addEventListener('click',close);
@@ -180,9 +218,13 @@
       const button=get('cloudPasswordSubmit');
       perform(button,mode==='signup'?'Creating account…':'Signing in…',async()=>{
         const address=email.value.trim();
-        const result=mode==='signup'
-          ?await client.auth.signUp({email:address,password:pw.value,options:{emailRedirectTo:redirectUrl()}})
-          :await client.auth.signInWithPassword({email:address,password:pw.value});
+        const captchaToken=await getCaptchaToken();
+        let result;
+        try{
+          result=mode==='signup'
+            ?await client.auth.signUp({email:address,password:pw.value,options:{emailRedirectTo:redirectUrl(),captchaToken}})
+            :await client.auth.signInWithPassword({email:address,password:pw.value,options:{captchaToken}});
+        }finally{resetChallenge();}
         if(result.error)throw result.error;
         if(result.data?.session){
           pw.value='';conf.value='';close();
@@ -197,7 +239,10 @@
       const input=get('cloudForgotEmail');
       if(!emailIsValid(input)){setStatus('Enter a valid email address.');input.focus();return;}
       perform(event.submitter||get('cloudForgotForm').querySelector('button[type=submit]'),'Sending…',async()=>{
-        const result=await client.auth.resetPasswordForEmail(input.value.trim(),{redirectTo:recoveryUrl(redirectUrl())});
+        const captchaToken=await getCaptchaToken();
+        let result;
+        try{result=await client.auth.resetPasswordForEmail(input.value.trim(),{redirectTo:recoveryUrl(redirectUrl()),captchaToken});}
+        finally{resetChallenge();}
         if(result.error)throw result.error;
         setStatus('If that email address has an account, a password reset link is on its way.','success');
       });
@@ -208,7 +253,10 @@
       if(!emailIsValid(input)){setStatus('Enter a valid email address.');input.focus();return;}
       perform(event.submitter||get('cloudLinkForm').querySelector('button[type=submit]'),'Sending…',async()=>{
         // Passwordless sign-in must not silently create new accounts.
-        const result=await client.auth.signInWithOtp({email:input.value.trim(),options:{emailRedirectTo:redirectUrl(),shouldCreateUser:false}});
+        const captchaToken=await getCaptchaToken();
+        let result;
+        try{result=await client.auth.signInWithOtp({email:input.value.trim(),options:{emailRedirectTo:redirectUrl(),shouldCreateUser:false,captchaToken}});}
+        finally{resetChallenge();}
         if(result.error){
           // Avoid disclosing whether a particular email has an account.
           if(/rate|limit|too many/i.test(result.error.message||''))throw new Error('Please wait before requesting another code.');
@@ -269,6 +317,7 @@
       const result=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl(),queryParams:{prompt:'select_account'}}});
       if(result.error){setStatus(result.error.message);googleButton.disabled=false;googleButton.textContent='Continue with Google';}
     });
+    if(initialEmail)email.value=String(initialEmail).trim();
     setMode(initialMode);
     return overlay;
   };
