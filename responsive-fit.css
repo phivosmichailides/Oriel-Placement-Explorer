@@ -1,0 +1,222 @@
+/* Placement Atlas responsive sizing and footer-safe controls
+   Every main page must fit the usable viewport at the default 100% zoom.
+   Content may wrap and stack, but must not be clipped offscreen. */
+
+/* All app panels honour the width of their parent, including inside CSS zoom. */
+html body .shell{min-width:0;box-sizing:border-box;padding-inline:clamp(12px,2.1vw,24px)}
+html body .shell > section.panel,
+html body .shell > .productIntro,
+html body .shell > .contextStrip,
+html body #prefs,
+html body #shortlist,
+html body #shortlistList,
+html body #results,
+html body #learn{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+html body .panel .card,
+html body .panel .sectionHero,
+html body #prefs .settings,
+html body #prefs .settingsCard,
+html body #shortlistList .rank-row,
+html body #shortlistList .rank-row > *,
+html body #learn .atlasLearnSection{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+html body .panel h2,
+html body .panel h3,
+html body .panel p,
+html body .panel label,
+html body .panel .muted,
+html body .atlasFooterBottom p{overflow-wrap:break-word}
+html body .panel input,
+html body .panel textarea,
+html body .panel select{max-width:100%;box-sizing:border-box}
+
+/* Preferences: visible hierarchy, generous spacing between rating rows
+   and location tools; never squeeze two large panels on a laptop. */
+html.atlasPremiumPreview body #prefs .settings{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:start!important;column-gap:clamp(24px,2.8vw,44px)!important;
+ row-gap:clamp(25px,3vw,42px)!important;
+}
+html.atlasPremiumPreview body #prefs .settingsCard.card{
+ min-width:0!important;padding:clamp(18px,2.2vw,28px)!important;
+ border:1px solid var(--line)!important;border-radius:22px!important;
+ background:var(--panel)!important;box-shadow:none!important;
+}
+html.atlasPremiumPreview body #prefs .settingsCard .eyebrow{margin-bottom:9px}
+html.atlasPremiumPreview body #prefs .settingsCard h2{margin:0 0 11px!important}
+html.atlasPremiumPreview body #prefs .settingsCard>p{margin:0 0 19px!important;line-height:1.6!important}
+html body #prefs #weights{gap:clamp(14px,1.4vw,20px)!important;margin-top:22px!important}
+html body #prefs #weights .weight.weightModern{
+ grid-template-columns:minmax(105px,.82fr) minmax(0,1.18fr)!important;
+ gap:clamp(12px,1.6vw,22px)!important;
+ min-width:0!important;margin:0!important;
+ padding:clamp(14px,1.3vw,19px)!important;
+ border-radius:17px!important;
+}
+html body #prefs #weights .weightScale{min-width:0!important;gap:clamp(4px,.55vw,8px)!important}
+html body #prefs #weights .weightStep{min-width:0!important;min-height:42px;border-radius:11px}
+html body #prefs .geoLikesPane,
+html body #prefs .geoBlacklistPane{
+ min-width:0!important;
+ margin:17px 0!important;
+ padding:15px!important;
+ border-radius:18px;border:1px solid var(--line);
+ background:var(--soft);
+}
+html body #prefs .geoInputRow{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ gap:10px!important;align-items:center!important;
+}
+html body #prefs .geoInputRow>*{min-width:0}
+html body #prefs .geoSearchLabel{margin-bottom:11px!important}
+html body #prefs #atlasDataTools.atlasDataTools{
+ width:100%;min-width:0;max-width:100%;
+ margin:clamp(22px,3vw,40px) 0 0!important;
+ border-radius:22px!important;box-shadow:none!important;
+}
+/* A wide Oriel simulation is useful on desktop; on compact screens it
+   becomes one full-width column, without hiding other columns offscreen. */
+html body #simulator .simViewport{min-width:0;max-width:100%}
+html body #shortlistList .rank-row{overflow-wrap:break-word}
+html body #shortlistList .card.empty{white-space:normal;overflow-wrap:break-word}
+html body #compare .compareWrap{min-width:0;max-width:100%;overflow-x:auto}
+
+/* Do not cover footer links and attribution with floating utility buttons. */
+html body #uxPageZoomDock,
+html body #uxBackTop,
+html body #uxDrawerLauncher,
+html body #uxFloatingTools,
+html body .tdFloatingDecisions{
+ transition:opacity .16s ease,visibility .16s ease;
+}
+html body.atlasFooterInView #uxPageZoomDock,
+html body.atlasFooterInView #uxBackTop,
+html body.atlasFooterInView #uxDrawerLauncher,
+html body.atlasFooterInView #uxFloatingTools,
+html body.atlasFooterInView .tdFloatingDecisions{
+ opacity:0!important;visibility:hidden!important;
+ pointer-events:none!important;
+}
+
+/* Clear, intentional inset on both sides of the footer. */
+html body .app-footer.atlasFooter{
+ min-width:0;max-width:100%;box-sizing:border-box;
+ padding:clamp(30px,3.5vw,48px) clamp(20px,3.3vw,48px) 28px!important;
+ margin:0 0 12px!important;
+}
+html body .app-footer.atlasFooter .atlasFooterGrid,
+html body .app-footer.atlasFooter .atlasFooterBottom{min-width:0;max-width:100%}
+html body .app-footer.atlasFooter .atlasFooterGrid{
+ grid-template-columns:minmax(180px,1.7fr) repeat(3,minmax(0,1fr))!important;
+ gap:clamp(19px,2.8vw,40px)!important;
+}
+html body .app-footer.atlasFooter .atlasFooterGroup{min-width:0}
+html body .app-footer.atlasFooter .atlasFooterBottom{
+ display:grid!important;
+ grid-template-columns:minmax(0,.88fr) minmax(0,1.4fr)!important;
+ gap:clamp(18px,3.2vw,58px)!important;
+ align-items:start!important;
+ padding-top:22px!important;
+}
+html body .app-footer.atlasFooter .atlasFooterBottom p:first-child{
+ white-space:normal!important;
+}
+html body .app-footer.atlasFooter .atlasFooterBottom p:last-child{
+ width:100%!important;max-width:65ch!important;min-width:0!important;
+ justify-self:end!important;text-align:right!important;
+ padding-right:8px!important;line-height:1.65!important;
+}
+
+/* Above the narrow-desktop breakpoint, preserve a proper card width. */
+@media(max-width:1320px){
+ html.atlasPremiumPreview body #prefs .settings{
+  grid-template-columns:minmax(0,1fr)!important;
+  row-gap:24px!important;
+ }
+ html body .app-footer.atlasFooter .atlasFooterGrid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+ html body .app-footer.atlasFooter .atlasFooterIdentity{grid-column:1/-1}
+}
+
+/* Wrap the navigation across rows instead of requiring horizontal gestures
+   to discover hidden sections. The content of pages still scrolls vertically. */
+@media(max-width:1150px){
+ html body .shell>.top.atlasStickyHeader{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"brand utility" "nav nav"!important;
+  min-width:0!important;
+ }
+ html body .atlasStickyHeader>nav.tabs{
+  display:flex!important;flex-wrap:wrap!important;
+  justify-content:flex-start!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  overflow:visible!important;gap:5px!important;
+ }
+ html body .atlasStickyHeader>nav.tabs>.tab{
+  min-width:0!important;max-width:100%!important;
+  flex:0 1 auto!important;white-space:normal!important;
+ }
+}
+@media(max-width:950px){
+ html body #simulator .simViewport{overflow:visible!important}
+ html body #simulator .simColumns{
+   min-width:0!important;max-width:100%!important;
+   grid-template-columns:minmax(0,1fr)!important;gap:17px!important;
+ }
+ html body #simulator .simCol{width:100%;min-width:0}
+ html body .app-footer.atlasFooter .atlasFooterBottom{grid-template-columns:minmax(0,1fr)!important}
+ html body .app-footer.atlasFooter .atlasFooterBottom p:last-child{
+  justify-self:start!important;text-align:left!important;padding-right:0!important;max-width:72ch!important;
+ }
+ html body #prefs #weights .weight.weightModern{
+  grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)!important;
+ }
+}
+@media(max-width:760px){
+ html body #prefs #weights .weight.weightModern{
+  grid-template-columns:minmax(0,1fr)!important;gap:13px!important;
+ }
+ html body #prefs .settingsCard.card{padding:18px!important}
+ html body #prefs .geoLikesPane,html body #prefs .geoBlacklistPane{padding:13px!important}
+ html body .app-footer.atlasFooter{padding:30px 20px 26px!important}
+ html body .app-footer.atlasFooter .atlasFooterGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:22px 20px!important;
+ }
+ html body .app-footer.atlasFooter .atlasFooterIdentity{grid-column:1/-1}
+ html body .app-footer.atlasFooter .atlasFooterGroup:last-child{grid-column:1/-1}
+ html body .atlasStickyHeader>nav.tabs{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  column-gap:5px!important;row-gap:5px!important;
+ }
+ html body .atlasStickyHeader>nav.tabs>.tab{
+  display:flex!important;justify-content:center!important;
+  width:100%!important;min-width:0!important;
+  padding:8px 5px!important;white-space:normal!important;
+  text-align:center!important;
+  font-size:clamp(10px,2.4vw,12px)!important;
+ }
+ html body .atlasStickyHeader>nav.tabs>.tab .atlasTabLabel{white-space:normal!important}
+ html body .atlasStickyHeader>.brand h1{font-size:clamp(18px,4.2vw,25px)!important}
+}
+@media(max-width:390px){
+ html body .atlasStickyHeader>nav.tabs{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ html body #prefs .geoInputRow{grid-template-columns:minmax(0,1fr)!important}
+ html body #prefs .geoInputRow button{width:100%}
+ html body .app-footer.atlasFooter{padding-inline:18px!important}
+ html body .app-footer.atlasFooter .atlasFooterGrid{grid-template-columns:minmax(0,1fr)!important}
+ html body .app-footer.atlasFooter .atlasFooterGroup,
+ html body .app-footer.atlasFooter .atlasFooterIdentity{grid-column:1!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html body #uxPageZoomDock,html body #uxBackTop,
+ html body #uxDrawerLauncher,html body #uxFloatingTools,
+ html body .tdFloatingDecisions{transition:none!important}
+}
