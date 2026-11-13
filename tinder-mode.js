@@ -670,7 +670,7 @@
     if(!sim)return;
     const tab=nav.querySelector('[data-tab="tinderMode"]')||document.createElement('button');
     tab.className='tab tdNavTab';tab.type='button';tab.dataset.tab='tinderMode';
-    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span>Swipe Mode</span>';
+    tab.innerHTML='<span class="tdNavFlame">'+icon.flame+'</span><span class="atlasTabLabel">Swipe Mode</span>';
     if(!tab.isConnected)sim.after(tab);
     tab.disabled=false;tab.removeAttribute('title');
     tab.onclick=()=>{if(typeof switchTab==='function')switchTab('tinderMode');render()};
