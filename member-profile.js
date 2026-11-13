@@ -50,7 +50,7 @@
     '<form id="atlasMemberForm" novalidate><div class="atlasMemberFields">'+
     '<div class="atlasMemberField"><label>First name '+tip('First name','Your chosen first name. Any language is welcome.')+'</label><input name="first" autocomplete="given-name" placeholder="First name" maxlength="80" required></div>'+
     '<div class="atlasMemberField"><label>Last name '+tip('Last name','Your surname, in any language.')+'</label><input name="last" autocomplete="family-name" placeholder="Last name" maxlength="80" required></div>'+
-    '<div class="atlasMemberField wide"><label>Unique username '+tip('Username','Your public @handle for future discovery. 3–24 English lowercase letters, numbers or underscores; begin with a letter.')+'</label><input name="username" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="e.g. pharmacyexplorer" maxlength="24" required><small id="atlasHandleStatus" aria-live="polite">3–24 lowercase letters, numbers or underscores</small><div id="atlasHandleSuggestions" class="atlasHandleSuggestions"></div></div>'+
+    '<div class="atlasMemberField wide"><label>Unique username '+tip('Username','Your unique public @handle. Use 5–15 English lowercase letters, numbers or underscores, starting with a letter.')+'</label><input name="username" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="e.g. pharmacyexplorer" minlength="5" maxlength="15" required><small id="atlasHandleStatus" aria-live="polite">5–15 lowercase letters, numbers or underscores</small><div id="atlasHandleSuggestions" class="atlasHandleSuggestions"></div></div>'+
     '<div class="atlasMemberField"><label>Date of birth '+tip('Date of birth','Private account information, not part of your public profile.')+'</label><input name="birth" type="date" max="'+new Date().toISOString().slice(0,10)+'" required></div>'+
     '<div class="atlasMemberField"><label>University '+tip('University','Your current university or training provider; editable later.')+'</label><input name="university" placeholder="University name" maxlength="120" required></div>'+
     '<div class="atlasMemberField wide"><label>Current stage</label><div class="atlasMemberYears">'+
@@ -74,8 +74,8 @@
    const set=(msg,tone='')=>{status.textContent=msg;status.dataset.tone=tone};
    const alternatives=value=>{
      suggestions.replaceChildren();
-     const choices=[value+'1',value+'_uk',value.slice(0,20)+'2026'];
-     choices.filter((x,i)=>choices.indexOf(x)===i&&x.length<=24).forEach(v=>{
+     const choices=[value.slice(0,14)+'1',value.slice(0,12)+'_uk',value.slice(0,11)+'2026'];
+     choices.filter((x,i)=>choices.indexOf(x)===i&&/^[a-z][a-z0-9_]{4,14}$/.test(x)).forEach(v=>{
        const btn=document.createElement('button');btn.type='button';btn.textContent='@'+v;
        btn.addEventListener('click',()=>{input.value=v;input.dispatchEvent(new Event('input'))});suggestions.append(btn);
      });
@@ -83,7 +83,7 @@
    async function check(){
      const username=input.value.trim().toLowerCase(),id=++checkId;
      input.value=username;suggestions.replaceChildren();
-     if(!/^[a-z][a-z0-9_]{2,23}$/.test(username)){set('× Start with a letter; use 3–24 lowercase letters, numbers or underscores.','error');return}
+     if(!/^[a-z][a-z0-9_]{4,14}$/.test(username)){set('× Start with a letter; use 5–15 lowercase letters, numbers or underscores.','error');return}
      if(username===details?.username){set('✓ This username belongs to you.','success');return}
      set('Checking availability…');
      const client=bridge().getClient?.();if(!client)return;
@@ -104,7 +104,7 @@
      const year=form.querySelector('[name="study_year"]:checked')?.value||'';
      error.textContent='';
      if(Array.from(first).length<2||Array.from(last).length<2){error.textContent='First and last names must have at least two characters.';return}
-     if(!/^[a-z][a-z0-9_]{2,23}$/.test(username)){error.textContent='Choose a valid username.';input.focus();return}
+     if(!/^[a-z][a-z0-9_]{4,14}$/.test(username)){error.textContent='Choose a valid username.';input.focus();return}
      if(!birth||birth>new Date().toISOString().slice(0,10)||university.length<2||!year){error.textContent='Complete your date of birth, university and current stage.';return}
      const client=bridge().getClient?.(),user=bridge().getUser?.();if(!client||!user){error.textContent='Sign in again and retry.';return}
      button.disabled=true;button.textContent='Saving…';

@@ -7,7 +7,7 @@ Editorial, smooth, concise; rounded components; calm accents; mobile and dark/li
 
 ## Member identity
 - First and last names allow Unicode (at least two characters).
-- Username: globally unique lowercase Latin letters, numerals, underscores; 3–24 characters, starts with a letter. DB uniqueness authoritative; inline availability, suggestions and race error handling.
+- Username: globally unique lowercase Latin letters, numerals, underscores; 5–15 characters, starts with a letter. DB uniqueness authoritative; inline availability, suggestions and race error handling.
 - DOB, university and study year (Year 1–4 and Pre-Reg); these are **private**. The username is a public handle for eventual discovery, messaging, sharing and forums.
 - Avatar photo optional now; future interactive character creator (hair, eyes, skin tones, hair coverings including hijabs, clothes). "Pharmatar" is a working title, not final.
 - Later member discovery, chat, moderation, reporting/blocking and optional shared overhead 3D world. Privacy/consent controls before any networking launch.
