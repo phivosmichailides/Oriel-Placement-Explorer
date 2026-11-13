@@ -309,7 +309,8 @@
           prompt.addEventListener('keydown',e=>{if(e.key==='Escape')dismiss()});
           prompt.querySelector('[data-ob-sync]').focus();
         }
-        document.body.classList.add('deskPersonalised');document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
+        document.body.classList.add('deskPersonalised');document.dispatchEvent(new Event('placement:quiz-finished'));
+        document.dispatchEvent(new CustomEvent('desk:action',{detail:{name:'onboarding_completed'}}));document.querySelector('[data-tab="foryou"]')?.focus();toast('Your Placement Atlas is personalised ');
       };
 
       render();card.querySelector('button')?.focus();

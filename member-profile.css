@@ -106,3 +106,60 @@ html body .atlasStickyHeader .atlasHeaderUtilities .paHeaderIdentity button:focu
     font-size:10px!important;
   }
 }
+
+/* Profile onboarding v2 · soft, compact, fully keyboard-accessible controls */
+.atlasMemberDialog{width:min(660px,calc(100vw - 24px));max-height:min(92dvh,860px);padding:clamp(20px,3vw,32px);border-radius:28px;box-shadow:0 35px 110px #0005}
+.atlasMemberOverlay{padding:12px}
+.atlasMemberDialog h2{font-size:clamp(27px,3.1vw,38px);letter-spacing:-.052em;margin-top:8px}
+.atlasMemberDialog>p{font-size:14px;max-width:56ch;line-height:1.55}
+.atlasMemberFields{gap:17px 15px}
+.atlasMemberField>label{font-size:13px;letter-spacing:-.01em}
+.atlasMemberField>input,.atlasUniControl>input,.atlasUniOther>input,.atlasBirthParts select{
+  min-width:0;width:100%;min-height:49px;border:1px solid var(--line);border-radius:16px;
+  background:var(--soft);color:var(--ink);font:inherit;font-size:14px;padding:12px 14px;
+  outline:none;transition:border-color .16s ease,box-shadow .16s ease
+}
+.atlasMemberField>input:focus,.atlasUniControl>input:focus,.atlasUniOther>input:focus,.atlasBirthParts select:focus{
+  border-color:var(--ux-accent-ink);box-shadow:0 0 0 3px var(--ux-accent-soft)
+}
+.atlasBirthParts{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr);gap:6px}
+.atlasBirthParts select{appearance:none;-webkit-appearance:none;padding:12px 9px;background-image:none;cursor:pointer;text-align:center}
+.atlasUniField{position:relative}
+.atlasUniControl{display:grid;grid-template-columns:minmax(0,1fr) 46px;border:1px solid var(--line);border-radius:16px;background:var(--soft)}
+.atlasUniControl:focus-within{border-color:var(--ux-accent-ink);box-shadow:0 0 0 3px var(--ux-accent-soft)}
+.atlasUniControl input{border:0!important;box-shadow:none!important;background:transparent;min-height:47px;padding-left:13px}
+.atlasUniControl>button{border:0;border-radius:0 15px 15px 0;background:transparent;color:var(--mut);font-size:25px;cursor:pointer}
+.atlasUniControl>button:hover{color:var(--ink);background:var(--ux-accent-soft)}
+.atlasUniOptions{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:8;
+ display:grid;gap:2px;padding:6px;max-height:min(310px,42vh);overflow-y:auto;overscroll-behavior:contain;
+ border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 20px 45px #0004}
+.atlasUniOptions[hidden],.atlasUniOther[hidden]{display:none!important}
+.atlasUniOptions button{width:100%;border:0;border-radius:11px;text-align:left;
+ background:transparent;color:var(--ink);font:inherit;font-size:13px;line-height:1.4;
+ padding:10px 11px;cursor:pointer}
+.atlasUniOptions button:hover,.atlasUniOptions button:focus-visible{background:var(--ux-accent-soft);outline:none}
+.atlasUniOptions .atlasUniOtherOption{border-top:1px solid var(--line);border-radius:4px 4px 10px 10px;
+ margin-top:5px;padding-top:14px;color:var(--ux-accent-ink);font-weight:750}
+.atlasUniOther{display:grid;gap:5px;margin-top:5px}
+.atlasUniOther label{font-size:11px;font-weight:750}
+.atlasUniOther small{font-size:11px;color:var(--mut)}
+.atlasMemberYears{gap:8px}
+.atlasMemberYears label{border-radius:13px;min-height:42px;padding:10px 13px;font-size:12px;transition:background .15s ease,box-shadow .15s ease}
+.atlasMemberYears label:has(input:checked){border-color:var(--ux-accent-ink);background:var(--ux-accent-soft);box-shadow:inset 0 0 0 1px var(--ux-accent-ink);font-weight:750}
+.atlasAlternatePath{grid-column:1/-1;color:var(--mut);font-size:12px}
+.atlasAlternatePath summary{width:max-content;max-width:100%;cursor:pointer;list-style:none;text-decoration:underline;text-underline-offset:3px}
+.atlasAlternatePath summary::-webkit-details-marker{display:none}
+.atlasAlternatePath p{margin:8px 0 5px;max-width:66ch;line-height:1.6}
+.atlasAlternatePath a{color:var(--ux-accent-ink)}
+.atlasMemberFooter{gap:14px;align-items:center}
+.atlasMemberFooter button{border-radius:15px;min-height:46px;padding:11px 18px}
+.atlasMemberClose{width:36px;height:36px;top:17px;right:17px}
+@media(max-width:560px){
+ .atlasMemberDialog{max-height:calc(100dvh - 20px);padding:21px 18px;border-radius:24px}
+ .atlasMemberFields{grid-template-columns:minmax(0,1fr);gap:13px}
+ .atlasMemberField.wide{grid-column:1}
+ .atlasMemberFooter{align-items:stretch;flex-direction:column}
+ .atlasMemberFooter button{width:100%}
+ .atlasUniOptions{position:relative;top:auto;max-height:230px;margin-top:4px}
+ .atlasMemberDialog>p{margin-bottom:15px}
+}
