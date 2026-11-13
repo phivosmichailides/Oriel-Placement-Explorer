@@ -311,7 +311,7 @@
     });
     // Keep the existing native Google Identity Services flow and its OAuth fallback.
     const googleButton=get('cloudGoogleSignIn');
-    window.PlacementAtlasGoogle?.mount({overlay,button:googleButton,client,clientId:googleClientId});
+    window.PlacementAtlasGoogle?.mount({overlay,button:googleButton,client,clientId:googleClientId,getCaptchaToken,resetCaptcha:resetChallenge});
     googleButton.addEventListener('click',async()=>{
       googleButton.disabled=true;googleButton.textContent='Opening Google…';
       const result=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl(),queryParams:{prompt:'select_account'}}});
