@@ -60,7 +60,7 @@
    if(document.getElementById('simulator')&&document.querySelector('nav.tabs [data-tab="simulator"]'))return;
    const tab=document.querySelector('nav.tabs [data-tab="simulator"]')||el('button','tab');
    tab.type='button';tab.classList.add('tab');tab.dataset.tab='simulator';
-   tab.innerHTML='<span class="simNavIcon" aria-hidden="true">▥</span><span>Oriel Simulation</span>';
+   tab.innerHTML='<span class="simNavIcon" aria-hidden="true">▥</span><span class="atlasTabLabel">Oriel Simulation</span>';
    if(!tab.isConnected)document.querySelector('nav.tabs [data-tab="outcome"]')?.before(tab);
    tab.disabled=false;tab.removeAttribute('title');
    // Replace any earlier generic handler rather than invoking navigation twice.
