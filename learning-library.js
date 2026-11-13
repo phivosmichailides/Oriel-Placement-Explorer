@@ -46,21 +46,24 @@
       </div>
     </section>
 
-    <section class="atlasLearnSection" id="atlasLearnRegions">
-      <div class="eyebrow">03 · LOCATION & LIFESTYLE</div><h3>Choose a place to live as well as a placement</h3>
-      <p>A region name is only a starting point. Compare the actual training postcodes, your likely home base, commute reliability, rent, transport costs and the kind of day-to-day life you want.</p>
+    <section class="atlasLearnSection atlasRegionExplorer" id="atlasLearnRegions">
+      <div class="eyebrow">03 · LOCATION & LIFESTYLE</div>
+      <h3>Find a region that fits the rest of your life.</h3>
+      <p>Look beyond the regional label. Use the actual programme postcodes, salary, rota and likely commute when comparing places.</p>
       <div class="atlasLearnRegionTools">
-        <label for="atlasLearnRegion">Explore a region</label>
+        <label for="atlasLearnRegion">Where are you considering?</label>
         <select id="atlasLearnRegion"><option value="">Choose a region</option></select>
-        <div class="atlasLearnRegionLinks" id="atlasLearnRegionLinks"><span>Choose a region to see useful research links.</span></div>
       </div>
-      <div class="atlasLearnChecklist">
-        <div><b>Housing</b><span>Compare rent, bills, deposits and the cost of living near the actual site.</span></div>
-        <div><b>Transport</b><span>Check door-to-door time, service frequency, first and last trains, cycling and late finishes.</span></div>
-        <div><b>Daily life</b><span>Think about access to friends, green space, gyms, food, culture and the activities you enjoy.</span></div>
-        <div><b>Flexibility</b><span>Consider whether you may move during the year and how easily you can reach every training site.</span></div>
+      <div class="atlasRegionData" id="atlasRegionData" aria-live="polite">
+        <p class="atlasLearnCaution">Select a region to see the programme snapshot and research tools.</p>
       </div>
-      <p class="atlasLearnCaution">Use current local information rather than assuming that every town or borough in a region has the same costs or lifestyle.</p>
+      <div class="atlasLearnRegionLinks" id="atlasLearnRegionLinks" aria-label="Independent region research"></div>
+      <div class="atlasRegionDecision">
+        <div><strong>Housing</strong><span>Compare rental prices for the towns or postcodes where you might actually live — not a region-wide average.</span></div>
+        <div><strong>Commute</strong><span>Check the journey on a weekday at your real start time, and whether late or weekend services work.</span></div>
+        <div><strong>Work–life balance</strong><span>Weigh weekly hours, shift patterns, commute and housing costs together.</span></div>
+      </div>
+      <p class="atlasLearnCaution">Programme statistics below use the site's dated 2026 Oriel dataset. They are not live salary, rental or availability figures.</p>
     </section>
 
     <section class="atlasLearnSection" id="atlasLearnPay">
@@ -175,13 +178,68 @@
   const addLink=(parent,label,url)=>{
     const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=label;parent.append(a);
   };
+  const regionData=panel.querySelector('#atlasRegionData');
+  const regionExplore=region=>{
+    const exploreFilter=document.getElementById('region');
+    if(exploreFilter){
+      exploreFilter.value=region;
+      exploreFilter.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    document.querySelector('nav.tabs [data-tab="explore"]')?.click();
+  };
   const updateRegionLinks=()=>{
-    if(!regionLinks||!regionSelect.value){regionLinks?.replaceChildren(Object.assign(document.createElement('span'),{textContent:'Choose a region to see useful research links.'}));return}
-    const region=formatRegion(regionSelect.value);regionLinks.replaceChildren();
-    addLink(regionLinks,'Cost of living and rent','https://www.google.com/search?q='+encodeURIComponent('average rent cost of living '+region+' England'));
-    addLink(regionLinks,'Transport and commuting','https://www.google.com/search?q='+encodeURIComponent('public transport commuting '+region+' England'));
-    addLink(regionLinks,'Things to do and local life','https://www.google.com/search?q='+encodeURIComponent('things to do lifestyle '+region+' England'));
-    if(region==='London')addLink(regionLinks,'TfL fares','https://tfl.gov.uk/fares');
+    if(!regionLinks||!regionData)return;
+    const region=regionSelect.value;
+    regionLinks.replaceChildren();regionData.replaceChildren();
+    if(!region){
+      const hint=document.createElement('p');hint.textContent='Choose a region to compare its programmes and plan your next steps.';
+      hint.className='atlasLearnCaution';regionData.append(hint);return;
+    }
+    const items=allPlacements().filter(p=>p.region===region);
+    const salaries=items.map(p=>Number(p.salary)).filter(n=>Number.isFinite(n)&&n>10000&&n<150000).sort((a,b)=>a-b);
+    const hours=items.map(p=>Number(p.hours)).filter(n=>Number.isFinite(n)&&n>=15&&n<=60).sort((a,b)=>a-b);
+    const median=a=>a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):null;
+    const money=n=>'£'+Math.round(n).toLocaleString('en-GB');
+    const tiles=[
+      ['Programmes in catalogue',String(items.length)],
+      ['Median listed salary',salaries.length?money(median(salaries)):'Not stated'],
+      ['Median weekly hours',hours.length?median(hours)+' hours':'Not stated']
+    ];
+    const title=document.createElement('h4');title.textContent=formatRegion(region)+' · at a glance';regionData.append(title);
+    const grid=document.createElement('div');grid.className='atlasRegionStats';
+    for(const [label,value] of tiles){
+      const item=document.createElement('div');
+      const small=document.createElement('span');small.textContent=label;
+      const big=document.createElement('strong');big.textContent=value;
+      item.append(small,big);grid.append(item);
+    }
+    regionData.append(grid);
+    const note=document.createElement('p');note.className='atlasRegionFootnote';
+    note.textContent=salaries.length
+      ?'Salary data available for '+salaries.length+' of '+items.length+' programmes. Median is descriptive, not a prediction of an offer.'
+      :'Programme salaries are not available for this region in the loaded dataset.';
+    regionData.append(note);
+    const button=document.createElement('button');button.type='button';button.className='btn primary atlasRegionExploreBtn';
+    button.textContent='Explore programmes in '+formatRegion(region);
+    button.addEventListener('click',()=>regionExplore(region));regionData.append(button);
+    const heading=document.createElement('strong');heading.className='atlasRegionLinksHeading';
+    heading.textContent='Useful next checks';regionLinks.append(heading);
+    addLink(regionLinks,'Local rents · ONS','https://www.ons.gov.uk/visualisations/housingpriceslocal/');
+    addLink(regionLinks,'Train routes · National Rail','https://www.nationalrail.co.uk/');
+    const transport={
+      'london':['London travel · TfL','https://tfl.gov.uk/'],
+      'wales':['Wales travel · TfW','https://tfw.wales/'],
+      'north west':['Greater Manchester travel · TfGM','https://tfgm.com/'],
+      'west midlands':['West Midlands travel · TfWM','https://www.tfwm.org.uk/'],
+      'north east':['Tyne and Wear travel · Nexus','https://www.nexus.org.uk/'],
+      'south west':['West of England travel · Travelwest','https://travelwest.info/']
+    };
+    const specific=transport[String(region).toLowerCase()];
+    if(specific)addLink(regionLinks,...specific);
+    addLink(regionLinks,'Local transport · Traveline','https://www.traveline.info/');
+    const footer=document.createElement('p');footer.className='atlasRegionFootnote';
+    footer.textContent='Select exact towns and training sites before using local rent and travel information.';
+    regionLinks.append(footer);
   };
   regionSelect?.addEventListener('change',updateRegionLinks);
   populateRegions();updateRegionLinks();
