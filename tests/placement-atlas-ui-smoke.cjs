@@ -117,6 +117,59 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   };
   for(const tab of ['explore','shortlist','outcome','simulator','learn','prefs','explore'])await expectExclusivePage(tab);
   // Keep the public landing-page state as the entry point for the rest of the test.
+  // Device-viewport regression: ordinary content must fit without a
+  // document-level sideways scroll at the default 100% page zoom.
+  assert.equal(await page.locator('#uxPageZoomValue').innerText(),'100%','The default in-app zoom should start at 100%');
+  assert.equal(await page.locator('#atlasDataTools').evaluate(el=>el.parentElement?.id),'prefs',
+    'Backup/restore controls belong exclusively to Preferences');
+  for(const width of [320,390,600,768,1024,1280,1536]){
+    await page.setViewportSize({width,height:920});
+    for(const tab of ['explore','shortlist','prefs','learn','simulator']){
+      await page.evaluate(id=>switchTab(id),tab);
+      await wait(80);
+      const result=await page.evaluate(()=>{
+        const panel=document.querySelector('.shell > section.panel.active');
+        return {viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,
+          bodyWidth:document.body.scrollWidth,panel:panel?.id,
+          panelRight:panel?.getBoundingClientRect().right||0,
+          footerRight:document.querySelector('.app-footer')?.getBoundingClientRect().right||0};
+      });
+      assert(result.documentWidth<=width+2,
+        'Document-level horizontal overflow at '+width+'px on '+tab+': '+JSON.stringify(result));
+      assert(result.panelRight<=width+2,
+        'Active panel is clipped at '+width+'px on '+tab+': '+JSON.stringify(result));
+    }
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.evaluate(()=>switchTab('prefs'));
+  const ratingSpacing=await page.locator('#weights').evaluate(el=>{
+    const styles=getComputedStyle(el);
+    return {gap:parseFloat(styles.rowGap||styles.gap),rows:el.querySelectorAll('.weightModern').length};
+  });
+  assert(ratingSpacing.rows>=5&&ratingSpacing.gap>=14,
+    'Importance-rating rows should have adequate breathing room: '+JSON.stringify(ratingSpacing));
+  const footer=page.locator('footer.app-footer.atlasFooter');
+  await footer.scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>document.body.classList.contains('atlasFooterInView'),null,{timeout:5000});
+  const footerMetrics=await footer.evaluate(el=>{
+    const f=el.getBoundingClientRect();
+    const left=el.querySelector('.atlasFooterIdentity')?.getBoundingClientRect();
+    const right=el.querySelector('.atlasFooterBottom p:last-child')?.getBoundingClientRect();
+    return {innerWidth,left:left?.left,right:right?.right,footerLeft:f.left,footerRight:f.right};
+  });
+  assert(footerMetrics.left>=12&&footerMetrics.right<=390-12,
+    'Footer text needs consistent left/right breathing room: '+JSON.stringify(footerMetrics));
+  for(const id of ['uxPageZoomDock','uxBackTop','uxDrawerLauncher','uxFloatingTools']){
+    assert.equal(await page.locator('#'+id).evaluate(el=>getComputedStyle(el).visibility),'hidden',
+      'Floating '+id+' should disappear when the footer enters view');
+  }
+  await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+  await page.waitForFunction(()=>!document.body.classList.contains('atlasFooterInView'),null,{timeout:5000});
+  assert.equal(await page.locator('#uxPageZoomDock').evaluate(el=>getComputedStyle(el).visibility),'visible',
+    'Floating zoom controls must return when the footer leaves view');
+  await page.setViewportSize({width:1440,height:960});
+  await page.evaluate(()=>switchTab('explore'));
+
   // Profile benefits are concrete and the learning library is a separate destination.
   assert.equal(await page.locator('header.top nav.tabs [data-tab=outcome]').isVisible(),false,'Duplicate Profile navigation should be hidden');
   const headerIdentity=page.locator('header.top .atlasHeaderUtilities .paHeaderIdentity');
